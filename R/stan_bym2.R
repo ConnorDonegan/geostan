@@ -9,8 +9,8 @@
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
 #' @param scaleFactor The scaling factor for the ICAR random effect. Currently INLA is required to calculate this. See Example below for details.
 #' @param re If the model includes an additional varying intercept term specify the grouping variable here using formula synatax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}.
-#' @param shape A simple features (\code{sf}) object or \code{SpatialPolygonsDataFrame}. An edge list will be constructed from this by queen contiguity condition by default; for the rook condition use \code{Queen = FALSE}.
-#' @param queen Use the queen contiguity condition for constructing the edge (neighbors) list? Defaults to \code{queen = TRUE}. Passed to \link[spdep]{poly2nb}.
+#' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
+#' @param C Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.
 #' @param family The likelihood function for the outcome variable. Current options are \code{family = poisson(link = "log")}, the default. 
 #' @param prior A \code{data.frame} or \code{matrix} with Student's t prior parameters for the coefficients. Provide three columns---degrees of freedom, location and scale---and a row for each variable in their order of appearance in the model formula. For now, if you want a Gaussian prior use very large degrees of freedom. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with degrees of freedom, location and scale parameters for a Student's t prior on the intercept; e.g. \code{prior_intercept = c(15, 0, 10)}.
@@ -63,18 +63,14 @@
 #' 
 #' Riebler, A., Sørbye, S. H., Simpson, D., & Rue, H. (2016). An intuitive Bayesian spatial model for disease mapping that accounts for scaling. Statistical methods in medical research, 25(4), 1145-1165.
 #' 
-stan_bym2 <- function(formula, slx, scaleFactor, re, shape, queen = TRUE, family = poisson(),
+stan_bym2 <- function(formula, slx, scaleFactor, re, data, C, family = poisson(),
                      prior = NULL, prior_intercept = NULL,  prior_tau = NULL,
                 centerx = TRUE, scalex = FALSE, chains = 4, iter = 5e3, refresh = 500, pars = NULL,
                 control = list(adapt_delta = .9, max_treedepth = 15), ...) {
   if (class(family) != "family" | !family$family %in% c("poisson")) stop ("Must provide a valid family object: poisson().")
   if (missing(formula) | class(formula) != "formula") stop ("Must provide a valid formula object, as in y ~ offset(E) + x or y ~ 1 for intercept only.")
-  if (missing(shape)) stop ("Must provide spatially referenced data (shape).")
-  shape_class <- class(shape)
-  if (!any(c("sf", "SpatialPolygonsDataFrame") %in% shape_class)) stop ("shape must be of class sf or SpatialPolygonsDataFrame.")
-  if ("SpatialPolygonsDataFrame" %in% shape_class) tmpdf <- shape@data
-  if ("sf" %in% shape_class) tmpdf <- as.data.frame(shape)
-  C <- shape2mat(shape, style = "B", queen = queen, zero.policy = FALSE)  
+  if (missing(data) | missing(C)) stop("Must provide data (a data.frame or object coercible to a data.frame) and connectivity matrix C.")
+  tmpdf <- as.data.frame(data) 
   nbs <- edges(C)
   n_edges <- nrow(nbs)
   intercept_only <- ifelse(all(dimnames(model.matrix(formula, tmpdf))[[2]] == "(Intercept)"), 1, 0) 
