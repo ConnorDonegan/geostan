@@ -17,12 +17,12 @@ Griffith, D., and Chun, Y. (2014). Spatial autocorrelation and spatial filtering
 Piironen, J and Vehtari, A. (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In Electronic Journal of Statistics, 11(2):5018-5051. https://projecteuclid.org/euclid.ejs/1513306866
 }
 \usage{
-stan_esf(formula, slx, re, shape, EV, data, C, nsa = FALSE,
-  threshold = 0.2, family = gaussian(), p0, prior = NULL,
-  prior_intercept = NULL, prior_sigma = NULL, prior_rhs = NULL,
-  prior_nu = NULL, prior_tau = NULL, centerx = TRUE,
-  scalex = FALSE, chains = 4, iter = 5000, refresh = 500,
-  pars = NULL, control = list(adapt_delta = 0.99, max_treedepth = 15),
+stan_esf(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2,
+  family = gaussian(), p0, prior = NULL, prior_intercept = NULL,
+  prior_sigma = NULL, prior_rhs = NULL, prior_nu = NULL,
+  prior_tau = NULL, centerx = TRUE, scalex = FALSE, chains = 4,
+  iter = 5000, refresh = 500, pars = NULL,
+  control = list(adapt_delta = 0.99, max_treedepth = 15),
   zero.policy = TRUE, ...)
 }
 \arguments{
@@ -34,17 +34,15 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{re}{If the model includes a varying intercept specify the grouping variable here using formula synatax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}.}
 
-\item{shape}{A simple features (\code{sf}) object or \code{SpatialPolygonsDataFrame}. A binary neighbors matrix will be constructed by queen contiguity condition and passed to \code{make_EV} to obtain eigenvectors for the model. Alternatively, supply \code{EV} and \code{data}.}
+\item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.}
 
-\item{EV}{Matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. If provided, also provide spatial weights matrix \code{C}.  See \link[geostan]{make_EV} and \link[geostan]{shape2mat}. This \code{EV} argument is ignored if \code{shape} is provided.}
+\item{C}{Spatial connectivity matrix which will be used to calculate eigenvectors, residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.}
 
-\item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data. Not used if \code{shape} is provided.}
+\item{EV}{A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. If provided, still also provide a spatial weights matrix \code{C} for other purposes.  See \link[geostan]{make_EV} and \link[geostan]{shape2mat}.}
 
-\item{C}{Optional spatial connectivity matrix which, if provided, will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms in the event that \code{shape} has not been provided; it will be row-standardized before calculating \code{slx} terms.}
+\item{nsa}{Include eigenvectors representing negative spatial autocorrelation? Default \code{nsa = FALSE}. Ignored if \code{EV} is provided.}
 
-\item{nsa}{Include eigenvectors representing negative spatial autocorrelation? Default \code{nsa = FALSE}}
-
-\item{threshold}{Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = .2}}
+\item{threshold}{Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = .2}; ignored if \code{EV} is provided.}
 
 \item{family}{The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{family = student_t()} and \code{family = poisson(link = "log")}.}
 
@@ -130,9 +128,11 @@ options(mc.cores = parallel::detectCores())
 ## models here have 1 chain and small iter, only for speed of compilation. 
 data(turmoil)
 ohio <- turmoil[which(turmoil$state_po == "OH"),]
+C <- shape2mat(ohio, "B")
 fit <- stan_esf(gop_growth ~ historic_gop + log(population) + college_educated,
                 slx = ~ historic_gop + college_educated,
-                shape = ohio,
+                data = ohio,
+                C = C,
                 chains = 1, iter = 1e3, family = student_t())
 
 ## trace plots
@@ -159,8 +159,8 @@ plot(ohio[,'esf'])
 
 ## Moran plot of residuals (looking for residual spatial autocorrelation)
 w <- shape2mat(ohio, "W")
-res_mc <- resid(fit)$mean
-moran_plot(res_mc, w)
+res <- resid(fit)$mean
+moran_plot(res, w)
 
 ## set priors for the main coefficients:
  ## coefficient priors must be a matrix with 3 columns (degrees of freedom, location, scale)
@@ -171,12 +171,13 @@ priors <- cbind(df, loc, scale)
 ## with scalex=TRUE all the covariates will be centered and scaled to have stand. dev = 1
 fit <- stan_esf(gop_growth ~ historic_gop + log(population) + college_educated, 
                prior = priors,
-               shape = ohio, iter = 3e3, chains = 4, scalex = TRUE)
+               data = ohio, C = C, iter = 1e3, chains = 1, scalex = TRUE)
 
 ## Poisson models. Model Jim Crow era prison sentencing risk in Florida.
 data(sentencing)
+C <- shape2mat(sentencing, "B")
 fit <- stan_esf(sents ~ offset(expected_sents), re = ~ name, family = poisson(),
-                shape = sentencing, chains = 1, iter = 1e3)
+                data = sentencing@data, C = C, chains = 1, iter = 1e3)
 plot(fit, plotfun = 'trace')
 stan_rhat(fit$stanfit, "beta_ev") +
    theme_bw()

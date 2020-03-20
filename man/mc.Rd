@@ -3,9 +3,6 @@
 \name{mc}
 \alias{mc}
 \title{The Moran coefficient}
-\source{
-
-}
 \usage{
 mc(x, w)
 }

@@ -13,11 +13,11 @@ Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A., & DiMagg
 Riebler, A., Sørbye, S. H., Simpson, D., & Rue, H. (2016). An intuitive Bayesian spatial model for disease mapping that accounts for scaling. Statistical methods in medical research, 25(4), 1145-1165.
 }
 \usage{
-stan_bym2(formula, slx, scaleFactor, re, shape, queen = TRUE,
-  family = poisson(), prior = NULL, prior_intercept = NULL,
-  prior_tau = NULL, centerx = TRUE, scalex = FALSE, chains = 4,
-  iter = 5000, refresh = 500, pars = NULL,
-  control = list(adapt_delta = 0.9, max_treedepth = 15), ...)
+stan_bym2(formula, slx, scaleFactor, re, data, C, family = poisson(),
+  prior = NULL, prior_intercept = NULL, prior_tau = NULL,
+  centerx = TRUE, scalex = FALSE, chains = 4, iter = 5000,
+  refresh = 500, pars = NULL, control = list(adapt_delta = 0.9,
+  max_treedepth = 15), ...)
 }
 \arguments{
 \item{formula}{A model formula, following the R \link[stats]{formula} syntax. If an offset term is provided for a Poisson model, it will be transformed to the log scale (and it will be ignored if its not a Poisson model); to add an offset term \code{E} to a formula use \code{y ~ offset(E)}.}
@@ -30,9 +30,9 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{re}{If the model includes an additional varying intercept term specify the grouping variable here using formula synatax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}.}
 
-\item{shape}{A simple features (\code{sf}) object or \code{SpatialPolygonsDataFrame}. An edge list will be constructed from this by queen contiguity condition by default; for the rook condition use \code{Queen = FALSE}.}
+\item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.}
 
-\item{queen}{Use the queen contiguity condition for constructing the edge (neighbors) list? Defaults to \code{queen = TRUE}. Passed to \link[spdep]{poly2nb}.}
+\item{C}{Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.}
 
 \item{family}{The likelihood function for the outcome variable. Current options are \code{family = poisson(link = "log")}, the default.}
 
