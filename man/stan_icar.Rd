@@ -9,12 +9,11 @@ Besag, J. (1974). Spatial interaction and the statistical analysis of lattice sy
 Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A., & DiMaggio, C. (2019). Bayesian hierarchical spatial models: Implementing the Besag York Mollié model in stan. Spatial and spatio-temporal epidemiology, 31, 100301.
 }
 \usage{
-stan_icar(formula, slx, re, shape, queen = TRUE, family = gaussian(),
-  prior = NULL, prior_intercept = NULL, prior_sigma = NULL,
-  prior_nu = NULL, prior_tau = NULL, centerx = TRUE,
-  scalex = FALSE, chains = 4, iter = 5000, refresh = 500,
-  pars = NULL, control = list(adapt_delta = 0.9, max_treedepth = 15),
-  ...)
+stan_icar(formula, slx, re, data, C, family = gaussian(), prior = NULL,
+  prior_intercept = NULL, prior_sigma = NULL, prior_nu = NULL,
+  prior_tau = NULL, centerx = TRUE, scalex = FALSE, chains = 4,
+  iter = 5000, refresh = 500, pars = NULL,
+  control = list(adapt_delta = 0.9, max_treedepth = 15), ...)
 }
 \arguments{
 \item{formula}{A model formula, following the R \link[stats]{formula} syntax. If an offset term is provided for a Poisson model, it will be transformed to the log scale (and it will be ignored if its not a Poisson model); to add an offset term \code{E} to a formula use \code{y ~ offset(E)}.}
@@ -25,9 +24,9 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{re}{If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula synatax, as in \code{~ ID}. If this is specified at the observational unit level then it becomes the original Besag-York-Mollie model. In that case this random effects term and the ICAR component are not separately identifiable. The resulting random effects parameter returned is named \code{alpha_re}.}
 
-\item{shape}{A simple features (\code{sf}) object or \code{SpatialPolygonsDataFrame}. An edge list will be constructed from this by queen contiguity condition by default; for the rook condition use \code{Queen = FALSE}.}
+\item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.}
 
-\item{queen}{Use the queen contiguity condition for constructing the edge (neighbors) list? Defaults to \code{queen = TRUE}. Passed to \link[spdep]{poly2nb}.}
+\item{C}{Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.}
 
 \item{family}{The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{family = student_t()} and \code{family = poisson(link = "log")}.}
 
@@ -99,15 +98,16 @@ library(sf)
 data(sentencing)
 
 # using a small number of iterations and a single chain only for compilation speed
+C <- shape2mat(sentencing)
 fit.icar <- stan_icar(sents ~ offset(expected_sents), family = poisson(),
-                     shape = sentencing,
+                     data = sentencing@data, C = C,
                     chains = 1, iter = 2e3)
 
 # add exchangeable random effects (for a BYM model)
  # this will put a hyperprior on the scale of the exchangeable random effects,
    # but still has no hyperprior on the spatial random effect. For a stronger option, see stan_bym2
 fit.bym <- stan_icar(sents ~ offset(expected_sents), re = ~ name, family = poisson(),
-                    shape = sentencing,
+                    data = sentencing@data, C = C,
                     chains = 1, iter = 3e3)
 
 # view WAIC 

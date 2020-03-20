@@ -8,8 +8,8 @@
 #'  These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
 #' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula synatax, as in \code{~ ID}. If this is specified at the observational unit level then it becomes the original Besag-York-Mollie model. In that case this random effects term and the ICAR component are not separately identifiable. The resulting random effects parameter returned is named \code{alpha_re}.
-#' @param shape A simple features (\code{sf}) object or \code{SpatialPolygonsDataFrame}. An edge list will be constructed from this by queen contiguity condition by default; for the rook condition use \code{Queen = FALSE}.
-#' @param queen Use the queen contiguity condition for constructing the edge (neighbors) list? Defaults to \code{queen = TRUE}. Passed to \link[spdep]{poly2nb}.
+#' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
+#' @param C Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.
 #' @param family The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{family = student_t()} and \code{family = poisson(link = "log")}. 
 #' @param prior A \code{data.frame} or \code{matrix} with Student's t prior parameters for the coefficients. Provide three columns---degrees of freedom, location and scale---and a row for each variable in their order of appearance in the model formula. For now, if you want a Gaussian prior use very large degrees of freedom. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with degrees of freedom, location and scale parameters for a Student's t prior on the intercept; e.g. \code{prior_intercept = c(15, 0, 10)}.
@@ -68,15 +68,16 @@
 #' data(sentencing)
 #'
 #' # using a small number of iterations and a single chain only for compilation speed
+#' C <- shape2mat(sentencing)
 #' fit.icar <- stan_icar(sents ~ offset(expected_sents), family = poisson(),
-#'                      shape = sentencing,
+#'                      data = sentencing@data, C = C,
 #'                     chains = 1, iter = 2e3)
 #'
 #' # add exchangeable random effects (for a BYM model)
 #'  # this will put a hyperprior on the scale of the exchangeable random effects,
 #'    # but still has no hyperprior on the spatial random effect. For a stronger option, see stan_bym2
 #' fit.bym <- stan_icar(sents ~ offset(expected_sents), re = ~ name, family = poisson(),
-#'                     shape = sentencing,
+#'                     data = sentencing@data, C = C,
 #'                     chains = 1, iter = 3e3)
 #'
 #' # view WAIC 
@@ -108,19 +109,15 @@
 #'  theme_bw() +
 #'  ggtitle("Standardized state prison sentencing ratios, 1905-1910")
 #'
-stan_icar <- function(formula, slx, re, shape, queen = TRUE, family = gaussian(),
+stan_icar <- function(formula, slx, re, data, C, family = gaussian(),
                       prior = NULL, prior_intercept = NULL, prior_sigma = NULL, prior_nu = NULL,
                       prior_tau = NULL,
                 centerx = TRUE, scalex = FALSE, chains = 4, iter = 5e3, refresh = 500, pars = NULL,
                 control = list(adapt_delta = .9, max_treedepth = 15), ...) {
   if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "poisson")) stop ("Must provide a valid family object: gaussian(), student_t() or poisson().")
   if (missing(formula) | class(formula) != "formula") stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
-  if (missing(shape)) stop ("Must provide spatially referenced data (shape).")
-  shape_class <- class(shape)
-  if (!any(c("sf", "SpatialPolygonsDataFrame") %in% shape_class)) stop ("shape must be of class sf or SpatialPolygonsDataFrame.")
-  if ("SpatialPolygonsDataFrame" %in% shape_class) tmpdf <- shape@data
-  if ("sf" %in% shape_class) tmpdf <- as.data.frame(shape)
-  C <- shape2mat(shape, style = "B", queen = queen, zero.policy = FALSE)  
+  if (missing(data) | missing(C)) stop("Must provide data (a data.frame or object coercible to a data.frame) and connectivity matrix C.")
+  tmpdf <- as.data.frame(data)
   nbs <- edges(C)
   n_edges <- nrow(nbs)
   intercept_only <- ifelse(all(dimnames(model.matrix(formula, tmpdf))[[2]] == "(Intercept)"), 1, 0) 

@@ -8,12 +8,11 @@
 #'  These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
 #' @param re If the model includes a varying intercept specify the grouping variable here using formula synatax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}.
-#' @param shape A simple features (\code{sf}) object or \code{SpatialPolygonsDataFrame}. A binary neighbors matrix will be constructed by queen contiguity condition and passed to \code{make_EV} to obtain eigenvectors for the model. Alternatively, supply \code{EV} and \code{data}.
-#' @param EV Matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. If provided, also provide spatial weights matrix \code{C}.  See \link[geostan]{make_EV} and \link[geostan]{shape2mat}. This \code{EV} argument is ignored if \code{shape} is provided.
-#' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data. Not used if \code{shape} is provided.
-#' @param C Optional spatial connectivity matrix which, if provided, will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms in the event that \code{shape} has not been provided; it will be row-standardized before calculating \code{slx} terms.
-#' @param nsa Include eigenvectors representing negative spatial autocorrelation? Default \code{nsa = FALSE}
-#' @param threshold Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = .2}
+#' @param C Spatial connectivity matrix which will be used to calculate eigenvectors, residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.
+#' @param EV A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. If provided, still also provide a spatial weights matrix \code{C} for other purposes.  See \link[geostan]{make_EV} and \link[geostan]{shape2mat}.
+#' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
+#' @param nsa Include eigenvectors representing negative spatial autocorrelation? Default \code{nsa = FALSE}. Ignored if \code{EV} is provided.
+#' @param threshold Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = .2}; ignored if \code{EV} is provided.
 #' @param family The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{family = student_t()} and \code{family = poisson(link = "log")}. 
 #' @param p0 Number of eigenvector coefficients expected to be far from zero. If missing, Chun et al.'s (2016) formula will be used to fill this in; see \link[geostan]{exp_pars}.
 #' The value of \code{p0} is used to control the prior degree of sparsity in the model.
@@ -90,9 +89,11 @@
 #' ## models here have 1 chain and small iter, only for speed of compilation. 
 #' data(turmoil)
 #' ohio <- turmoil[which(turmoil$state_po == "OH"),]
+#' C <- shape2mat(ohio, "B")
 #' fit <- stan_esf(gop_growth ~ historic_gop + log(population) + college_educated,
 #'                 slx = ~ historic_gop + college_educated,
-#'                 shape = ohio,
+#'                 data = ohio,
+#'                 C = C,
 #'                 chains = 1, iter = 1e3, family = student_t())
 #' 
 #' ## trace plots
@@ -119,8 +120,8 @@
 #' 
 #' ## Moran plot of residuals (looking for residual spatial autocorrelation)
 #' w <- shape2mat(ohio, "W")
-#' res_mc <- resid(fit)$mean
-#' moran_plot(res_mc, w)
+#' res <- resid(fit)$mean
+#' moran_plot(res, w)
 #' 
 #' ## set priors for the main coefficients:
 #'  ## coefficient priors must be a matrix with 3 columns (degrees of freedom, location, scale)
@@ -131,12 +132,13 @@
 #' ## with scalex=TRUE all the covariates will be centered and scaled to have stand. dev = 1
 #' fit <- stan_esf(gop_growth ~ historic_gop + log(population) + college_educated, 
 #'                prior = priors,
-#'                shape = ohio, iter = 3e3, chains = 4, scalex = TRUE)
+#'                data = ohio, C = C, iter = 1e3, chains = 1, scalex = TRUE)
 #'
 #' ## Poisson models. Model Jim Crow era prison sentencing risk in Florida.
 #' data(sentencing)
+#' C <- shape2mat(sentencing, "B")
 #' fit <- stan_esf(sents ~ offset(expected_sents), re = ~ name, family = poisson(),
-#'                 shape = sentencing, chains = 1, iter = 1e3)
+#'                 data = sentencing@data, C = C, chains = 1, iter = 1e3)
 #' plot(fit, plotfun = 'trace')
 #' stan_rhat(fit$stanfit, "beta_ev") +
 #'    theme_bw()
@@ -152,28 +154,18 @@
 #'        ggtitle("Relative risk of sentencing, 1905-1910")
 #' }
 #'
-stan_esf <- function(formula, slx, re, shape, EV, data, C, nsa = FALSE, threshold = 0.2, family = gaussian(), p0,
+stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2, family = gaussian(), p0,
                      prior = NULL, prior_intercept = NULL, prior_sigma = NULL, prior_rhs = NULL, prior_nu = NULL,
                      prior_tau = NULL,
                 centerx = TRUE, scalex = FALSE, chains = 4, iter = 5e3, refresh = 500, pars = NULL,
                 control = list(adapt_delta = .99, max_treedepth = 15), zero.policy = TRUE, ...) {
-  if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "poisson")) stop ("Must provide a valid family object: gaussian(), student_t(), or poisson().")
   if (missing(formula)) stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
-  if (missing(shape) & ( missing(EV) | missing(data)) ) stop ("Must provide spatially referenced data (shape) or a matrix of eigenvectors (EV) and data.")
-  if(!missing(shape)) {
-    shape_class <- class(shape)
-    if (!any(c("sf", "SpatialPolygonsDataFrame") %in% shape_class)) stop ("shape must be of class sf or SpatialPolygonsDataFrame.")
-    if ("SpatialPolygonsDataFrame" %in% shape_class) tmpdf <- shape@data
-    if ("sf" %in% shape_class) tmpdf <- as.data.frame(shape)
-    C <- shape2mat(shape, style = "B")  
-    EV <- make_EV(C, nsa = nsa, threshold = threshold)
-    dev <- ncol(EV)
-    n <- nrow(EV)
-  } else {
-      tmpdf <- as.data.frame(data)
-      dev <- ncol(EV)
-      n <- nrow(tmpdf)
-    }
+  if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "poisson")) stop ("Must provide a valid family object: gaussian(), student_t(), or poisson().")
+  if (missing(C) | missing(data)) stop ("Must provide data and a spatiall connectivity matrix C.")
+  tmpdf <- as.data.frame(data)
+  if (missing(EV)) EV <- make_EV(C, nsa = nsa, threshold = threshold)
+  dev <- ncol(EV)
+  n <- nrow(EV)
   intercept_only <- ifelse(all(dimnames(model.matrix(formula, tmpdf))[[2]] == "(Intercept)"), 1, 0) 
   if (intercept_only) {
     x <- model.matrix(~ 0, data = tmpdf) 
@@ -186,7 +178,6 @@ stan_esf <- function(formula, slx, re, shape, EV, data, C, nsa = FALSE, threshol
     if (missing(slx)) {
         slx <- " "
         } else {
-        if (!exists("C")) stop("To create slx term, you must provide either C (a connectivity matrix) or shape (a Simple Features sf object or a SpatialPolygonsDataFrame).")
            Wx <- SLX(f = slx, DF = tmpdf, SWM = C, cx = centerx, sx = scalex)
            x <- cbind(Wx, x)
     } 
