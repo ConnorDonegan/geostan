@@ -1,7 +1,7 @@
 #' GLM
 #'
 #' @export
-#' @description Fit a Poisson generalized linear model with (optional) exchangeable random effects. 
+#' @description Fit a generalized linear model with (optional) exchangeable random effects. 
 #' 
 #' @param formula A model formula, following the R \link[stats]{formula} syntax. If an offset term is provided for a Poisson model, it will be transformed to the log scale (and it will be ignored if its not a Poisson model); to add an offset term \code{E} to a formula use \code{y ~ offset(E)}.
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally); you must also provide \code{C} when including \code{slx}.
@@ -13,7 +13,8 @@
 #' @param family The likelihood function for the outcome variable. Current options are \code{family = poisson(link = "log")}. 
 #' @param prior A \code{data.frame} or \code{matrix} with Student's t prior parameters for the coefficients. Provide three columns---degrees of freedom, location and scale---and a row for each variable in their order of appearance in the model formula. For now, if you want a Gaussian prior use very large degrees of freedom. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with degrees of freedom, location and scale parameters for a Student's t prior on the intercept; e.g. \code{prior_intercept = c(15, 0, 10)}.
-#' @param prior_sigma A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on sigma^2; e.g. \code{prior_sigma = c(5, 0, 10)}. To use a half-Cauchy prior set degrees of freedom to one. 
+#' @param prior_sigma A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on the residual standard deviation \code{sigma}. Use a half-Cauchy prior by setting degrees of freedom to one; e.g. \code{prior_sigma = c(5, 0, 10)}.
+#' @param prior_nu Set the parameters for the Gamma prior distribution on the degrees of freedom in the likelihood function when using \code{family = student_t}. Defaults to \code{prior_nu = c(alpha = 2, beta = .1)}.
 #' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE} for computational efficiency. This alters the interpretation of the intercept term! See \code{Details}) below.
 #' @param scalex Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
@@ -68,7 +69,7 @@
 #'  # (including residuals, predicted values, etc.)
 #' rstan::stan_ess(fit.pois$stanfit)
 #' # or for a particular parameter
-#' rstan::stan_ess(fit.pois$stanfit, "phi")
+#' rstan::stan_ess(fit.pois$stanfit, "alpha_re")
 
 # posterior predictive check: predicted distribution should resemble observed distribution
 #' library(bayesplot)
@@ -88,7 +89,7 @@
 #'
 stan_glm <- function(formula, slx, re, data, C, family = gaussian(),
                       prior = NULL, prior_intercept = NULL, prior_sigma = NULL, prior_nu = NULL,
-                      prior_tau = NULL,
+                     prior_tau = NULL,
                 centerx = TRUE, scalex = FALSE, chains = 4, iter = 5e3, refresh = 500, pars = NULL,
                 control = list(adapt_delta = .9, max_treedepth = 15), ...) {
   if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "poisson")) stop ("Must provide a valid family object: poisson().")
@@ -119,7 +120,7 @@ stan_glm <- function(formula, slx, re, data, C, family = gaussian(),
   if (is.null(model.offset(frame))) {
     offset <- rep(0, times = n)
   } else {
-    offset <- log(model.offset(frame))
+    offset <- model.offset(frame)
   }
   if(missing(re)) {
     has_re <- n_ids <- id <- 0;
@@ -141,12 +142,9 @@ stan_glm <- function(formula, slx, re, data, C, family = gaussian(),
     y = y,
     x = x,
     n = n,
-    n_edges = n_edges,
-    node1 = nbs$node1,
-    node2 = nbs$node2,
     dx = dx,
     dim_beta_prior = max(1, dx),
-    log_E = offset,
+    offset = offset,
     has_re = has_re,
     n_ids = n_ids,
     id = id_index$idx,
@@ -157,7 +155,7 @@ stan_glm <- function(formula, slx, re, data, C, family = gaussian(),
     t_nu_prior = priors$nu,
     is_student = is_student
     )
-  pars <- c(pars, 'intercept', 'phi', 'residual', 'log_lik', 'yrep', 'fitted')
+  pars <- c(pars, 'intercept', 'residual', 'log_lik', 'yrep', 'fitted')
   if (!intercept_only) pars <- c(pars, 'beta')
   if (family$family %in% c("gaussian", "student_t")) pars <- c(pars, 'sigma')
   if (is_student) pars <- c(pars, "nu")
@@ -179,10 +177,13 @@ stan_glm <- function(formula, slx, re, data, C, family = gaussian(),
   out$family <- family
   out$formula <- formula
   out$slx <- slx
-  out$edges <- nbs
   out$re <- re_list
   out$priors <- priors
-  out$spatial <- data.frame(par = "alpha_re", method = "Exchangeable")
+  if (has_re) {
+      out$spatial <- data.frame(par = "alpha_re", method = "Exchangeable")
+  } else {
+      out$spatial <- data.frame(par = NA, method = "None")
+      }
   class(out) <- append("geostan_fit", class(out))
   return(out)
 }

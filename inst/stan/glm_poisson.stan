@@ -3,7 +3,7 @@ data {
   int<lower=0> dx; // number of covariates
   int y[n]; // outcome variable
   matrix[n, dx] x; // covariates
-  vector[n] log_E; // if no offset provided, a vector of zeros
+  vector[n] offset; // if no offset provided, a vector of zeros
   vector[3] alpha_prior; // other priors
   row_vector[dx] beta_prior[3];
   vector[3] alpha_tau_prior;
@@ -14,6 +14,7 @@ data {
 }
 
 transformed data {
+  vector[n] log_E = log(offset);
 }
 
 parameters {

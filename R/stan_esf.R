@@ -18,7 +18,7 @@
 #' The value of \code{p0} is used to control the prior degree of sparsity in the model.
 #' @param prior A \code{data.frame} or \code{matrix} with Student's t prior parameters for the coefficients. Provide three columns---degrees of freedom, location and scale---and a row for each variable in their order of appearance in the model formula. For now, if you want a Gaussian prior use very large degrees of freedom. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with degrees of freedom, location and scale parameters for a Student's t prior on the intercept; e.g. \code{prior_intercept = c(15, 0, 10)}.
-#' @param prior_sigma A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on sigma^2. Use a half-Cauchy prior by setting degrees of freedom to one; e.g. \code{prior_sigma = c(5, 0, 10)}.
+#' @param prior_sigma A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on the residual standard deviation \code{sigma}. Use a half-Cauchy prior by setting degrees of freedom to one; e.g. \code{prior_sigma = c(5, 0, 10)}.
 #' @param prior_rhs A named vector with the degrees of freedom and scale of the Student's t slab for regularizing large eigenvector coefficients and the prior scale for the global shrinkage parameter; e.g. \code{prior_rhs = c(slab_df = 15, slab_scale = 5, scale_global = .5)}. If \code{p0} is provided and prior_rhs is missing, \code{p0} will be used automatically to calculate \code{scale_global}.
 #' @param prior_nu Set the parameters for the Gamma prior distribution on the degrees of freedom in the likelihood function when using \code{family = student_t}. Defaults to \code{prior_nu = c(alpha = 2, beta = .1)}.
 #' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts (\code{alpha_re}). The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.
@@ -47,7 +47,7 @@
 #' \item{summary}{Summaries of the main parameters of interest; a data frame}
 #' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (\code{eff_pars}) and 
 #'  mean log pointwise predictive density (\code{lpd}), residual spatial autocorrelation (Moran coefficient of the residuals), 
-#'   root mean square error (RMSE), and median absolute deviation of residuals. Residuals are taken at the median value for each observation.}
+#'   and root mean squared error of residuals. Residuals are relative to the mean fitted value for each observation.}
 #' \item{data}{a data frame containing the model data}
 #' \item{EV}{A matrix of eigenvectors created with \code{w} and \code{geostan::make_EV}}
 #' \item{C}{The spatial weights matrix used to construct EV}
@@ -189,7 +189,7 @@ stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2
   if (is.null(model.offset(frame))) {
     offset <- rep(0, times = n)
   } else {
-    offset <- log(model.offset(frame))
+    offset <- model.offset(frame)
   }
   if(missing(re)) {
     has_re <- n_ids <- id <- 0;

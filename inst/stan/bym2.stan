@@ -13,7 +13,7 @@ data {
   int<lower=1, upper=n> node1[n_edges];
   int<lower=1, upper=n> node2[n_edges];
   matrix[n, dx] x; // covariates
-  vector[n] log_E; // if no offset provided, a vector of zeros
+  vector[n] offset; // if no offset provided, a vector of zeros
   vector[3] alpha_prior; // other priors
   row_vector[dx] beta_prior[3];
   vector[3] sigma_prior;
@@ -25,6 +25,7 @@ data {
 }
 
 transformed data {
+  vector[n] log_E = log(offset);
 }
 
 parameters {
