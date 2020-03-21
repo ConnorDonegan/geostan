@@ -34,7 +34,7 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{prior_intercept}{A vector with degrees of freedom, location and scale parameters for a Student's t prior on the intercept; e.g. \code{prior_intercept = c(15, 0, 10)}.}
 
-\item{prior_sigma}{A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on sigma^2. Use a half-Cauchy prior by setting degrees of freedom to one; e.g. \code{prior_sigma = c(5, 0, 10)}.}
+\item{prior_sigma}{A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on the residual standard deviation \code{sigma}. Use a half-Cauchy prior by setting degrees of freedom to one; e.g. \code{prior_sigma = c(5, 0, 10)}.}
 
 \item{prior_nu}{Set the parameters for the Gamma prior distribution on the degrees of freedom in the likelihood function if your using \code{family = student_t}. Defaults to \code{prior_nu = c(alpha = 2, beta = .1)}.}
 
@@ -62,7 +62,7 @@ An object of class class \code{geostan_fit} (a list) containing:
 \item{summary}{Summaries of the main parameters of interest; a data frame}
 \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (\code{eff_pars}) and 
  mean log pointwise predictive density (\code{lpd}), residual spatial autocorrelation (Moran coefficient of the residuals), 
-  root mean square error (RMSE), and median absolute deviation of residuals. Residuals are taken at the median value for each observation.}
+  root mean square error. Residuals are relative to the mean fitted value for each observation.}
 \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 \item{data}{a data frame containing the model data}
 \item{edges}{The edge list representing all unique sets of neighbors}
