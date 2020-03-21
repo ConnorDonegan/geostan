@@ -187,16 +187,16 @@ clean_results <- function(samples, pars, is_student, has_re, C, x) {
   summary <- apply(summary, 2, round, 3)
   residuals <- as.matrix(samples, pars = "residual")
   residuals <- apply(residuals, 2, mean)
-  if (exists("C")) {
-      Residual_MC <- round(geostan::mc(residuals, w = C), 3)
+  if (is.logical(C)) {
+      Residual_MC <- C <- Expected_MC <- NA
+      } else {
+      Residual_MC <- round(mc(residuals, w = C), 3)
       if (!has_b) {
           n <- length(residuals)
           Expected_MC <- -1/(n - 1)
       } else {
-      Expected_MC <- geostan::expected_mc(X = x, C = C)
+      Expected_MC <- expected_mc(X = x, C = C)
       }
-     } else {
-    Residual_MC <- C <- Expected_MC <- NA
      }
   RMSE <- rmse(residuals, digits = 2)
   WAIC <- geostan::waic(samples)

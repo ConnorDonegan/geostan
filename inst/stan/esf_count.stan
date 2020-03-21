@@ -5,7 +5,7 @@ data {
   matrix[n, dev] EV; // eigenvectors
   matrix[n, dx] x; // covariates
   int y[n]; // outcome variable
-  vector[n] offset; // vector of zeros by default, otherwise a user-provided vector
+  vector[n] offset; // is a vector of zeros by default, otherwise a user-provided vector
   int<lower=0,upper=1> has_re; // has random effects? (or varying intercept)
   int<lower=0> n_ids; // number of random effects
   int<lower=0,upper=n_ids> id[n]; // identifier for the observational units associated with the random effects term
@@ -20,8 +20,10 @@ data {
 transformed data {
   real<lower=1> nu_global;
   real<lower=1> nu_local;
+  vector[n] log_E;
   nu_global = 1;
   nu_local = 1;
+  log_E = log(offset);
 }
 
 parameters {
@@ -50,7 +52,7 @@ transformed parameters {
   c = slab_scale * sqrt(caux);
   lambda_tilde = sqrt(c^2 * square(lambda) ./ (c^2 + tau^2*square(lambda)));
   beta_ev = z .* lambda_tilde * tau;
-  f = offset + intercept + EV * beta_ev;
+  f = log_E + intercept + EV * beta_ev;
   if (dx) f += x * beta;
   if (has_re) {
     for (i in 1:n) {

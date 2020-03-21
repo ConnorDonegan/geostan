@@ -13,7 +13,7 @@
 #' @param family The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{family = student_t()} and \code{family = poisson(link = "log")}. 
 #' @param prior A \code{data.frame} or \code{matrix} with Student's t prior parameters for the coefficients. Provide three columns---degrees of freedom, location and scale---and a row for each variable in their order of appearance in the model formula. For now, if you want a Gaussian prior use very large degrees of freedom. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with degrees of freedom, location and scale parameters for a Student's t prior on the intercept; e.g. \code{prior_intercept = c(15, 0, 10)}.
-#' @param prior_sigma A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on sigma^2. Use a half-Cauchy prior by setting degrees of freedom to one; e.g. \code{prior_sigma = c(5, 0, 10)}.
+#' @param prior_sigma A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on the residual standard deviation \code{sigma}. Use a half-Cauchy prior by setting degrees of freedom to one; e.g. \code{prior_sigma = c(5, 0, 10)}.
 #' @param prior_nu Set the parameters for the Gamma prior distribution on the degrees of freedom in the likelihood function if your using \code{family = student_t}. Defaults to \code{prior_nu = c(alpha = 2, beta = .1)}.
 #' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE} for computational efficiency. This alters the interpretation of the intercept term! See \code{Details}) below.
@@ -41,7 +41,7 @@
 #' \item{summary}{Summaries of the main parameters of interest; a data frame}
 #' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (\code{eff_pars}) and 
 #'  mean log pointwise predictive density (\code{lpd}), residual spatial autocorrelation (Moran coefficient of the residuals), 
-#'   root mean square error (RMSE), and median absolute deviation of residuals. Residuals are taken at the median value for each observation.}
+#'   root mean square error. Residuals are relative to the mean fitted value for each observation.}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' \item{data}{a data frame containing the model data}
 #' \item{edges}{The edge list representing all unique sets of neighbors}
@@ -144,7 +144,7 @@ stan_icar <- function(formula, slx, re, data, C, family = gaussian(),
   if (is.null(model.offset(frame))) {
     offset <- rep(0, times = n)
   } else {
-    offset <- log(model.offset(frame))
+    offset <- model.offset(frame)
   }
   if(missing(re)) {
     has_re <- n_ids <- id <- 0;
@@ -171,7 +171,7 @@ stan_icar <- function(formula, slx, re, data, C, family = gaussian(),
     node2 = nbs$node2,
     dx = dx,
     dim_beta_prior = max(1, dx),
-    log_E = offset,
+    offset = offset,
     has_re = has_re,
     n_ids = n_ids,
     id = id_index$idx,
