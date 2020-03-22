@@ -13,7 +13,7 @@
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param nsa Include eigenvectors representing negative spatial autocorrelation? Default \code{nsa = FALSE}. Ignored if \code{EV} is provided.
 #' @param threshold Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = .2}; ignored if \code{EV} is provided.
-#' @param family The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{family = student_t()} and \code{family = poisson(link = "log")}. 
+#' @param family The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{student_t()} and \code{poisson(link = "log")}, and \code{binomial(link = "logit")}. 
 #' @param p0 Number of eigenvector coefficients expected to be far from zero. If missing, Chun et al.'s (2016) formula will be used to fill this in; see \link[geostan]{exp_pars}.
 #' The value of \code{p0} is used to control the prior degree of sparsity in the model.
 #' @param prior A \code{data.frame} or \code{matrix} with Student's t prior parameters for the coefficients. Provide three columns---degrees of freedom, location and scale---and a row for each variable in their order of appearance in the model formula. For now, if you want a Gaussian prior use very large degrees of freedom. Default priors are weakly informative relative to the scale of the data.
@@ -160,7 +160,7 @@ stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2
                 centerx = TRUE, scalex = FALSE, chains = 4, iter = 5e3, refresh = 500, pars = NULL,
                 control = list(adapt_delta = .99, max_treedepth = 15), zero.policy = TRUE, ...) {
   if (missing(formula)) stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
-  if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "poisson")) stop ("Must provide a valid family object: gaussian(), student_t(), or poisson().")
+  if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "poisson", "binomial")) stop ("Must provide a valid family object: gaussian(), student_t(), or poisson().")
   if (missing(C) | missing(data)) stop ("Must provide data and a spatiall connectivity matrix C.")
   tmpdf <- as.data.frame(data)
   if (missing(EV)) EV <- make_EV(C, nsa = nsa, threshold = threshold)
@@ -202,7 +202,7 @@ stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2
     id_index <- to_index(id)
     re_list <- list(formula = re, data = id_index)
   } 
-  if (family$family %in% c("poisson")) rhs_scale_global = 1
+  if (family$family %in% c("poisson", "binomial")) rhs_scale_global = 1
   if (family$family %in% c("gaussian", "student_t")) {
       # if no prior is provided at all for the rhs:
       if(missing(p0) & is.null(prior_rhs)) {
@@ -258,6 +258,9 @@ stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2
   if (family$family == "poisson") {
       samples <- rstan::sampling(stanmodels$esf_count, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init_r = 1, ...)
   }
+  if (family$family == "binomial") {
+      samples <- rstan::sampling(stanmodels$esf_binomial, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init_r = 1, ...)
+      }
   out <- clean_results(samples, pars, is_student, has_re, C, x)
   out$data <- ModData
   out$family <- family
