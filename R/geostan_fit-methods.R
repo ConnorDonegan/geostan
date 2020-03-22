@@ -163,6 +163,7 @@ spatial <- function(object, summary = TRUE, ...) {
 #' @rdname geostan_fit
 spatial.geostan_fit <- function(object, summary = TRUE, ...) {
   par <- as.character(object$spatial$par)
+  if (par == "None") stop("This model does not have a spatial component.")  
   if (summary) {
     post_summary(object, par)
   } else {

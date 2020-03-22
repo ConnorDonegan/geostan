@@ -10,7 +10,7 @@
 #' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula synatax, as in \code{~ ID}.  The resulting random effects parameter returned is named \code{alpha_re}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.
-#' @param family The likelihood function for the outcome variable. Current options are \code{family = poisson(link = "log")}. 
+#' @param family The likelihood function for the outcome variable. Current options are \code{family = c(poisson(link = "log"), gaussian(), student_t())}. 
 #' @param prior A \code{data.frame} or \code{matrix} with Student's t prior parameters for the coefficients. Provide three columns---degrees of freedom, location and scale---and a row for each variable in their order of appearance in the model formula. For now, if you want a Gaussian prior use very large degrees of freedom. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with degrees of freedom, location and scale parameters for a Student's t prior on the intercept; e.g. \code{prior_intercept = c(15, 0, 10)}.
 #' @param prior_sigma A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on the residual standard deviation \code{sigma}. Use a half-Cauchy prior by setting degrees of freedom to one; e.g. \code{prior_sigma = c(5, 0, 10)}.
@@ -161,13 +161,13 @@ stan_glm <- function(formula, slx, re, data, C, family = gaussian(),
   if (is_student) pars <- c(pars, "nu")
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
   priors <- priors[which(names(priors) %in% pars)]
-  ## if (family$family %in% c("gaussian", "student_t")) {
-  ##   if (intercept_only) {
-  ##     samples <- rstan::sampling(stanmodels$glm_io, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
-  ##    } else {
-  ##      samples <- rstan::sampling(stanmodels$glm_continuous, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
-  ##    }
-  ##   }
+  if (family$family %in% c("gaussian", "student_t")) {
+    if (intercept_only) {
+      samples <- rstan::sampling(stanmodels$glm_io, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+     } else {
+       samples <- rstan::sampling(stanmodels$glm_continuous, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+     }
+    }
   if (family$family == "poisson") {
       samples <- rstan::sampling(stanmodels$glm_poisson, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init_r = 1, ...)
     }
@@ -182,7 +182,7 @@ stan_glm <- function(formula, slx, re, data, C, family = gaussian(),
   if (has_re) {
       out$spatial <- data.frame(par = "alpha_re", method = "Exchangeable")
   } else {
-      out$spatial <- data.frame(par = NA, method = "None")
+      out$spatial <- data.frame(par = "None", method = "None")
       }
   class(out) <- append("geostan_fit", class(out))
   return(out)
