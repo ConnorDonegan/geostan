@@ -7,7 +7,6 @@ data {
   vector[3] alpha_prior; // other priors
   row_vector[dx] beta_prior[3];
   vector[3] alpha_tau_prior;
-  vector[2] t_nu_prior;
   int<lower=0,upper=1> has_re; // varying intercepts component
   int<lower=0> n_ids;
   int<lower=0,upper=n_ids> id[n];

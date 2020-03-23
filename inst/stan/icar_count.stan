@@ -16,10 +16,7 @@ data {
   vector[n] offset; // if no offset provided, a vector of zeros
   vector[3] alpha_prior; // other priors
   row_vector[dx] beta_prior[3];
-  vector[3] sigma_prior;
   vector[3] alpha_tau_prior;
-  vector[2] t_nu_prior;
-  int<lower=0,upper=1> is_student; 
   int<lower=0,upper=1> has_re; // varying intercepts component
   int<lower=0> n_ids;
   int<lower=0,upper=n_ids> id[n];
@@ -77,4 +74,5 @@ generated quantities {
     log_lik[i] = poisson_log_lpmf(y[i] | f[i]);
   }
 }
+
 
