@@ -60,7 +60,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
   all_pars <- names(x$stanfit)
   pars <- all_pars[which(all_pars %in% c("intercept", "alpha_tau"))]
   if(any(grepl("b_", all_pars))) pars <- c(pars, "beta")
-  pars <- c(pars, all_pars[which(all_pars %in% c("sigma", "nu"))])
+  pars <- c(pars, all_pars[which(all_pars %in% c("sigma", "nu", "p", "rho"))])
   cat("Spatial Regression Results \n")
   cat("Formula: ")
   print(x$formula)

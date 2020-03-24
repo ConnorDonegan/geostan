@@ -19,6 +19,7 @@ parameters {
 
 transformed parameters {
   vector[n] f;
+  vector<lower=0, upper=1>[n] p;
   vector[dev] beta_ev;
   beta_ev = rhs_prior(dev, z, aux1_global, aux2_global, aux1_local, aux2_local, caux, scale_global, slab_scale, 1);
   f = offset + intercept + EV * beta_ev;
