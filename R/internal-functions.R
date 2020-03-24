@@ -45,8 +45,8 @@ SLX <- function(f, DF, SWM, cx, sx) {
 make_data <- function(f, df, x) {
     y <- model.response(model.frame(f, df))
     o <- model.offset(model.frame(f, df))
-    if (!is.null(o)) return(cbind(y, o, x))
-    return(cbind(y, x))
+    if (is.null(o)) return(cbind(y, x))
+    return(cbind(y, o, x))
 }
 
 #' Coerce a vector to data frame with the orignal values and integer ID values
@@ -62,6 +62,15 @@ to_index <- function(id, n) {
   idx <- data.frame(id = unique(id), idx = 1:n_ids)
   res <- merge(data.frame(rowid = 1:length(id), id = id), idx, by = "id")
   res[order(res$rowid), c("id", "idx")]
+}
+
+#' 
+#' @noRd
+family_2_integer <- function(family) {
+    if (family == "gaussian") return(1)
+    if (family == "student_t") return(2)
+    if (family == "poisson") return(3)
+    if (family == "binomial") return(4)
 }
 
 #' Summarize samples from an geostan_fit object
@@ -108,11 +117,17 @@ rmse <- function(error, digits) {
   return(rmse)
 }
 
+#' logit
+#' @noRd
+#' @param p probability, ratio
+logit <- function(p) log(p/(1-p))
+
 #' Build list of priors
 #' @importFrom stats sd
 #' @noRd
-make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, scaling_factor = 2.5, link = c("identity", "log"), EV) {
-  if(link == "log") y <- log(y)
+make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, scaling_factor = 2.5, link = c("identity", "log", "logit"), EV) {
+  if (link == "log") y <- log(y)
+  if (link == "logit") y <- logit(y[,1] / y[,2])
   scaley <- sd(y)
   alpha_scale <- max(10 * sd(y), 5)
   alpha_mean <- 0
@@ -134,7 +149,7 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
     beta_location <- rep(0, times = ncol(x))
     beta_df <- rep(15, times = ncol(x))
     priors$beta <- cbind(beta_df, beta_location, beta_scale)
-    priors$beta <- round(priors$beta)
+    priors$beta <- round(priors$beta, 4)
     dimnames(priors$beta)[[1]] <- dimnames(x)[[2]]
   } else {
       priors$beta <- matrix(0, nrow = 0, ncol = 3)

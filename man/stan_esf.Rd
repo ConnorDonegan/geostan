@@ -44,7 +44,7 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{threshold}{Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = .2}; ignored if \code{EV} is provided.}
 
-\item{family}{The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{family = student_t()} and \code{family = poisson(link = "log")}.}
+\item{family}{The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{student_t()} and \code{poisson(link = "log")}, and \code{binomial(link = "logit")}.}
 
 \item{p0}{Number of eigenvector coefficients expected to be far from zero. If missing, Chun et al.'s (2016) formula will be used to fill this in; see \link[geostan]{exp_pars}.
 The value of \code{p0} is used to control the prior degree of sparsity in the model.}

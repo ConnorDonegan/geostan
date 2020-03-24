@@ -219,7 +219,7 @@ stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2
   is_student <- family$family == "student_t"
   priors <- list(intercept = prior_intercept, beta = prior, sigma = prior_sigma, nu = prior_nu, rhs = prior_rhs, alpha_tau = prior_tau)
   priors <- make_priors(user_priors = priors, y = y, x = x, xcentered = centerx,
-                         rhs_scale_global = rhs_scale_global, link = family$link, EV = EV)
+                        rhs_scale_global = rhs_scale_global, link = family$link, EV = EV)
   standata <- list(
     y = y,
     x = x,
@@ -240,14 +240,18 @@ stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2
     sigma_prior = priors$sigma,
     alpha_tau_prior = priors$alpha_tau,
     t_nu_prior = priors$nu,
-    is_student = is_student
+    is_student = as.numeric(is_student),
+    family = family_2_integer(family$family)
   )
+  if (family$family == "binomial") {
+      standata$y <- y[,1]
+      standata$N <- y[,2]
+      }
   pars <- c(pars, 'intercept', 'esf', 'residual', 'beta_ev', 'log_lik', 'yrep', 'fitted')
   if (!intercept_only) pars <- c(pars, 'beta')
   if (family$family %in% c("gaussian", "student_t")) pars <- c(pars, 'sigma')
   if (is_student) pars <- c(pars, "nu")
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
-  priors <- priors[which(names(priors) %in% c(pars, "rhs"))]
   if (family$family %in% c("gaussian", "student_t")) {
     if (intercept_only) {
       samples <- rstan::sampling(stanmodels$esf_io, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
@@ -256,10 +260,12 @@ stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2
      }
     }
   if (family$family == "poisson") {
-      samples <- rstan::sampling(stanmodels$esf_count, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init_r = 1, ...)
+      samples <- rstan::sampling(stanmodels$esf_count, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control,
+                                 init_r = 1, ...)
   }
   if (family$family == "binomial") {
-      samples <- rstan::sampling(stanmodels$esf_binomial, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init_r = 1, ...)
+      samples <- rstan::sampling(stanmodels$esf_binomial, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control,
+                                 init_r = .1, ...)
       }
   out <- clean_results(samples, pars, is_student, has_re, C, x)
   out$data <- ModData
@@ -269,6 +275,7 @@ stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2
   out$C <- C
   out$EV <- EV
   out$re <- re_list
+  priors <- priors[which(names(priors) %in% c(pars, "rhs"))]
   out$priors <- priors
   out$spatial <- data.frame(par = "esf", method = "RHS-ESF")
   class(out) <- append("geostan_fit", class(out))

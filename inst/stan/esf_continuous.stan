@@ -52,7 +52,7 @@ parameters {
 transformed parameters {
   // RHS prior on the EV matrix 
   vector[dx] beta;
-  real <lower=0> tau;
+  real<lower=0> tau;
   vector<lower=0>[dev] lambda;
   vector<lower=0>[dev] lambda_tilde;
   vector[dev] beta_ev;
