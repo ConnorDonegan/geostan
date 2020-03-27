@@ -92,7 +92,7 @@ stan_glm <- function(formula, slx, re, data, C, family = gaussian(),
                      prior_tau = NULL,
                 centerx = TRUE, scalex = FALSE, chains = 4, iter = 5e3, refresh = 500, pars = NULL,
                 control = list(adapt_delta = .9, max_treedepth = 15), ...) {
-  if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "poisson")) stop ("Must provide a valid family object: poisson().")
+  if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "binomial", "poisson")) stop ("Must provide a valid family object: poisson().")
   if (missing(formula) | class(formula) != "formula") stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
   if (missing(data)) stop("Must provide data (a data.frame or object coercible to a data.frame).")
   tmpdf <- as.data.frame(data)
@@ -121,6 +121,7 @@ stan_glm <- function(formula, slx, re, data, C, family = gaussian(),
     offset <- rep(0, times = n)
   } else {
     offset <- model.offset(frame)
+    if (family$family == "poisson") offset <- log(offset)
   }
   if(missing(re)) {
     has_re <- n_ids <- id <- 0;
@@ -153,21 +154,26 @@ stan_glm <- function(formula, slx, re, data, C, family = gaussian(),
     sigma_prior = priors$sigma,
     alpha_tau_prior = priors$alpha_tau,
     t_nu_prior = priors$nu,
-    is_student = is_student
+    is_student = is_student,
+    has_sigma = family$family %in% c("gaussian", "student_t")    
     )
+  if (family$family == "binomial") {
+      standata$y <- y[,1]
+      standata$N <- y[,2]
+  }
   pars <- c(pars, 'intercept', 'residual', 'log_lik', 'yrep', 'fitted')
   if (!intercept_only) pars <- c(pars, 'beta')
   if (family$family %in% c("gaussian", "student_t")) pars <- c(pars, 'sigma')
   if (is_student) pars <- c(pars, "nu")
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
   priors <- priors[which(names(priors) %in% pars)]
-  ## if (family$family %in% c("gaussian", "student_t")) {
-  ##   if (intercept_only) {
-  ##     samples <- rstan::sampling(stanmodels$glm_io, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
-  ##    } else {
-  ##      samples <- rstan::sampling(stanmodels$glm_continuous, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
-  ##    }
-  ##   }
+  if (family$family %in% c("gaussian", "student_t")) {
+       samples <- rstan::sampling(stanmodels$glm_continuous, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+     }                                         
+  if (family$family == "binomial") {
+      samples <- rstan::sampling(stanmodels$glm_binomial, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control,
+                                 init_r = 1, ...) # // !! // was init_r = .1 
+      }
   if (family$family == "poisson") {
       samples <- rstan::sampling(stanmodels$glm_poisson, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init_r = 1, ...)
     }

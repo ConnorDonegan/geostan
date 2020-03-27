@@ -19,3 +19,13 @@
   return z .* lambda_tilde * tau;
 }
 
+/**
+  * intrinsic autoregressive prior for a vector or random effects (Morris et al 2019)
+  * @return a vector of parameters (random effects)
+  */
+  real icar_normal_lpdf(vector phi, int N, int[] node1, int[] node2) {
+    return -0.5 * dot_self(phi[node1] - phi[node2]) +
+      normal_lpdf(sum(phi) | 0, 0.001 * N);
+  }
+
+

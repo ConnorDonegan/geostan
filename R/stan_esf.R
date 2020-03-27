@@ -190,12 +190,14 @@ stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2
     offset <- rep(0, times = n)
   } else {
     offset <- model.offset(frame)
+    if (family$family == "poisson") offset <- log(offset)
   }
   if(missing(re)) {
     has_re <- n_ids <- id <- 0;
     id_index <- to_index(id, n = nrow(tmpdf))
     re_list <- NA
-      } else {
+  } else {
+    if (class(re) != "formula") stop("re must be of class formula")
     has_re <- 1
     id <- tmpdf[,paste(re[2])]
     n_ids <- length(unique(id))
@@ -241,32 +243,28 @@ stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2
     alpha_tau_prior = priors$alpha_tau,
     t_nu_prior = priors$nu,
     is_student = as.numeric(is_student),
-    family = family_2_integer(family$family)
+    has_sigma = family$family %in% c("gaussian", "student_t")
   )
   if (family$family == "binomial") {
       standata$y <- y[,1]
       standata$N <- y[,2]
-      }
+  }
   pars <- c(pars, 'intercept', 'esf', 'residual', 'beta_ev', 'log_lik', 'yrep', 'fitted')
   if (!intercept_only) pars <- c(pars, 'beta')
   if (family$family %in% c("gaussian", "student_t")) pars <- c(pars, 'sigma')
   if (is_student) pars <- c(pars, "nu")
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
   if (family$family %in% c("gaussian", "student_t")) {
-    if (intercept_only) {
-      samples <- rstan::sampling(stanmodels$esf_io, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
-     } else {
        samples <- rstan::sampling(stanmodels$esf_continuous, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
-     }
-    }
+     }                                         
+  if (family$family == "binomial") {
+      samples <- rstan::sampling(stanmodels$esf_binomial, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control,
+                                 init_r = 1, ...) # // !! // was init_r = .1 
+      }
   if (family$family == "poisson") {
       samples <- rstan::sampling(stanmodels$esf_count, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control,
                                  init_r = 1, ...)
   }
-  if (family$family == "binomial") {
-      samples <- rstan::sampling(stanmodels$esf_binomial, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control,
-                                 init_r = .1, ...)
-      }
   out <- clean_results(samples, pars, is_student, has_re, C, x)
   out$data <- ModData
   out$family <- family

@@ -98,6 +98,7 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, C, family = poisson()
     offset <- rep(0, times = n)
   } else {
     offset <- model.offset(frame)
+    if (family$family == "poisson") offset <- log(offset)
   }
   if(missing(re)) {
     has_re <- n_ids <- id <- 0;
@@ -131,8 +132,14 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, C, family = poisson()
     beta_prior = t(priors$beta), 
     sigma_prior = priors$sigma,
     alpha_tau_prior = priors$alpha_tau,
-    scaling_factor = scaleFactor
-    )
+    scaling_factor = scaleFactor,
+    is_student = is_student,
+    has_sigma = family$family %in% c("gaussian", "student_t")
+  )
+  if (family$family == "binomial") { # not yet implemented
+      standata$y <- y[,1]
+      standata$N <- y[,2]
+  }
   pars <- c(pars, 'intercept', 'phi', 'theta', 'sigma', 'rho', 'residual', 'log_lik', 'yrep', 'fitted')
   if (!intercept_only) pars <- c(pars, 'beta')
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")

@@ -10,7 +10,7 @@
 #' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula synatax, as in \code{~ ID}. If this is specified at the observational unit level then it becomes the original Besag-York-Mollie model. In that case this random effects term and the ICAR component are not separately identifiable. The resulting random effects parameter returned is named \code{alpha_re}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param C Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.
-#' @param family The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{family = student_t()} and \code{family = poisson(link = "log")}. 
+#' @param family The likelihood function for the outcome variable. Current options are \code{gaussian()}, \code{student_t()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}. 
 #' @param prior A \code{data.frame} or \code{matrix} with Student's t prior parameters for the coefficients. Provide three columns---degrees of freedom, location and scale---and a row for each variable in their order of appearance in the model formula. For now, if you want a Gaussian prior use very large degrees of freedom. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with degrees of freedom, location and scale parameters for a Student's t prior on the intercept; e.g. \code{prior_intercept = c(15, 0, 10)}.
 #' @param prior_sigma A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on the residual standard deviation \code{sigma}. Use a half-Cauchy prior by setting degrees of freedom to one; e.g. \code{prior_sigma = c(5, 0, 10)}.
@@ -114,7 +114,7 @@ stan_icar <- function(formula, slx, re, data, C, family = gaussian(),
                       prior_tau = NULL,
                 centerx = TRUE, scalex = FALSE, chains = 4, iter = 5e3, refresh = 500, pars = NULL,
                 control = list(adapt_delta = .9, max_treedepth = 15), ...) {
-  if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "poisson")) stop ("Must provide a valid family object: gaussian(), student_t() or poisson().")
+  if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "binomial", "poisson")) stop ("Must provide a valid family object: gaussian(), student_t(), binomial(), or poisson().")
   if (missing(formula) | class(formula) != "formula") stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
   if (missing(data) | missing(C)) stop("Must provide data (a data.frame or object coercible to a data.frame) and connectivity matrix C.")
   tmpdf <- as.data.frame(data)
@@ -145,6 +145,7 @@ stan_icar <- function(formula, slx, re, data, C, family = gaussian(),
     offset <- rep(0, times = n)
   } else {
     offset <- model.offset(frame)
+    if (family$family == "poisson") offset <- log(offset)
   }
   if(missing(re)) {
     has_re <- n_ids <- id <- 0;
@@ -180,8 +181,13 @@ stan_icar <- function(formula, slx, re, data, C, family = gaussian(),
     sigma_prior = priors$sigma,
     alpha_tau_prior = priors$alpha_tau,
     t_nu_prior = priors$nu,
-    is_student = is_student
+    is_student = is_student,
+    has_sigma = family$family %in% c("gaussian", "student_t")
     )
+  if (family$family == "binomial") {
+      standata$y <- y[,1]
+      standata$N <- y[,2]
+  }
   pars <- c(pars, 'intercept', 'phi', 'residual', 'log_lik', 'yrep', 'fitted')
   if (!intercept_only) pars <- c(pars, 'beta')
   if (family$family %in% c("gaussian", "student_t")) pars <- c(pars, 'sigma')
@@ -189,11 +195,10 @@ stan_icar <- function(formula, slx, re, data, C, family = gaussian(),
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
   priors <- priors[which(names(priors) %in% pars)]
   if (family$family %in% c("gaussian", "student_t")) {
-    if (intercept_only) {
-      samples <- rstan::sampling(stanmodels$icar_io, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
-     } else {
        samples <- rstan::sampling(stanmodels$icar_continuous, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
      }
+  if (family$family == "binomial") {
+      samples <- rstan::sampling(stanmodels$icar_binomial, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init_r = 1, ...)
     }
   if (family$family == "poisson") {
       samples <- rstan::sampling(stanmodels$icar_count, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init_r = 1, ...)

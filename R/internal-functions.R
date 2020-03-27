@@ -69,8 +69,8 @@ to_index <- function(id, n) {
 family_2_integer <- function(family) {
     if (family == "gaussian") return(1)
     if (family == "student_t") return(2)
-    if (family == "poisson") return(3)
-    if (family == "binomial") return(4)
+    if (family == "binomial") return(3)
+    if (family == "poisson") return(4)
 }
 
 #' Summarize samples from an geostan_fit object
@@ -194,6 +194,7 @@ clean_results <- function(samples, pars, is_student, has_re, C, x) {
     b_names = paste0("b_", dimnames(x)[[2]])
     samples <- par_alias(samples, "^beta\\[", b_names)
   }
+  if ("sigma[1]" %in% pars) samples <- par_alias(samples, "^sigma\\[1\\]", "sigma")
   if (is_student) samples <- par_alias(samples, "^nu\\[1\\]", "nu")
   if (has_re) samples <- par_alias(samples, "^alpha_tau\\[1\\]", "alpha_tau")
   main_pars <- pars[which(pars %in% c("intercept", "alpha_tau", "beta", "sigma", "nu", "rho"))]

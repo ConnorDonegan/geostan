@@ -1,5 +1,6 @@
 // design matrix, exchangeable random effects, and priors
-  int<lower=1,upper=4> family; // gauss=1,t=2,pois=3,binom=4
+  int<lower=0,upper=1> is_student;
+  int<lower=0,upper=1> has_sigma;
   int<lower=0> n; // number of observations
   int<lower=0> dx; // number of covariates
   matrix[n, dx] x; // covariates
@@ -10,4 +11,6 @@
   vector[3] alpha_prior; // prior on the intercept
   row_vector[dx] beta_prior[3]; // coefficient priors
   vector[3] alpha_tau_prior; // prior on standard deviation of varying intercepts
+  vector[2] t_nu_prior;
+  vector[3] sigma_prior;
 

@@ -5,8 +5,7 @@ functions {
 data {
 #include parts/glm_data.stan
 #include parts/icar_data.stan
-  real<lower=0> scaling_factor; // scales the spatial component
-  int y[n]; // outcome variable
+#include parts/binomial_data.stan
 }
 
 transformed data {
@@ -14,21 +13,19 @@ transformed data {
 }
 
 parameters {
+#include parts/icar_parameters.stan
 #include parts/glm_parameters.stan
-  vector[n] v;
-  vector[n] u;
-  real<lower=0> sigma_re;
-  real logit_rho;
 }
 
 transformed parameters {
-#include parts/bym2_trans_params.stan
+  vector<lower=0, upper=1>[n] p;
+#include parts/icar_trans_params.stan
+  p = inv_logit(f);
 }
-
 model {
 #include parts/glm_model.stan
-#include parts/bym2_model.stan
-  y ~ poisson_log(f); 
+  phi ~ icar_normal_lpdf(n, node1, node2);
+  y ~ binomial(N, p); 
 }
 
 generated quantities {
@@ -37,21 +34,16 @@ generated quantities {
   vector[n] residual;
   vector[n] log_lik;
   vector[n_ids] alpha_re;
-  vector[n] phi; //scaled v
-  vector[n] theta; // scaled u
   if (has_re) {
     for (i in 1:n_ids) {
       alpha_re[i] = alpha_tau[has_re] * alpha_re_tilde[i];
     }
   }
   for (i in 1:n) {
-    phi[i] = sigma_re * sqrt(rho / scaling_factor) * v[i];
-    theta[i] = sigma_re * sqrt(1 - rho) * u[i];
-    fitted[i] = exp(f[i]);
+    fitted[i] = p[i] * N[i];
     residual[i] = fitted[i] - y[i];
-    yrep[i] = poisson_log_rng(f[i]);
-    log_lik[i] = poisson_log_lpmf(y[i] | f[i]);
+    yrep[i] = binomial_rng(N[i], p[i]);
+    log_lik[i] = binomial_lpmf(y[i] | N[i], p[i]);
   }
 }
-
 

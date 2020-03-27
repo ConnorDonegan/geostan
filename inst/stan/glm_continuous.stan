@@ -1,10 +1,5 @@
-functions {
-#include parts/priors.stan
-}
-
 data { 
 #include parts/glm_data.stan
-#include parts/esf_data.stan
   vector[n] y;
 }
 
@@ -13,17 +8,15 @@ transformed data {
 }
 
 parameters {
-#include parts/esf_parameters.stan
 #include parts/glm_parameters.stan
 }
 
 transformed parameters {
-#include parts/esf_trans_params.stan 
+#include parts/glm_trans_params.stan
 }
 
 model {
 #include parts/glm_model.stan
-#include parts/rhs_model.stan
 #include parts/y_continuous_model.stan
 }
 
@@ -33,14 +26,12 @@ generated quantities {
   vector[n] residual;
   vector[n] fitted;
   vector[n_ids] alpha_re;
-  vector[n] esf;
   if (has_re) {
     for (i in 1:n_ids) {
       alpha_re[i] = alpha_tau[has_re] * alpha_re_tilde[i];
     }
   }
   for (i in 1:n) {
-   esf[i] = EV[i]*beta_ev;
    fitted[i] = f[i];
    residual[i] = y[i] - fitted[i];
    if (is_student) {

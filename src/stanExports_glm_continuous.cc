@@ -2,12 +2,12 @@
 
 #include <Rcpp.h>
 using namespace Rcpp ;
-#include "stanExports_esf_io.h"
+#include "stanExports_glm_continuous.h"
 
-RCPP_MODULE(stan_fit4esf_io_mod) {
+RCPP_MODULE(stan_fit4glm_continuous_mod) {
 
 
-    class_<rstan::stan_fit<stan_model, boost::random::ecuyer1988> >("model_esf_io")
+    class_<rstan::stan_fit<stan_model, boost::random::ecuyer1988> >("model_glm_continuous")
 
     .constructor<SEXP,SEXP,SEXP>()
 
