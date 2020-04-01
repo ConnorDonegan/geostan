@@ -140,7 +140,7 @@ stan_icar <- function(formula, slx, re, data, C, family = gaussian(),
   ModData <- make_data(formula, tmpdf, x)
   frame <- model.frame(formula, tmpdf)
   y <- model.response(frame)
-  n <- length(y)
+  n <- nrow(frame)
   if (is.null(model.offset(frame))) {
     offset <- rep(0, times = n)
   } else {

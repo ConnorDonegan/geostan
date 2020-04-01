@@ -1,6 +1,5 @@
 data { 
 #include parts/glm_data.stan
-#include parts/esf_data.stan
 #include parts/binomial_data.stan
 }
 
@@ -9,7 +8,6 @@ transformed data {
 }
 
 parameters {
-#include parts/esf_parameters.stan
 #include parts/glm_parameters.stan
 }
 

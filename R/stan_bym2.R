@@ -93,7 +93,7 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, C, family = poisson()
   ModData <- make_data(formula, tmpdf, x)
   frame <- model.frame(formula, tmpdf)
   y <- model.response(frame)
-  n <- length(y)
+  n <- nrow(frame)
   if (is.null(model.offset(frame))) {
     offset <- rep(0, times = n)
   } else {
