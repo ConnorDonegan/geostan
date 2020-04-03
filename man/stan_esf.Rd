@@ -26,7 +26,7 @@ stan_esf(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2,
   zero.policy = TRUE, ...)
 }
 \arguments{
-\item{formula}{A model formula, following the R \link[stats]{formula} syntax. If an offset term is provide for a Poisson model, \code{log(offset)} is passed to the Stan model. (To add an offset term \code{E} to your model formula use \code{y ~ offset(E)}).}
+\item{formula}{A model formula, following the R \link[stats]{formula} syntax. If an offset term is provide for a Poisson model, \code{log(offset)} is passed to the Stan model. (To add an offset term \code{E} to your model formula use \code{y ~ offset(E)}).  Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.}
 
 \item{slx}{Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.

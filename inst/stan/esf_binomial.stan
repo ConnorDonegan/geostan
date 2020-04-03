@@ -43,8 +43,8 @@ generated quantities {
   }
   for (i in 1:n) {
     esf[i] = EV[i]*beta_ev;
-    fitted[i] = p[i] * N[i];
-    residual[i] = fitted[i] - y[i];
+    fitted[i] = p[i];
+    residual[i] = p[i]*N[i] - y[i];
     yrep[i] = binomial_rng(N[i], p[i]);
     log_lik[i] = binomial_lpmf(y[i] | N[i], p[i]);
   }

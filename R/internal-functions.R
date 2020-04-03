@@ -127,7 +127,7 @@ logit <- function(p) log(p/(1-p))
 #' @noRd
 make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, scaling_factor = 2.5, link = c("identity", "log", "logit"), EV) {
   if (link == "log") y <- log(y)
-  if (link == "logit") y <- logit(y[,1] / y[,2])
+  if (link == "logit") y <- logit(y[,1] / (y[,1] + y[,2]))
   scaley <- sd(y)
   alpha_scale <- max(10 * sd(y), 5)
   alpha_mean <- 0
