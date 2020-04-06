@@ -26,7 +26,7 @@ stan_esf(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2,
   zero.policy = TRUE, ...)
 }
 \arguments{
-\item{formula}{A model formula, following the R \link[stats]{formula} syntax. If an offset term is provide for a Poisson model, \code{log(offset)} is passed to the Stan model. (To add an offset term \code{E} to your model formula use \code{y ~ offset(E)}).}
+\item{formula}{A model formula, following the R \link[stats]{formula} syntax. If an offset term is provide for a Poisson model, \code{log(offset)} is passed to the Stan model. (To add an offset term \code{E} to your model formula use \code{y ~ offset(E)}).  Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.}
 
 \item{slx}{Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
@@ -44,7 +44,7 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{threshold}{Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = .2}; ignored if \code{EV} is provided.}
 
-\item{family}{The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{family = student_t()} and \code{family = poisson(link = "log")}.}
+\item{family}{The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{student_t()} and \code{poisson(link = "log")}, and \code{binomial(link = "logit")}.}
 
 \item{p0}{Number of eigenvector coefficients expected to be far from zero. If missing, Chun et al.'s (2016) formula will be used to fill this in; see \link[geostan]{exp_pars}.
 The value of \code{p0} is used to control the prior degree of sparsity in the model.}
