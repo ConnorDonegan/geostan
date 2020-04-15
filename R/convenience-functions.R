@@ -77,8 +77,8 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
   MCM <- M %*% C %*% M
   eigens <- eigen(MCM, symmetric = TRUE)
   if(nsa) {
-    idx = abs(eigens$values/eigens$values[1]) > threshold
-  } else idx <- eigens$values/eigens$values[1] > threshold
+    idx = abs(eigens$values/eigens$values[1]) >= threshold
+  } else idx <- eigens$values/eigens$values[1] >= threshold
   v <- round(eigens$values / eigens$values[1], 12)
   if (any(v == 0)) {
     rmdx <- which(v == 0)

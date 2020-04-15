@@ -16,7 +16,7 @@ remove_intercept <- function(x) {
 #' @param x model matrix
 #' @return scaled model matrix. Binary indicator variables will not be scaled.
 scale_x <- function(x, center, scale) {
-    for (i in seq_along(ncol(x))) {
+    for (i in 1:ncol(x)) {
         l <- length(unique(x[,i]))
         if (l == 2) next
         x[,i] <- as.numeric(scale(x[,i], center = center, scale = scale))
