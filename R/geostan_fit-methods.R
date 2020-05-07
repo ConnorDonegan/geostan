@@ -55,7 +55,7 @@
 
 #' @export
 #' @method print geostan_fit
-#' @rdname geostan_fit
+#' @name geostan_fit
 print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digits = 3, ...) {
   all_pars <- names(x$stanfit)
   pars <- all_pars[which(all_pars %in% c("intercept", "alpha_tau"))]
@@ -87,7 +87,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
 
 #' @export
 #' @import graphics
-#' @rdname geostan_fit
+#' @name geostan_fit
 #' @method plot geostan_fit
 plot.geostan_fit <- function(x, pars, plotfun = "stan_plot", ...) {
   if(missing(pars)) {
@@ -108,14 +108,14 @@ as.matrix.geostan_fit <- function(x, ...) {
 }
 
 #' @export
-#' @rdname geostan_fit
+#' @name geostan_fit
 #' @method as.data.frame geostan_fit
 as.data.frame.geostan_fit <- function(x, ...) {
     as.data.frame(x$stanfit, ...)
 }
 
 #' @export
-#' @rdname geostan_fit
+#' @name geostan_fit
 #' @method as.array geostan_fit
 as.array.geostan_fit <- function(x, ...){
     as.array(x$stanfit, ...)
@@ -123,7 +123,7 @@ as.array.geostan_fit <- function(x, ...){
 
 #' @export
 #' @method residuals geostan_fit
-#' @rdname geostan_fit
+#' @name geostan_fit
 #' 
 residuals.geostan_fit <- function(object, summary = TRUE, ...) {
   if (summary) {
@@ -136,7 +136,7 @@ residuals.geostan_fit <- function(object, summary = TRUE, ...) {
 #' @export
 #' @import stats
 #' @method fitted geostan_fit
-#' @rdname geostan_fit
+#' @name geostan_fit
 fitted.geostan_fit <- function(object, summary = TRUE, ...) {
   if (summary) {
     fitted <- post_summary(object, "fitted")
@@ -160,7 +160,7 @@ spatial <- function(object, summary = TRUE, ...) {
 
 #' @export
 #' @method spatial geostan_fit
-#' @rdname geostan_fit
+#' @name geostan_fit
 spatial.geostan_fit <- function(object, summary = TRUE, ...) {
   par <- as.character(object$spatial$par)
   if (summary) {
@@ -183,7 +183,7 @@ posterior_predict <- function(object, draws, summary = FALSE, ...) {
     }
 
 #' @export
-#' @rdname geostan_fit
+#' @name geostan_fit
 #' @method posterior_predict geostan_fit
 posterior_predict.geostan_fit <- function(object, draws, summary = FALSE, ...) {
   yrep <- as.matrix(object, pars = "yrep")
