@@ -33,5 +33,4 @@ LinkingTo:
     StanHeaders (>= 2.18.0)
 Suggests:
 SystemRequirements: GNU make
-RoxygenNote: 6.1.1
-
+RoxygenNote: 7.1.0

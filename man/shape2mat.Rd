@@ -7,8 +7,14 @@
 Tiefelsdorf, M., Griffith, D. A., Boots, B. (1999). "A variance-stabilizing coding scheme for spatial link matrices." Environment and Planning A, 31, pp. 165-180.
 }
 \usage{
-shape2mat(shape, style = "B", zero.policy = TRUE, queen = TRUE,
-  lambda = 2, snap = sqrt(.Machine$double.eps))
+shape2mat(
+  shape,
+  style = "B",
+  zero.policy = TRUE,
+  queen = TRUE,
+  lambda = 2,
+  snap = sqrt(.Machine$double.eps)
+)
 }
 \arguments{
 \item{shape}{An object of class \code{sf}, \code{SpatialPolygons} or \code{SpatialPolygonsDataFrame}.}

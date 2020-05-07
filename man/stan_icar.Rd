@@ -9,11 +9,27 @@ Besag, J. (1974). Spatial interaction and the statistical analysis of lattice sy
 Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A., & DiMaggio, C. (2019). Bayesian hierarchical spatial models: Implementing the Besag York Mollié model in stan. Spatial and spatio-temporal epidemiology, 31, 100301.
 }
 \usage{
-stan_icar(formula, slx, re, data, C, family = gaussian(), prior = NULL,
-  prior_intercept = NULL, prior_sigma = NULL, prior_nu = NULL,
-  prior_tau = NULL, centerx = TRUE, scalex = FALSE, chains = 4,
-  iter = 5000, refresh = 500, pars = NULL,
-  control = list(adapt_delta = 0.9, max_treedepth = 15), ...)
+stan_icar(
+  formula,
+  slx,
+  re,
+  data,
+  C,
+  family = gaussian(),
+  prior = NULL,
+  prior_intercept = NULL,
+  prior_sigma = NULL,
+  prior_nu = NULL,
+  prior_tau = NULL,
+  centerx = TRUE,
+  scalex = FALSE,
+  chains = 4,
+  iter = 5000,
+  refresh = 500,
+  pars = NULL,
+  control = list(adapt_delta = 0.9, max_treedepth = 15),
+  ...
+)
 }
 \arguments{
 \item{formula}{A model formula, following the R \link[stats]{formula} syntax. If an offset term is provided for a Poisson model, it will be transformed to the log scale (and it will be ignored if its not a Poisson model); to add an offset term \code{E} to a formula use \code{y ~ offset(E)}. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.}

@@ -12,8 +12,7 @@
 \alias{posterior_predict.geostan_fit}
 \title{geostan_fit methods}
 \usage{
-\method{print}{geostan_fit}(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975),
-  digits = 3, ...)
+\method{print}{geostan_fit}(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digits = 3, ...)
 
 \method{plot}{geostan_fit}(x, pars, plotfun = "stan_plot", ...)
 
@@ -29,8 +28,7 @@
 
 \method{spatial}{geostan_fit}(object, summary = TRUE, ...)
 
-\method{posterior_predict}{geostan_fit}(object, draws, summary = FALSE,
-  ...)
+\method{posterior_predict}{geostan_fit}(object, draws, summary = FALSE, ...)
 }
 \arguments{
 \item{x}{A fitted model object of class \code{geostan_fit}.}

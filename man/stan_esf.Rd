@@ -17,13 +17,33 @@ Griffith, D., and Chun, Y. (2014). Spatial autocorrelation and spatial filtering
 Piironen, J and Vehtari, A. (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In Electronic Journal of Statistics, 11(2):5018-5051. https://projecteuclid.org/euclid.ejs/1513306866
 }
 \usage{
-stan_esf(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2,
-  family = gaussian(), p0, prior = NULL, prior_intercept = NULL,
-  prior_sigma = NULL, prior_rhs = NULL, prior_nu = NULL,
-  prior_tau = NULL, centerx = TRUE, scalex = FALSE, chains = 4,
-  iter = 5000, refresh = 500, pars = NULL,
+stan_esf(
+  formula,
+  slx,
+  re,
+  data,
+  C,
+  EV,
+  nsa = FALSE,
+  threshold = 0.2,
+  family = gaussian(),
+  p0,
+  prior = NULL,
+  prior_intercept = NULL,
+  prior_sigma = NULL,
+  prior_rhs = NULL,
+  prior_nu = NULL,
+  prior_tau = NULL,
+  centerx = TRUE,
+  scalex = FALSE,
+  chains = 4,
+  iter = 5000,
+  refresh = 500,
+  pars = NULL,
   control = list(adapt_delta = 0.99, max_treedepth = 15),
-  zero.policy = TRUE, ...)
+  zero.policy = TRUE,
+  ...
+)
 }
 \arguments{
 \item{formula}{A model formula, following the R \link[stats]{formula} syntax. If an offset term is provide for a Poisson model, \code{log(offset)} is passed to the Stan model. (To add an offset term \code{E} to your model formula use \code{y ~ offset(E)}).  Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.}

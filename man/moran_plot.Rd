@@ -4,8 +4,18 @@
 \alias{moran_plot}
 \title{Moran plot}
 \usage{
-moran_plot(x, w, main = "Moran Plot", cex = 1, lwd = 1,
-  ylab = "Spatial Lag", ..., pch = 20, col = "darkred")
+moran_plot(
+  x,
+  w,
+  main = "Moran Plot",
+  cex = 1,
+  lwd = 1,
+  ylab = "Spatial Lag",
+  ...,
+  pch = 20,
+  col = "darkred",
+  bty = "n"
+)
 }
 \arguments{
 \item{x}{A numeric vector.}
@@ -25,6 +35,8 @@ moran_plot(x, w, main = "Moran Plot", cex = 1, lwd = 1,
 \item{pch}{Base R plot symbol for points. Defaults to \code{20}.}
 
 \item{col}{Symbol color. Defaults to \code{darkred}.}
+
+\item{bty}{Type of box to draw around the plot; defaults to "n", alternative is the usual plot default of "o".}
 }
 \value{
 Returns a scatter plot with the given x values on the x-axis and their spatially lagged values on the y-axis (the Moran plot).

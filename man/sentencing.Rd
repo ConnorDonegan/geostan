@@ -4,7 +4,8 @@
 \name{sentencing}
 \alias{sentencing}
 \title{Florida state prison sentencing counts by county, 1905-1910}
-\format{A spatial polygons data frame with the following attributes:
+\format{
+A spatial polygons data frame with the following attributes:
 \describe{
  \item{name}{County name}
  \item{wpop}{White population total for years 1905-1910}
@@ -14,7 +15,8 @@
  \item{pct_ag_1910}{Percent of land area in agriculture, 1910}
  \item{expected_sents}{Expected sentences given demographic information and state level sentencing rates by race}
  \item{sir_raw}{Standardized incident ratio (observed/expected sentences)}
-}}
+}
+}
 \source{
 Donegan, Connor. "The Making of Florida's 'Criminal Class': Race, Moderntiy and the Convict Leasing Program." Florida Historical Quarterly 97.4 (2019): 408-434.
  \url{10.31219/osf.io/2wj7s}.

@@ -37,6 +37,7 @@ mc <- function(x, w) {
 #' @param ylab Label for the y-axis. Default is "Spatial Lag".
 #' @param pch Base R plot symbol for points. Defaults to \code{20}.
 #' @param col Symbol color. Defaults to \code{darkred}.
+#' @param bty Type of box to draw around the plot; defaults to "n", alternative is the usual plot default of "o".
 #' @param ... additional arugents will be pased to plot.
 #' @return Returns a scatter plot with the given x values on the x-axis and their spatially lagged values on the y-axis (the Moran plot).
 #' @examples
@@ -45,7 +46,7 @@ mc <- function(x, w) {
 #' w <- shape2mat(turmoil, snap=1) #snap=1 catches bad borders (IL-WI)
 #' moran_plot(x, w)
 #'
-moran_plot <- function(x, w, main = "Moran Plot", cex = 1, lwd = 1, ylab = "Spatial Lag", ..., pch = 20, col = "darkred") {
+moran_plot <- function(x, w, main = "Moran Plot", cex = 1, lwd = 1, ylab = "Spatial Lag", ..., pch = 20, col = "darkred", bty = "n") {
     lagx <- as.numeric(w %*% x)
     sub <- paste0("MC =", round(mc(x, w),3))
     plot(x, lagx, main = main, cex = cex, lwd = lwd, ylab = ylab, pch = pch, col = col, ...)
