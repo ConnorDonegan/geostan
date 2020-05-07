@@ -43,7 +43,7 @@
 #' \item{re}{A list containing \code{re}, the random effects (varying intercepts) formula if provided, and 
 #'  \code{Data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 #' \item{priors}{Prior specifications.}
-#' \item{spatial}{A data frame with the name of the spatial component parameter ("phi") and method ("ICAR")}
+#' \item{spatial}{NA, slot is maintained for use in \texttt{geostan_fit} methods.}
 #' }
 #' 
 #' @author Connor Donegan, \email{Connor.Donegan@UTDallas.edu}
@@ -188,7 +188,7 @@ stan_glm <- function(formula, slx, re, data, C, family = gaussian(),
   if (has_re) {
       out$spatial <- data.frame(par = "alpha_re", method = "Exchangeable")
   } else {
-      out$spatial <- data.frame(par = NA, method = "None")
+      out$spatial <- data.frame(par = "none", method = "None")
       }
   class(out) <- append("geostan_fit", class(out))
   return(out)
