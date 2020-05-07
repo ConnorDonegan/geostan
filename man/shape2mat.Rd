@@ -10,6 +10,8 @@ Tiefelsdorf, M., Griffith, D. A., Boots, B. (1999). "A variance-stabilizing codi
 shape2mat(
   shape,
   style = "B",
+  t = 1,
+  st.type = c("lag", "contemp"),
   zero.policy = TRUE,
   queen = TRUE,
   lambda = 2,
@@ -20,6 +22,10 @@ shape2mat(
 \item{shape}{An object of class \code{sf}, \code{SpatialPolygons} or \code{SpatialPolygonsDataFrame}.}
 
 \item{style}{What kind of coding scheme should be used to create the spatial connectivity matrix? Defaults to "B" for binary; use "W" for row-standardized weights; "C" for globally standardized and "S" for the Tiefelsdorf et al.'s (1999) variance-stabilizing scheme. This is passed internally to \link[spdep]{nb2mat}. Inverse distance weighting ("IDW") is also available; IDW will calculate distances between polygon centroids and raise the distances to a power of \code{lambda} (by default \code{lambda=2}).}
+
+\item{t}{Number of time periods.}
+
+\item{st.type}{For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and "contemp" for contemporaneous specification.}
 
 \item{zero.policy}{Are regions with zero neighbors allowed? Default \code{zero.policy = TRUE} (allowing regions to have zero neighbors). Also passed to \link[spdep]{nb2mat}.}
 
