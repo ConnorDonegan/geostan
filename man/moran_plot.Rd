@@ -5,49 +5,49 @@
 \title{Moran plot}
 \usage{
 moran_plot(
-  x,
+  y,
   w,
-  main = "Moran Plot",
-  cex = 1,
-  lwd = 1,
+  xlab = "y",
   ylab = "Spatial Lag",
-  ...,
   pch = 20,
   col = "darkred",
-  bty = "n"
+  size = 2,
+  alpha = 1,
+  lwd = 0.5
 )
 }
 \arguments{
-\item{x}{A numeric vector.}
+\item{y}{A numeric vector of length n.}
 
-\item{w}{A spatial connectivity matrix.}
+\item{w}{An n x n spatial connectivity matrix.}
 
-\item{main}{Title for the plot.}
+\item{xlab}{Label for the x-axis.}
 
-\item{cex}{Number indicating the amount by which plotting text and symbols should be scaled relative to the default. Default is 1, 1.5 is 50 percent larger, 0.5 is 50 percent smaller, etc.}
+\item{ylab}{Label for the y-axis.}
 
-\item{lwd}{linewidth. Default value is 1.}
+\item{pch}{Symbol type.}
 
-\item{ylab}{Label for the y-axis. Default is "Spatial Lag".}
+\item{col}{Symbol color.}
 
-\item{...}{additional arugents will be pased to plot.}
+\item{size}{Symbol size.}
 
-\item{pch}{Base R plot symbol for points. Defaults to \code{20}.}
+\item{alpha}{Symbol transparency.}
 
-\item{col}{Symbol color. Defaults to \code{darkred}.}
-
-\item{bty}{Type of box to draw around the plot; defaults to "n", alternative is the usual plot default of "o".}
+\item{lwd}{Width of the regression line.}
 }
 \value{
-Returns a scatter plot with the given x values on the x-axis and their spatially lagged values on the y-axis (the Moran plot).
+Returns an object of class \code{gg}, a scatter plot with y on the x-axis and the spatially lagged values on the y-axis (i.e. a Moran plot).
 }
 \description{
 Plots a set of values against their mean spatially lagged values and gives the Moran coefficient as a measure of spatial autocorrelation.
 }
+\details{
+For details on the symbol parameters see the documentation for \link[ggplot2]{geom_point}.
+}
 \examples{
 data(turmoil)
-x <- turmoil$unemployment
+y <- turmoil$unemployment
 w <- shape2mat(turmoil, snap=1) #snap=1 catches bad borders (IL-WI)
-moran_plot(x, w)
+moran_plot(y, w)
 
 }

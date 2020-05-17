@@ -26,34 +26,55 @@ mc <- function(x, w) {
 
 #' Moran plot
 #'
-#' @description Plots a set of values against their mean spatially lagged values and gives the Moran coefficient as a measure of spatial autocorrelation.
+#' @description Plots a set of values against their mean spatially lagged values and gives the Moran coefficient as a measure of spatial autocorrelation. 
 #' @export
-#' @importFrom graphics plot mtext abline
-#' @param x A numeric vector.
-#' @param w A spatial connectivity matrix.
-#' @param main Title for the plot.
-#' @param cex Number indicating the amount by which plotting text and symbols should be scaled relative to the default. Default is 1, 1.5 is 50 percent larger, 0.5 is 50 percent smaller, etc.
-#' @param lwd linewidth. Default value is 1.
-#' @param ylab Label for the y-axis. Default is "Spatial Lag".
-#' @param pch Base R plot symbol for points. Defaults to \code{20}.
-#' @param col Symbol color. Defaults to \code{darkred}.
-#' @param bty Type of box to draw around the plot; defaults to "n", alternative is the usual plot default of "o".
-#' @param ... additional arugents will be pased to plot.
-#' @return Returns a scatter plot with the given x values on the x-axis and their spatially lagged values on the y-axis (the Moran plot).
+#' @import ggplot2
+#' @param y A numeric vector of length n.
+#' @param w An n x n spatial connectivity matrix.
+#' @param xlab Label for the x-axis. 
+#' @param ylab Label for the y-axis.
+#' @param pch Symbol type.
+#' @param col Symbol color. 
+#' @param size Symbol size.
+#' @param alpha Symbol transparency.
+#' @param lwd Width of the regression line. 
+#' @details For details on the symbol parameters see the documentation for \link[ggplot2]{geom_point}. 
+#' @return Returns an object of class \code{gg}, a scatter plot with y on the x-axis and the spatially lagged values on the y-axis (i.e. a Moran plot).
 #' @examples
 #' data(turmoil)
-#' x <- turmoil$unemployment
+#' y <- turmoil$unemployment
 #' w <- shape2mat(turmoil, snap=1) #snap=1 catches bad borders (IL-WI)
-#' moran_plot(x, w)
+#' moran_plot(y, w)
 #'
-moran_plot <- function(x, w, main = "Moran Plot", cex = 1, lwd = 1, ylab = "Spatial Lag", ..., pch = 20, col = "darkred", bty = "n") {
-    lagx <- as.numeric(w %*% x)
-    sub <- paste0("MC =", round(mc(x, w),3))
-    plot(x, lagx, main = main, cex = cex, lwd = lwd, ylab = ylab, pch = pch, col = col, bty = bty, ...)
-    mtext(side=3, cex=1.5, sub)
-    abline(lm(lagx ~ x))
-    abline(h = mean(lagx), lty = "dotted")
-    abline(v = mean(x), lty = "dotted")
+moran_plot <- function(y, w, xlab = "y", ylab = "Spatial Lag", pch = 20, col = "darkred", size = 2, alpha = 1, lwd = 0.5) {
+    if (class(y) != "numeric") stop("y must be a numeric vector")
+    if (class(w) != "matrix") stop("w must be an n x n matrix")
+    ylag <- as.numeric(w %*% y)
+    sub <- paste0("MC = ", round(mc(y, w),3))
+    ggplot(data.frame(y = y,
+                      ylag = ylag)) +
+    geom_hline(yintercept = mean(ylag),
+               lty = 3) +
+    geom_vline(xintercept = mean(y),
+               lty = 3) +
+    geom_point(
+        pch = 20,
+        colour = col,
+        size = size,
+        alpha = alpha,
+        aes(x = y,
+            y = ylag)
+    ) +
+        geom_smooth(aes(x = y,
+                        y = ylag),
+                method = lm,
+                lwd = lwd,
+                col = "black",
+                se = FALSE) +
+    labs(x = xlab,
+         y = ylab,
+         subtitle = sub) +
+    theme_classic() 
     }
 
 #' Extract eigenfunctions of a connectivity matrix for spatial filtering

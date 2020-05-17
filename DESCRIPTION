@@ -1,5 +1,5 @@
 Package: geostan
-Title: Bayesian Geospatial Analysis with Stan
+Title: Bayesian Spatial Analysis with Stan
 Version: 0.0.1
 Year: 2020
 Authors@R: 
@@ -17,7 +17,7 @@ Depends:
 Imports:
     spdep,
     sf,
-    ggplot2,
+    ggplot2 (>= 3.0.0),
     bayesplot,
     methods,
     graphics,
