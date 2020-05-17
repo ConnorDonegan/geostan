@@ -43,7 +43,7 @@
 #' \item{re}{A list containing \code{re}, the random effects (varying intercepts) formula if provided, and 
 #'  \code{Data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 #' \item{priors}{Prior specifications.}
-#' \item{spatial}{NA, slot is maintained for use in \texttt{geostan_fit} methods.}
+#' \item{spatial}{NA, slot is maintained for use in \code{geostan_fit} methods.}
 #' }
 #' 
 #' @author Connor Donegan, \email{Connor.Donegan@UTDallas.edu}
