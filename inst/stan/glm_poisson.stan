@@ -34,8 +34,14 @@ generated quantities {
   for (i in 1:n) {
     fitted[i] = exp(f[i]);
     residual[i] = fitted[i] - y[i];
-    yrep[i] = poisson_log_rng(f[i]);
     log_lik[i] = poisson_log_lpmf(y[i] | f[i]);
+    if (f[i] > 20) {
+       print("f[i] too large (>20) for poisson_log_rng");
+       yrep[i] = -1;
+       } else {
+    yrep[i] = poisson_log_rng(f[i]);
+    }
   }
 }
+
 
