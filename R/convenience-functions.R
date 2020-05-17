@@ -49,7 +49,7 @@ mc <- function(x, w) {
 moran_plot <- function(x, w, main = "Moran Plot", cex = 1, lwd = 1, ylab = "Spatial Lag", ..., pch = 20, col = "darkred", bty = "n") {
     lagx <- as.numeric(w %*% x)
     sub <- paste0("MC =", round(mc(x, w),3))
-    plot(x, lagx, main = main, cex = cex, lwd = lwd, ylab = ylab, pch = pch, col = col, ...)
+    plot(x, lagx, main = main, cex = cex, lwd = lwd, ylab = ylab, pch = pch, col = col, bty = bty, ...)
     mtext(side=3, cex=1.5, sub)
     abline(lm(lagx ~ x))
     abline(h = mean(lagx), lty = "dotted")
@@ -102,7 +102,7 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' @param shape An object of class \code{sf}, \code{SpatialPolygons} or \code{SpatialPolygonsDataFrame}.
 #' @param style What kind of coding scheme should be used to create the spatial connectivity matrix? Defaults to "B" for binary; use "W" for row-standardized weights; "C" for globally standardized and "S" for the Tiefelsdorf et al.'s (1999) variance-stabilizing scheme. This is passed internally to \link[spdep]{nb2mat}. Inverse distance weighting ("IDW") is also available; IDW will calculate distances between polygon centroids and raise the distances to a power of \code{lambda} (by default \code{lambda=2}).
 #' @param t Number of time periods.
-#' @param st.type For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and "contemp" for contemporaneous specification.
+#' @param st.type For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and (the default) "contemp" for contemporaneous specification.
 #' @param lambda For inverse distance weighting (IDW); the connectivity matrix will be \code{1/D^lambda} with \code{D} the matrix of distances between polygon centroids. By default \code{lambda = 2}.
 #' @param zero.policy Are regions with zero neighbors allowed? Default \code{zero.policy = TRUE} (allowing regions to have zero neighbors). Also passed to \link[spdep]{nb2mat}.
 #' @param queen Passed to \link[spdep]{poly2nb} to set the contiguity condition. Defaults to \code{TRUE} so that a single shared boundary point between polygons is sufficient for them to be considered neighbors.
@@ -111,9 +111,11 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #'
 #' @source
 #'
+#' Griffith, D. A., Chun, Y., Li, B. (2020). Spatial Regression Analysis Using Eigenvector Spatial Filtering. Academic Press, Ch. 8.
+#' 
 #' Tiefelsdorf, M., Griffith, D. A., Boots, B. (1999). "A variance-stabilizing coding scheme for spatial link matrices." Environment and Planning A, 31, pp. 165-180.
 #'
-shape2mat <- function(shape, style = "B", t = 1, st.type = c("lag", "contemp"), zero.policy = TRUE, queen = TRUE, lambda = 2, snap = sqrt(.Machine$double.eps)) {
+shape2mat <- function(shape, style = "B", t = 1, st.type = "contemp", zero.policy = TRUE, queen = TRUE, lambda = 2, snap = sqrt(.Machine$double.eps)) {
   shape_class <- class(shape)
   if(!any(c("sf", "SpatialPolygonsDataFrame", "SpatialPolygons") %in% shape_class)) stop("Shape must be of class SpatialPolygonsDataFrame or sf (simple features).")
   if(any(c("SpatialPolygonsDataFrame", "SpatialPolygons") %in% shape_class)) {
@@ -135,17 +137,17 @@ shape2mat <- function(shape, style = "B", t = 1, st.type = c("lag", "contemp"), 
   }
   attributes(w)$dimnames <- NULL
   if (t > 1) { # [option currently only makes sense with style = "B"]
-      ## binary temporal connectivity matrix 
-      nt <- length(unique(wvLong$year))
-      Ct <- matrix(0, nrow = nt, ncol = nt)
-      for (i in 2:nt) Ct[i, i-1] <- Ct[i-1, i] <- 1
+      ## binary temporal connectivity matrix
+      s <- nrow(w)
+      Ct <- matrix(0, nrow = t, ncol = t)
+      for (i in 2:t) Ct[i, i-1] <- Ct[i-1, i] <- 1
       ## space-time lag model
-      if (st.type == "lag") w = kronecker(Ct, w)
+      if (st.type == "lag") w = kronecker(Ct, (w + diag(s)))
       if (st.type == "contemp") {
           ## create identify matrices for space and time
           It <- diag(1, nrow = t)
-          Is <- diag(1, nrow = nrow(w))
-          w <- kronecker(It, w, FUN = "*") + kronecker(Ct, Is, FUN = "*")
+          Is <- diag(1, nrow = s)
+          w <- kronecker(It, w) + kronecker(Ct, Is)
       }
       }
   return(w)
