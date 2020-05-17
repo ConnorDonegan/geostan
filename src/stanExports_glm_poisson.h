@@ -53,7 +53,7 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(61, 0, "start", "parts/glm_model.stan");
     reader.add_event(70, 9, "end", "parts/glm_model.stan");
     reader.add_event(70, 19, "restart", "model_glm_poisson");
-    reader.add_event(93, 40, "end", "model_glm_poisson");
+    reader.add_event(99, 46, "end", "model_glm_poisson");
     return reader;
 }
 #include <stan_meta_header.hpp>
@@ -816,15 +816,29 @@ public:
                             (get_base1(fitted, i, "fitted", 1) - get_base1(y, i, "y", 1)), 
                             "assigning variable residual");
                 current_statement_begin__ = 88;
-                stan::model::assign(yrep, 
-                            stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                            poisson_log_rng(get_base1(f, i, "f", 1), base_rng__), 
-                            "assigning variable yrep");
-                current_statement_begin__ = 89;
                 stan::model::assign(log_lik, 
                             stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                             poisson_log_log(get_base1(y, i, "y", 1), get_base1(f, i, "f", 1)), 
                             "assigning variable log_lik");
+                current_statement_begin__ = 89;
+                if (as_bool(logical_gt(get_base1(f, i, "f", 1), 20))) {
+                    current_statement_begin__ = 90;
+                    if (pstream__) {
+                        stan_print(pstream__,"f[i] too large (>20) for poisson_log_rng");
+                        *pstream__ << std::endl;
+                    }
+                    current_statement_begin__ = 91;
+                    stan::model::assign(yrep, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                -(1), 
+                                "assigning variable yrep");
+                } else {
+                    current_statement_begin__ = 93;
+                    stan::model::assign(yrep, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                poisson_log_rng(get_base1(f, i, "f", 1), base_rng__), 
+                                "assigning variable yrep");
+                }
             }
             // validate, write generated quantities
             current_statement_begin__ = 75;

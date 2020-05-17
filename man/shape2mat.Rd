@@ -4,6 +4,8 @@
 \alias{shape2mat}
 \title{Create a spatial weights matrix from a spatial object of class \code{sf} or \code{SpatialPolygons} or \code{SpatialPolygonsDataFrame}}
 \source{
+Griffith, D. A., Chun, Y., Li, B. (2020). Spatial Regression Analysis Using Eigenvector Spatial Filtering. Academic Press, Ch. 8.
+
 Tiefelsdorf, M., Griffith, D. A., Boots, B. (1999). "A variance-stabilizing coding scheme for spatial link matrices." Environment and Planning A, 31, pp. 165-180.
 }
 \usage{
@@ -11,7 +13,7 @@ shape2mat(
   shape,
   style = "B",
   t = 1,
-  st.type = c("lag", "contemp"),
+  st.type = "contemp",
   zero.policy = TRUE,
   queen = TRUE,
   lambda = 2,
@@ -25,7 +27,7 @@ shape2mat(
 
 \item{t}{Number of time periods.}
 
-\item{st.type}{For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and "contemp" for contemporaneous specification.}
+\item{st.type}{For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and (the default) "contemp" for contemporaneous specification.}
 
 \item{zero.policy}{Are regions with zero neighbors allowed? Default \code{zero.policy = TRUE} (allowing regions to have zero neighbors). Also passed to \link[spdep]{nb2mat}.}
 
