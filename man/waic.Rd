@@ -19,3 +19,15 @@ A vector of length 3 with the WAIC, a rough measure of the effective number of p
 \description{
 Widely Application Information Criteria (WAIC) for model evalution
 }
+\examples{
+
+library(sf)
+data(ohio)
+fit <- stan_esf(gop_growth ~ 1, data = ohio, C = shape2mat(C),
+                chains = 1, iter = 500)
+waic(fit)
+
+}
+\seealso{
+\code{\link{loo}}
+}

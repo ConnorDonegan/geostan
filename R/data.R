@@ -1,36 +1,42 @@
 #' Growth in the Republican Presidential vote share, 2012 to 2016.
 #'
-#' @source MIT Election Data and Science Lab, 2018, "County Presidential Election Returns 2000-2016", \url{https://doi.org/10.7910/DVN/VOQCHQ}, Harvard Dataverse, V1, UNF:6:ZaxsDvp6RsFitno8ZYlK7w== [fileUNF]
+#' @source
 #'
+#' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. https://doi.org/10.1016/j.spasta.2020.100450
+#' 
+#' MIT Election Data and Science Lab, 2018, "County Presidential Election Returns 2000-2016", \url{https://doi.org/10.7910/DVN/VOQCHQ}, Harvard Dataverse, V1, UNF:6:ZaxsDvp6RsFitno8ZYlK7w== [fileUNF]
+#' 
 #' US Bureau of Labor Statistics, Local Force By County, 2016 Annual Averages. \url{https://www.bls.gov/lau/#cntyaa}
 #'
 #' US Census Bureau, 2016. American Community Survey. B01003, B01003, B15003.
 #'
 #' Kyle Walker, 2018. Tidycensus. \url{https://walkerke.github.io/tidycensus/index.html}
 #'
-#' @description A simple features spatial dataset containing county attributes and 2016 Presidential election data for Illinois, Indiana, Michigan, Ohio, Pennsylvania and Wisconsin.
+#' @description A simple features spatial dataset containing county attributes and Presidential election data for Ohio.
 #'  This is a processed version of the MIT "County Presidential Election Returns 2000-2016" data set augmented with data from the Census Bureau and Bureau of Labor Statistics.
 #'
 #' @format A simple feature collection including the following attributes:
 #' \describe{
 #'  \item{GEOID}{Six digit combined state and county FIPS code}
-#'  \item{state_po}{Two digit state abbreviation}
+#'  \item{ALAND}{Land area in square miles}
 #'  \item{county}{County name}
-#'  \item{gop_growth}{Change in the Republican vote share from historic (2000 - 2012) average vote share to 2016 vote share (i.e. (trump_2016/total_2016) - historic_gop)}
-#'  \item{historic_gop}{Average Republican vote share, 2000 to 2012}
+#'  \item{gop_growth}{Change in the Republican vote share from historic (2000 - 2012) average vote share to 2016 vote share (i.e. (trump_2016/total_2016) - historic_gop). Data only includes Democratic and Republican votes (i.e. two-party vote share).}
+#'  \item{historic_gop}{Average Republican share of all major party votes, 2000 to 2012}
 #'  \item{trump_2016}{Number of votes for Donald Trump in 2016}
-#'  \item{total_2016}{Total number of votes in 2016}
-#'  \item{population}{ACS 2016 5 year population estimate (in thousands).}
+#'  \item{total_2016}{Total number of Democratic and Republican votes in 2016}
+#'  \item{population}{ACS 2016 5 year population estimate.}
+#' \item{pop_density}{Population per square mile (population / ALAND)}
 #'  \item{college_educated}{ACS 2016 5 year estimate of the percent of the population 25 and older with a bachelors degree or higher}
 #'  \item{white_nonhispanic}{ACS 2016 5 year estimate of the percent of non-hispanic whites in the population}
 #'  \item{unemployment}{Local area unemployment estimate from the Bureau of Labor Statistics, 2016}
+#' \item{geometry}{County boundaries (polygons) in simple features format}
 #' }
 #' @examples
 #' \dontrun{
 #' library(sf)
-#' data(turmoil)
+#' data(ohio)
 #' }
-"turmoil"
+"ohio"
 
 #' Florida state prison sentencing counts by county, 1905-1910
 #'

@@ -10,13 +10,13 @@ edges(w)
 \item{w}{A connectivity matrix where connection between two nodes is indicated by non-zero entries.}
 }
 \value{
-Returns a \code{data.frame} with two columns representing connected pairs of nodes (polygons, observational units); only unique pairs of nodes are included.
+Returns a \code{data.frame} with two columns representing connected pairs of nodes; only unique pairs of nodes are included.
 }
 \description{
 Creates a list of unique connected nodes following the graph representation of a spatial connectivity matrix.
 }
 \details{
-This is used internally for  \link[geostan]{stan_icar} and \link[geostan]{stan_bym2}; it is also needed to create the scaling factor for the \code{stan_bym2}.
+This is used internally for  \link[geostan]{stan_icar} and \link[geostan]{stan_bym2}; it is also needed to create the scaling factor for \code{stan_bym2}.
 }
 \examples{
 

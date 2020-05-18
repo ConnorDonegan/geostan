@@ -7,7 +7,7 @@
 student_t()
 }
 \value{
-An object of class family
+An object of class \code{family}
 }
 \description{
 create a family object for the Student t likelihood

@@ -19,9 +19,9 @@ The Moran coefficient, a measure of spatial autocorrelation (also known as Globa
 }
 \examples{
 library(sf)
-data(turmoil)
-w <- shape2mat(turmoil, snap = 1) # snap=1 catches some misaligned borders (WI-IL)
-x <- turmoil$unemployment
+data(ohio)
+w <- shape2mat(ohio, snap = 1) # snap=1 catches some misaligned borders (WI-IL)
+x <- ohio$unemployment
 mc(x, w)
 
 }

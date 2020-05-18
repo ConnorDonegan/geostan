@@ -43,3 +43,17 @@ A spatial connectivity matrix
 \description{
 A wrapper function for a string of \code{spdep} (and other) functions required to convert spatail objects to connectivity matrices
 }
+\examples{
+data(ohio)
+C <- shape2mat(ohio, "B")
+W <- shape2mat(ohio, "W")
+
+## for space-time data
+## if you have multiple years with same neighbors
+## provide the geography (for a single year!) and number of years \code{t}
+Cst <- shape2mat(ohio, t = 5)
+
+}
+\seealso{
+\code{\link{spdep}}
+}

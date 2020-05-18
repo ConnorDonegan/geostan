@@ -60,15 +60,14 @@ Methods for fitted geostan models: extract residuals, fitted values, posterior p
 \dontrun{
 library(geostan)
 library(sf)
-data(turmoil)
-ohio <- turmoil[which(state_po == "OH"), ]
-fit <- stan_esf(gop_growth ~ historic_gop + log(population), shape = ohio, chains = 1, iter = 600)
+data(ohio)
+fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density), data = ohio, C = shape2mat(ohio), chains = 1, iter = 600)
 
 # print and plot results
 print(fit)
 plot(fit)
 plot(fit, pars = c("alpha", "beta")
-plot(fit, pars = c("b_historic_gop", "b_log(population)"), plotfun = "hist", bins = 30)
+plot(fit, pars = c("b_historic_gop", "b_log(pop_density)"), plotfun = "hist", bins = 30)
 plot(fit, plotfun = "trace")
 
 # extract posterior samples

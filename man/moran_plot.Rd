@@ -45,9 +45,9 @@ Plots a set of values against their mean spatially lagged values and gives the M
 For details on the symbol parameters see the documentation for \link[ggplot2]{geom_point}.
 }
 \examples{
-data(turmoil)
-y <- turmoil$unemployment
-w <- shape2mat(turmoil, snap=1) #snap=1 catches bad borders (IL-WI)
+data(ohio)
+y <- ohio$unemployment
+w <- shape2mat(ohio)
 moran_plot(y, w)
 
 }

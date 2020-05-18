@@ -28,3 +28,9 @@ Extract eigenfunctions of a connectivity matrix for spatial filtering
 \details{
 Returns a set of EVs limited to those with |MC| > \code{threshold} if \code{nsa = TRUE} or MC > \code{threshold} if \code{nsa = FALSE}, along with corresponding eigenvalues (optionally). Given a spatial connectivity matrix C, the function returns eigenvectors from a transformed spatial weights matrix.
 }
+\examples{
+data(ohio)
+C <- shape2mat(ohio, style = "B")
+EV <- make_EV(C)
+
+}

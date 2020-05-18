@@ -8,9 +8,9 @@
 #'
 #' @examples
 #' library(sf)
-#' data(turmoil)
-#' w <- shape2mat(turmoil, snap = 1) # snap=1 catches some misaligned borders (WI-IL)
-#' x <- turmoil$unemployment
+#' data(ohio)
+#' w <- shape2mat(ohio, snap = 1) # snap=1 catches some misaligned borders (WI-IL)
+#' x <- ohio$unemployment
 #' mc(x, w)
 #'
 mc <- function(x, w) {
@@ -41,9 +41,9 @@ mc <- function(x, w) {
 #' @details For details on the symbol parameters see the documentation for \link[ggplot2]{geom_point}. 
 #' @return Returns an object of class \code{gg}, a scatter plot with y on the x-axis and the spatially lagged values on the y-axis (i.e. a Moran plot).
 #' @examples
-#' data(turmoil)
-#' y <- turmoil$unemployment
-#' w <- shape2mat(turmoil, snap=1) #snap=1 catches bad borders (IL-WI)
+#' data(ohio)
+#' y <- ohio$unemployment
+#' w <- shape2mat(ohio)
 #' moran_plot(y, w)
 #'
 moran_plot <- function(y, w, xlab = "y", ylab = "Spatial Lag", pch = 20, col = "darkred", size = 2, alpha = 1, lwd = 0.5) {
@@ -92,6 +92,11 @@ moran_plot <- function(y, w, xlab = "y", ylab = "Spatial Lag", pch = 20, col = "
 #'
 #' @return A \code{data.frame} of eigenvectors for spatial filtering. If \code{values=TRUE} then a named list is returned with elements \code{eigenvectors} and \code{eigenvalues}.
 #'
+#' @examples
+#' data(ohio)
+#' C <- shape2mat(ohio, style = "B")
+#' EV <- make_EV(C)
+#' 
 make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
   if (!isSymmetric(C)) C <- (t(C) + C) / 2
   N <- nrow(C)
@@ -129,13 +134,23 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' @param queen Passed to \link[spdep]{poly2nb} to set the contiguity condition. Defaults to \code{TRUE} so that a single shared boundary point between polygons is sufficient for them to be considered neighbors.
 #' @param snap Passed to \link[spdep]{poly2nb}; "boundary points less than ‘snap’ distance apart are considered to indicate contiguity." 
 #' @return A spatial connectivity matrix
-#'
+#' @seealso \code{\link{spdep}}
 #' @source
 #'
 #' Griffith, D. A., Chun, Y., Li, B. (2020). Spatial Regression Analysis Using Eigenvector Spatial Filtering. Academic Press, Ch. 8.
 #' 
 #' Tiefelsdorf, M., Griffith, D. A., Boots, B. (1999). "A variance-stabilizing coding scheme for spatial link matrices." Environment and Planning A, 31, pp. 165-180.
 #'
+#' @examples
+#' data(ohio)
+#' C <- shape2mat(ohio, "B")
+#' W <- shape2mat(ohio, "W")
+#'
+#' ## for space-time data
+#' ## if you have multiple years with same neighbors
+#' ## provide the geography (for a single year!) and number of years \code{t}
+#' Cst <- shape2mat(ohio, t = 5)
+#' 
 shape2mat <- function(shape, style = "B", t = 1, st.type = "contemp", zero.policy = TRUE, queen = TRUE, lambda = 2, snap = sqrt(.Machine$double.eps)) {
   shape_class <- class(shape)
   if(!any(c("sf", "SpatialPolygonsDataFrame", "SpatialPolygons") %in% shape_class)) stop("Shape must be of class SpatialPolygonsDataFrame or sf (simple features).")
@@ -178,7 +193,7 @@ shape2mat <- function(shape, style = "B", t = 1, st.type = "contemp", zero.polic
 #'
 #' @export
 #' @description create a family object for the Student t likelihood
-#' @return An object of class family
+#' @return An object of class \code{family}
 #'
 student_t <- function() {
   family <- list(family = "student_t", link = 'identity')
@@ -194,6 +209,15 @@ student_t <- function() {
 #' @param pointwise Logical, should a vector of values for each observation be returned? Default is \code{FALSE}.
 #' @param digits Defaults to 2. Round results to this many digits.
 #' @return A vector of length 3 with the WAIC, a rough measure of the effective number of parameters estimated by the model and log predictive density (lpd). If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
+#' @seealso \code{\link{loo}}
+#' @examples
+#'
+#' library(sf)
+#' data(ohio)
+#' fit <- stan_esf(gop_growth ~ 1, data = ohio, C = shape2mat(C),
+#'                 chains = 1, iter = 500)
+#' waic(fit)
+#' 
 waic <- function(fit, pointwise = FALSE, digits = 2) {
   ll <- as.matrix(fit, pars = "log_lik")
   nsamples <- nrow(ll)
@@ -272,9 +296,9 @@ exp_pars <- function(formula, data, C) {
 #' @description Creates a list of unique connected nodes following the graph representation of a spatial connectivity matrix.
 #' @export
 #' @param w A connectivity matrix where connection between two nodes is indicated by non-zero entries.
-#' @return Returns a \code{data.frame} with two columns representing connected pairs of nodes (polygons, observational units); only unique pairs of nodes are included.
+#' @return Returns a \code{data.frame} with two columns representing connected pairs of nodes; only unique pairs of nodes are included.
 #'
-#' @details This is used internally for  \link[geostan]{stan_icar} and \link[geostan]{stan_bym2}; it is also needed to create the scaling factor for the \code{stan_bym2}.
+#' @details This is used internally for  \link[geostan]{stan_icar} and \link[geostan]{stan_bym2}; it is also needed to create the scaling factor for \code{stan_bym2}.
 #' @examples
 #' 
 #' data(sentencing)
