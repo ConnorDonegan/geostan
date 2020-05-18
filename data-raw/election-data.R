@@ -1,9 +1,5 @@
-library(rgdal)
-library(sf)
-library(spdep)
-library(tidyverse)
-library(tidycensus)
-library(readxl)
+pkgs <- c("rgdal", "sf", "spdep", "tidyverse", "tidycensus", "readxl")
+lapply(pkgs, require, character.only = TRUE)
 
 # ACS variable search
 # V <- load_variables(2016, "acs5", cache = TRUE)
