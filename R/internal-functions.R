@@ -165,7 +165,7 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
   priors$nu <- c(alpha = 2, beta = 0.1)
   if ("rhs" %in% names(user_priors)) {
       scale_ev <- sd(EV[,1])
-      priors$rhs = c(slab_df = 15, slab_scale = scaling_factor * (scaley / scale_ev), scale_global = rhs_scale_global)
+      priors$rhs = c(slab_df = 15, slab_scale = 0.5 * (scaley / scale_ev), scale_global = rhs_scale_global)
       }
   for (i in seq_along(user_priors)) {
       if (!is.null(user_priors[[i]])) {
