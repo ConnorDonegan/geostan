@@ -12,10 +12,10 @@
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param C Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.
 #' @param family The likelihood function for the outcome variable. Current options are \code{family = poisson(link = "log")}, the default. 
-#' @param prior A \code{data.frame} or \code{matrix} with Student's t prior parameters for the coefficients. Provide three columns---degrees of freedom, location and scale---and a row for each variable in their order of appearance in the model formula. For now, if you want a Gaussian prior use very large degrees of freedom. Default priors are weakly informative relative to the scale of the data.
-#' @param prior_intercept A vector with degrees of freedom, location and scale parameters for a Student's t prior on the intercept; e.g. \code{prior_intercept = c(15, 0, 10)}.
+#' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
+#' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. When setting this prior, keep in mind that if \code{centerx = TRUE} (the default), then the intercept is the expected outcome when covariates are at their mean level.
 #' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts (in addition to the convolved random effects term). The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.
-#' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE} for computational efficiency. This alters the interpretation of the intercept term! See \code{Details}) below.
+#' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE} for computational efficiency. This alters the interpretation of the intercept term! See \code{Details}) below. It also makes setting the prior distribution for the interecept intuitive; if you choose not to center the data, then you may need to set \code{prior_intercept} manually.
 #' @param scalex Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
 #' @param iter Number of samples per chain. Default \code{iter = 5000}.
@@ -26,7 +26,8 @@
 #' @details If the \code{centerx = TRUE} (the default), then the intercept is the expected value of the outcome variable when 
 #'   all of the covariates are at their mean value. This often has interpretive value in itself
 #'   though it is the  default here for computational reasons.
-#'
+#' The default prior distribution for the intercept assumes that the covariates have been centered.
+#' 
 #'  The Stan code for the model follows Morris et al. (2019).
 #'    
 #'  The function returns the ICAR spatial component in the parameter \code{phi} and the exchangeable random effects in \code{theta}; both parameters are returned after being scaled; you can recover the convolved random effect by the sum \code{phi + theta} though it is not estimated that way. 

@@ -32,7 +32,7 @@ SLX <- function(f, DF, SWM, cx, sx) {
     x <- remove_intercept(model.matrix(f, DF))
     x <- apply(x, MARGIN = 2, FUN = scale, center = cx, scale = sx)
     Wx <- W %*% x
-    dimnames(Wx)[[2]] <- paste0("sl.", dimnames(Wx)[[2]])
+    dimnames(Wx)[[2]] <- paste0("w.", dimnames(Wx)[[2]])
     return(Wx)
    }
 
@@ -125,7 +125,7 @@ logit <- function(p) log(p/(1-p))
 #' Build list of priors
 #' @importFrom stats sd
 #' @noRd
-make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, scaling_factor = 2.5, link = c("identity", "log", "logit"), EV) {
+make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, scaling_factor = 2, link = c("identity", "log", "logit"), EV) {
   if (link == "log") {
 	  y <- log(y)
 	  y[is.infinite(y)] <- 0
@@ -135,10 +135,10 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
 	  y[is.infinite(y)] <- 0
   }
   scaley <- sd(y)
-  alpha_scale <- max(10 * sd(y), 5)
-  alpha_mean <- 0
-  alpha <- c(df = 15, location = alpha_mean, scale = alpha_scale)
-  alpha <- round(alpha)
+  alpha_scale <- max(5 * sd(y), 5)
+  alpha_mean <- mean(y)
+  alpha <- c(location = alpha_mean, scale = alpha_scale)
+  alpha <- round(alpha, 4)
   priors <- list(intercept = alpha)
   if (ncol(x)) {
     scalex <- vector(mode = "numeric", length = ncol(x))
@@ -152,21 +152,20 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
       scalex[x_bin] <- scalex_bin
     }
     beta_scale <- scaling_factor * (scaley / scalex)
+    beta_scale <- round(beta_scale, 4)
     beta_location <- rep(0, times = ncol(x))
-    beta_df <- rep(15, times = ncol(x))
-    priors$beta <- cbind(beta_df, beta_location, beta_scale)
-    priors$beta <- round(priors$beta, 4)
+    priors$beta <- cbind(beta_location, beta_scale)
     dimnames(priors$beta)[[1]] <- dimnames(x)[[2]]
   } else {
-      priors$beta <- matrix(0, nrow = 0, ncol = 3)
+      priors$beta <- matrix(0, nrow = 0, ncol = 2)
   }
   # the following will be ignored when when not needed (RE scale, resid scale, student T df)
   priors$alpha_tau <- round(c(df = 20, location = 0, scale = scaling_factor * scaley))
   priors$sigma <- round(c(df = 5, location = 0, scale = scaling_factor * scaley))
-  priors$nu <- c(alpha = 2, beta = .1)
+  priors$nu <- c(alpha = 2, beta = 0.1)
   if ("rhs" %in% names(user_priors)) {
-      scale.ev <- sd(EV[,1])
-      priors$rhs = c(slab_df = 15, slab_scale = scaling_factor * (scaley / scale.ev), scale_global = rhs_scale_global)
+      scale_ev <- sd(EV[,1])
+      priors$rhs = c(slab_df = 15, slab_scale = scaling_factor * (scaley / scale_ev), scale_global = rhs_scale_global)
       }
   for (i in seq_along(user_priors)) {
       if (!is.null(user_priors[[i]])) {

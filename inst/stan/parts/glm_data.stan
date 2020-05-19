@@ -8,8 +8,8 @@
   int<lower=0,upper=1> has_re; // has random effects? (or varying intercept)
   int<lower=0> n_ids; // number of random effects
   int<lower=0,upper=n_ids> id[n]; // identifier for the observational units associated with the random effects term
-  vector[3] alpha_prior; // prior on the intercept
-  row_vector[dx] beta_prior[3]; // coefficient priors
+  vector[2] alpha_prior; // prior on the intercept
+  row_vector[dx] beta_prior[2]; // coefficient priors
   vector[3] alpha_tau_prior; // prior on standard deviation of varying intercepts
   vector[2] t_nu_prior;
   vector[3] sigma_prior;

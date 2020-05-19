@@ -12,16 +12,16 @@
 #' @param EV A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. If provided, still also provide a spatial weights matrix \code{C} for other purposes.  See \link[geostan]{make_EV} and \link[geostan]{shape2mat}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param nsa Include eigenvectors representing negative spatial autocorrelation? Default \code{nsa = FALSE}. Ignored if \code{EV} is provided.
-#' @param threshold Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = .2}; ignored if \code{EV} is provided.
+#' @param threshold Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = .2}; ignored if \code{EV} is provided. For moderately sized datasets, a threshold of .25 is typically sufficient if not ideal; smaller datasets (e.g. n < 70) have fewer eigenvectors within any given range of threshold values and a lower threshold (e.g. 0.20) is advisable.
 #' @param family The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{student_t()} and \code{poisson(link = "log")}, and \code{binomial(link = "logit")}. 
 #' @param p0 Number of eigenvector coefficients expected to be far from zero. If missing, Chun et al.'s (2016) formula will be used to fill this in; see \link[geostan]{exp_pars}.
 #' The value of \code{p0} is used to control the prior degree of sparsity in the model.
-#' @param prior A \code{data.frame} or \code{matrix} with Student's t prior parameters for the coefficients. Provide three columns---degrees of freedom, location and scale---and a row for each variable in their order of appearance in the model formula. For now, if you want a Gaussian prior use very large degrees of freedom. Default priors are weakly informative relative to the scale of the data.
-#' @param prior_intercept A vector with degrees of freedom, location and scale parameters for a Student's t prior on the intercept; e.g. \code{prior_intercept = c(15, 0, 10)}.
-#' @param prior_sigma A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on the residual standard deviation \code{sigma}. Use a half-Cauchy prior by setting degrees of freedom to one; e.g. \code{prior_sigma = c(5, 0, 10)}.
-#' @param prior_rhs A named vector with the degrees of freedom and scale of the Student's t slab for regularizing large eigenvector coefficients and the prior scale for the global shrinkage parameter; e.g. \code{prior_rhs = c(slab_df = 15, slab_scale = 5, scale_global = .5)}. If \code{p0} is provided and prior_rhs is missing, \code{p0} will be used automatically to calculate \code{scale_global}.
+#' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
+#' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. When setting this prior, keep in mind that if \code{centerx = TRUE} (the default), then the intercept is the expected outcome when covariates are at their mean level.
+#' @param prior_sigma A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on the residual standard deviation \code{sigma}. To use a half-Cauchy prior set degrees of freedom to one; e.g. \code{prior_sigma = c(1, 0, 3)}.
+#' @param prior_rhs A named vector with the degrees of freedom and scale of the Student's t slab for regularizing large eigenvector coefficients and the prior scale for the global shrinkage parameter; e.g. \code{prior_rhs = c(slab_df = 15, slab_scale = 5, scale_global = .5)}. If \code{p0} is provided and prior_rhs is missing, \code{p0} will be used automatically to calculate \code{scale_global}, \code{slab_df} will be set to 15, and \code{slab_scale} will be set to be weakly informative automatically based on the scale of the data.
 #' @param prior_nu Set the parameters for the Gamma prior distribution on the degrees of freedom in the likelihood function when using \code{family = student_t}. Defaults to \code{prior_nu = c(alpha = 2, beta = .1)}.
-#' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts (\code{alpha_re}). The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.
+#' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts (\code{alpha_re}). The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 5)}.
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE} for computational efficiency. This alters the interpretation of the intercept term! See \code{Details}) below.
 #' @param scalex Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
@@ -29,7 +29,6 @@
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model. Parameters from the RHS prios include \code{tau} (the global shrinkage parameter) and \code{lambda} (the local shrinkage parameter).
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{.99} and \code{max_treedepth = 15}.
-#' @param zero.policy For \link[spdep]{poly2nb} which is used internally to create a spatial weights matrix. Default \code{zero.policy = TRUE}
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' @details If the \code{centerx = TRUE} (the default), then the intercept is the expected value of the outcome variable when 
 #'   all of the covariates are at their mean value. This often has interpretive value in itself
@@ -125,18 +124,23 @@
 #' moran_plot(res, w)
 #' 
 #' ## set priors for the main coefficients:
-#'  ## coefficient priors must be a matrix with 3 columns (degrees of freedom, location, scale)
-#' df <- rep(15, times = 3)
-#' loc <- rep(0, times=3)
-#' scale <- rep(1,times=3)
-#' priors <- cbind(df, loc, scale)
+#' ## coefficient priors must be a matrix with 3 columns (degrees of freedom, location, scale)
+#' ## the slx terms will be prepended to the model matrix (i.e. state their priors first)
+#' loc <- rep(0, times=5)
+#' scale <- rep(1, times=5)
+#' priors <- cbind(loc, scale)
 #' ## with scalex=TRUE all the covariates will be centered and scaled to have stand. dev = 1
 #' fit <- stan_esf(gop_growth ~ historic_gop + log(population) + college_educated,
 #'                slx = ~ historic_gop + college_educated,
 #'                prior = priors,
-#'                data = ohio, C = C, iter = 1e3, chains = 1, scalex = TRUE)
+#'                data = ohio,
+#'                C = C,
+#'                iter = 400,
+#'                chains = 1,
+#'                scalex = TRUE)
 #'
 #' ## Poisson models. Model Jim Crow era prison sentencing risk in Florida.
+#' ## for Poisson models, the log of \code{expected_sents} will be used automatically
 #' data(sentencing)
 #' C <- shape2mat(sentencing, "B")
 #' fit <- stan_esf(sents ~ offset(expected_sents), re = ~ name, family = poisson(),
@@ -159,8 +163,9 @@
 stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2, family = gaussian(), p0,
                      prior = NULL, prior_intercept = NULL, prior_sigma = NULL, prior_rhs = NULL, prior_nu = NULL,
                      prior_tau = NULL,
-                centerx = TRUE, scalex = FALSE, chains = 4, iter = 5e3, refresh = 500, pars = NULL,
-                control = list(adapt_delta = .99, max_treedepth = 15), zero.policy = TRUE, ...) {
+                     centerx = TRUE, scalex = FALSE,
+                     chains = 4, iter = 5e3, refresh = 500, pars = NULL,
+                     control = list(adapt_delta = .99, max_treedepth = 15), ...) {
   if (missing(formula)) stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
   if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "poisson", "binomial")) stop ("Must provide a valid family object: gaussian(), student_t(), or poisson().")
   if (missing(C) | missing(data)) stop ("Must provide data and a spatiall connectivity matrix C.")
@@ -261,7 +266,7 @@ stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2
      }                                         
   if (family$family == "binomial") {
       samples <- rstan::sampling(stanmodels$esf_binomial, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control,
-                                 init_r = 1, ...) # // !! // was init_r = .1 
+                                 init_r = 1, ...)
       }
   if (family$family == "poisson") {
       samples <- rstan::sampling(stanmodels$esf_count, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control,

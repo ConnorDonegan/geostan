@@ -322,24 +322,24 @@ public:
                 check_less_or_equal(function__, "id[i_0__]", id[i_0__], n_ids);
             }
             current_statement_begin__ = 46;
-            validate_non_negative_index("alpha_prior", "3", 3);
-            context__.validate_dims("data initialization", "alpha_prior", "vector_d", context__.to_vec(3));
-            alpha_prior = Eigen::Matrix<double, Eigen::Dynamic, 1>(3);
+            validate_non_negative_index("alpha_prior", "2", 2);
+            context__.validate_dims("data initialization", "alpha_prior", "vector_d", context__.to_vec(2));
+            alpha_prior = Eigen::Matrix<double, Eigen::Dynamic, 1>(2);
             vals_r__ = context__.vals_r("alpha_prior");
             pos__ = 0;
-            size_t alpha_prior_j_1_max__ = 3;
+            size_t alpha_prior_j_1_max__ = 2;
             for (size_t j_1__ = 0; j_1__ < alpha_prior_j_1_max__; ++j_1__) {
                 alpha_prior(j_1__) = vals_r__[pos__++];
             }
             current_statement_begin__ = 47;
             validate_non_negative_index("beta_prior", "dx", dx);
-            validate_non_negative_index("beta_prior", "3", 3);
-            context__.validate_dims("data initialization", "beta_prior", "row_vector_d", context__.to_vec(3,dx));
-            beta_prior = std::vector<Eigen::Matrix<double, 1, Eigen::Dynamic> >(3, Eigen::Matrix<double, 1, Eigen::Dynamic>(dx));
+            validate_non_negative_index("beta_prior", "2", 2);
+            context__.validate_dims("data initialization", "beta_prior", "row_vector_d", context__.to_vec(2,dx));
+            beta_prior = std::vector<Eigen::Matrix<double, 1, Eigen::Dynamic> >(2, Eigen::Matrix<double, 1, Eigen::Dynamic>(dx));
             vals_r__ = context__.vals_r("beta_prior");
             pos__ = 0;
             size_t beta_prior_j_1_max__ = dx;
-            size_t beta_prior_k_0_max__ = 3;
+            size_t beta_prior_k_0_max__ = 2;
             for (size_t j_1__ = 0; j_1__ < beta_prior_j_1_max__; ++j_1__) {
                 for (size_t k_0__ = 0; k_0__ < beta_prior_k_0_max__; ++k_0__) {
                     beta_prior[k_0__](j_1__) = vals_r__[pos__++];
@@ -751,11 +751,11 @@ public:
             }
             // model body
             current_statement_begin__ = 101;
-            lp_accum__.add(student_t_log<propto__>(intercept, get_base1(alpha_prior, 1, "alpha_prior", 1), get_base1(alpha_prior, 2, "alpha_prior", 1), get_base1(alpha_prior, 3, "alpha_prior", 1)));
+            lp_accum__.add(normal_log<propto__>(intercept, get_base1(alpha_prior, 1, "alpha_prior", 1), get_base1(alpha_prior, 2, "alpha_prior", 1)));
             current_statement_begin__ = 102;
             if (as_bool(dx)) {
                 current_statement_begin__ = 102;
-                lp_accum__.add(student_t_log<propto__>(beta, get_base1(beta_prior, 1, "beta_prior", 1), get_base1(beta_prior, 2, "beta_prior", 1), get_base1(beta_prior, 3, "beta_prior", 1)));
+                lp_accum__.add(normal_log<propto__>(beta, get_base1(beta_prior, 1, "beta_prior", 1), get_base1(beta_prior, 2, "beta_prior", 1)));
             }
             current_statement_begin__ = 103;
             if (as_bool(has_sigma)) {
