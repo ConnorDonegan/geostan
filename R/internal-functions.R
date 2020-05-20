@@ -16,12 +16,18 @@ remove_intercept <- function(x) {
 #' @param x model matrix
 #' @return scaled model matrix. Binary indicator variables will not be scaled.
 scale_x <- function(x, center, scale) {
+    scale_params <- list()
+    if (center) scale_params$center <- rep(0, times = ncol(x))
+    if (scale) scale_params$scale <- rep(1, times = ncol(x))
     for (i in 1:ncol(x)) {
         l <- length(unique(x[,i]))
         if (l == 2) next
-        x[,i] <- as.numeric(scale(x[,i], center = center, scale = scale))
+        x.tmp <- scale(x[,i], center = center, scale = scale)
+        if (center) scale_params$center[i] <- attributes(x.tmp)$`scaled:center`
+        if (scale) scale_params$scale[i] <- attributes(x.tmp)$`scaled:scale`
+        x[,i] <- as.numeric(x.tmp)
     }
-    return(x)
+    return(list(x = x, params = scale_params))
     }
 
 #' @importFrom stats model.matrix

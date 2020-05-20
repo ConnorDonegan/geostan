@@ -15,7 +15,7 @@
 #' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. When setting this prior, keep in mind that if \code{centerx = TRUE} (the default), then the intercept is the expected outcome when covariates are at their mean level.
 #' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts (in addition to the convolved random effects term). The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.
-#' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE} for computational efficiency. This alters the interpretation of the intercept term! See \code{Details}) below. It also makes setting the prior distribution for the interecept intuitive; if you choose not to center the data, then you may need to set \code{prior_intercept} manually.
+#' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below. It also makes setting the prior distribution for the interecept intuitive.
 #' @param scalex Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
 #' @param iter Number of samples per chain. Default \code{iter = 5000}.
@@ -24,9 +24,7 @@
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{.9} and \code{max_treedepth = 15}.
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' @details If the \code{centerx = TRUE} (the default), then the intercept is the expected value of the outcome variable when 
-#'   all of the covariates are at their mean value. This often has interpretive value in itself
-#'   though it is the  default here for computational reasons.
-#' The default prior distribution for the intercept assumes that the covariates have been centered.
+#'   all of the covariates are at their mean value.
 #' 
 #'  The Stan code for the model follows Morris et al. (2019).
 #'    
@@ -50,6 +48,7 @@
 #' \item{re}{A list containing \code{re}, the random effects (varying intercepts) formula if provided, and 
 #'  \code{Data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 #' \item{priors}{Prior specifications.}
+#' \item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
 #' \item{spatial}{A data frame with the name of the spatial component parameter ("phi") and method ("ICAR")}
 #' }
 #' 
@@ -82,7 +81,9 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, C, family = poisson()
       } else {
     xraw <- model.matrix(formula, data = tmpdf)
     xraw <- remove_intercept(xraw)
-    x <- scale_x(xraw, center = centerx, scale = scalex)
+    x.list <- scale_x(xraw, center = centerx, scale = scalex)
+    x <- x.list$x
+    scale_params <- x.list$params
     if (missing(slx)) {
         slx <- " "
         } else {
@@ -154,7 +155,9 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, C, family = poisson()
   out$edges <- nbs
   out$re <- re_list
   out$priors <- priors
+  out$scale_params <- scale_params  
   out$spatial <- data.frame(par = "phi", method = "BYM2")
   class(out) <- append("geostan_fit", class(out))
   return(out)
 }
+

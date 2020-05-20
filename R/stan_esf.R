@@ -22,7 +22,7 @@
 #' @param prior_rhs A named vector with the degrees of freedom and scale of the Student's t slab for regularizing large eigenvector coefficients and the prior scale for the global shrinkage parameter; e.g. \code{prior_rhs = c(slab_df = 15, slab_scale = 5, scale_global = .5)}. If \code{p0} is provided and prior_rhs is missing, \code{p0} will be used automatically to calculate \code{scale_global}, \code{slab_df} will be set to 15, and \code{slab_scale} will be set to be weakly informative automatically based on the scale of the data.
 #' @param prior_nu Set the parameters for the Gamma prior distribution on the degrees of freedom in the likelihood function when using \code{family = student_t}. Defaults to \code{prior_nu = c(alpha = 2, beta = .1)}.
 #' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts (\code{alpha_re}). The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 5)}.
-#' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE} for computational efficiency. This alters the interpretation of the intercept term! See \code{Details}) below.
+#' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below.
 #' @param scalex Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
 #' @param iter Number of samples per chain. Default \code{iter = 5000}.
@@ -31,8 +31,7 @@
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{.99} and \code{max_treedepth = 15}.
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' @details If the \code{centerx = TRUE} (the default), then the intercept is the expected value of the outcome variable when 
-#'   all of the covariates are at their mean value. This often has interpretive value in itself
-#'   though it is the  default here for computational reasons. 
+#'   all of the covariates are at their mean value. 
 #'    
 #'  The function returns the spatial filter \code{esf}, 
 #'  i.e. the linear combination of eigenvectors representing spatial autocorrelation patterns in the outcome variable. 
@@ -56,6 +55,7 @@
 #' \item{re}{A list containing \code{re},  the random effects (varying intercepts) formula if provided, and 
 #'  \code{data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 #' \item{priors}{Prior specifications.}
+#' \item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
 #' \item{spatial}{A data frame with the name of the spatial component parameter ("esf") and method ("ESF")}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' }
@@ -89,7 +89,7 @@
 #' data(ohio)
 #' C <- shape2mat(ohio, "B")
 #' fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density) + college_educated,
-#'                 slx = ~ historic_gop + college_educated,
+#'                 slx = ~ historic_gop + log(pop_density) + college_educated,
 #'                 data = ohio,
 #'                 C = C,
 #'                 chains = 1,
@@ -99,7 +99,7 @@
 #' ## trace plots
 #' plot(fit, plotfun = 'trace')
 #' 
-#' ## Rhat diagnostics (should all be very near 1; greater than 1.1 is bad).
+#' ## Rhat diagnostics (should all be very near 1; greater than, say, 1.05 is getting bad).
 #'   # this will include all parameters and generated quantities (residuals, log likelihood, etc.)
 #' stan_rhat(fit$stanfit)
 #' 
@@ -126,12 +126,12 @@
 #' ## set priors for the main coefficients:
 #' ## coefficient priors must be a matrix with 3 columns (degrees of freedom, location, scale)
 #' ## the slx terms will be prepended to the model matrix (i.e. state their priors first)
-#' loc <- rep(0, times=5)
-#' scale <- rep(1, times=5)
+#' loc <- rep(0, times=6)
+#' scale <- rep(1, times=6)
 #' priors <- cbind(loc, scale)
 #' ## with scalex=TRUE all the covariates will be centered and scaled to have stand. dev = 1
 #' fit <- stan_esf(gop_growth ~ historic_gop + log(population) + college_educated,
-#'                slx = ~ historic_gop + college_educated,
+#'                slx = ~ historic_gop + log(population) + college_educated,
 #'                prior = priors,
 #'                data = ohio,
 #'                C = C,
@@ -144,7 +144,7 @@
 #' data(sentencing)
 #' C <- shape2mat(sentencing, "B")
 #' fit <- stan_esf(sents ~ offset(expected_sents), re = ~ name, family = poisson(),
-#'                 data = sentencing@data, C = C, chains = 1, iter = 1e3)
+#'                 data = sentencing@data, C = C, chains = 1, iter = 500)
 #' plot(fit, plotfun = 'trace')
 #' stan_rhat(fit$stanfit, "beta_ev") +
 #'    theme_bw()
@@ -181,7 +181,9 @@ stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2
       } else {
     xraw <- model.matrix(formula, data = tmpdf)
     xraw <- remove_intercept(xraw)
-    x <- scale_x(xraw, center = centerx, scale = scalex)
+    x.list <- scale_x(xraw, center = centerx, scale = scalex)
+    x <- x.list$x
+    scale_params <- x.list$params
     if (missing(slx)) {
         slx <- " "
         } else {
@@ -282,6 +284,7 @@ stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2
   out$re <- re_list
   priors <- priors[which(names(priors) %in% c(pars, "rhs"))]
   out$priors <- priors
+  out$scale_params <- scale_params
   out$spatial <- data.frame(par = "esf", method = "RHS-ESF")
   class(out) <- append("geostan_fit", class(out))
   return (out)
