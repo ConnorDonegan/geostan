@@ -7,7 +7,7 @@
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 #'  These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param scaleFactor The scaling factor for the ICAR random effect. Currently INLA is required to calculate this. See Example below for details.
+#' @param scaleFactor The scaling factor for the ICAR random effect. Currently INLA is required to calculate this. 
 #' @param re If the model includes an additional varying intercept term specify the grouping variable here using formula synatax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param C Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.
@@ -78,6 +78,7 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, C, family = poisson()
     x <- model.matrix(~ 0, data = tmpdf) 
     dx <- 0
     slx <- " "
+    scale_params <- list()    
       } else {
     xraw <- model.matrix(formula, data = tmpdf)
     xraw <- remove_intercept(xraw)
@@ -136,6 +137,7 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, C, family = poisson()
     alpha_tau_prior = priors$alpha_tau,
     scaling_factor = scaleFactor,
     is_student = is_student,
+    t_nu_prior = priors$nu,    
     has_sigma = family$family %in% c("gaussian", "student_t")
   )
   if (family$family == "binomial") { # not yet implemented
