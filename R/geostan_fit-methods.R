@@ -5,7 +5,6 @@
 #' @rdname geostan_fit
 #' @param object A fitted model object of class \code{geostan_fit}.
 #' @param x A fitted model object of class \code{geostan_fit}.
-#' @param draws Number of samples to return; maximum and default value is the number of MCMC samples stored by the model.
 #' @param summary Logical (default \code{summary = TRUE}); should the values be summarized with the mean, standard deviation and quantiles (\code{probs = c(.025, .2, .5, .8, .975)}) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.
 #' @param pars parameters to include; a character string or vector of parameter names.
 #' @param plotfun Argument passed to \code{rstan::plot}. Options include "hist", "trace", and "dens".
@@ -19,7 +18,10 @@
 #' library(geostan)
 #' library(sf)
 #' data(ohio)
-#' fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density), data = ohio, C = shape2mat(ohio), chains = 1, iter = 600)
+#' fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density),
+#'                data = ohio,
+#'                C = shape2mat(ohio),
+#'                chains = 1, iter = 600)
 #'
 #' # print and plot results
 #' print(fit)
@@ -35,20 +37,20 @@
 #' as.array(fit)
 #' as.matrix(fit)
 #' 
-#' # extract residuals, etc.
+#' # extract residuals and fitted values
 #' res <- residuals(fit)
-#' ##res <- resid(fit) # alias
+#' res <- resid(fit) # alias
 #' head(res)
-#' plot(ohio$gop_growth, res$mean)
+#' f <- fitted(fit)
+#' plot(f$mean, res$mean)
 #' mat <- resid(fit, summary = FALSE)
 #' dim(mat)
-#' pp <- posterior_predict(fit, summary  = FALSE)
-#' dim(pp)
-#' head(fitted(fit))
 #' 
-#' # extract and plot the mean estimate of the spatial filter
+#' # extract and plot the posterior mean of the spatial filter
 #' ohio$sf <- spatial(fit, summary = TRUE)$mean
-#' plot(ohio[,'sf'])
+#' ggplot(ohio) +
+#'   geom_sf(aes(fill = sf)) +
+#'   scale_fill_gradient2()  
 #' }
 
 
@@ -167,42 +169,6 @@ spatial.geostan_fit <- function(object, summary = TRUE, ...) {
   } else {
     as.matrix(object$stanfit, pars = par, ...)
   }
-}
-
-#' Draw samples from posterior predictive distribution of a fitted geostan model
-#' 
-#' @description Draws samples from the posterior predictive distribution of a fitted geostan model
-#' @param object A fitted geostan model
-#' @param draws Number of samples to return; maximum and default value is the number of MCMC samples stored by the model.
-#' @param summary Logical (default \code{summary = TRUE}); should the values be summarized with the mean, standard deviation and quantiles (\code{probs = c(.025, .2, .5, .8, .975)}) for each observation? Otherwise a matrix containing samples for each observation is returned.
-#' @param ... additional arguments.
-#' @export
-posterior_predict <- function(object, draws, summary = FALSE, ...) {
-    UseMethod("posterior_predict", object)
-    }
-
-#' @export
-#' @name geostan_fit
-#' @method posterior_predict geostan_fit
-posterior_predict.geostan_fit <- function(object, draws, summary = FALSE, ...) {
-  yrep <- as.matrix(object, pars = "yrep")
-  if(!missing(draws)) {
-    max_draws <- nrow(yrep)
-    idx <- sample(max_draws, size = min(draws, max_draws))
-    yrep <- yrep[idx, ]
-  }
-  if(summary) {
-    yrep <- data.frame(
-      mean = apply(yrep, 2, mean),
-      sd = apply(yrep, 2, sd),
-      q.025 = apply(yrep, 2, quantile, probs = .025),
-      q.20 = apply(yrep, 2, quantile, probs = .20),
-      q.50 = apply(yrep, 2, quantile, probs = .50),
-      q.80 = apply(yrep, 2, quantile, probs = .80),
-      q.975 = apply(yrep, 2, quantile, probs = .975)
-    )
-  }
-  return(yrep)
 }
 
 
