@@ -10,6 +10,8 @@
 #' @param re_form If \code{re_form = NA} any random effects terms will be ignored when making predictions. If default \code{re_form = NULL} is set, then the results will include random effects terms. Those are the only options; this syntax is used to maintain some consistency with other R packages which have additional options.
 #' @param spatial Include the spatial component in the model predictions? Defaults to \code{TRUE} and will be ignored if the model does not have a spatial comonent (i.e. \code{\link[geostan]{stan_glm}}). For models fit by \code{\link[geostan]{stan_esf}}, \code{\link[geostan]{stan_icar}}, and \code{\link[geostan]{stan_bym2}} this option requires that \code{newdata} have the same number of observations as the data that the model was fit to.
 #' @param seed A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution. Passing a value to \code{seed} enables you to obtain the same results each time (by using the same seed).
+#' @param centerx Should \code{newdata} be centered using the means of the variables in the original data used to fit the model (stored in \code{fit$scale_params})? Defaults to \code{TRUE} but is (effectively) ignored if the model was fit with \code{centerx = FALSE}.
+#' @param scalex Should \code{newdata} be scaled using the standard deviations of the variables in the original data used to fit the model (stored in \code{fit$scale_params})? Defaults to \code{FALSE}.
 #' 
 #' @return A matrix of size \code{S} x \code{N} containing samples from the posterior predictive distribution, where \code{S} is the number of samples and \code{N} is the number of observations. It is of class \code{matrix} and \code{ppd}. 
 #'
@@ -29,7 +31,7 @@
 #' yrep <- posterior_predict(fit, samples = 150)
 #' ppc_dens_overlay(y, yrep)
 #'
-posterior_predict <- function(object, newdata, W, samples, predictive = TRUE, re_form = NULL, spatial = TRUE, seed) {
+posterior_predict <- function(object, newdata, W, samples, predictive = TRUE, re_form = NULL, spatial = TRUE, seed, centerx = TRUE, scalex = FALSE) {
     if (!inherits(object, "geostan_fit")) stop ("object must be of class geostan_fit.")
     N <- nrow(as.matrix(object))                                 
     if (!missing(seed)) set.seed(seed)                                      
@@ -61,6 +63,9 @@ posterior_predict <- function(object, newdata, W, samples, predictive = TRUE, re
     }
     x <- model.matrix(object$formula, data = newdata) 
     x <- remove_intercept(x)
+    if (centerx) centerx <- fit$scale_params$center
+    if (scalex) scalex <- fit$scale_params$scale
+    x <- scale(x, center = centerx, scale = scalex)
     offset <- model.offset(model.frame(object$formula, newdata))
     if (!is.null(offset) & family == "poisson") offset <- log(offset)
     if ( spatial & (class(object$slx) == "formula") ) {

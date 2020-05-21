@@ -110,7 +110,7 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, C, family = poisson()
     id <- tmpdf[,paste(re[2])]
     n_ids <- length(unique(id))
     id_index <- to_index(id)
-    re_list <- list(formula = re, Data = id_index)
+    re_list <- list(formula = re, data = id_index)
   } 
   is_student <- family$family == "student_t"
   priors <- list(intercept = prior_intercept, beta = prior, alpha_tau = prior_tau)

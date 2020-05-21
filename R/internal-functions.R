@@ -141,8 +141,8 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
 	  y[is.infinite(y)] <- 0
   }
   scaley <- sd(y)
-  alpha_scale <- max(5 * sd(y), 5)
-  alpha_mean <- mean(y)
+  alpha_scale <- max(3 * sd(y), 1)
+  if (xcentered) alpha_mean <- mean(y) else alpha_mean <- 0
   alpha <- c(location = alpha_mean, scale = alpha_scale)
   alpha <- round(alpha, 4)
   priors <- list(intercept = alpha)

@@ -12,7 +12,9 @@ posterior_predict(
   predictive = TRUE,
   re_form = NULL,
   spatial = TRUE,
-  seed
+  seed,
+  centerx = TRUE,
+  scalex = FALSE
 )
 }
 \arguments{
@@ -31,6 +33,10 @@ posterior_predict(
 \item{spatial}{Include the spatial component in the model predictions? Defaults to \code{TRUE} and will be ignored if the model does not have a spatial comonent (i.e. \code{\link[geostan]{stan_glm}}). For models fit by \code{\link[geostan]{stan_esf}}, \code{\link[geostan]{stan_icar}}, and \code{\link[geostan]{stan_bym2}} this option requires that \code{newdata} have the same number of observations as the data that the model was fit to.}
 
 \item{seed}{A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution. Passing a value to \code{seed} enables you to obtain the same results each time (by using the same seed).}
+
+\item{centerx}{Should \code{newdata} be centered using the means of the variables in the original data used to fit the model (stored in \code{fit$scale_params})? Defaults to \code{TRUE} but is (effectively) ignored if the model was fit with \code{centerx = FALSE}.}
+
+\item{scalex}{Should \code{newdata} be scaled using the standard deviations of the variables in the original data used to fit the model (stored in \code{fit$scale_params})? Defaults to \code{FALSE}.}
 }
 \value{
 A matrix of size \code{S} x \code{N} containing samples from the posterior predictive distribution, where \code{S} is the number of samples and \code{N} is the number of observations. It is of class \code{matrix} and \code{ppd}.
