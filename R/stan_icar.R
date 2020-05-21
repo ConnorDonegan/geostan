@@ -14,7 +14,7 @@
 #' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. When setting this prior, keep in mind that if \code{centerx = TRUE} (the default), then the intercept is the expected outcome when covariates are at their mean level.
 #' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.
-#' @param prior_phi Prior for the scale of the spatial ICAR component \code{phi}. \code{phi} is scaled by the parameter \code{phi_scale} which is given a positively-constrained (half-) Gaussian prior distribution with its location parameter at zero and scale parameter set to \code{prior_phi}. This defaults to \code{prior_phi = 2}.
+#' @param prior_phi Prior for the scale of the spatial ICAR component \code{phi}. \code{phi} is scaled by the parameter \code{phi_scale} which is given a positively-constrained (half-) Gaussian prior distribution with its location parameter at zero and scale parameter set to \code{prior_phi}. This defaults to \code{prior_phi = 1}.
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below. It also makes setting the prior distribution for the interecept intuitive.
 #' @param scalex Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
@@ -108,7 +108,7 @@
 #'  ggtitle("Standardized state prison sentencing ratios, 1905-1910")
 #'
 stan_icar <- function(formula, slx, re, data, C, family = poisson(),
-                      prior = NULL, prior_intercept = NULL, prior_tau = NULL, prior_phi = 2,
+                      prior = NULL, prior_intercept = NULL, prior_tau = NULL, prior_phi = 1,
                 centerx = TRUE, scalex = FALSE, chains = 4, iter = 5e3, refresh = 500, pars = NULL,
                 control = list(adapt_delta = .9, max_treedepth = 15), ...) {
   if (class(family) != "family" | !family$family %in% c("binomial", "poisson")) stop ("Must provide a valid family object: binomial() or poisson().")

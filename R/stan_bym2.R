@@ -14,7 +14,7 @@
 #' @param family The likelihood function for the outcome variable. Current options are \code{family = poisson(link = "log")}, the default. 
 #' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. When setting this prior, keep in mind that if \code{centerx = TRUE} (the default), then the intercept is the expected outcome when covariates are at their mean level.
-#' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts (in addition to the convolved random effects term). The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.
+#' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts (not the exchangeable component of the convolved random effects term, but any additional terms specified by the user). The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below. It also makes setting the prior distribution for the interecept intuitive.
 #' @param scalex Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
@@ -26,7 +26,7 @@
 #' @details If the \code{centerx = TRUE} (the default), then the intercept is the expected value of the outcome variable when 
 #'   all of the covariates are at their mean value.
 #' 
-#'  The Stan code for the model follows Morris et al. (2019).
+#'  The Stan code for the model follows Morris et al. (2019). The \code{INLA} package is currently required to calculate the scaling factor for the spatial random effects. To install it see \code{http://www.r-inla.org/download}. 
 #'    
 #'  The function returns the ICAR spatial component in the parameter \code{ssre} (spatially structured random effect) and the exchangeable random effects in \code{sure} (spatially unstructured random effect); both parameters are returned after being scaled by \code{sigma_re}. The convolved random effect term (already scaled by \code{sigma_re}) is stored in the parameter \code{convolved_re}. To extract a summary of the posterior distribution for the convolved random effect term from a model, use \code{spatial(fit)}, and for the posterior samples use \code{spatial(fit, summary = FALSE)}.
 #' 
@@ -59,9 +59,9 @@
 #' Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A., & DiMaggio, C. (2019). Bayesian hierarchical spatial models: Implementing the Besag York Mollié model in stan. Spatial and spatio-temporal epidemiology, 31, 100301.
 #' 
 #' Riebler, A., Sørbye, S. H., Simpson, D., & Rue, H. (2016). An intuitive Bayesian spatial model for disease mapping that accounts for scaling. Statistical methods in medical research, 25(4), 1145-1165.
-#' 
+#'
 stan_bym2 <- function(formula, slx, scaleFactor, re, data, C, family = poisson(),
-                     prior = NULL, prior_intercept = NULL,  prior_tau = NULL,
+                     prior = NULL, prior_intercept = NULL,  prior_tau = NULL, 
                 centerx = TRUE, scalex = FALSE, chains = 4, iter = 5e3, refresh = 500, pars = NULL,
                 control = list(adapt_delta = .9, max_treedepth = 15), ...) {
   if (class(family) != "family" | !family$family %in% c("poisson")) stop ("Must provide a valid family object: poisson().")
@@ -132,6 +132,7 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, C, family = poisson()
     beta_prior = t(priors$beta), 
     sigma_prior = priors$sigma,
     alpha_tau_prior = priors$alpha_tau,
+    phi_scale_prior = 1,
     scaling_factor = scaleFactor,
     is_student = is_student,
     t_nu_prior = priors$nu,    

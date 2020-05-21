@@ -19,7 +19,7 @@ stan_icar(
   prior = NULL,
   prior_intercept = NULL,
   prior_tau = NULL,
-  prior_phi = 2,
+  prior_phi = 1,
   centerx = TRUE,
   scalex = FALSE,
   chains = 4,
@@ -51,7 +51,7 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{prior_tau}{Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.}
 
-\item{prior_phi}{Prior for the scale of the spatial ICAR component \code{phi}. \code{phi} is scaled by the parameter \code{phi_scale} which is given a positively-constrained (half-) Gaussian prior distribution with its location parameter at zero and scale parameter set to \code{prior_phi}. This defaults to \code{prior_phi = 2}.}
+\item{prior_phi}{Prior for the scale of the spatial ICAR component \code{phi}. \code{phi} is scaled by the parameter \code{phi_scale} which is given a positively-constrained (half-) Gaussian prior distribution with its location parameter at zero and scale parameter set to \code{prior_phi}. This defaults to \code{prior_phi = 1}.}
 
 \item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below. It also makes setting the prior distribution for the interecept intuitive.}
 
