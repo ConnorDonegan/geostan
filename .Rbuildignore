@@ -2,3 +2,4 @@
 rccpExports.cpp
 stanExports_*
 ^data-raw$
+.Rhistory

@@ -3,3 +3,4 @@ src/geostan.dll
 !man/geostan-internal.Rd
 data-raw/
 man/*
+.Rhistory
