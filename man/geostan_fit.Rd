@@ -44,8 +44,6 @@
 \item{object}{A fitted model object of class \code{geostan_fit}.}
 
 \item{summary}{Logical (default \code{summary = TRUE}); should the values be summarized with the mean, standard deviation and quantiles (\code{probs = c(.025, .2, .5, .8, .975)}) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.}
-
-\item{draws}{Number of samples to return; maximum and default value is the number of MCMC samples stored by the model.}
 }
 \value{
 return either a matrix containing all samples for each observation, or a \code{data.frame} containing a summary values for each observation.
@@ -58,7 +56,10 @@ Methods for fitted geostan models: extract residuals, fitted values, posterior p
 library(geostan)
 library(sf)
 data(ohio)
-fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density), data = ohio, C = shape2mat(ohio), chains = 1, iter = 600)
+fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density),
+               data = ohio,
+               C = shape2mat(ohio),
+               chains = 1, iter = 600)
 
 # print and plot results
 print(fit)
@@ -74,20 +75,20 @@ as.data.frame(fit, pars = "b_historic_gop")
 as.array(fit)
 as.matrix(fit)
 
-# extract residuals, etc.
+# extract residuals and fitted values
 res <- residuals(fit)
-##res <- resid(fit) # alias
+res <- resid(fit) # alias
 head(res)
-plot(ohio$gop_growth, res$mean)
+f <- fitted(fit)
+plot(f$mean, res$mean)
 mat <- resid(fit, summary = FALSE)
 dim(mat)
-pp <- posterior_predict(fit, summary  = FALSE)
-dim(pp)
-head(fitted(fit))
 
-# extract and plot the mean estimate of the spatial filter
+# extract and plot the posterior mean of the spatial filter
 ohio$sf <- spatial(fit, summary = TRUE)$mean
-plot(ohio[,'sf'])
+ggplot(ohio) +
+  geom_sf(aes(fill = sf)) +
+  scale_fill_gradient2()  
 }
 }
 \seealso{

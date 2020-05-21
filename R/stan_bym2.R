@@ -3,7 +3,7 @@
 #' @export
 #' @description Fit the scaled Besag-York-Mollie (BYM2) model introduced by Riebler et al. (2016) with Stan code from Morris et al. (2019). Only fully connected graphs are currenlty supported (i.e. all polygons must have at least one neighbor and there can be no disconnected islands or regions).
 #' 
-#' @param formula A model formula, following the R \link[stats]{formula} syntax. If an offset term is provided for a Poisson model, it will be transformed to the log scale (and it will be ignored if its not a Poisson model); to add an offset term \code{E} to a formula use \code{y ~ offset(E)}. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
+#' @param formula A model formula, following the R \link[stats]{formula} syntax. If an offset term is provided for a Poisson model, it will be transformed to the log scale internally; to add an offset term \code{E} to a formula use \code{y ~ offset(E)}. Binomial models [not yet implemented for \code{stan_bym2}] are specified by setting the left-hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 #'  These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
@@ -28,11 +28,8 @@
 #' 
 #'  The Stan code for the model follows Morris et al. (2019).
 #'    
-#'  The function returns the ICAR spatial component in the parameter \code{phi} and the exchangeable random effects in \code{theta}; both parameters are returned after being scaled; you can recover the convolved random effect by the sum \code{phi + theta} though it is not estimated that way. 
-#'  The entire posterior distribution of \code{phi}
-#'  can be obtained with the following code: \code{post_phi <- spatial(fit, summary = FALSE)} where \code{fit} is
-#'  the \code{geostan_fit} object returned by a call to \code{stan_icar}. 
-#'  
+#'  The function returns the ICAR spatial component in the parameter \code{ssre} (spatially structured random effect) and the exchangeable random effects in \code{sure} (spatially unstructured random effect); both parameters are returned after being scaled by \code{sigma_re}. The convolved random effect term (already scaled by \code{sigma_re}) is stored in the parameter \code{convolved_re}. To extract a summary of the posterior distribution for the convolved random effect term from a model, use \code{spatial(fit)}, and for the posterior samples use \code{spatial(fit, summary = FALSE)}.
+#' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
 #' \item{summary}{Summaries of the main parameters of interest; a data frame}
@@ -49,7 +46,7 @@
 #'  \code{Data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 #' \item{priors}{Prior specifications.}
 #' \item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
-#' \item{spatial}{A data frame with the name of the spatial component parameter ("phi") and method ("ICAR")}
+#' \item{spatial}{A data frame with the name of the spatial component parameter ("convolved_re") and method ("BYM2")}
 #' }
 #' 
 #' @author Connor Donegan, \email{Connor.Donegan@UTDallas.edu}
@@ -144,7 +141,7 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, C, family = poisson()
       standata$y <- y[,1]
       standata$N <- y[,1] + y[,2]
   }
-  pars <- c(pars, 'intercept', 'phi', 'theta', 'sigma', 'rho', 'residual', 'log_lik', 'yrep', 'fitted')
+  pars <- c(pars, 'intercept', 'ssre', 'sure', 'sigma_re', 'convolved_re', 'rho', 'residual', 'log_lik', 'yrep', 'fitted')
   if (!intercept_only) pars <- c(pars, 'beta')
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
   priors <- priors[which(names(priors) %in% pars)]
@@ -158,7 +155,7 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, C, family = poisson()
   out$re <- re_list
   out$priors <- priors
   out$scale_params <- scale_params  
-  out$spatial <- data.frame(par = "phi", method = "BYM2")
+  out$spatial <- data.frame(par = "convolved_re", method = "BYM2")
   class(out) <- append("geostan_fit", class(out))
   return(out)
 }

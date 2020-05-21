@@ -4,8 +4,8 @@
   vector[n] convolved_re;
   vector[n] f;
   rho = inv_logit(logit_rho);
-  convolved_re = sqrt(rho / scaling_factor) * v + sqrt(1 - rho) * u;
-  f = offset + intercept + convolved_re * sigma_re; 
+  convolved_re = sigma_re * (sqrt(rho / scaling_factor) * v + sqrt(1 - rho) * u);
+  f = offset + intercept + convolved_re; 
   if (dx) {
     f += Q_ast * beta_tilde;
     beta = R_inverse * beta_tilde;

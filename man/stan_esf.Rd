@@ -45,7 +45,7 @@ stan_esf(
 )
 }
 \arguments{
-\item{formula}{A model formula, following the R \link[stats]{formula} syntax. If an offset term is provide for a Poisson model, \code{log(offset)} is passed to the Stan model. (To add an offset term \code{E} to your model formula use \code{y ~ offset(E)}).  Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.}
+\item{formula}{A model formula, following the R \link[stats]{formula} syntax. If an offset term is provide for a Poisson model, it will be transformed to the log scale internally. (To add an offset term \code{E} to your model formula use \code{y ~ offset(E)}).  Binomial models are specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.}
 
 \item{slx}{Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
@@ -80,7 +80,7 @@ The value of \code{p0} is used to control the prior degree of sparsity in the mo
 
 \item{prior_tau}{Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts (\code{alpha_re}). The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 5)}.}
 
-\item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE} for computational efficiency. This alters the interpretation of the intercept term! See \code{Details}) below.}
+\item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below.}
 
 \item{scalex}{Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.}
 
@@ -112,6 +112,7 @@ An object of class class \code{geostan_fit} (a list) containing:
 \item{re}{A list containing \code{re},  the random effects (varying intercepts) formula if provided, and 
  \code{data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 \item{priors}{Prior specifications.}
+\item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
 \item{spatial}{A data frame with the name of the spatial component parameter ("esf") and method ("ESF")}
 \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 }
@@ -122,8 +123,7 @@ estimated using the regularized horseshoe prior.
 }
 \details{
 If the \code{centerx = TRUE} (the default), then the intercept is the expected value of the outcome variable when 
-  all of the covariates are at their mean value. This often has interpretive value in itself
-  though it is the  default here for computational reasons. 
+  all of the covariates are at their mean value. 
    
  The function returns the spatial filter \code{esf}, 
  i.e. the linear combination of eigenvectors representing spatial autocorrelation patterns in the outcome variable. 
@@ -146,7 +146,7 @@ options(mc.cores = parallel::detectCores())
 data(ohio)
 C <- shape2mat(ohio, "B")
 fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density) + college_educated,
-                slx = ~ historic_gop + college_educated,
+                slx = ~ historic_gop + log(pop_density) + college_educated,
                 data = ohio,
                 C = C,
                 chains = 1,
@@ -156,7 +156,7 @@ fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density) + college_educated,
 ## trace plots
 plot(fit, plotfun = 'trace')
 
-## Rhat diagnostics (should all be very near 1; greater than 1.1 is bad).
+## Rhat diagnostics (should all be very near 1; greater than, say, 1.05 is getting bad).
   # this will include all parameters and generated quantities (residuals, log likelihood, etc.)
 stan_rhat(fit$stanfit)
 
@@ -183,12 +183,12 @@ moran_plot(res, w)
 ## set priors for the main coefficients:
 ## coefficient priors must be a matrix with 3 columns (degrees of freedom, location, scale)
 ## the slx terms will be prepended to the model matrix (i.e. state their priors first)
-loc <- rep(0, times=5)
-scale <- rep(1, times=5)
+loc <- rep(0, times=6)
+scale <- rep(1, times=6)
 priors <- cbind(loc, scale)
 ## with scalex=TRUE all the covariates will be centered and scaled to have stand. dev = 1
 fit <- stan_esf(gop_growth ~ historic_gop + log(population) + college_educated,
-               slx = ~ historic_gop + college_educated,
+               slx = ~ historic_gop + log(population) + college_educated,
                prior = priors,
                data = ohio,
                C = C,
@@ -201,7 +201,7 @@ fit <- stan_esf(gop_growth ~ historic_gop + log(population) + college_educated,
 data(sentencing)
 C <- shape2mat(sentencing, "B")
 fit <- stan_esf(sents ~ offset(expected_sents), re = ~ name, family = poisson(),
-                data = sentencing@data, C = C, chains = 1, iter = 1e3)
+                data = sentencing@data, C = C, chains = 1, iter = 500)
 plot(fit, plotfun = 'trace')
 stan_rhat(fit$stanfit, "beta_ev") +
    theme_bw()

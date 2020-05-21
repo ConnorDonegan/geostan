@@ -5,7 +5,7 @@
 \title{Sample from the posterior predictive distribution}
 \usage{
 posterior_predict(
-  fit,
+  object,
   newdata,
   W,
   samples,
@@ -16,6 +16,8 @@ posterior_predict(
 )
 }
 \arguments{
+\item{object}{A \code{geostan_fit} object.}
+
 \item{newdata}{A \code{data.frame} or \code{matrix} with data to use for predictions. Must be named and the names must match the model formula.}
 
 \item{W}{Spatial connectivity matrix for calculating spatially lagged covariates (slx), if needed. If the model has an slx term then \code{newdata} must have the same number of rows as the data used to fit the model.}
@@ -29,11 +31,9 @@ posterior_predict(
 \item{spatial}{Include the spatial component in the model predictions? Defaults to \code{TRUE} and will be ignored if the model does not have a spatial comonent (i.e. \code{\link[geostan]{stan_glm}}). For models fit by \code{\link[geostan]{stan_esf}}, \code{\link[geostan]{stan_icar}}, and \code{\link[geostan]{stan_bym2}} this option requires that \code{newdata} have the same number of observations as the data that the model was fit to.}
 
 \item{seed}{A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution. Passing a value to \code{seed} enables you to obtain the same results each time (by using the same seed).}
-
-\item{object}{A \code{geostan_fit} object.}
 }
 \value{
-A matrix of size \code{S} x \code{N} containing samples from the posterior predictive distribution, where \code{S} is the number of samples and \code{N} is the number of observations. It is of class \code{matrix} and \code{ppd}, which means it can be passed to \code{\link[rstanarm]{predictive_interval}}.
+A matrix of size \code{S} x \code{N} containing samples from the posterior predictive distribution, where \code{S} is the number of samples and \code{N} is the number of observations. It is of class \code{matrix} and \code{ppd}.
 }
 \description{
 Draw samples from the posterior predictive distribution of a fitted \code{geostan} model. Use the original data or new data, with or without the spatial component and random effects terms.
@@ -43,7 +43,7 @@ library(bayesplot)
 data(ohio)
 ## fit Ohio election model with a spatial filter
 fit <- stan_esf(gop_growth ~ log(pop_density) + historic_gop + college_educated,
-                slx = ~ ., 
+                slx = ~ log(pop_density) + historic_gop + college_educated, 
                 data = ohio,
                 family = student_t(),
                 C = shape2mat(ohio, "B"),

@@ -32,7 +32,7 @@ stan_icar(
 )
 }
 \arguments{
-\item{formula}{A model formula, following the R \link[stats]{formula} syntax. If an offset term is provided for a Poisson model, it will be transformed to the log scale (and it will be ignored if its not a Poisson model); to add an offset term \code{E} to a formula use \code{y ~ offset(E)}. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.}
+\item{formula}{A model formula, following the R \link[stats]{formula} syntax. If an offset term is provided for a Poisson model, it will be transformed to the log scale internally; to add an offset term \code{E} to a formula use \code{y ~ offset(E)}. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.}
 
 \item{slx}{Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
@@ -56,7 +56,7 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{prior_tau}{Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.}
 
-\item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE} for computational efficiency. This alters the interpretation of the intercept term! See \code{Details}) below. It also makes setting the prior distribution for the interecept intuitive; if you choose not to center the data, then you may need to set \code{prior_intercept} manually.}
+\item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below. It also makes setting the prior distribution for the interecept intuitive.}
 
 \item{scalex}{Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.}
 
@@ -88,6 +88,7 @@ An object of class class \code{geostan_fit} (a list) containing:
 \item{re}{A list containing \code{re}, the random effects (varying intercepts) formula if provided, and 
  \code{Data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 \item{priors}{Prior specifications.}
+\item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
 \item{spatial}{A data frame with the name of the spatial component parameter ("phi") and method ("ICAR")}
 }
 }
@@ -96,9 +97,7 @@ Fit a regression model with an intrinsic conditional auto-regressive (ICAR) spat
 }
 \details{
 If the \code{centerx = TRUE} (the default), then the intercept is the expected value of the outcome variable when 
-  all of the covariates are at their mean value. This often has interpretive value in itself
-  though it is the  default here for computational reasons.
-  The default prior distribution for the intercept assumes that the covariates have been centered.
+  all of the covariates are at their mean value. 
 
  The Stan code for the ICAR component of the model follows Morris et al. (2019).
    

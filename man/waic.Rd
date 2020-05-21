@@ -14,17 +14,15 @@ waic(fit, pointwise = FALSE, digits = 2)
 \item{digits}{Defaults to 2. Round results to this many digits.}
 }
 \value{
-A vector of length 3 with the WAIC, a rough measure of the effective number of parameters estimated by the model and log predictive density (lpd). If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
+A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density (\code{Lpd}). If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
 }
 \description{
 Widely Application Information Criteria (WAIC) for model evalution
 }
 \examples{
-
-library(sf)
 data(ohio)
-fit <- stan_esf(gop_growth ~ 1, data = ohio, C = shape2mat(C),
-                chains = 1, iter = 500)
+fit <- stan_esf(gop_growth ~ 1, data = ohio, C = shape2mat(ohio),
+                chains = 1, iter = 400)
 waic(fit)
 
 }

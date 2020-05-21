@@ -796,9 +796,9 @@ public:
             current_statement_begin__ = 91;
             stan::math::assign(rho, inv_logit(logit_rho));
             current_statement_begin__ = 92;
-            stan::math::assign(convolved_re, add(multiply(stan::math::sqrt((rho / scaling_factor)), v), multiply(stan::math::sqrt((1 - rho)), u)));
+            stan::math::assign(convolved_re, multiply(sigma_re, add(multiply(stan::math::sqrt((rho / scaling_factor)), v), multiply(stan::math::sqrt((1 - rho)), u))));
             current_statement_begin__ = 93;
-            stan::math::assign(f, add(add(offset, intercept), multiply(convolved_re, sigma_re)));
+            stan::math::assign(f, add(add(offset, intercept), convolved_re));
             current_statement_begin__ = 94;
             if (as_bool(dx)) {
                 current_statement_begin__ = 95;
@@ -924,8 +924,8 @@ public:
         names__.push_back("residual");
         names__.push_back("log_lik");
         names__.push_back("alpha_re");
-        names__.push_back("phi");
-        names__.push_back("theta");
+        names__.push_back("ssre");
+        names__.push_back("sure");
     }
     void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
         dimss__.resize(0);
@@ -1092,9 +1092,9 @@ public:
             current_statement_begin__ = 91;
             stan::math::assign(rho, inv_logit(logit_rho));
             current_statement_begin__ = 92;
-            stan::math::assign(convolved_re, add(multiply(stan::math::sqrt((rho / scaling_factor)), v), multiply(stan::math::sqrt((1 - rho)), u)));
+            stan::math::assign(convolved_re, multiply(sigma_re, add(multiply(stan::math::sqrt((rho / scaling_factor)), v), multiply(stan::math::sqrt((1 - rho)), u))));
             current_statement_begin__ = 93;
-            stan::math::assign(f, add(add(offset, intercept), multiply(convolved_re, sigma_re)));
+            stan::math::assign(f, add(add(offset, intercept), convolved_re));
             current_statement_begin__ = 94;
             if (as_bool(dx)) {
                 current_statement_begin__ = 95;
@@ -1164,15 +1164,15 @@ public:
             stan::math::initialize(alpha_re, DUMMY_VAR__);
             stan::math::fill(alpha_re, DUMMY_VAR__);
             current_statement_begin__ = 130;
-            validate_non_negative_index("phi", "n", n);
-            Eigen::Matrix<double, Eigen::Dynamic, 1> phi(n);
-            stan::math::initialize(phi, DUMMY_VAR__);
-            stan::math::fill(phi, DUMMY_VAR__);
+            validate_non_negative_index("ssre", "n", n);
+            Eigen::Matrix<double, Eigen::Dynamic, 1> ssre(n);
+            stan::math::initialize(ssre, DUMMY_VAR__);
+            stan::math::fill(ssre, DUMMY_VAR__);
             current_statement_begin__ = 131;
-            validate_non_negative_index("theta", "n", n);
-            Eigen::Matrix<double, Eigen::Dynamic, 1> theta(n);
-            stan::math::initialize(theta, DUMMY_VAR__);
-            stan::math::fill(theta, DUMMY_VAR__);
+            validate_non_negative_index("sure", "n", n);
+            Eigen::Matrix<double, Eigen::Dynamic, 1> sure(n);
+            stan::math::initialize(sure, DUMMY_VAR__);
+            stan::math::fill(sure, DUMMY_VAR__);
             // generated quantities statements
             current_statement_begin__ = 132;
             if (as_bool(has_re)) {
@@ -1188,15 +1188,15 @@ public:
             current_statement_begin__ = 137;
             for (int i = 1; i <= n; ++i) {
                 current_statement_begin__ = 138;
-                stan::model::assign(phi, 
+                stan::model::assign(ssre, 
                             stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                             ((sigma_re * stan::math::sqrt((rho / scaling_factor))) * get_base1(v, i, "v", 1)), 
-                            "assigning variable phi");
+                            "assigning variable ssre");
                 current_statement_begin__ = 139;
-                stan::model::assign(theta, 
+                stan::model::assign(sure, 
                             stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                             ((sigma_re * stan::math::sqrt((1 - rho))) * get_base1(u, i, "u", 1)), 
-                            "assigning variable theta");
+                            "assigning variable sure");
                 current_statement_begin__ = 140;
                 stan::model::assign(fitted, 
                             stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
@@ -1259,14 +1259,14 @@ public:
                 vars__.push_back(alpha_re(j_1__));
             }
             current_statement_begin__ = 130;
-            size_t phi_j_1_max__ = n;
-            for (size_t j_1__ = 0; j_1__ < phi_j_1_max__; ++j_1__) {
-                vars__.push_back(phi(j_1__));
+            size_t ssre_j_1_max__ = n;
+            for (size_t j_1__ = 0; j_1__ < ssre_j_1_max__; ++j_1__) {
+                vars__.push_back(ssre(j_1__));
             }
             current_statement_begin__ = 131;
-            size_t theta_j_1_max__ = n;
-            for (size_t j_1__ = 0; j_1__ < theta_j_1_max__; ++j_1__) {
-                vars__.push_back(theta(j_1__));
+            size_t sure_j_1_max__ = n;
+            for (size_t j_1__ = 0; j_1__ < sure_j_1_max__; ++j_1__) {
+                vars__.push_back(sure(j_1__));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -1404,16 +1404,16 @@ public:
             param_name_stream__ << "alpha_re" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
-        size_t phi_j_1_max__ = n;
-        for (size_t j_1__ = 0; j_1__ < phi_j_1_max__; ++j_1__) {
+        size_t ssre_j_1_max__ = n;
+        for (size_t j_1__ = 0; j_1__ < ssre_j_1_max__; ++j_1__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "phi" << '.' << j_1__ + 1;
+            param_name_stream__ << "ssre" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
-        size_t theta_j_1_max__ = n;
-        for (size_t j_1__ = 0; j_1__ < theta_j_1_max__; ++j_1__) {
+        size_t sure_j_1_max__ = n;
+        for (size_t j_1__ = 0; j_1__ < sure_j_1_max__; ++j_1__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "theta" << '.' << j_1__ + 1;
+            param_name_stream__ << "sure" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
     }
@@ -1527,16 +1527,16 @@ public:
             param_name_stream__ << "alpha_re" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
-        size_t phi_j_1_max__ = n;
-        for (size_t j_1__ = 0; j_1__ < phi_j_1_max__; ++j_1__) {
+        size_t ssre_j_1_max__ = n;
+        for (size_t j_1__ = 0; j_1__ < ssre_j_1_max__; ++j_1__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "phi" << '.' << j_1__ + 1;
+            param_name_stream__ << "ssre" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
-        size_t theta_j_1_max__ = n;
-        for (size_t j_1__ = 0; j_1__ < theta_j_1_max__; ++j_1__) {
+        size_t sure_j_1_max__ = n;
+        for (size_t j_1__ = 0; j_1__ < sure_j_1_max__; ++j_1__) {
             param_name_stream__.str(std::string());
-            param_name_stream__ << "theta" << '.' << j_1__ + 1;
+            param_name_stream__ << "sure" << '.' << j_1__ + 1;
             param_names__.push_back(param_name_stream__.str());
         }
     }
