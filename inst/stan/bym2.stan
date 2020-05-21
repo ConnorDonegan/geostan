@@ -37,16 +37,16 @@ generated quantities {
   vector[n] residual;
   vector[n] log_lik;
   vector[n_ids] alpha_re;
-  vector[n] phi; //scaled v
-  vector[n] theta; // scaled u
+  vector[n] ssre; //scaled v phi:ssre
+  vector[n] sure; // scaled u theta:sure
   if (has_re) {
     for (i in 1:n_ids) {
       alpha_re[i] = alpha_tau[has_re] * alpha_re_tilde[i];
     }
   }
   for (i in 1:n) {
-    phi[i] = sigma_re * sqrt(rho / scaling_factor) * v[i];
-    theta[i] = sigma_re * sqrt(1 - rho) * u[i];
+    ssre[i] = sigma_re * sqrt(rho / scaling_factor) * v[i];
+    sure[i] = sigma_re * sqrt(1 - rho) * u[i];
     fitted[i] = exp(f[i]);
     residual[i] = fitted[i] - y[i];
     log_lik[i] = poisson_log_lpmf(y[i] | f[i]);
