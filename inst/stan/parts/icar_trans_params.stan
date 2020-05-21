@@ -1,7 +1,7 @@
 // if Poisson, offset term is natural log of user-provided offset vector
   vector[n] f;
   vector[dx] beta;
-  f = offset + intercept + phi; 
+  f = offset + intercept + phi * phi_scale; 
   if (dx) {
     f += Q_ast * beta_tilde;
     beta = R_inverse * beta_tilde;

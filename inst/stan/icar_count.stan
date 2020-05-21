@@ -24,6 +24,7 @@ transformed parameters {
 model {
 #include parts/glm_model.stan
   phi ~ icar_normal_lpdf(n, node1, node2);
+  phi_scale ~ normal(0, phi_scale_prior);
   y ~ poisson_log(f); 
  }
 

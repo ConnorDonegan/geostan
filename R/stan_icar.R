@@ -10,12 +10,11 @@
 #' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula synatax, as in \code{~ ID}. If this is specified at the observational unit level then it becomes the original Besag-York-Mollie model. In that case this random effects term and the ICAR component are not separately identifiable. The resulting random effects parameter returned is named \code{alpha_re}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param C Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.
-#' @param family The likelihood function for the outcome variable. Current options are \code{gaussian()}, \code{student_t()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}. 
+#' @param family The likelihood function for the outcome variable. Current options are \code{binomial(link = "logit")} and \code{poisson(link = "log")}. 
 #' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. When setting this prior, keep in mind that if \code{centerx = TRUE} (the default), then the intercept is the expected outcome when covariates are at their mean level.
-#' @param prior_sigma A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on the residual standard deviation \code{sigma}. Use a half-Cauchy prior by setting degrees of freedom to one; e.g. \code{prior_sigma = c(5, 0, 10)}.
-#' @param prior_nu Set the parameters for the Gamma prior distribution on the degrees of freedom in the likelihood function if your using \code{family = student_t}. Defaults to \code{prior_nu = c(alpha = 2, beta = .1)}.
-#' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.
+#' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.
+#' @param prior_phi Prior for the scale of the spatial ICAR component \code{phi}. \code{phi} is scaled by the parameter \code{phi_scale} which is given a positively-constrained (half-) Gaussian prior distribution with its location parameter at zero and scale parameter set to \code{prior_phi}. This defaults to \code{prior_phi = 2}.
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below. It also makes setting the prior distribution for the interecept intuitive.
 #' @param scalex Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
@@ -71,14 +70,13 @@
 #' C <- shape2mat(sentencing)
 #' fit.icar <- stan_icar(sents ~ offset(expected_sents), family = poisson(),
 #'                      data = sentencing@data, C = C,
-#'                     chains = 1, iter = 2e3)
+#'                     chains = 1, iter = 500)
 #'
-#' # add exchangeable random effects (for a BYM model)
-#'  # this will put a hyperprior on the scale of the exchangeable random effects,
-#'    # but still has no hyperprior on the spatial random effect. For a stronger option, see stan_bym2
-#' fit.bym <- stan_icar(sents ~ offset(expected_sents), re = ~ name, family = poisson(),
-#'                     data = sentencing@data, C = C,
-#'                     chains = 1, iter = 3e3)
+#' # add exchangeable random effects (for a BYM model). See stan_bym2 for a better model.
+#' fit.bym <- stan_icar(sents ~ offset(expected_sents), re = ~ name,
+#'                      family = poisson(),
+#'                      data = sentencing@data, C = C,
+#'                      chains = 1, iter = 500)
 #'
 #' # view WAIC 
 #' waic(fit.icar)
@@ -95,9 +93,9 @@
 
 # posterior predictive check: predicted distribution should resemble observed distribution
 #' library(bayesplot)
-#' yrep <- posterior_predict(fit.icar)
+#' yrep <- posterior_predict(fit.icar, samples = 100)
 #' y <- sentencing$sents
-#' ppc_dens_overlay(y, yrep[1:100,])
+#' ppc_dens_overlay(y, yrep)
 
 #' # map standardized incidence (sentencing) ratios
 #' E <- sentencing$expected_sents
@@ -109,12 +107,11 @@
 #'  theme_bw() +
 #'  ggtitle("Standardized state prison sentencing ratios, 1905-1910")
 #'
-stan_icar <- function(formula, slx, re, data, C, family = gaussian(),
-                      prior = NULL, prior_intercept = NULL, prior_sigma = NULL, prior_nu = NULL,
-                      prior_tau = NULL,
+stan_icar <- function(formula, slx, re, data, C, family = poisson(),
+                      prior = NULL, prior_intercept = NULL, prior_tau = NULL, prior_phi = 2,
                 centerx = TRUE, scalex = FALSE, chains = 4, iter = 5e3, refresh = 500, pars = NULL,
                 control = list(adapt_delta = .9, max_treedepth = 15), ...) {
-  if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "binomial", "poisson")) stop ("Must provide a valid family object: gaussian(), student_t(), binomial(), or poisson().")
+  if (class(family) != "family" | !family$family %in% c("binomial", "poisson")) stop ("Must provide a valid family object: binomial() or poisson().")
   if (missing(formula) | class(formula) != "formula") stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
   if (missing(data) | missing(C)) stop("Must provide data (a data.frame or object coercible to a data.frame) and connectivity matrix C.")
   tmpdf <- as.data.frame(data)
@@ -161,11 +158,12 @@ stan_icar <- function(formula, slx, re, data, C, family = gaussian(),
     n_ids <- length(unique(id))
     id_index <- to_index(id)
     re_list <- list(formula = re, Data = id_index)
-  } 
-  is_student <- family$family == "student_t"
-  priors <- list(intercept = prior_intercept, beta = prior, sigma = prior_sigma, nu = prior_nu, alpha_tau = prior_tau)
+  }
+  is_student = FALSE
+  priors <- list(intercept = prior_intercept, beta = prior, alpha_tau = prior_tau)
   priors <- make_priors(user_priors = priors, y = y, x = x, xcentered = centerx,
                         link = family$link)
+  priors$phi_scale_prior <- prior_phi
     standata <- list(
     y = y,
     x = x,
@@ -180,26 +178,22 @@ stan_icar <- function(formula, slx, re, data, C, family = gaussian(),
     n_ids = n_ids,
     id = id_index$idx,
     alpha_prior = priors$intercept,
-    beta_prior = t(priors$beta), 
+    beta_prior = t(priors$beta),
+    phi_scale_prior = priors$phi_scale_prior,
     sigma_prior = priors$sigma,
     alpha_tau_prior = priors$alpha_tau,
     t_nu_prior = priors$nu,
     is_student = is_student,
-    has_sigma = family$family %in% c("gaussian", "student_t")
+    has_sigma = FALSE
     )
   if (family$family == "binomial") {
       standata$y <- y[,1]
       standata$N <- y[,1] + y[,2]
   }
-  pars <- c(pars, 'intercept', 'phi', 'residual', 'log_lik', 'yrep', 'fitted')
+  pars <- c(pars, 'intercept', 'phi', 'phi_scale', 'residual', 'log_lik', 'yrep', 'fitted')
   if (!intercept_only) pars <- c(pars, 'beta')
-  if (family$family %in% c("gaussian", "student_t")) pars <- c(pars, 'sigma')
-  if (is_student) pars <- c(pars, "nu")
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
   priors <- priors[which(names(priors) %in% pars)]
-  if (family$family %in% c("gaussian", "student_t")) {
-       samples <- rstan::sampling(stanmodels$icar_continuous, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
-     }
   if (family$family == "binomial") {
       samples <- rstan::sampling(stanmodels$icar_binomial, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init_r = 1, ...)
     }

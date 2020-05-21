@@ -18,12 +18,10 @@
 #' data(ohio)
 #' ## fit Ohio election model with a spatial filter
 #' fit <- stan_esf(gop_growth ~ log(pop_density) + historic_gop + college_educated,
-#'                 slx = ~ log(pop_density) + historic_gop + college_educated, 
 #'                 data = ohio,
 #'                 family = student_t(),
 #'                 C = shape2mat(ohio, "B"),
-#'                 iter = 600, chains = 1 ## low iter for speed only
-#'                 )
+#'                 iter = 500, chains = 1)
 #' 
 #' ## posterior predictive check (density overlay)
 #' ## compare distribution of observations to the predictive distribution

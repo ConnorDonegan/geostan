@@ -15,12 +15,11 @@ stan_icar(
   re,
   data,
   C,
-  family = gaussian(),
+  family = poisson(),
   prior = NULL,
   prior_intercept = NULL,
-  prior_sigma = NULL,
-  prior_nu = NULL,
   prior_tau = NULL,
+  prior_phi = 2,
   centerx = TRUE,
   scalex = FALSE,
   chains = 4,
@@ -44,17 +43,15 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{C}{Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.}
 
-\item{family}{The likelihood function for the outcome variable. Current options are \code{gaussian()}, \code{student_t()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}.}
+\item{family}{The likelihood function for the outcome variable. Current options are \code{binomial(link = "logit")} and \code{poisson(link = "log")}.}
 
 \item{prior}{A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.}
 
 \item{prior_intercept}{A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. When setting this prior, keep in mind that if \code{centerx = TRUE} (the default), then the intercept is the expected outcome when covariates are at their mean level.}
 
-\item{prior_sigma}{A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on the residual standard deviation \code{sigma}. Use a half-Cauchy prior by setting degrees of freedom to one; e.g. \code{prior_sigma = c(5, 0, 10)}.}
+\item{prior_tau}{Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.}
 
-\item{prior_nu}{Set the parameters for the Gamma prior distribution on the degrees of freedom in the likelihood function if your using \code{family = student_t}. Defaults to \code{prior_nu = c(alpha = 2, beta = .1)}.}
-
-\item{prior_tau}{Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.}
+\item{prior_phi}{Prior for the scale of the spatial ICAR component \code{phi}. \code{phi} is scaled by the parameter \code{phi_scale} which is given a positively-constrained (half-) Gaussian prior distribution with its location parameter at zero and scale parameter set to \code{prior_phi}. This defaults to \code{prior_phi = 2}.}
 
 \item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below. It also makes setting the prior distribution for the interecept intuitive.}
 
@@ -117,14 +114,13 @@ data(sentencing)
 C <- shape2mat(sentencing)
 fit.icar <- stan_icar(sents ~ offset(expected_sents), family = poisson(),
                      data = sentencing@data, C = C,
-                    chains = 1, iter = 2e3)
+                    chains = 1, iter = 500)
 
-# add exchangeable random effects (for a BYM model)
- # this will put a hyperprior on the scale of the exchangeable random effects,
-   # but still has no hyperprior on the spatial random effect. For a stronger option, see stan_bym2
-fit.bym <- stan_icar(sents ~ offset(expected_sents), re = ~ name, family = poisson(),
-                    data = sentencing@data, C = C,
-                    chains = 1, iter = 3e3)
+# add exchangeable random effects (for a BYM model). See stan_bym2 for a better model.
+fit.bym <- stan_icar(sents ~ offset(expected_sents), re = ~ name,
+                     family = poisson(),
+                     data = sentencing@data, C = C,
+                     chains = 1, iter = 500)
 
 # view WAIC 
 waic(fit.icar)
@@ -139,9 +135,9 @@ rstan::stan_ess(fit.icar$stanfit)
 # or for a particular parameter
 rstan::stan_ess(fit.icar$stanfit, "phi")
 library(bayesplot)
-yrep <- posterior_predict(fit.icar)
+yrep <- posterior_predict(fit.icar, samples = 100)
 y <- sentencing$sents
-ppc_dens_overlay(y, yrep[1:100,])
+ppc_dens_overlay(y, yrep)
 # map standardized incidence (sentencing) ratios
 E <- sentencing$expected_sents
 sentencing@data$ssr <- fitted(fit.bym)$mean / E
