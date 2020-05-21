@@ -51,7 +51,7 @@
 #' E <- fl$expected_sents
 #' map_pp <- function(i) {
 #'    ggplot(fl) +
-#'    geom_sf(aes(fill = yrep[i,] / E) +
+#'    geom_sf(aes(fill = yrep[i,] / E)) +
 #'    scale_fill_gradient2(midpoint = 1) +
 #'    theme_void()
 #' }
@@ -91,8 +91,8 @@ posterior_predict <- function(object, newdata, W, samples, predictive = TRUE, re
     }
     x <- model.matrix(object$formula, data = newdata) 
     x <- remove_intercept(x)
-    if (centerx) centerx <- fit$scale_params$center
-    if (scalex) scalex <- fit$scale_params$scale
+    if (centerx) centerx <- object$scale_params$center
+    if (scalex) scalex <- object$scale_params$scale
     x <- scale(x, center = centerx, scale = scalex)
     offset <- model.offset(model.frame(object$formula, newdata))
     if (!is.null(offset) & family == "poisson") offset <- log(offset)
