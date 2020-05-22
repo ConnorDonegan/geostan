@@ -108,6 +108,7 @@ If the \code{centerx = TRUE} (the default), then the intercept is the expected v
 \examples{
 library(ggplot2)
 library(sf)
+library(rstan)
 data(sentencing)
 
 # using a small number of iterations and a single chain only for compilation speed

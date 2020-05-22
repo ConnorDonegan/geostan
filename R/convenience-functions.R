@@ -48,8 +48,9 @@ mc <- function(x, w) {
 #' moran_plot(y, w)
 #'
 moran_plot <- function(y, w, xlab = "y", ylab = "Spatial Lag", pch = 20, col = "darkred", size = 2, alpha = 1, lwd = 0.5) {
-    if (class(y) != "numeric") stop("y must be a numeric vector")
-    if (class(w) != "matrix") stop("w must be an n x n matrix")
+    if (!inherits(y, "numeric")) stop("y must be a numeric vector")
+    sqr <- all( dim(w) == length(y) )
+    if (!inherits(w, "matrix") | !sqr) stop("w must be an n x n matrix where n = length(y)")
     ylag <- as.numeric(w %*% y)
     sub <- paste0("MC = ", round(mc(y, w),3))
     ggplot(data.frame(y = y,
@@ -174,7 +175,7 @@ shape2mat <- function(shape, style = "B", t = 1, st.type = "contemp", zero.polic
   }
   attributes(w)$dimnames <- NULL
   if (t > 1) { 
-      if (style != "B") stop ("Only the binary coding scheme (style = "B") has been implemented for space-time matrices.")
+      if (style != "B") stop ("Only the binary coding scheme (style = 'B') has been implemented for space-time matrices.")
       ## binary temporal connectivity matrix
       s <- nrow(w)
       Ct <- matrix(0, nrow = t, ncol = t)

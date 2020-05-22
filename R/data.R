@@ -1,4 +1,4 @@
-#' Growth in the Republican Presidential vote share, 2012 to 2016.
+#' Ohio Presidential election results
 #'
 #' @source
 #'

@@ -64,6 +64,7 @@
 #' @examples
 #' library(ggplot2)
 #' library(sf)
+#' library(rstan)
 #' data(sentencing)
 #'
 #' # using a small number of iterations and a single chain only for compilation speed

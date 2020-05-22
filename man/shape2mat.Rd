@@ -25,7 +25,7 @@ shape2mat(
 
 \item{style}{What kind of coding scheme should be used to create the spatial connectivity matrix? Defaults to "B" for binary; use "W" for row-standardized weights; "C" for globally standardized and "S" for the Tiefelsdorf et al.'s (1999) variance-stabilizing scheme. This is passed internally to \link[spdep]{nb2mat}. Inverse distance weighting ("IDW") is also available; IDW will calculate distances between polygon centroids and raise the distances to a power of \code{lambda} (by default \code{lambda=2}).}
 
-\item{t}{Number of time periods.}
+\item{t}{Number of time periods. Currently only the binary coding scheme is available for space-time connectivity matrices.}
 
 \item{st.type}{For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and (the default) "contemp" for contemporaneous specification.}
 

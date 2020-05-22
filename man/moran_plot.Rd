@@ -45,6 +45,7 @@ Plots a set of values against their mean spatially lagged values and gives the M
 For details on the symbol parameters see the documentation for \link[ggplot2]{geom_point}.
 }
 \examples{
+library(sf)
 data(ohio)
 y <- ohio$unemployment
 w <- shape2mat(ohio)
