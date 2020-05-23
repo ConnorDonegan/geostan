@@ -164,7 +164,7 @@ stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2
                      prior = NULL, prior_intercept = NULL, prior_sigma = NULL, prior_rhs = NULL, prior_nu = NULL,
                      prior_tau = NULL,
                      centerx = TRUE, scalex = FALSE,
-                     chains = 4, iter = 5e3, refresh = 500, pars = NULL,
+                     chains = 3, iter = 2e3, refresh = 500, pars = NULL,
                      control = list(adapt_delta = .99, max_treedepth = 15), ...) {
   if (missing(formula)) stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
   if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "poisson", "binomial")) stop ("Must provide a valid family object: gaussian(), student_t(), or poisson().")
@@ -180,19 +180,18 @@ stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2
     slx <- " "
     scale_params <- list()
       } else {
-    xraw <- model.matrix(formula, data = tmpdf)
-    xraw <- remove_intercept(xraw)
-    x.list <- scale_x(xraw, center = centerx, scale = scalex)
-    x <- x.list$x
-    scale_params <- x.list$params
+    x <- remove_intercept(model.matrix(formula, data = tmpdf))
     if (missing(slx)) {
         slx <- " "
         } else {
-           Wx <- SLX(f = slx, DF = tmpdf, SWM = C, cx = centerx, sx = scalex)
+           Wx <- SLX(f = slx, DF = tmpdf, SWM = C)
            x <- cbind(Wx, x)
     } 
     dx <- ncol(x)
-  }
+    x.list <- scale_x(x, center = centerx, scale = scalex)
+    x <- x.list$x
+    scale_params <- x.list$params  
+      }
   ModData <- make_data(formula, tmpdf, x)
   frame <- model.frame(formula, tmpdf)
   y <- model.response(frame)

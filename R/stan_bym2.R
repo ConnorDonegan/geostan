@@ -77,18 +77,17 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, C, family = poisson()
     slx <- " "
     scale_params <- list()    
       } else {
-    xraw <- model.matrix(formula, data = tmpdf)
-    xraw <- remove_intercept(xraw)
-    x.list <- scale_x(xraw, center = centerx, scale = scalex)
-    x <- x.list$x
-    scale_params <- x.list$params
+    x <- remove_intercept(model.matrix(formula, data = tmpdf))
     if (missing(slx)) {
         slx <- " "
         } else {
-           Wx <- SLX(f = slx, DF = tmpdf, SWM = C, cx = centerx, sx = scalex)
+           Wx <- SLX(f = slx, DF = tmpdf, SWM = C)
            x <- cbind(Wx, x)
     } 
     dx <- ncol(x)
+    x.list <- scale_x(x, center = centerx, scale = scalex)
+    x <- x.list$x
+    scale_params <- x.list$params    
       }
   ModData <- make_data(formula, tmpdf, x)
   frame <- model.frame(formula, tmpdf)

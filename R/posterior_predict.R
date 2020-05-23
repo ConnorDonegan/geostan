@@ -89,17 +89,16 @@ posterior_predict <- function(object, newdata, W, samples, predictive = TRUE, re
         y <- as.character(object$formula[[2]])
         if (!y %in% names(newdata))  newdata[,y] <- 0  
     }
-    x <- model.matrix(object$formula, data = newdata) 
-    x <- remove_intercept(x)
-    if (centerx) centerx <- object$scale_params$center
-    if (scalex) scalex <- object$scale_params$scale
-    x <- scale(x, center = centerx, scale = scalex)
+    x <- remove_intercept(model.matrix(object$formula, data = newdata))
     offset <- model.offset(model.frame(object$formula, newdata))
     if (!is.null(offset) & family == "poisson") offset <- log(offset)
     if ( spatial & (class(object$slx) == "formula") ) {
-         Wx <- SLX(f = object$slx, DF = newdata, SWM = W, cx = FALSE, sx = FALSE)
+         Wx <- SLX(f = object$slx, DF = newdata, SWM = W)
          x <- cbind(Wx, x)
     }
+    if (centerx) centerx <- object$scale_params$center
+    if (scalex) scalex <- object$scale_params$scale
+    x <- scale(x, center = centerx, scale = scalex)    
     alpha <- as.matrix(object, pars = "intercept")[idx,]
     beta <- as.matrix(object, pars = "beta")[idx,]
     mu <- alpha + beta %*% t(x)

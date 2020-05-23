@@ -32,11 +32,10 @@ scale_x <- function(x, center, scale) {
 
 #' @importFrom stats model.matrix
 #' @noRd
-SLX <- function(f, DF, SWM, cx, sx) {
+SLX <- function(f, DF, SWM) {
     # row-standardize the connectivity matrix
     W <- SWM / rowSums(SWM)
     x <- remove_intercept(model.matrix(f, DF))
-    x <- apply(x, MARGIN = 2, FUN = scale, center = cx, scale = sx)
     Wx <- W %*% x
     dimnames(Wx)[[2]] <- paste0("w.", dimnames(Wx)[[2]])
     return(Wx)
