@@ -204,7 +204,7 @@ clean_results <- function(samples, pars, is_student, has_re, C, x) {
     b_names = paste0("b_", dimnames(x)[[2]])
     samples <- par_alias(samples, "^beta\\[", b_names)
   }
-  if ("sigma[1]" %in% pars) samples <- par_alias(samples, "^sigma\\[1\\]", "sigma")
+  if ("sigma" %in% pars) samples <- par_alias(samples, "^sigma\\[1\\]", "sigma")
   if (is_student) samples <- par_alias(samples, "^nu\\[1\\]", "nu")
   if (has_re) samples <- par_alias(samples, "^alpha_tau\\[1\\]", "alpha_tau")
   main_pars <- pars[which(pars %in% c("intercept", "alpha_tau", "beta", "sigma", "nu", "rho"))]
@@ -224,10 +224,9 @@ clean_results <- function(samples, pars, is_student, has_re, C, x) {
       Expected_MC <- expected_mc(X = x, C = C)
       }
      }
-  RMSE <- rmse(residuals, digits = 2)
   WAIC <- geostan::waic(samples)
   diagnostic <- c(WAIC = as.numeric(WAIC[1]), Eff_pars = as.numeric(WAIC[2]), Lpd = as.numeric(WAIC[3]),
-                  Residual_MC = Residual_MC, Expected_MC = Expected_MC, RMSE = RMSE)
+                  Residual_MC = Residual_MC, Expected_MC = Expected_MC)
   out <- list(summary = summary, diagnostic = diagnostic, stanfit = samples)
   return(out)
 }

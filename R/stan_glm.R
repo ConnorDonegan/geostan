@@ -32,7 +32,7 @@
 #' \describe{
 #' \item{summary}{Summaries of the main parameters of interest; a data frame}
 #' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (\code{eff_pars}) and 
-#'  mean log pointwise predictive density (\code{lpd}), residual spatial autocorrelation (Moran coefficient of the residuals), and root mean squared error. Residuals are relative to the mean fitted value for each observation.}
+#'  mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' \item{data}{a data frame containing the model data}
 #' \item{edges}{The edge list representing all unique sets of neighbors}
