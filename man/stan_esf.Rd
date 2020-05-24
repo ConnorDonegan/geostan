@@ -34,7 +34,7 @@ stan_esf(
   prior_rhs = NULL,
   prior_nu = NULL,
   prior_tau = NULL,
-  centerx = TRUE,
+  centerx = FALSE,
   scalex = FALSE,
   chains = 4,
   iter = 2000,
@@ -70,7 +70,7 @@ The value of \code{p0} is used to control the prior degree of sparsity in the mo
 
 \item{prior}{A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.}
 
-\item{prior_intercept}{A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. When setting this prior, keep in mind that if \code{centerx = TRUE} (the default), then the intercept is the expected outcome when covariates are at their mean level.}
+\item{prior_intercept}{A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}.}
 
 \item{prior_sigma}{A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on the residual standard deviation \code{sigma}. To use a half-Cauchy prior set degrees of freedom to one; e.g. \code{prior_sigma = c(1, 0, 3)}.}
 
@@ -80,7 +80,7 @@ The value of \code{p0} is used to control the prior degree of sparsity in the mo
 
 \item{prior_tau}{Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts (\code{alpha_re}). The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 5)}.}
 
-\item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below.}
+\item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.}
 
 \item{scalex}{Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.}
 
@@ -121,10 +121,7 @@ Fit a spatial regression model using eigenvector spatial filtering where the spa
 estimated using the regularized horseshoe prior.
 }
 \details{
-If the \code{centerx = TRUE} (the default), then the intercept is the expected value of the outcome variable when 
-  all of the covariates are at their mean value. 
-   
- The function returns the spatial filter \code{esf}, 
+The function returns the spatial filter \code{esf}, 
  i.e. the linear combination of eigenvectors representing spatial autocorrelation patterns in the outcome variable. 
  The entire posterior distribution of the spatial filter
  can be obtained with the following code: \code{post_esf <- spatial(fit, summary = FALSE)} where \code{fit} is

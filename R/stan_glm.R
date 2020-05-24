@@ -17,7 +17,7 @@
 #' @param prior_nu Set the parameters for the Gamma prior distribution on the degrees of freedom in the likelihood function when using \code{family = student_t}. Defaults to \code{prior_nu = c(alpha = 2, beta = .1)}.
 #' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}. 
-#' @param scalex Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
+#' @param scalex Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
 #' @param iter Number of samples per chain. Default \code{iter = 2000}.
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.
@@ -94,6 +94,7 @@ stan_glm <- function(formula, slx, re, data, C, family = gaussian(),
   if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "binomial", "poisson")) stop ("Must provide a valid family object: poisson().")
   if (missing(formula) | class(formula) != "formula") stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
   if (missing(data)) stop("Must provide data (a data.frame or object coercible to a data.frame).")
+  if (scalex) centerx <- TRUE
   tmpdf <- as.data.frame(data)
   intercept_only <- ifelse(all(dimnames(model.matrix(formula, tmpdf))[[2]] == "(Intercept)"), 1, 0) 
   if (intercept_only) {

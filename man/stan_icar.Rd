@@ -20,7 +20,7 @@ stan_icar(
   prior_intercept = NULL,
   prior_tau = NULL,
   prior_phi = 1,
-  centerx = TRUE,
+  centerx = FALSE,
   scalex = FALSE,
   chains = 4,
   iter = 2000,
@@ -47,13 +47,13 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{prior}{A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.}
 
-\item{prior_intercept}{A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. When setting this prior, keep in mind that if \code{centerx = TRUE} (the default), then the intercept is the expected outcome when covariates are at their mean level.}
+\item{prior_intercept}{A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}.}
 
 \item{prior_tau}{Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.}
 
 \item{prior_phi}{Prior for the scale of the spatial ICAR component \code{phi}. \code{phi} is scaled by the parameter \code{phi_scale} which is given a positively-constrained (half-) Gaussian prior distribution with its location parameter at zero and scale parameter set to \code{prior_phi}. This defaults to \code{prior_phi = 1}.}
 
-\item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below.}
+\item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.}
 
 \item{scalex}{Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.}
 
@@ -92,10 +92,7 @@ An object of class class \code{geostan_fit} (a list) containing:
 Fit a regression model with an intrinsic conditional auto-regressive (ICAR) spatial component. Only fully connected graphs are currenlty supported (i.e. all polygons must have at least one neighbor and there can be no disconnected islands or regions).
 }
 \details{
-If the \code{centerx = TRUE} (the default), then the intercept is the expected value of the outcome variable when 
-  all of the covariates are at their mean value. 
-
- The Stan code for the ICAR component of the model follows Morris et al. (2019).
+The Stan code for the ICAR component of the model follows Morris et al. (2019).
    
  The function returns the ICAR component in the parameter \code{phi}.
  The entire posterior distribution of \code{phi}

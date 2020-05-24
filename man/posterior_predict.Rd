@@ -13,7 +13,7 @@ posterior_predict(
   re_form = NULL,
   spatial = TRUE,
   seed,
-  centerx = TRUE,
+  centerx = FALSE,
   scalex = FALSE
 )
 }
@@ -34,7 +34,7 @@ posterior_predict(
 
 \item{seed}{A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution. Passing a value to \code{seed} enables you to obtain the same results each time (by using the same seed).}
 
-\item{centerx}{Should \code{newdata} be centered using the means of the variables in the original data used to fit the model (stored in \code{fit$scale_params})? Defaults to \code{TRUE} but is (effectively) ignored if the model was fit with \code{centerx = FALSE}.}
+\item{centerx}{Should \code{newdata} be centered using the means of the variables in the original data used to fit the model (stored in \code{fit$scale_params})? Defaults to \code{FALSE}.}
 
 \item{scalex}{Should \code{newdata} be scaled using the standard deviations of the variables in the original data used to fit the model (stored in \code{fit$scale_params})? Defaults to \code{FALSE}.}
 }
@@ -66,7 +66,7 @@ ppc_dens_overlay(y, yrep)
 data(sentencing)
 C <- shape2mat(sentencing)
 fit <- stan_esf(sents ~ offset(expected_sents),
-                re = ~ name,
+              ##  re = ~ name,
                 data = sentencing,
                 family = poisson(),
                 C = C,

@@ -16,7 +16,7 @@
 #' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.
 #' @param prior_phi Prior for the scale of the spatial ICAR component \code{phi}. \code{phi} is scaled by the parameter \code{phi_scale} which is given a positively-constrained (half-) Gaussian prior distribution with its location parameter at zero and scale parameter set to \code{prior_phi}. This defaults to \code{prior_phi = 1}.
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.
-#' @param scalex Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
+#' @param scalex Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
 #' @param iter Number of samples per chain. Default \code{iter = 2000}.
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.
@@ -113,6 +113,7 @@ stan_icar <- function(formula, slx, re, data, C, family = poisson(),
   if (class(family) != "family" | !family$family %in% c("binomial", "poisson")) stop ("Must provide a valid family object: binomial() or poisson().")
   if (missing(formula) | class(formula) != "formula") stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
   if (missing(data) | missing(C)) stop("Must provide data (a data.frame or object coercible to a data.frame) and connectivity matrix C.")
+  if (scalex) centerx = TRUE
   tmpdf <- as.data.frame(data)
   nbs <- edges(C)
   n_edges <- nrow(nbs)
