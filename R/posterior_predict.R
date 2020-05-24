@@ -77,7 +77,7 @@ posterior_predict <- function(object, newdata, W, samples, predictive = TRUE, re
         newdata <- as.data.frame(newdata)
     }
     if ( spatial & (class(object$slx) == "formula") ) {
-        if (missing(W)) stop ("You must provide spatial weights matrix W to calculate spatial lag of X terms (slx)")
+        if (missing(W)) stop ("If spatial = TRUE, you must provide spatial weights matrix W to calculate spatial lag of X terms (slx) for this model")
         if ( nrow(newdata) != nrow(W) | (nrow(newdata) != nrow(object$data)) ) stop ("W, newdata, and object$data must have same number of rows.")
     }
     family <- object$family$family
@@ -101,6 +101,10 @@ posterior_predict <- function(object, newdata, W, samples, predictive = TRUE, re
     x <- scale(x, center = centerx, scale = scalex)    
     alpha <- as.matrix(object, pars = "intercept")[idx,]
     beta <- as.matrix(object, pars = "beta")[idx,]
+    if (!spatial & (class(object$slx) == "formula") ) {
+        slx.idx <- grep("b_w\\.", dimnames(beta)[[2]])
+        beta <- as.matrix( beta[,-slx.idx] )
+        }    
     mu <- alpha + beta %*% t(x)
     if (!is.null(offset)) mu <- sweep(mu, 2, offset, "+")
     if (is.null(re_form) & !is.na(object$re[1])) {
