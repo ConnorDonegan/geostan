@@ -12,7 +12,7 @@
 #' @param EV A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. If provided, still also provide a spatial weights matrix \code{C} for other purposes.  See \link[geostan]{make_EV} and \link[geostan]{shape2mat}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param nsa Include eigenvectors representing negative spatial autocorrelation? Default \code{nsa = FALSE}. Ignored if \code{EV} is provided.
-#' @param threshold Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = .2}; ignored if \code{EV} is provided. For moderately sized datasets, a threshold of .25 is typically sufficient if not ideal; smaller datasets (e.g. n < 70) have fewer eigenvectors within any given range of threshold values and a lower threshold (e.g. 0.20) is advisable.
+#' @param threshold Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = 0.25}; ignored if \code{EV} is provided. 
 #' @param family The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{student_t()} and \code{poisson(link = "log")}, and \code{binomial(link = "logit")}. 
 #' @param p0 Number of eigenvector coefficients expected to be far from zero. If missing, Chun et al.'s (2016) formula will be used to fill this in; see \link[geostan]{exp_pars}.
 #' The value of \code{p0} is used to control the prior degree of sparsity in the model.
@@ -25,7 +25,7 @@
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below.
 #' @param scalex Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
-#' @param iter Number of samples per chain. Default \code{iter = 5000}.
+#' @param iter Number of samples per chain. Default \code{iter = 2000}.
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model. Parameters from the RHS prios include \code{tau} (the global shrinkage parameter) and \code{lambda} (the local shrinkage parameter).
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{.99} and \code{max_treedepth = 15}.
@@ -92,7 +92,7 @@
 #'                 data = ohio,
 #'                 C = C,
 #'                 chains = 1,
-#'                 iter = 1e3,
+#'                 iter = 500,
 #'                 family = student_t())
 #' 
 #' ## trace plots
@@ -115,7 +115,10 @@
 #' 
 #' ## map the spatial filter
 #' ohio$esf <- spatial(fit)$mean
-#' plot(ohio[,'esf'])
+#' ggplot(ohio) +
+#'       geom_sf(aes(fill = esf)) +
+#'       scale_fill_gradient2() +
+#'       theme_void()
 #' 
 #' ## Moran plot of residuals (looking for residual spatial autocorrelation)
 #' w <- shape2mat(ohio, "W")
@@ -123,7 +126,7 @@
 #' moran_plot(res, w)
 #' 
 #' ## set priors for the main coefficients:
-#' ## coefficient priors must be a matrix with 3 columns (degrees of freedom, location, scale)
+#' ## coefficient priors must be a matrix with 2 columns (location, scale)
 #' ## the slx terms will be prepended to the model matrix (i.e. state their priors first)
 #' loc <- rep(0, times=6)
 #' scale <- rep(1, times=6)
@@ -139,7 +142,6 @@
 #'                scalex = TRUE)
 #'
 #' ## Poisson models. Model Jim Crow era prison sentencing risk in Florida.
-#' ## for Poisson models, the log of \code{expected_sents} will be used automatically
 #' data(sentencing)
 #' C <- shape2mat(sentencing, "B")
 #' fit <- stan_esf(sents ~ offset(expected_sents), re = ~ name, family = poisson(),
@@ -155,15 +157,15 @@
 #'        aes(fill = ssr)) +
 #'        geom_sf() +
 #'        scale_fill_gradient2(midpoint = 1) +
-#'        theme_bw() +
+#'        theme_void() +
 #'        ggtitle("Relative risk of sentencing, 1905-1910")
 #' }
 #'
-stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.2, family = gaussian(), p0,
+stan_esf <- function(formula, slx, re, data, C, EV, nsa = FALSE, threshold = 0.25, family = gaussian(), p0,
                      prior = NULL, prior_intercept = NULL, prior_sigma = NULL, prior_rhs = NULL, prior_nu = NULL,
                      prior_tau = NULL,
                      centerx = TRUE, scalex = FALSE,
-                     chains = 3, iter = 2e3, refresh = 500, pars = NULL,
+                     chains = 4, iter = 2e3, refresh = 500, pars = NULL,
                      control = list(adapt_delta = .99, max_treedepth = 15), ...) {
   if (missing(formula)) stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
   if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "poisson", "binomial")) stop ("Must provide a valid family object: gaussian(), student_t(), or poisson().")
