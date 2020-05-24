@@ -25,7 +25,7 @@ stan_esf(
   C,
   EV,
   nsa = FALSE,
-  threshold = 0.2,
+  threshold = 0.25,
   family = gaussian(),
   p0,
   prior = NULL,
@@ -36,7 +36,7 @@ stan_esf(
   prior_tau = NULL,
   centerx = TRUE,
   scalex = FALSE,
-  chains = 3,
+  chains = 4,
   iter = 2000,
   refresh = 500,
   pars = NULL,
@@ -61,7 +61,7 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{nsa}{Include eigenvectors representing negative spatial autocorrelation? Default \code{nsa = FALSE}. Ignored if \code{EV} is provided.}
 
-\item{threshold}{Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = .2}; ignored if \code{EV} is provided. For moderately sized datasets, a threshold of .25 is typically sufficient if not ideal; smaller datasets (e.g. n < 70) have fewer eigenvectors within any given range of threshold values and a lower threshold (e.g. 0.20) is advisable.}
+\item{threshold}{Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = 0.25}; ignored if \code{EV} is provided.}
 
 \item{family}{The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{student_t()} and \code{poisson(link = "log")}, and \code{binomial(link = "logit")}.}
 
@@ -86,7 +86,7 @@ The value of \code{p0} is used to control the prior degree of sparsity in the mo
 
 \item{chains}{Number of MCMC chains to estimate. Default \code{chains = 4}.}
 
-\item{iter}{Number of samples per chain. Default \code{iter = 5000}.}
+\item{iter}{Number of samples per chain. Default \code{iter = 2000}.}
 
 \item{refresh}{Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.}
 
@@ -149,7 +149,7 @@ fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density) + college_educated,
                 data = ohio,
                 C = C,
                 chains = 1,
-                iter = 1e3,
+                iter = 500,
                 family = student_t())
 
 ## trace plots
@@ -172,7 +172,10 @@ plot(fit, pars = c("beta", "intercept", "sigma"))
 
 ## map the spatial filter
 ohio$esf <- spatial(fit)$mean
-plot(ohio[,'esf'])
+ggplot(ohio) +
+      geom_sf(aes(fill = esf)) +
+      scale_fill_gradient2() +
+      theme_void()
 
 ## Moran plot of residuals (looking for residual spatial autocorrelation)
 w <- shape2mat(ohio, "W")
@@ -180,7 +183,7 @@ res <- resid(fit)$mean
 moran_plot(res, w)
 
 ## set priors for the main coefficients:
-## coefficient priors must be a matrix with 3 columns (degrees of freedom, location, scale)
+## coefficient priors must be a matrix with 2 columns (location, scale)
 ## the slx terms will be prepended to the model matrix (i.e. state their priors first)
 loc <- rep(0, times=6)
 scale <- rep(1, times=6)
@@ -196,7 +199,6 @@ fit <- stan_esf(gop_growth ~ historic_gop + log(population) + college_educated,
                scalex = TRUE)
 
 ## Poisson models. Model Jim Crow era prison sentencing risk in Florida.
-## for Poisson models, the log of \code{expected_sents} will be used automatically
 data(sentencing)
 C <- shape2mat(sentencing, "B")
 fit <- stan_esf(sents ~ offset(expected_sents), re = ~ name, family = poisson(),
@@ -212,7 +214,7 @@ ggplot(st_as_sf(sentencing),
        aes(fill = ssr)) +
        geom_sf() +
        scale_fill_gradient2(midpoint = 1) +
-       theme_bw() +
+       theme_void() +
        ggtitle("Relative risk of sentencing, 1905-1910")
 }
 

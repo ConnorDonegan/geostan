@@ -23,7 +23,7 @@ stan_icar(
   centerx = TRUE,
   scalex = FALSE,
   chains = 4,
-  iter = 5000,
+  iter = 2000,
   refresh = 500,
   pars = NULL,
   control = list(adapt_delta = 0.9, max_treedepth = 15),
@@ -53,13 +53,13 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{prior_phi}{Prior for the scale of the spatial ICAR component \code{phi}. \code{phi} is scaled by the parameter \code{phi_scale} which is given a positively-constrained (half-) Gaussian prior distribution with its location parameter at zero and scale parameter set to \code{prior_phi}. This defaults to \code{prior_phi = 1}.}
 
-\item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below. It also makes setting the prior distribution for the interecept intuitive.}
+\item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below.}
 
 \item{scalex}{Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.}
 
 \item{chains}{Number of MCMC chains to estimate. Default \code{chains = 4}.}
 
-\item{iter}{Number of samples per chain. Default \code{iter = 5000}.}
+\item{iter}{Number of samples per chain. Default \code{iter = 2000}.}
 
 \item{refresh}{Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.}
 
@@ -108,6 +108,7 @@ If the \code{centerx = TRUE} (the default), then the intercept is the expected v
 library(ggplot2)
 library(sf)
 library(rstan)
+options(mc.cores = parallel::detectCores())
 data(sentencing)
 
 # using a small number of iterations and a single chain only for compilation speed

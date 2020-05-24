@@ -27,7 +27,7 @@ stan_bym2(
   centerx = TRUE,
   scalex = FALSE,
   chains = 4,
-  iter = 5000,
+  iter = 2000,
   refresh = 500,
   pars = NULL,
   control = list(adapt_delta = 0.9, max_treedepth = 15),
@@ -57,13 +57,13 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{prior_tau}{Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts (not the exchangeable component of the convolved random effects term, but any additional terms specified by the user). The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.}
 
-\item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below. It also makes setting the prior distribution for the interecept intuitive.}
+\item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{TRUE}. This alters the interpretation of the intercept term, see \code{Details}) below.}
 
 \item{scalex}{Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.}
 
 \item{chains}{Number of MCMC chains to estimate. Default \code{chains = 4}.}
 
-\item{iter}{Number of samples per chain. Default \code{iter = 5000}.}
+\item{iter}{Number of samples per chain. Default \code{iter = 2000}.}
 
 \item{refresh}{Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.}
 

@@ -128,10 +128,9 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' @import spdep
 #' @description A wrapper function for a string of \code{spdep} (and other) functions required to convert spatail objects to connectivity matrices
 #' @param shape An object of class \code{sf}, \code{SpatialPolygons} or \code{SpatialPolygonsDataFrame}.
-#' @param style What kind of coding scheme should be used to create the spatial connectivity matrix? Defaults to "B" for binary; use "W" for row-standardized weights; "C" for globally standardized and "S" for the Tiefelsdorf et al.'s (1999) variance-stabilizing scheme. This is passed internally to \link[spdep]{nb2mat}. Inverse distance weighting ("IDW") is also available; IDW will calculate distances between polygon centroids and raise the distances to a power of \code{lambda} (by default \code{lambda=2}).
+#' @param style What kind of coding scheme should be used to create the spatial connectivity matrix? Defaults to "B" for binary; use "W" for row-standardized weights; "C" for globally standardized and "S" for the Tiefelsdorf et al.'s (1999) variance-stabilizing scheme. This is passed internally to \link[spdep]{nb2mat}.
 #' @param t Number of time periods. Currently only the binary coding scheme is available for space-time connectivity matrices.
 #' @param st.type For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and (the default) "contemp" for contemporaneous specification.
-#' @param lambda For inverse distance weighting (IDW); the connectivity matrix will be \code{1/D^lambda} with \code{D} the matrix of distances between polygon centroids. By default \code{lambda = 2}.
 #' @param zero.policy Are regions with zero neighbors allowed? Default \code{zero.policy = TRUE} (allowing regions to have zero neighbors). Also passed to \link[spdep]{nb2mat}.
 #' @param queen Passed to \link[spdep]{poly2nb} to set the contiguity condition. Defaults to \code{TRUE} so that a single shared boundary point between polygons is sufficient for them to be considered neighbors.
 #' @param snap Passed to \link[spdep]{poly2nb}; "boundary points less than ‘snap’ distance apart are considered to indicate contiguity." 
@@ -153,25 +152,15 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' ## provide the geography (for a single year!) and number of years \code{t}
 #' Cst <- shape2mat(ohio, t = 5)
 #' 
-shape2mat <- function(shape, style = "B", t = 1, st.type = "contemp", zero.policy = TRUE, queen = TRUE, lambda = 2, snap = sqrt(.Machine$double.eps)) {
+shape2mat <- function(shape, style = "B", t = 1, st.type = "contemp", zero.policy = TRUE, queen = TRUE, snap = sqrt(.Machine$double.eps)) {
   shape_class <- class(shape)
-  if(!any(c("sf", "SpatialPolygonsDataFrame", "SpatialPolygons") %in% shape_class)) stop("Shape must be of class SpatialPolygonsDataFrame or sf (simple features).")
-  if(any(c("SpatialPolygonsDataFrame", "SpatialPolygons") %in% shape_class)) {
-      if (style == "IDW") {
-          distmat <- sf::st_distance(sf::st_centroid(sf::st_as_sf(shape)))
-          w <- IDW(distmat, lambda)
-          } else {
-          w <- spdep::nb2mat(spdep::poly2nb(shape, queen = queen, snap = snap), style = style, zero.policy = zero.policy)
-      }
+  if (!any(c("sf", "SpatialPolygonsDataFrame", "SpatialPolygons") %in% shape_class)) stop("Shape must be of class SpatialPolygonsDataFrame or sf (simple features).")
+  if (any(c("SpatialPolygonsDataFrame", "SpatialPolygons") %in% shape_class)) {
+      w <- spdep::nb2mat(spdep::poly2nb(shape, queen = queen, snap = snap), style = style, zero.policy = zero.policy)
   }
-  if("sf" %in% shape_class) {
-      if (style == "IDW") {
-          distmat <- sf::st_distance(sf::st_centroid(shape))
-          w <- IDW(distmat, lambda)
-      } else{
+  if ("sf" %in% shape_class) {
           shape_spdf <- sf::as_Spatial(shape)
           w <- spdep::nb2mat(spdep::poly2nb(shape_spdf, queen = queen, snap = snap), style = style, zero.policy = zero.policy)
-          }
   }
   attributes(w)$dimnames <- NULL
   if (t > 1) { 

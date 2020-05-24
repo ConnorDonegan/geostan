@@ -16,14 +16,13 @@ shape2mat(
   st.type = "contemp",
   zero.policy = TRUE,
   queen = TRUE,
-  lambda = 2,
   snap = sqrt(.Machine$double.eps)
 )
 }
 \arguments{
 \item{shape}{An object of class \code{sf}, \code{SpatialPolygons} or \code{SpatialPolygonsDataFrame}.}
 
-\item{style}{What kind of coding scheme should be used to create the spatial connectivity matrix? Defaults to "B" for binary; use "W" for row-standardized weights; "C" for globally standardized and "S" for the Tiefelsdorf et al.'s (1999) variance-stabilizing scheme. This is passed internally to \link[spdep]{nb2mat}. Inverse distance weighting ("IDW") is also available; IDW will calculate distances between polygon centroids and raise the distances to a power of \code{lambda} (by default \code{lambda=2}).}
+\item{style}{What kind of coding scheme should be used to create the spatial connectivity matrix? Defaults to "B" for binary; use "W" for row-standardized weights; "C" for globally standardized and "S" for the Tiefelsdorf et al.'s (1999) variance-stabilizing scheme. This is passed internally to \link[spdep]{nb2mat}.}
 
 \item{t}{Number of time periods. Currently only the binary coding scheme is available for space-time connectivity matrices.}
 
@@ -32,8 +31,6 @@ shape2mat(
 \item{zero.policy}{Are regions with zero neighbors allowed? Default \code{zero.policy = TRUE} (allowing regions to have zero neighbors). Also passed to \link[spdep]{nb2mat}.}
 
 \item{queen}{Passed to \link[spdep]{poly2nb} to set the contiguity condition. Defaults to \code{TRUE} so that a single shared boundary point between polygons is sufficient for them to be considered neighbors.}
-
-\item{lambda}{For inverse distance weighting (IDW); the connectivity matrix will be \code{1/D^lambda} with \code{D} the matrix of distances between polygon centroids. By default \code{lambda = 2}.}
 
 \item{snap}{Passed to \link[spdep]{poly2nb}; "boundary points less than ‘snap’ distance apart are considered to indicate contiguity."}
 }
