@@ -190,6 +190,7 @@ log_sum_exp <- function(x) {
   xmax + log(xsum)
 }
 
+#' for matrix of distances; not currently used.
 IDW <- function(mat, lambda) {
     mat <- 1/mat^lambda
     diag(mat) <- 0

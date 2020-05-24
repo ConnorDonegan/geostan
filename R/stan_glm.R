@@ -111,7 +111,7 @@ stan_glm <- function(formula, slx, re, data, C, family = gaussian(),
     if (missing(slx)) {
         slx <- " "
         } else {
-           Wx <- SLX(f = slx, DF = tmpdf, SWM = C, cx = centerx, sx = scalex)
+           Wx <- SLX(f = slx, DF = tmpdf, SWM = C)
            x <- cbind(Wx, x)
     } 
     dx <- ncol(x)

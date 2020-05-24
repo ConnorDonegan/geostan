@@ -18,7 +18,6 @@
 #' @format A simple feature collection including the following attributes:
 #' \describe{
 #'  \item{GEOID}{Six digit combined state and county FIPS code}
-#'  \item{ALAND}{Land area in square miles}
 #'  \item{county}{County name}
 #'  \item{gop_growth}{Change in the Republican vote share from historic (2000 - 2012) average vote share to 2016 vote share (i.e. (trump_2016/total_2016) - historic_gop). Data only includes Democratic and Republican votes (i.e. two-party vote share).}
 #'  \item{historic_gop}{Average Republican share of all major party votes, 2000 to 2012}
