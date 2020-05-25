@@ -82,7 +82,7 @@ The value of \code{p0} is used to control the prior degree of sparsity in the mo
 
 \item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.}
 
-\item{scalex}{Should the covariates be scaled (divided by their standard deviation)? Defaults to \code{FALSE}.}
+\item{scalex}{Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.}
 
 \item{chains}{Number of MCMC chains to estimate. Default \code{chains = 4}.}
 
