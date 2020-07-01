@@ -208,19 +208,19 @@ fit
     ## Spatial method:  RHS-ESF 
     ## Family:  gaussian 
     ## Link function:  identity 
-    ## Residual Moran Coefficient:  -0.051 
-    ## WAIC:  517.31 
+    ## Residual Moran Coefficient:  -0.049 
+    ## WAIC:  517.23 
     ## Observations:  88 
     ## RHS global shrinkage prior:  1 
     ## Inference for Stan model: esf_continuous.
     ## 4 chains, each with iter=2000; warmup=1000; thin=1; 
     ## post-warmup draws per chain=1000, total post-warmup draws=4000.
     ## 
-    ##             mean se_mean    sd  2.5%    25%    50%    75%  97.5% n_eff  Rhat
-    ## intercept 10.718   0.006 0.440 9.858 10.425 10.712 11.002 11.614  5029 1.000
-    ## sigma      4.068   0.008 0.386 3.408  3.790  4.038  4.309  4.887  2427 1.001
+    ##             mean se_mean    sd  2.5%    25%    50%    75%  97.5% n_eff Rhat
+    ## intercept 10.706   0.006 0.421 9.876 10.419 10.708 10.998 11.503  5258    1
+    ## sigma      4.080   0.008 0.377 3.410  3.816  4.050  4.315  4.891  2325    1
     ## 
-    ## Samples were drawn using NUTS(diag_e) at Wed Jul  1 18:48:09 2020.
+    ## Samples were drawn using NUTS(diag_e) at Wed Jul  1 18:53:49 2020.
     ## For each parameter, n_eff is a crude measure of effective sample size,
     ## and Rhat is the potential scale reduction factor on split chains (at 
     ## convergence, Rhat=1).
@@ -265,12 +265,9 @@ fit3 <- stan_esf(gop_growth ~ historic_gop + log(pop_density) + white_nonhispani
                  C = C)
 ```
 
-(To see why `white_nonhispanic` is missing from the `slx` formula, see
-`moran_plot(ohio$white_nonhispanic, shape2mat(ohio, "W"))`—it would add
-more noise than information). The spatial connectivity matrix `C` was
-row-standardized internally before calculating the spatially lagged
-covariates, so the constructed variables are the mean spatially lagged
-values.
+The spatial connectivity matrix `C` is row-standardized internally
+before calculating the spatially lagged covariates, so the constructed
+spatially lagged variables are the mean spatially lagged values.
 
 The `plot` and `print` methods call the bayesplot package, and they
 accept a character string of parameter names such as `'beta'` for

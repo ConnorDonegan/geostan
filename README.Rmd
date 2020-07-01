@@ -182,7 +182,7 @@ fit3 <- stan_esf(gop_growth ~ historic_gop + log(pop_density) + white_nonhispani
                  C = C)
 ```
 
-(To see why `white_nonhispanic` is missing from the `slx` formula, see `moran_plot(ohio$white_nonhispanic, shape2mat(ohio, "W"))`---it would add more noise than information). The spatial connectivity matrix `C` was row-standardized internally before calculating the spatially lagged covariates, so the constructed variables are the mean spatially lagged values.
+The spatial connectivity matrix `C` is row-standardized internally before calculating the spatially lagged covariates, so the constructed spatially lagged variables are the mean spatially lagged values.
 
 The `plot` and `print` methods call the bayesplot package, and they accept a character string of parameter names such as `'beta'` for coefficients, `'beta_ev'` for eigenvector coefficients, `'esf'` for the spatial filter. You can also provide more specific names such as `'b_unemployment'`.
 
