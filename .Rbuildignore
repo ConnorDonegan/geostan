@@ -3,3 +3,6 @@ rccpExports.cpp
 stanExports_*
 ^data-raw$
 .Rhistory
+README.Rmd
+README.html
+README_files/
