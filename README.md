@@ -8,9 +8,9 @@ Bayesian Spatial Analysis with Stan
 ### Overview
 
 The **geostan** package provides a user-friendly interface to Bayesian
-models for areal data and is designed for accessibility and promotion of
-sound spatial analysis workflows. The package is functional but still
-under development and will be released to CRAN later this year.
+models for areal data. It is designed for accessibility and promotion of
+sound spatial analysis workflows. The package is still under development
+and will be released to CRAN later this year.
 
 All of the models are fit using the [Stan](https://mc-stan.org/)
 probabilistic programming language and the syntax draws heavily from the
@@ -28,7 +28,7 @@ analysis ([rstan](https://mc-stan.org/users/interfaces/rstan),
 The following models are available:
 
 -   Generalized linear models, with optional exchangeable (non-spatial)
-    random effects.
+    \`random effect’ or varying intercept terms.
 -   Eigenvector spatial filtering (ESF) models (known as principal
     coordinates of neighbour matrices (PCNM) in ecology), following
     [Donegan et al.](https://doi.org/10.1016/j.spasta.2020.100450)
@@ -63,6 +63,8 @@ if (!require(sf)) install.packages("sf")
 if (!require(spdep)) install.packages("spdep")
 ```
 
+#### Windows
+
 If you use Windows you can install geostan with the following R code:
 
 ``` r
@@ -71,11 +73,12 @@ install.packages("https://connordonegan.github.io/assets/geostan_0.0.1.zip", rep
 install.packages("https://connordonegan.github.io/assets/geostan_0.0.1.zip", repos = NULL, type = "binary")
 ```
 
+#### Linux
+
 If you use Linux you can install the package using:
 
 ``` r
-download.file("https://connordonegan.github.io/assets/dev_package.tar.gz", destfile = "geostan_0.0.1.tar.gz")
-install.packages("geostan_0.0.1.tar.gz", repos = NULL)
+install.packages("https://connordonegan.github.io/assets/geostan_0.0.1.tar.gz", repos = NULL)
 ```
 
 or, also for Linux users only, you may install from source:
@@ -83,6 +86,8 @@ or, also for Linux users only, you may install from source:
 ``` r
 remotes::install_github("ConnorDonegan/geostan")
 ```
+
+#### Mac OS
 
 The package is not currently available for Mac users, sorry.
 
@@ -98,7 +103,6 @@ library(geostan)
 library(sf)
 library(ggplot2)
 library(rstan)
-library(kableExtra)
 options(mc.cores = parallel::detectCores())
 data(ohio)
 ## to learn about the data use:
@@ -205,18 +209,18 @@ fit
     ## Family:  gaussian 
     ## Link function:  identity 
     ## Residual Moran Coefficient:  -0.051 
-    ## WAIC:  516.93 
+    ## WAIC:  517.31 
     ## Observations:  88 
     ## RHS global shrinkage prior:  1 
     ## Inference for Stan model: esf_continuous.
     ## 4 chains, each with iter=2000; warmup=1000; thin=1; 
     ## post-warmup draws per chain=1000, total post-warmup draws=4000.
     ## 
-    ##             mean se_mean    sd  2.5%    25%    50%    75%  97.5% n_eff Rhat
-    ## intercept 10.701   0.006 0.423 9.858 10.421 10.694 10.982 11.538  4453    1
-    ## sigma      4.063   0.008 0.384 3.403  3.795  4.026  4.294  4.922  2307    1
+    ##             mean se_mean    sd  2.5%    25%    50%    75%  97.5% n_eff  Rhat
+    ## intercept 10.718   0.006 0.440 9.858 10.425 10.712 11.002 11.614  5029 1.000
+    ## sigma      4.068   0.008 0.386 3.408  3.790  4.038  4.309  4.887  2427 1.001
     ## 
-    ## Samples were drawn using NUTS(diag_e) at Wed Jul  1 17:54:43 2020.
+    ## Samples were drawn using NUTS(diag_e) at Wed Jul  1 18:48:09 2020.
     ## For each parameter, n_eff is a crude measure of effective sample size,
     ## and Rhat is the potential scale reduction factor on split chains (at 
     ## convergence, Rhat=1).

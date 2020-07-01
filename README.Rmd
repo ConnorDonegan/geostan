@@ -28,13 +28,13 @@ rstan_options(auto_write = TRUE)
 
 ### Overview
 
-The **geostan** package provides a user-friendly interface to Bayesian models for areal data and is designed for accessibility and promotion of sound spatial analysis workflows. The package is still under development and will be released to CRAN later this year. 
+The **geostan** package provides a user-friendly interface to Bayesian models for areal data. It is designed for accessibility and promotion of sound spatial analysis workflows. The package is still under development and will be released to CRAN later this year. 
 
 All of the models are fit using the [Stan](https://mc-stan.org/) probabilistic programming language and the syntax draws heavily from the [rstanarm](https://github.com/stan-dev/rstanarm) package whenever possible in order to maintain consistency for users. It is designed to fit into a workflow that moves back and forth between R spatial analysis packages ([sf](https://r-spatial.github.io/sf/), [sp](https://github.com/edzer/sp), [spdep](https://github.com/r-spatial/spdep), [ggplot2](https://ggplot2.tidyverse.org/)) and Stan-based Bayesian analysis ([rstan](https://mc-stan.org/users/interfaces/rstan), [bayesplot](http://mc-stan.org/bayesplot/), [loo](https://mc-stan.org/loo/)).
 
 The following models are available:
 
-* Generalized linear models, with optional exchangeable (non-spatial) random effects.
+* Generalized linear models, with optional exchangeable (non-spatial) `random effect' or varying intercept terms.
 * Eigenvector spatial filtering (ESF) models (known as principal coordinates of neighbour matrices (PCNM) in ecology), following [Donegan et al.](https://doi.org/10.1016/j.spasta.2020.100450) (2020). The spatial filter coefficients are estimated using [Piironen and Vehtari's](https://projecteuclid.org/euclid.ejs/1513306866) (2017) regularized horseshoe prior.
 * Intrinsic conditional autoregressive (IAR) models, using Stan code from [Morris et al.](https://doi.org/10.1016/j.sste.2019.100301) (2019) following on the work of [Besag](https://doi.org/10.1111/j.2517-6161.1974.tb00999.x) (1974) and [Besag and Kooperberg](https://doi.org/10.1093/biomet/82.4.733) (1995).
 * The scaled Besag-York-Mollie (BYM2) model introduced by [Riebler et al.](https://doi.org/10.1177/0962280216660421) (2016) with Stan code from [Morris et al.](https://doi.org/10.1016/j.sste.2019.100301) (2019) for disease mapping and similar applications, one of many variants of the original [BYM](https://link.springer.com/article/10.1007/BF00116466) model. This currently requires INLA to calculate the scale factor.
@@ -48,6 +48,9 @@ if (!require(sf)) install.packages("sf")
 if (!require(spdep)) install.packages("spdep")
 ```
 
+
+#### Windows
+
 If you use Windows you can install geostan with the following R code:
 
 ```{r eval = FALSE}
@@ -57,11 +60,13 @@ install.packages("https://connordonegan.github.io/assets/geostan_0.0.1.zip", rep
 
 ```
 
+
+#### Linux
+
 If you use Linux you can install the package using:
 
 ```{r eval = FALSE}
-download.file("https://connordonegan.github.io/assets/dev_package.tar.gz", destfile = "geostan_0.0.1.tar.gz")
-install.packages("geostan_0.0.1.tar.gz", repos = NULL)
+install.packages("https://connordonegan.github.io/assets/geostan_0.0.1.tar.gz", repos = NULL)
 ```
 
 or, also for Linux users only, you may install from source:
@@ -70,7 +75,11 @@ or, also for Linux users only, you may install from source:
 remotes::install_github("ConnorDonegan/geostan")
 ```
 
+
+#### Mac OS
+
 The package is not currently available for Mac users, sorry.
+
 
 ### Demonstration
 
@@ -81,7 +90,6 @@ library(geostan)
 library(sf)
 library(ggplot2)
 library(rstan)
-library(kableExtra)
 options(mc.cores = parallel::detectCores())
 data(ohio)
 ## to learn about the data use:
