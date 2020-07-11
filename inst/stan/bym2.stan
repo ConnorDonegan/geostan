@@ -3,61 +3,53 @@ functions {
 }
 
 data {
-#include parts/glm_data.stan
-#include parts/icar_data.stan
+#include parts/data.stan
+  int<lower=0> n_edges;
+  int<lower=1, upper=n> node1[n_edges];
+  int<lower=1, upper=n> node2[n_edges];
+  real<lower=0> phi_scale_prior; 
   real<lower=0> scaling_factor; // scales the spatial component
-  int y[n]; // outcome variable
 }
 
 transformed data {
-#include parts/QR.stan
+#include parts/trans_data.stan
 }
 
 parameters {
-#include parts/glm_parameters.stan
-  vector[n] v;
-  vector[n] u;
+  vector[n] phi;
+  vector[n] theta;
   real<lower=0> sigma_re;
   real logit_rho;
+#include parts/params.stan  
 }
 
 transformed parameters {
-#include parts/bym2_trans_params.stan
+  real<lower=0, upper=1> rho;
+  vector[n] convolved_re;
+#include parts/trans_params_declaration.stan
+  rho = inv_logit(logit_rho);
+  convolved_re = sigma_re * (sqrt(rho / scaling_factor) * phi + sqrt(1 - rho) * theta);
+  f += convolved_re;
+#include parts/trans_params_expression.stan
 }
 
 model {
-#include parts/glm_model.stan
-#include parts/bym2_model.stan
-  y ~ poisson_log(f); 
+// BYM2 model
+  phi ~ icar_normal(n, node1, node2);
+  theta ~ std_normal();
+  logit_rho ~ std_normal();
+  sigma_re ~ std_normal();
+#include parts/model.stan
 }
 
 generated quantities {
-  vector[n] yrep;
-  vector[n] fitted;
-  vector[n] residual;
-  vector[n] log_lik;
-  vector[n_ids] alpha_re;
-  vector[n] ssre; //scaled v phi:ssre
-  vector[n] sure; // scaled u theta:sure
-  if (has_re) {
-    for (i in 1:n_ids) {
-      alpha_re[i] = alpha_tau[has_re] * alpha_re_tilde[i];
-    }
-  }
+  vector[n] ssre; // scaled phi
+  vector[n] sure; // scaled theta
+#include parts/gen_quants_declaration.stan
   for (i in 1:n) {
-    ssre[i] = sigma_re * sqrt(rho / scaling_factor) * v[i];
-    sure[i] = sigma_re * sqrt(1 - rho) * u[i];
-    fitted[i] = exp(f[i]);
-    residual[i] = fitted[i] - y[i];
-    log_lik[i] = poisson_log_lpmf(y[i] | f[i]);
-    if (f[i] > 20) {
-       print("f[i] too large (>20) for poisson_log_rng");
-       yrep[i] = -1;
-       } else {
-    yrep[i] = poisson_log_rng(f[i]);
-    }
+    ssre[i] = sigma_re * sqrt(rho / scaling_factor) * phi[i];
+    sure[i] = sigma_re * sqrt(1 - rho) * theta[i];
+#include parts/gen_quants_expression_in_loop.stan      
   }
 }
-
-
 

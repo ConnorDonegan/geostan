@@ -24,6 +24,7 @@ stan_esf(
   data,
   C,
   EV,
+  ME,
   nsa = FALSE,
   threshold = 0.25,
   family = gaussian(),
@@ -58,6 +59,8 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 \item{C}{Spatial connectivity matrix which will be used to calculate eigenvectors, residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.}
 
 \item{EV}{A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. If provided, still also provide a spatial weights matrix \code{C} for other purposes.  See \link[geostan]{make_EV} and \link[geostan]{shape2mat}.}
+
+\item{ME}{To model measurement error or sampling error in any or all of the covariates, provide a named list containing a dataframe (named \code{ME}) with standard errors for each observation; these will be matched to the variables using column names. If any of the variables in \code{ME} are percentages (ranging from zero to one-hundred---not zero to one!), also include a vector indicating which columns are percentages. For example, if \code{ME} has three columns and the second column is a percentage, include \code{percent = c(0, 1, 0)}. Altogether, \code{ME = list(ME = se.df, percent = c(0, 1, 0))}. This will ensure that the ME models for percentages are properly constrained to the range [0, 100]. Finally, if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}. The model for offset values will be restricted to allow values only greater than or equal to zero. Note that the \code{ME} model will not work if \code{formula} includes any functions of your variables such as polynomials, splines, or log transformations.}
 
 \item{nsa}{Include eigenvectors representing negative spatial autocorrelation? Default \code{nsa = FALSE}. Ignored if \code{EV} is provided.}
 
@@ -109,9 +112,10 @@ An object of class class \code{geostan_fit} (a list) containing:
 \item{formula}{The model formula provided by the user (not including ESF component)}
 \item{slx}{The \code{slx} formula}
 \item{re}{A list containing \code{re},  the random effects (varying intercepts) formula if provided, and 
- \code{data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
+\code{data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 \item{priors}{Prior specifications.}
 \item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
+\item{ME}{The \code{ME} data list, if one was provided by the user for measurement error models.}
 \item{spatial}{A data frame with the name of the spatial component parameter ("esf") and method ("ESF")}
 \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 }

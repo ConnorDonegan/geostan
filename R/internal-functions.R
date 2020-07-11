@@ -10,6 +10,19 @@ remove_intercept <- function(x) {
   return(xnew)
 }
 
+#' Convert family to integer
+#'
+#' @noRd
+#' @param family class family
+#' @return interger value
+#' 
+family_2_int <- function(family) {
+    if (family$family == "gaussian") return (1)
+    if (family$family == "student_t") return (2)
+    if (family$family == "poisson") return (3)
+    if (family$family == "binomial") return (4)
+}
+
 #' scale model matrix
 #'
 #' @noRd
@@ -198,16 +211,20 @@ IDW <- function(mat, lambda) {
     return(mat)
 }
 
-clean_results <- function(samples, pars, is_student, has_re, C, x) {
+clean_results <- function(samples, pars, is_student, has_re, C, Wx, x) {
+    if ("gamma" %in% pars) {
+    g_names = dimnames(Wx)[[2]]
+    samples <- par_alias(samples, "^gamma\\[", g_names)        
+    }
   has_b <- "beta" %in% pars  
-  if (has_b) {
-    b_names = paste0("b_", dimnames(x)[[2]])
+  if (has_b) {   ## #must fail with full ME model
+    b_names = dimnames(x)[[2]] ##paste0("b_", dimnames(x)[[2]])
     samples <- par_alias(samples, "^beta\\[", b_names)
   }
   if ("sigma" %in% pars) samples <- par_alias(samples, "^sigma\\[1\\]", "sigma")
   if (is_student) samples <- par_alias(samples, "^nu\\[1\\]", "nu")
   if (has_re) samples <- par_alias(samples, "^alpha_tau\\[1\\]", "alpha_tau")
-  main_pars <- pars[which(pars %in% c("intercept", "alpha_tau", "beta", "sigma", "nu", "rho"))]
+  main_pars <- pars[which(pars %in% c("intercept", "alpha_tau", "gamma", "beta", "sigma", "nu", "rho"))]
   summary_list <- lapply(main_pars, post_summary, stanfit = samples)
   summary <- do.call("rbind", summary_list)
   summary <- apply(summary, 2, round, 3)

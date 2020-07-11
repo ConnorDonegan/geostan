@@ -8,25 +8,15 @@ using namespace Rcpp;
 
 
 RcppExport SEXP _rcpp_module_boot_stan_fit4bym2_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4esf_binomial_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4esf_continuous_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4esf_count_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4glm_binomial_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4glm_continuous_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4glm_poisson_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4icar_binomial_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4icar_count_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4esf_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4glm_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4icar_mod();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_stan_fit4bym2_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4bym2_mod, 0},
-    {"_rcpp_module_boot_stan_fit4esf_binomial_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4esf_binomial_mod, 0},
-    {"_rcpp_module_boot_stan_fit4esf_continuous_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4esf_continuous_mod, 0},
-    {"_rcpp_module_boot_stan_fit4esf_count_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4esf_count_mod, 0},
-    {"_rcpp_module_boot_stan_fit4glm_binomial_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4glm_binomial_mod, 0},
-    {"_rcpp_module_boot_stan_fit4glm_continuous_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4glm_continuous_mod, 0},
-    {"_rcpp_module_boot_stan_fit4glm_poisson_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4glm_poisson_mod, 0},
-    {"_rcpp_module_boot_stan_fit4icar_binomial_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4icar_binomial_mod, 0},
-    {"_rcpp_module_boot_stan_fit4icar_count_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4icar_count_mod, 0},
+    {"_rcpp_module_boot_stan_fit4esf_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4esf_mod, 0},
+    {"_rcpp_module_boot_stan_fit4glm_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4glm_mod, 0},
+    {"_rcpp_module_boot_stan_fit4icar_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4icar_mod, 0},
     {NULL, NULL, 0}
 };
 

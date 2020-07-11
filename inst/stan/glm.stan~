@@ -1,0 +1,180 @@
+data { 
+  int<lower=0,upper=4> family; // change to family 
+  int<lower=0> n; // number of observations
+// offest with measurement error information   
+  vector[n] offset_obs; 
+  vector<lower=0>[n] offset_me;
+  int<lower=0,upper=1> model_offset;
+// connectivity matrix
+  int<lower=0> dwx;
+  int wx_idx[dwx ? dwx : 1];
+  int<lower=0> dw_nonzero;
+  matrix[dwx ? n : 1, dwx ? n : 1] W;
+// covariates with measurement error information
+  int<lower=0> dx_obs;
+  int<lower=0> dx_me_prop;
+  int<lower=0> dx_me_cont;
+  int<lower=0> x_obs_idx[dx_obs ? dx_obs : 1];
+  int<lower=0> x_me_prop_idx[dx_me_prop ? dx_me_prop : 1];
+  int<lower=0> x_me_cont_idx[dx_me_cont ? dx_me_cont : 1];
+  matrix[n, dx_obs ? dx_obs : 0] x_obs;
+  matrix<lower=0,upper=100>[n, dx_me_prop ? dx_me_prop : 1] x_me_prop;
+  matrix[n, dx_me_cont ? dx_me_cont : 1] x_me_cont;
+  matrix<lower=0>[n, dx_me_prop ? dx_me_prop : 1] sigma_me_prop;
+  matrix<lower=0>[n, dx_me_cont ? dx_me_cont : 1] sigma_me_cont;
+// exchangeable random effects
+  int<lower=0,upper=1> has_re; // has random effects? (or varying intercept)
+  int<lower=0> n_ids; // number of random effects
+  int<lower=0,upper=n_ids> id[n]; // identifier for the observational units associated with the random effects term
+// priors
+  vector[2] alpha_prior; // prior on the intercept
+  int<lower=0> dbeta_prior;  
+  row_vector[dbeta_prior] beta_prior[2]; // coefficient priors, with any SLX terms listed first; 
+  vector[3] alpha_tau_prior; // prior on standard deviation of varying intercepts
+  vector[2] t_nu_prior;
+  vector[3] sigma_prior;
+  vector[n] y;
+  int<lower=0> y_int[n];
+  int<lower=0> trials[n];
+}
+
+transformed data {
+  int<lower=0,upper=1> is_gaussian;
+  int<lower=0,upper=1> is_student;
+  int<lower=0,upper=1> is_poisson;
+  int<lower=0,upper=1> is_binomial;
+  int<lower=0,upper=1> has_me;
+  int<lower=0,upper=1> has_sigma;
+  int<lower=0> dx_all;
+  vector[dw_nonzero] w;
+  int v[dw_nonzero];
+  int u[n + 1];
+  matrix[n, dwx] WX;
+  is_gaussian = family == 1;
+  is_student =  family == 2;
+  is_poisson =  family == 3;
+  is_binomial = family == 4;
+  has_sigma = family < 3;
+  dx_all = dx_obs + dx_me_prop + dx_me_cont;
+  has_me = (dx_all > dx_obs);
+  if (dwx) {
+    w = csr_extract_w(W);
+    v = csr_extract_v(W);
+    u = csr_extract_u(W);
+  }
+  if ((!has_me) && dwx) {
+     WX = W * x_obs[,wx_idx];
+  }
+}
+
+parameters {
+// covariates to model, percentages/proportions on [0,100] and continuous [-inf,inf] variables
+  matrix<lower=0,upper=100>[n, dx_me_prop] x_true_prop;
+  matrix[n, dx_me_cont] x_true_cont;
+// regression parameters
+  real intercept;
+  vector[dwx] gamma;
+  vector[dx_all] beta;
+  real<lower=0> nu[is_student]; 
+  real<lower=0> sigma[has_sigma];
+// for partial pooling across groups/geographies
+  vector[n_ids] alpha_re_tilde;
+  real<lower=0> alpha_tau[has_re];
+}
+
+transformed parameters {
+  matrix[n, dx_all] x_all;
+  vector[n] offset;
+  vector[n] f;
+  if (dx_obs) x_all[,x_obs_idx] = x_obs;
+  if (dx_me_prop) x_all[,x_me_prop_idx] = x_true_prop;
+  if (dx_me_cont) x_all[,x_me_cont_idx] = x_true_cont;
+  if (!model_offset) offset = offset_obs;
+  if (is_poisson) offset = log(offset);
+  f = offset + intercept;
+  if (has_re) {
+    for (i in 1:n) {
+      f[i] += alpha_tau[has_re] * alpha_re_tilde[id[i]];
+   }
+  }  
+  if (dwx) {
+   if (has_me) {
+      for (i in 1:dwx) {
+     f += csr_matrix_times_vector(n, n, w, v, u, x_all[,wx_idx[i]]) * gamma[i];
+     }
+   } else {
+      f += WX * gamma;
+      }
+  } 
+  if (dx_all) f += x_all * beta;
+  if (is_binomial) f = inv_logit(f);
+}
+
+model {
+// parameter models (priors)
+  intercept ~ normal(alpha_prior[1], alpha_prior[2]);
+  if (dx_all) append_row(gamma, beta) ~ normal(beta_prior[1], beta_prior[2]);
+  if (has_sigma) sigma ~ student_t(sigma_prior[1], sigma_prior[2], sigma_prior[3]);
+// data models 
+  if (model_offset) offset_obs ~ normal(offset, offset_me);
+  if (dx_me_prop) to_vector(x_me_prop) ~ normal(to_vector(x_true_prop), to_vector(sigma_me_prop));
+  if (dx_me_cont) to_vector(x_me_cont) ~ normal(to_vector(x_true_cont), to_vector(sigma_me_cont));
+// partial pooling of observations across groups/geographies (exchangeable "random effects")
+  if (has_re) {
+    alpha_tau[has_re] ~ student_t(alpha_tau_prior[1], alpha_tau_prior[2], alpha_tau_prior[3]);
+    alpha_re_tilde ~ std_normal();    
+  }  
+// process model (likelihood of the data) + prior degrees of freedom
+  if (is_student) {
+    nu[1] ~ gamma(t_nu_prior[1], t_nu_prior[2]);
+    y ~ student_t(nu[1], f, sigma[has_sigma]);
+  } 
+  if (is_gaussian)  y ~ normal(f, sigma[has_sigma]);
+  if (is_poisson) y_int ~ poisson_log(f);
+  if (is_binomial) y_int ~ binomial(trials, f);
+}
+
+generated quantities {
+  vector[n] log_lik;
+  vector[n] yrep;
+  vector[n] residual;
+  vector[n] fitted;
+  vector[n_ids] alpha_re;
+  if (has_re) {
+    for (i in 1:n_ids) {
+      alpha_re[i] = alpha_tau[has_re] * alpha_re_tilde[i];
+    }
+  }
+  for (i in 1:n) {
+   if (is_student) {
+      fitted[i] = f[i];
+      residual[i] = y[i] - fitted[i];
+      log_lik[i] = student_t_lpdf(y[i] | nu[1], fitted[i], sigma[has_sigma]);
+      yrep[i] = student_t_rng(nu[1], fitted[i], sigma[has_sigma]);     
+   }
+   if (is_gaussian) {
+         fitted[i] = f[i];
+	 residual[i] = y[i] - fitted[i];
+      log_lik[i] = normal_lpdf(y[i] | fitted[i], sigma[has_sigma]);
+      yrep[i] = normal_rng(fitted[i], sigma[has_sigma]);     
+   }
+   if (is_poisson) {
+       fitted[i] = exp(f[i]);
+       residual[i] = fitted[i] - y_int[i];
+       log_lik[i] = poisson_log_lpmf(y_int[i] | f[i]);
+       if (f[i] > 20) {
+       	  print("f[i] too large (>20) for poisson_log_rng");
+       	  yrep[i] = -1;
+       } else {
+       	 yrep[i] = poisson_log_rng(f[i]);
+   }
+  }
+  if (is_binomial) {
+    fitted[i] = f[i];
+    residual[i] = f[i]*trials[i] - y_int[i];
+    yrep[i] = binomial_rng(trials[i], f[i]);
+    log_lik[i] = binomial_lpmf(y_int[i] | trials[i], f[i]);
+  }  
+ }
+}
+

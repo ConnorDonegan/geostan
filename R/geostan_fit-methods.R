@@ -59,9 +59,8 @@
 #' @name geostan_fit
 print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digits = 3, ...) {
   all_pars <- names(x$stanfit)
-  pars <- all_pars[which(all_pars %in% c("intercept", "alpha_tau"))]
-  if(any(grepl("b_", all_pars))) pars <- c(pars, "beta")
-  pars <- c(pars, all_pars[which(all_pars %in% c("sigma", "nu"))])
+  vars <- dimnames(x$data)[[2]]
+  pars <- all_pars[which(all_pars %in% c("intercept", "alpha_tau", paste0("w.", vars), vars, "sigma", "nu"))]
   cat("Spatial Regression Results \n")
   cat("Formula: ")
   print(x$formula)
@@ -73,7 +72,12 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
     cat("Random effects: ")
     print(x$re$formula)
   }
-  cat("Spatial method: ", as.character(x$spatial$method), "\n")
+  cat("Data models: ")
+  if (inherits(x$ME, "list")) {
+      if (length(x$ME$offset)) cat("offset")
+      if (ncol(x$ME$ME)) cat(paste(names(x$ME$ME), sep = ", "))
+  } else cat("none")
+  cat("\nSpatial method: ", as.character(x$spatial$method), "\n")
   cat("Family: ", x$family$family, "\n")
   cat("Link function: ", x$family$link, "\n")
   cat("Residual Moran Coefficient: ", x$diagnostic[grep("Residual_MC", attributes(x$diagnostic)$names)], "\n")
@@ -93,8 +97,8 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
 plot.geostan_fit <- function(x, pars, plotfun = "stan_plot", ...) {
   if(missing(pars)) {
     all_pars <- names(x$stanfit)
-    pars <- all_pars[which(all_pars %in% c("intercept", "alpha_tau"))]
-    if(any(grepl("b_", all_pars))) pars <- c(pars, "beta")
+    vars <- dimnames(x$data)[[2]]
+    pars <- all_pars[which(all_pars %in% c("intercept", "alpha_tau", paste0("w.", vars), vars, "sigma", "nu"))]      
     pars <- c(pars, all_pars[which(all_pars == "sigma")])
   }
   rstan::plot(x$stanfit, pars = pars, plotfun = plotfun, ...)
