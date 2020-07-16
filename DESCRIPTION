@@ -32,5 +32,6 @@ LinkingTo:
     rstan (>= 2.18.1),
     StanHeaders (>= 2.18.0)
 Suggests:
+    testthat
 SystemRequirements: GNU make
 RoxygenNote: 7.1.0

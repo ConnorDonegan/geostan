@@ -1,6 +1,7 @@
 // covariates to model, percentages/proportions on [0,100] and continuous [-inf,inf] variables
   matrix<lower=0,upper=100>[n, dx_me_prop] x_true_prop;
   matrix[n, dx_me_cont] x_true_cont;
+  vector<lower=0>[model_offset ? n : 0] offset_est;  
 // regression parameters
   real intercept;
   vector[dwx] gamma;

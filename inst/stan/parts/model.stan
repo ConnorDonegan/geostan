@@ -3,7 +3,7 @@
   if (dx_all) append_row(gamma, beta) ~ normal(beta_prior[1], beta_prior[2]);
   if (has_sigma) sigma ~ student_t(sigma_prior[1], sigma_prior[2], sigma_prior[3]);
 // data models 
-  if (model_offset) offset_obs ~ normal(offset, offset_me);
+  if (model_offset) offset_obs ~ normal(offset_est, offset_me);
   if (dx_me_prop) to_vector(x_me_prop) ~ normal(to_vector(x_true_prop), to_vector(sigma_me_prop));
   if (dx_me_cont) to_vector(x_me_cont) ~ normal(to_vector(x_true_cont), to_vector(sigma_me_cont));
 // partial pooling of observations across groups/geographies (exchangeable "random effects")

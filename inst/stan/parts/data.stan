@@ -1,7 +1,7 @@
   int<lower=0,upper=4> family; // change to family 
   int<lower=0> n; // number of observations
 // offest with measurement error information   
-  vector[n] offset_obs; 
+  vector<lower=0>[n] offset_obs; 
   vector<lower=0>[n] offset_me;
   int<lower=0,upper=1> model_offset;
 // connectivity matrix

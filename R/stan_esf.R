@@ -237,22 +237,27 @@ stan_esf <- function(formula, slx, re, data, C, EV, ME, nsa = FALSE, threshold =
   if (family$family %in% c("poisson", "binomial")) rhs_scale_global = 1
   if (family$family %in% c("gaussian", "student_t")) {
       # if no prior is provided at all for the rhs:
-      if(missing(p0) & is.null(prior_rhs)) {
-          if (!missing(C)) { # changed from: exists("C") ### ///
+      if (is.null(prior_rhs)) {
+          if (missing(p0)) {
+              if (missing(C)) stop("To calculate prior_rhs, please provide connectivity matrix C.")
               p0 <- exp_pars(formula = formula, data = tmpdf, C = C)
-              if(p0 >= ncol(EV)) p0 <- ncol(EV) - .1
-              rhs_scale_global <- min(1, p0/(dev-p0) / sqrt(n))
-          } else{ # possible to fail without the message due to evaluation of C?
-              stop("p0 and prior_rhs are both missing; without providing a spatial weights matrix C, the prior for this model cannot be set.")
-        }
-     }    
+              if(p0 >= ncol(EV)) p0 <- ncol(EV) - 0.1
+              }
+       rhs_scale_global <- min(1, p0/(dev-p0) / sqrt(n))
+      }
   }
-  if (!is.null(prior_rhs)) rhs_scale_global <- as.numeric(prior_rhs["scale_global"])  
+  if (!is.null(prior_rhs)) rhs_scale_global <- as.numeric(prior_rhs["scale_global"])
+  ## PARAMETER MODEL STUFF -------------  
   is_student <- family$family == "student_t"
   priors <- list(intercept = prior_intercept, beta = prior, sigma = prior_sigma, nu = prior_nu, rhs = prior_rhs, alpha_tau = prior_tau)
   priors <- make_priors(user_priors = priors, y = y, x = x, xcentered = centerx,
                         rhs_scale_global = rhs_scale_global, link = family$link, EV = EV)
   ## DATA MODEL STUFF -------------
+   # some defaults
+  dx_me_cont <- 0
+  dx_me_prop <- 0
+  x_me_prop_idx = a.zero
+  x_me_cont_idx = a.zero  
   if (!missing(ME)) {
       if (!inherits(ME, "list")) stop("ME must be a list .")
                 # ME model for offset
@@ -417,7 +422,7 @@ stan_esf <- function(formula, slx, re, data, C, EV, ME, nsa = FALSE, threshold =
     # count data may need init_r = 1 or similar
    samples <- rstan::sampling(stanmodels$esf, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
   if (missing(C)) C <- NA
-  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x)
+  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x, x_me_cont_idx, x_me_prop_idx)  
   out$data <- ModData
   out$family <- family
   out$formula <- formula

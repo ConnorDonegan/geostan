@@ -134,6 +134,11 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, ME, C, family = poiss
   priors <- make_priors(user_priors = priors, y = y, x = x, xcentered = centerx,
                         link = family$link)
   ## DATA MODEL STUFF -------------
+   # some defaults
+  dx_me_cont <- 0
+  dx_me_prop <- 0
+  x_me_prop_idx = a.zero
+  x_me_cont_idx = a.zero
   if (!missing(ME)) {
       if (!inherits(ME, "list")) stop("ME must be a list .")
                 # ME model for offset
@@ -295,7 +300,7 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, ME, C, family = poiss
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
   priors <- priors[which(names(priors) %in% pars)]
   samples <- rstan::sampling(stanmodels$bym2, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init_r = 1, ...)
-  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x)
+  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x, x_me_cont_idx, x_me_prop_idx)
   out$data <- ModData
   out$family <- family
   out$formula <- formula

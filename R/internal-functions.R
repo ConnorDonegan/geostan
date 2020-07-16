@@ -211,16 +211,27 @@ IDW <- function(mat, lambda) {
     return(mat)
 }
 
-clean_results <- function(samples, pars, is_student, has_re, C, Wx, x) {
+clean_results <- function(samples, pars, is_student, has_re, C, Wx, x, x_me_cont_idx, x_me_prop_idx) {
+    n <- nrow(x)
     if ("gamma" %in% pars) {
     g_names = dimnames(Wx)[[2]]
     samples <- par_alias(samples, "^gamma\\[", g_names)        
     }
   has_b <- "beta" %in% pars  
-  if (has_b) {   ## #must fail with full ME model
-    b_names = dimnames(x)[[2]] ##paste0("b_", dimnames(x)[[2]])
+  if (has_b) {  
+    b_names = dimnames(x)[[2]] 
     samples <- par_alias(samples, "^beta\\[", b_names)
   }
+  if (sum(x_me_cont_idx)) {
+      x_names <- dimnames(x)[[2]]
+      x.id <- paste0("x_", rep(x_names[x_me_cont_idx], each = n), paste0("[", 1:n, "]"))
+      names(samples)[grep("x_true_cont", names(samples))] <- x.id      
+  }
+  if (sum(x_me_prop_idx)) {
+      x_names <- paste0(dimnames(x)[[2]])
+      x.id <- paste0("x_", rep(x_names[x_me_prop_idx], each = n), paste0("[", 1:n, "]"))
+      names(samples)[grep("x_true_prop", names(samples))] <- x.id
+      } 
   if ("sigma" %in% pars) samples <- par_alias(samples, "^sigma\\[1\\]", "sigma")
   if (is_student) samples <- par_alias(samples, "^nu\\[1\\]", "nu")
   if (has_re) samples <- par_alias(samples, "^alpha_tau\\[1\\]", "alpha_tau")

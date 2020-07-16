@@ -75,7 +75,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
   cat("Data models: ")
   if (inherits(x$ME, "list")) {
       if (length(x$ME$offset)) cat("offset")
-      if (ncol(x$ME$ME)) cat(paste(names(x$ME$ME), sep = ", "))
+      if ("ME" %in% names(x$ME)) cat(paste(names(x$ME$ME), sep = ", "))
   } else cat("none")
   cat("\nSpatial method: ", as.character(x$spatial$method), "\n")
   cat("Family: ", x$family$family, "\n")

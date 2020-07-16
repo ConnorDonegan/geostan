@@ -185,6 +185,11 @@ stan_icar <- function(formula, slx, re, data, ME, C, family = poisson(),
   ## IAR STUFF -------------
   priors$phi_scale_prior <- prior_phi
   ## DATA MODEL STUFF -------------
+   # some defaults
+  dx_me_cont <- 0
+  dx_me_prop <- 0
+  x_me_prop_idx = a.zero
+  x_me_cont_idx = a.zero
   if (!missing(ME)) {
       if (!inherits(ME, "list")) stop("ME must be a list .")
                 # ME model for offset
@@ -347,7 +352,7 @@ stan_icar <- function(formula, slx, re, data, ME, C, family = poisson(),
   ## CALL STAN -------------  
   samples <- rstan::sampling(stanmodels$icar, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init_r = 1, ...)
   if (missing(C)) C <- NA
-  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x)
+  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x, x_me_cont_idx, x_me_prop_idx)  
   out$data <- ModData
   out$family <- family
   out$formula <- formula

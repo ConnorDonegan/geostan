@@ -97,6 +97,7 @@ stan_glm <- function(formula, slx, re, data, ME, C, family = gaussian(),
   if (missing(formula) | class(formula) != "formula") stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
   if (missing(data)) stop("Must provide data (a data.frame or object coercible to a data.frame).")
   if (scalex) centerx <- TRUE
+  ## GLM STUFF -------------  
   a.zero <- as.array(0, dim = 1)
   tmpdf <- as.data.frame(data)
   mod.mat <- model.matrix(formula, tmpdf)
@@ -155,12 +156,18 @@ stan_glm <- function(formula, slx, re, data, ME, C, family = gaussian(),
     n_ids <- length(unique(id))
     id_index <- to_index(id)
     re_list <- list(formula = re, data = id_index)
-  } 
+  }
+  ## PARAMETER MODEL STUFF -------------  
   is_student <- family$family == "student_t"
   priors <- list(intercept = prior_intercept, beta = prior, sigma = prior_sigma, nu = prior_nu, alpha_tau = prior_tau)
   priors <- make_priors(user_priors = priors, y = y, x = x, xcentered = centerx,
                         link = family$link)
-  ## measurement error stuff
+  ## DATA MODEL STUFF -------------
+  # some defaults
+  dx_me_cont <- 0
+  dx_me_prop <- 0
+  x_me_prop_idx = a.zero
+  x_me_cont_idx = a.zero  
   if (!missing(ME)) {
       if (!inherits(ME, "list")) stop("ME must be a list .")
                 # ME model for offset
@@ -177,7 +184,7 @@ stan_glm <- function(formula, slx, re, data, ME, C, family = gaussian(),
                       )
       if (!is.null(ME$ME)) {
           if (!inherits(ME$ME, "data.frame")) stop("ME must be a list in which the element named ME is of class data.frame, containing standard errors for the observations.")
-          if  (!all(names(ME$ME) %in% names(as.data.frame(x)))) stop("All column names in ME$ME must be found in the model matrix (from model.matrix(formula, data)). This error may occur if you've included some kind of data transformation in your model formula, such as a logarithm or polynomial, which is not supported.")
+          if  (!all(names(ME$ME) %in% names(as.data.frame(x)))) stop("All column names in ME$ME must be found in the model matrix (from model.matrix(formula, data)). This error may occur if you've included some kind of data transformation in your model formula, such as a logarithm or polynomial, which is not supported for variables with sampling/measurement error.")
           if (length(ME$percent)) {
               if (length(ME$percent) != ncol(ME$ME)) stop("ME mis-specified: percent must be a vector with one element per column in the ME dataframe.")
               percent <- which(ME$percent == 1)
@@ -192,18 +199,30 @@ stan_glm <- function(formula, slx, re, data, ME, C, family = gaussian(),
           x_obs <- as.data.frame(x.df[, x_obs_idx])
           dx_obs <- ncol(x_obs)
                                         # now get all of those with ME
-          X.me <- data.frame( x.df[, names(ME$ME)] )
-          names(X.me) <- names(ME$ME)
-                                        # now X.me needs to be parsed into proportion/non-proportion variables (expressed as percentages)
-          x_me_cont <- as.matrix(X.me[,not.percent], nrow = n)
-          x_me_prop <- as.matrix(X.me[,percent], nrow = n)
+          ## X.me <- data.frame( x.df[, names(ME$ME)] )
+          ## names(X.me) <- names(ME$ME)
+          
+                                        # now X.me needs to be parsed into proportion/non-proportion variables (expressed as percentages) and ordered as x
+          nm_me_cont <- names(ME$ME)[not.percent]
+          x_me_cont <- data.frame( x.df[, nm_me_cont] )
+          names(x_me_cont) <- nm_me_cont
+          x_me_cont_order <- na.omit( match(names(x.df), names(x_me_cont)) )
+          x_me_cont <- data.frame(x_me_cont[, x_me_cont_order])
           dx_me_cont <- ncol(x_me_cont)
-          dx_me_prop <- ncol(x_me_prop)
-                                        # identify which columns in the design matrix correspond to each type of ME variable
-          x_me_cont_idx <- as.array( which( names(x.df) %in% names(ME$ME)[not.percent] ))
-          x_me_prop_idx <- as.array( which( names(x.df) %in% names(ME$ME)[percent] )) 
           sigma_me_cont <- as.matrix(ME$ME[,not.percent], nrow = n)
+          sigma_me_cont <- as.matrix(sigma_me_cont[, x_me_cont_order], nrow = n)
+          x_me_cont_idx <- as.array( which( names(x.df) %in% nm_me_cont ))
+          
+          nm_me_prop <- names(ME$ME)[percent]
+          x_me_prop <- data.frame( x.df[, nm_me_prop] )
+          names(x_me_prop) <- nm_me_prop
+          x_me_prop_order <- na.omit( match(names(x.df), names(x_me_prop)) )
+          x_me_prop <- as.matrix(x_me_prop[, x_me_prop_order], nrow = n)
+          dx_me_prop <- ncol(x_me_prop)
           sigma_me_prop <- as.matrix(ME$ME[,percent], nrow = n)
+          sigma_me_prop <- as.matrix(sigma_me_prop[, x_me_prop_order], nrow = n)
+          x_me_prop_idx <- as.array( which( names(x.df) %in% nm_me_prop ))
+
                                         # handle unused parts
           if (!dx_obs) {
               x_obs <- model.matrix(~ 0, tmpdf) 
@@ -243,11 +262,11 @@ stan_glm <- function(formula, slx, re, data, ME, C, family = gaussian(),
           }
       me.x.list <- list(
           dx_obs = dx_obs,
-          dx_me_cont = 0,
-          dx_me_prop = 0,
+          dx_me_cont = dx_me_cont,
+          dx_me_prop = dx_me_prop,
           x_obs_idx = x_obs_idx,
-          x_me_prop_idx = a.zero,
-          x_me_cont_idx = a.zero,
+          x_me_prop_idx = x_me_prop_idx,
+          x_me_cont_idx = x_me_cont_idx,
           x_obs = x_obs,
           x_me_prop = matrix(0, nrow = n, ncol = 1),
           x_me_cont = matrix(0, nrow = n, ncol = 1),
@@ -268,11 +287,11 @@ stan_glm <- function(formula, slx, re, data, ME, C, family = gaussian(),
       }
       me.list <- list(
           dx_obs = dx_obs,
-          dx_me_cont = 0,
-          dx_me_prop = 0,
+          dx_me_cont = dx_me_cont,
+          dx_me_prop = dx_me_prop,
           x_obs_idx = x_obs_idx,
-          x_me_prop_idx = a.zero,
-          x_me_cont_idx = a.zero,
+          x_me_prop_idx = x_me_prop_idx,
+          x_me_cont_idx = x_me_cont_idx,
           x_obs = x_obs,
           x_me_prop = matrix(0, nrow = n, ncol = 1),
           x_me_cont = matrix(0, nrow = n, ncol = 1),
@@ -302,6 +321,7 @@ stan_glm <- function(formula, slx, re, data, ME, C, family = gaussian(),
     dwx = dwx,
     wx_idx = wx_idx
     )
+  ## STAN STUFF -------------  
   standata <- c(standata, me.list)
   if (family$family == "binomial") {
       # standata$y will be ignored for binomial and poisson
@@ -314,11 +334,12 @@ stan_glm <- function(formula, slx, re, data, ME, C, family = gaussian(),
   if (family$family %in% c("gaussian", "student_t")) pars <- c(pars, 'sigma')
   if (is_student) pars <- c(pars, "nu")
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
+  if (dx_me_cont) pars <- c(pars, "x_true_cont")
+  if (dx_me_prop) pars <- c(pars, "x_true_prop")
   priors <- priors[which(names(priors) %in% pars)]
- # init_r = 1 or similar may be needed for count outcomes
    samples <- rstan::sampling(stanmodels$glm, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
   if (missing(C)) C <- NA
-  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x)
+  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x, x_me_cont_idx, x_me_prop_idx)
   out$data <- ModData
   out$family <- family
   out$formula <- formula
