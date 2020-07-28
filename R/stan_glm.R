@@ -190,8 +190,8 @@ stan_glm <- function(formula, slx, re, data, ME, C, family = gaussian(),
               percent <- which(ME$percent == 1)
               not.percent <- which(ME$percent != 1)
           } else {
-              percent <- rep(0, times = ncol(ME$ME))
-              not.percent <- rep(1, times = ncol(ME$ME))
+              percent <- integer(0) #rep(0, times = ncol(ME$ME))
+              not.percent <- 1:ncol(ME$ME) #rep(1, times = ncol(ME$ME))
           }           
                                         # gather any/all variables without ME
           x.df <- as.data.frame(x.list$x)  
