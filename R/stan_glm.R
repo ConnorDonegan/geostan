@@ -9,7 +9,7 @@
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
 #' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula synatax, as in \code{~ ID}.  The resulting random effects parameter returned is named \code{alpha_re}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
-#' @param ME To model measurement error or sampling error in any or all of the covariates, provide a named list containing a dataframe (named \code{ME}) with standard errors for each observation; these will be matched to the variables using column names. If any of the variables in \code{ME} are percentages (ranging from zero to one-hundred---not zero to one!), also include a vector indicating which columns are percentages. For example, if \code{ME} has three columns and the second column is a percentage, include \code{percent = c(0, 1, 0)}. Altogether, \code{ME = list(ME = se.df, percent = c(0, 1, 0))}. This will ensure that the ME models for percentages are properly constrained to the range [0, 100]. Finally, if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}. The model for offset values will be restricted to allow values only greater than or equal to zero. Note that the \code{ME} model will not work if \code{formula} includes any functions of your variables such as polynomials, splines, or log transformations.
+#' @param ME To model measurement error or sampling error in any or all of the covariates, provide a named list containing a dataframe (named \code{ME}) with standard errors for each observation; these will be matched to the variables using column names. If any of the variables in \code{ME} are percentages (ranging from zero to one-hundred---not zero to one!), also include a vector indicating which columns are percentages. For example, if \code{ME} has three columns and the second column is a percentage, include \code{percent = c(0, 1, 0)}. Altogether, \code{ME = list(ME = se.df, percent = c(0, 1, 0))}. This will ensure that the ME models for percentages are properly constrained to the range [0, 100]. Finally, if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}. The model for offset values will be restricted to allow values only greater than or equal to zero. Note that the \code{ME} model will not work if \code{formula} includes any functions of the ME variables such as polynomials, splines, or log transformations.
 #' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.
 #' @param family The likelihood function for the outcome variable. Current options are \code{poisson(link = "log")}, \code{binomial(link = "logit")}, \code{student_t()}, and the default \code{gaussian()}. 
 #' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
@@ -301,7 +301,8 @@ stan_glm <- function(formula, slx, re, data, ME, C, family = gaussian(),
           model_offset = 0
       )
   }
-    standata <- list( 
+  standata <- list(
+  ## glm data -------------      
     y = y,
     y_int = y_int,
     trials = rep(0, length(y)),
@@ -317,17 +318,18 @@ stan_glm <- function(formula, slx, re, data, ME, C, family = gaussian(),
     alpha_tau_prior = priors$alpha_tau,
     t_nu_prior = priors$nu,
     family = family_int,
+  ## slx data -------------    
     W = W,
     dwx = dwx,
     wx_idx = wx_idx
     )
-  ## STAN STUFF -------------  
   standata <- c(standata, me.list)
   if (family$family == "binomial") {
       # standata$y will be ignored for binomial and poisson
       standata$y <- standata$y_int <- y[,1]
       standata$trials <- y[,1] + y[,2]
   }
+  ## STAN STUFF -------------    
   pars <- c(pars, 'intercept', 'residual', 'log_lik', 'yrep', 'fitted')
   if (!intercept_only) pars <- c(pars, 'beta')
   if (dwx) pars <- c(pars, 'gamma')

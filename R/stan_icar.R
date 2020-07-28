@@ -9,7 +9,7 @@
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
 #' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula synatax, as in \code{~ ID}. If this is specified at the observational unit level then it becomes the original Besag-York-Mollie model. In that case this random effects term and the ICAR component are not separately identifiable. The resulting random effects parameter returned is named \code{alpha_re}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
-#' @param ME To model measurement error or sampling error in any or all of the covariates, provide a named list containing a dataframe (named \code{ME}) with standard errors for each observation; these will be matched to the variables using column names. If any of the variables in \code{ME} are percentages (ranging from zero to one-hundred---not zero to one!), also include a vector indicating which columns are percentages. For example, if \code{ME} has three columns and the second column is a percentage, include \code{percent = c(0, 1, 0)}. Altogether, \code{ME = list(ME = se.df, percent = c(0, 1, 0))}. This will ensure that the ME models for percentages are properly constrained to the range [0, 100]. Finally, if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}. The model for offset values will be restricted to allow values only greater than or equal to zero. Note that the \code{ME} model will not work if \code{formula} includes any functions of your variables such as polynomials, splines, or log transformations.
+#' @param ME To model measurement error or sampling error in any or all of the covariates, provide a named list containing a dataframe (named \code{ME}) with standard errors for each observation; these will be matched to the variables using column names. If any of the variables in \code{ME} are percentages (ranging from zero to one-hundred---not zero to one!), also include a vector indicating which columns are percentages. For example, if \code{ME} has three columns and the second column is a percentage, include \code{percent = c(0, 1, 0)}. Altogether, \code{ME = list(ME = se.df, percent = c(0, 1, 0))}. This will ensure that the ME models for percentages are properly constrained to the range [0, 100]. Finally, if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}. The model for offset values will be restricted to allow values only greater than or equal to zero. Note that the \code{ME} model will not work if \code{formula} includes any functions of the ME variables such as polynomials, splines, or log transformations.
 #' @param C Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.
 #' @param family The likelihood function for the outcome variable. Current options are \code{binomial(link = "logit")} and \code{poisson(link = "log")}. 
 #' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
@@ -177,19 +177,20 @@ stan_icar <- function(formula, slx, re, data, ME, C, family = poisson(),
     n_ids <- length(unique(id))
     id_index <- to_index(id)
     re_list <- list(formula = re, data = id_index)
-  } 
-  is_student = FALSE #// IAR model not compatible with Gaussian/Student's t likelihood
-  priors <- list(intercept = prior_intercept, beta = prior, alpha_tau = prior_tau)
+  }
+  ## PARAMETER MODEL STUFF -------------  
+  is_student <- family$family == "student_t" # always false
+  priors <- list(intercept = prior_intercept, beta = prior, sigma = NULL, nu = NULL, alpha_tau = prior_tau)
   priors <- make_priors(user_priors = priors, y = y, x = x, xcentered = centerx,
                         link = family$link)
   ## IAR STUFF -------------
   priors$phi_scale_prior <- prior_phi
   ## DATA MODEL STUFF -------------
-   # some defaults
+  # some defaults
   dx_me_cont <- 0
   dx_me_prop <- 0
   x_me_prop_idx = a.zero
-  x_me_cont_idx = a.zero
+  x_me_cont_idx = a.zero  
   if (!missing(ME)) {
       if (!inherits(ME, "list")) stop("ME must be a list .")
                 # ME model for offset
@@ -206,7 +207,7 @@ stan_icar <- function(formula, slx, re, data, ME, C, family = poisson(),
                       )
       if (!is.null(ME$ME)) {
           if (!inherits(ME$ME, "data.frame")) stop("ME must be a list in which the element named ME is of class data.frame, containing standard errors for the observations.")
-          if  (!all(names(ME$ME) %in% names(as.data.frame(x)))) stop("All column names in ME$ME must be found in the model matrix (from model.matrix(formula, data)). This error may occur if you've included some kind of data transformation in your model formula, such as a logarithm or polynomial, which is not supported.")
+          if  (!all(names(ME$ME) %in% names(as.data.frame(x)))) stop("All column names in ME$ME must be found in the model matrix (from model.matrix(formula, data)). This error may occur if you've included some kind of data transformation in your model formula, such as a logarithm or polynomial, which is not supported for variables with sampling/measurement error.")
           if (length(ME$percent)) {
               if (length(ME$percent) != ncol(ME$ME)) stop("ME mis-specified: percent must be a vector with one element per column in the ME dataframe.")
               percent <- which(ME$percent == 1)
@@ -221,18 +222,30 @@ stan_icar <- function(formula, slx, re, data, ME, C, family = poisson(),
           x_obs <- as.data.frame(x.df[, x_obs_idx])
           dx_obs <- ncol(x_obs)
                                         # now get all of those with ME
-          X.me <- data.frame( x.df[, names(ME$ME)] )
-          names(X.me) <- names(ME$ME)
-                                        # now X.me needs to be parsed into proportion/non-proportion variables (expressed as percentages)
-          x_me_cont <- as.matrix(X.me[,not.percent], nrow = n)
-          x_me_prop <- as.matrix(X.me[,percent], nrow = n)
+          ## X.me <- data.frame( x.df[, names(ME$ME)] )
+          ## names(X.me) <- names(ME$ME)
+          
+                                        # now X.me needs to be parsed into proportion/non-proportion variables (expressed as percentages) and ordered as x
+          nm_me_cont <- names(ME$ME)[not.percent]
+          x_me_cont <- data.frame( x.df[, nm_me_cont] )
+          names(x_me_cont) <- nm_me_cont
+          x_me_cont_order <- na.omit( match(names(x.df), names(x_me_cont)) )
+          x_me_cont <- data.frame(x_me_cont[, x_me_cont_order])
           dx_me_cont <- ncol(x_me_cont)
-          dx_me_prop <- ncol(x_me_prop)
-                                        # identify which columns in the design matrix correspond to each type of ME variable
-          x_me_cont_idx <- as.array( which( names(x.df) %in% names(ME$ME)[not.percent] ))
-          x_me_prop_idx <- as.array( which( names(x.df) %in% names(ME$ME)[percent] )) 
           sigma_me_cont <- as.matrix(ME$ME[,not.percent], nrow = n)
+          sigma_me_cont <- as.matrix(sigma_me_cont[, x_me_cont_order], nrow = n)
+          x_me_cont_idx <- as.array( which( names(x.df) %in% nm_me_cont ))
+          
+          nm_me_prop <- names(ME$ME)[percent]
+          x_me_prop <- data.frame( x.df[, nm_me_prop] )
+          names(x_me_prop) <- nm_me_prop
+          x_me_prop_order <- na.omit( match(names(x.df), names(x_me_prop)) )
+          x_me_prop <- as.matrix(x_me_prop[, x_me_prop_order], nrow = n)
+          dx_me_prop <- ncol(x_me_prop)
           sigma_me_prop <- as.matrix(ME$ME[,percent], nrow = n)
+          sigma_me_prop <- as.matrix(sigma_me_prop[, x_me_prop_order], nrow = n)
+          x_me_prop_idx <- as.array( which( names(x.df) %in% nm_me_prop ))
+
                                         # handle unused parts
           if (!dx_obs) {
               x_obs <- model.matrix(~ 0, tmpdf) 
@@ -272,11 +285,11 @@ stan_icar <- function(formula, slx, re, data, ME, C, family = poisson(),
           }
       me.x.list <- list(
           dx_obs = dx_obs,
-          dx_me_cont = 0,
-          dx_me_prop = 0,
+          dx_me_cont = dx_me_cont,
+          dx_me_prop = dx_me_prop,
           x_obs_idx = x_obs_idx,
-          x_me_prop_idx = a.zero,
-          x_me_cont_idx = a.zero,
+          x_me_prop_idx = x_me_prop_idx,
+          x_me_cont_idx = x_me_cont_idx,
           x_obs = x_obs,
           x_me_prop = matrix(0, nrow = n, ncol = 1),
           x_me_cont = matrix(0, nrow = n, ncol = 1),
@@ -297,11 +310,11 @@ stan_icar <- function(formula, slx, re, data, ME, C, family = poisson(),
       }
       me.list <- list(
           dx_obs = dx_obs,
-          dx_me_cont = 0,
-          dx_me_prop = 0,
+          dx_me_cont = dx_me_cont,
+          dx_me_prop = dx_me_prop,
           x_obs_idx = x_obs_idx,
-          x_me_prop_idx = a.zero,
-          x_me_cont_idx = a.zero,
+          x_me_prop_idx = x_me_prop_idx,
+          x_me_cont_idx = x_me_cont_idx,
           x_obs = x_obs,
           x_me_prop = matrix(0, nrow = n, ncol = 1),
           x_me_cont = matrix(0, nrow = n, ncol = 1),
@@ -311,7 +324,7 @@ stan_icar <- function(formula, slx, re, data, ME, C, family = poisson(),
           model_offset = 0
       )
   }
-    standata <- list(
+  standata <- list(
   ## glm data -------------
     y = y,
     y_int = y_int,
@@ -328,7 +341,7 @@ stan_icar <- function(formula, slx, re, data, ME, C, family = poisson(),
     alpha_tau_prior = priors$alpha_tau,
     t_nu_prior = priors$nu,
     family = family_int,
-  ## slx data -------------
+  ## slx data -------------    
     W = W,
     dwx = dwx,
     wx_idx = wx_idx,
@@ -344,15 +357,18 @@ stan_icar <- function(formula, slx, re, data, ME, C, family = poisson(),
       standata$y <- standata$y_int <- y[,1]
       standata$trials <- y[,1] + y[,2]
   }
-  pars <- c(pars, 'intercept', 'phi', 'phi_scale', 'residual', 'log_lik', 'yrep', 'fitted')
+  ## STAN STUFF -------------    
+  pars <- c(pars, 'intercept', 'residual', 'log_lik', 'yrep', 'fitted')
   if (!intercept_only) pars <- c(pars, 'beta')
   if (dwx) pars <- c(pars, 'gamma')
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
-  priors <- priors[which(names(priors) %in% pars)]  
+  if (dx_me_cont) pars <- c(pars, "x_true_cont")
+  if (dx_me_prop) pars <- c(pars, "x_true_prop")
+  priors <- priors[which(names(priors) %in% pars)]
   ## CALL STAN -------------  
   samples <- rstan::sampling(stanmodels$icar, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init_r = 1, ...)
   if (missing(C)) C <- NA
-  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x, x_me_cont_idx, x_me_prop_idx)  
+  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x, x_me_cont_idx, x_me_prop_idx)
   out$data <- ModData
   out$family <- family
   out$formula <- formula

@@ -3,8 +3,6 @@ iter=30
 refresh=0
 source("helpers.R")
 
-##devtools::load_all("~/dev/geostan")
-
 context("stan_glm")
 test_that("Poisson offset model works", {
     data(sentencing)
@@ -80,6 +78,26 @@ test_that("GLM accepts covariate ME with WX, mixed ME-non-ME", {
                     C = shape2mat(ohio),
                     ME = ME,
                     chains = 1,
+                    iter = iter,
+                    refresh = refresh)
+    )
+    expect_geostan(fit)
+})
+
+test_that("Binomial GLM accepts covariate ME with WX, mixed ME-non-ME", {
+    data(ohio)
+    n <- nrow(ohio)
+    ME <- list(ME = data.frame(unemployment = rep(0.75, n),
+                          historic_gop = rep(3, n)),
+               percent = c(1, 1))
+    SW(
+        fit <- stan_glm(cbind(trump_2016, total_2016 - trump_2016) ~ log(population) + college_educated + unemployment + historic_gop,
+                    slx = ~ college_educated + unemployment,
+                    data = ohio,
+                    C = shape2mat(ohio),
+                    ME = ME,
+                    chains = 1,
+                    family = binomial(),
                     iter = iter,
                     refresh = refresh)
     )
