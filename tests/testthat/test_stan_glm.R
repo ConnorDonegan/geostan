@@ -84,12 +84,11 @@ test_that("GLM accepts covariate ME with WX, mixed ME-non-ME", {
     expect_geostan(fit)
 })
 
-test_that("Binomial GLM accepts covariate ME with WX, mixed ME-non-ME", {
+test_that("Binomial GLM accepts covariate ME with WX, mixed ME-non-ME, no 'percent' term", {
     data(ohio)
     n <- nrow(ohio)
     ME <- list(ME = data.frame(unemployment = rep(0.75, n),
-                          historic_gop = rep(3, n)),
-               percent = c(1, 1))
+                          historic_gop = rep(3, n)))
     SW(
         fit <- stan_glm(cbind(trump_2016, total_2016 - trump_2016) ~ log(population) + college_educated + unemployment + historic_gop,
                     slx = ~ college_educated + unemployment,
