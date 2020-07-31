@@ -4,8 +4,8 @@
   if (has_sigma) sigma ~ student_t(sigma_prior[1], sigma_prior[2], sigma_prior[3]);
 // data models 
   if (model_offset) offset_obs ~ normal(offset_est, offset_me);
-  if (dx_me_prop) to_vector(x_me_prop) ~ normal(to_vector(x_true_prop), to_vector(sigma_me_prop));
-  if (dx_me_cont) to_vector(x_me_cont) ~ normal(to_vector(x_true_cont), to_vector(sigma_me_cont));
+  if (dx_me_bounded) to_vector(x_me_bounded) ~ normal(to_vector(x_true_bounded), to_vector(sigma_me_bounded));
+  if (dx_me_unbounded) to_vector(x_me_unbounded) ~ normal(to_vector(x_true_unbounded), to_vector(sigma_me_unbounded));
 // partial pooling of observations across groups/geographies (exchangeable "random effects")
   if (has_re) {
     alpha_tau[has_re] ~ student_t(alpha_tau_prior[1], alpha_tau_prior[2], alpha_tau_prior[3]);

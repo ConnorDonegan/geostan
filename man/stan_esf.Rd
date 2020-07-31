@@ -60,7 +60,13 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{EV}{A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. If provided, still also provide a spatial weights matrix \code{C} for other purposes.  See \link[geostan]{make_EV} and \link[geostan]{shape2mat}.}
 
-\item{ME}{To model measurement error or sampling error in any or all of the covariates, provide a named list containing a dataframe (named \code{ME}) with standard errors for each observation; these will be matched to the variables using column names. If any of the variables in \code{ME} are percentages (ranging from zero to one-hundred---not zero to one!), also include a vector indicating which columns are percentages. For example, if \code{ME} has three columns and the second column is a percentage, include \code{percent = c(0, 1, 0)}. Altogether, \code{ME = list(ME = se.df, percent = c(0, 1, 0))}. This will ensure that the ME models for percentages are properly constrained to the range [0, 100]. Finally, if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}. The model for offset values will be restricted to allow values only greater than or equal to zero. Note that the \code{ME} model will not work if \code{formula} includes any functions of the ME variables such as polynomials, splines, or log transformations.}
+\item{ME}{To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Observational errors are assigned a Gaussian probability distribution. Elements of the list \code{ME} (by name) may include:
+\describe{
+\item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
+\item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one-hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
+\item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of the bounded variables. Defaults to \code{bounds = c(0, 100)}.}
+\item{offset}{if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}. The model for offset values will be restricted to allow values only greater than or equal to zero.}
+}}
 
 \item{nsa}{Include eigenvectors representing negative spatial autocorrelation? Default \code{nsa = FALSE}. Ignored if \code{EV} is provided.}
 

@@ -1,5 +1,9 @@
-  int<lower=0,upper=4> family; // change to family 
-  int<lower=0> n; // number of observations
+// likelihood function
+  int<lower=0,upper=4> family;
+// number of observations
+  int<lower=0> n; 
+// lower, upper bound for bounded observational error models
+  vector[2] bounds;
 // offest with measurement error information   
   vector<lower=0>[n] offset_obs; 
   vector<lower=0>[n] offset_me;
@@ -11,16 +15,16 @@
   matrix[dwx ? n : 1, dwx ? n : 1] W;
 // covariates with measurement error information
   int<lower=0> dx_obs;
-  int<lower=0> dx_me_prop;
-  int<lower=0> dx_me_cont;
+  int<lower=0> dx_me_bounded;
+  int<lower=0> dx_me_unbounded;
   int<lower=0> x_obs_idx[dx_obs ? dx_obs : 1];
-  int<lower=0> x_me_prop_idx[dx_me_prop ? dx_me_prop : 1];
-  int<lower=0> x_me_cont_idx[dx_me_cont ? dx_me_cont : 1];
+  int<lower=0> x_me_bounded_idx[dx_me_bounded ? dx_me_bounded : 1];
+  int<lower=0> x_me_unbounded_idx[dx_me_unbounded ? dx_me_unbounded : 1];
   matrix[n, dx_obs ? dx_obs : 0] x_obs;
-  matrix<lower=0,upper=100>[n, dx_me_prop ? dx_me_prop : 1] x_me_prop;
-  matrix[n, dx_me_cont ? dx_me_cont : 1] x_me_cont;
-  matrix<lower=0>[n, dx_me_prop ? dx_me_prop : 1] sigma_me_prop;
-  matrix<lower=0>[n, dx_me_cont ? dx_me_cont : 1] sigma_me_cont;
+  matrix<lower=bounds[1],upper=bounds[2]>[n, dx_me_bounded ? dx_me_bounded : 1] x_me_bounded;
+  matrix[n, dx_me_unbounded ? dx_me_unbounded : 1] x_me_unbounded;
+  matrix<lower=0>[n, dx_me_bounded ? dx_me_bounded : 1] sigma_me_bounded;
+  matrix<lower=0>[n, dx_me_unbounded ? dx_me_unbounded : 1] sigma_me_unbounded;
 // exchangeable random effects
   int<lower=0,upper=1> has_re; // has random effects? (or varying intercept)
   int<lower=0> n_ids; // number of random effects

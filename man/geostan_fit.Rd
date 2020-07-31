@@ -14,7 +14,7 @@
 \usage{
 \method{print}{geostan_fit}(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digits = 3, ...)
 
-\method{plot}{geostan_fit}(x, pars, plotfun = "stan_plot", ...)
+\method{plot}{geostan_fit}(x, pars, plotfun = "dens", ...)
 
 \method{as.matrix}{geostan_fit}(x, ...)
 

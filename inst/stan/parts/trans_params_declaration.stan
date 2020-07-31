@@ -2,8 +2,8 @@
   matrix[n, dx_all] x_all;
   vector[n] f;
   if (dx_obs) x_all[,x_obs_idx] = x_obs;
-  if (dx_me_prop) x_all[,x_me_prop_idx] = x_true_prop;
-  if (dx_me_cont) x_all[,x_me_cont_idx] = x_true_cont;
+  if (dx_me_bounded) x_all[,x_me_bounded_idx] = x_true_bounded;
+  if (dx_me_unbounded) x_all[,x_me_unbounded_idx] = x_true_unbounded;
   if (!model_offset && !is_poisson) f = offset_obs;     // default offset_obs=0
   if (model_offset && !is_poisson) f = offset_est;
   if (is_poisson) {

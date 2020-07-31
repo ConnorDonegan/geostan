@@ -1,6 +1,6 @@
-// covariates to model, percentages/proportions on [0,100] and continuous [-inf,inf] variables
-  matrix<lower=0,upper=100>[n, dx_me_prop] x_true_prop;
-  matrix[n, dx_me_cont] x_true_cont;
+// covariates to model, bounded and unbounded (marked for now as "proportions" and "continuous")
+  matrix<lower=bounds[1],upper=bounds[2]>[n, dx_me_bounded] x_true_bounded;
+  matrix[n, dx_me_unbounded] x_true_unbounded;
   vector<lower=0>[model_offset ? n : 0] offset_est;  
 // regression parameters
   real intercept;

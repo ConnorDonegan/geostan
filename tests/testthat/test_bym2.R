@@ -3,7 +3,7 @@ iter=10
 refresh=0
 source("helpers.R")
 
-devtools::load_all("~/dev/geostan")
+##devtools::load_all("~/dev/geostan")
 
 context("stan_bym2")
 test_that("BYM2 with offset model works", {
@@ -64,7 +64,7 @@ test_that("BYM2 binomial works and accepts covariate ME", {
     ME <- list(ME = data.frame(unemployment = rep(0.25, n),
                                historic_gop = rep(1, n),
                                college_educated = rep(1, n)),
-               percent = c(1, 0, 1))
+               bounded = c(1, 0, 1))
     scaling_factor = 0.40
     SW(
         fit <- stan_bym2(cbind(trump_2016, total_2016 - trump_2016) ~ log(population) + college_educated + unemployment + historic_gop,
