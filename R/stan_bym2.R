@@ -329,7 +329,7 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, ME, C, family = poiss
   if (dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
   if (dx_me_bounded) pars <- c(pars, "x_true_bounded")  
   priors <- priors[which(names(priors) %in% pars)]
-  samples <- rstan::sampling(stanmodels$bym2, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init_r = 1, ...)
+  samples <- rstan::sampling(stanmodels$bym2, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
   out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x, x_me_unbounded_idx, x_me_bounded_idx)
   out$data <- ModData
   out$family <- family

@@ -381,7 +381,7 @@ stan_icar <- function(formula, slx, re, data, ME, C, family = poisson(),
   if (dx_me_bounded) pars <- c(pars, "x_true_bounded")
   priors <- priors[which(names(priors) %in% pars)]
   ## CALL STAN -------------  
-  samples <- rstan::sampling(stanmodels$icar, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init_r = 1, ...)
+  samples <- rstan::sampling(stanmodels$icar, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
   if (missing(C)) C <- NA
   out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x, x_me_unbounded_idx, x_me_bounded_idx)
   out$data <- ModData
