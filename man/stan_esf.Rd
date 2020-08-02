@@ -24,7 +24,7 @@ stan_esf(
   data,
   C,
   EV,
-  ME,
+  ME = NULL,
   nsa = FALSE,
   threshold = 0.25,
   family = gaussian(),
@@ -46,7 +46,7 @@ stan_esf(
 )
 }
 \arguments{
-\item{formula}{A model formula, following the R \link[stats]{formula} syntax. If an offset term is provide for a Poisson model, it will be transformed to the log scale internally. (To add an offset term \code{E} to your model formula use \code{y ~ offset(E)}).  Binomial models are specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.}
+\item{formula}{A model formula, following the R \link[stats]{formula} syntax. Binomial models are specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.}
 
 \item{slx}{Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
@@ -65,7 +65,7 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
 \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one-hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
 \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of the bounded variables. Defaults to \code{bounds = c(0, 100)}.}
-\item{offset}{if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}. The model for offset values will be restricted to allow values only greater than or equal to zero.}
+\item{offset}{if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}.}
 }}
 
 \item{nsa}{Include eigenvectors representing negative spatial autocorrelation? Default \code{nsa = FALSE}. Ignored if \code{EV} is provided.}
@@ -208,7 +208,8 @@ fit <- stan_esf(gop_growth ~ historic_gop + log(population) + college_educated,
 ## Poisson models. Model Jim Crow era prison sentencing risk in Florida.
 data(sentencing)
 C <- shape2mat(sentencing, "B")
-fit <- stan_esf(sents ~ offset(expected_sents), re = ~ name, family = poisson(),
+sentencing$log_e <- log(sentencing$expected_sents)
+fit <- stan_esf(sents ~ offset(log_e), re = ~ name, family = poisson(),
                 data = sentencing@data, C = C, chains = 1, iter = 500)
 plot(fit, plotfun = 'trace')
 stan_rhat(fit$stanfit, "beta_ev") +

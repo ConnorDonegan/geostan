@@ -1,4 +1,4 @@
-// covariates to model, bounded and unbounded (marked for now as "proportions" and "continuous")
+// covariates to model, bounded and unbounded 
   matrix<lower=bounds[1],upper=bounds[2]>[n, dx_me_bounded] x_true_bounded;
   matrix[n, dx_me_unbounded] x_true_unbounded;
   vector<lower=0>[model_offset ? n : 0] offset_est;  

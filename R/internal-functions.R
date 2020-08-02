@@ -62,9 +62,9 @@ SLX <- function(f, DF, SWM) {
 #' @param df user provided data.frame
 make_data <- function(f, df, x) {
     y <- model.response(model.frame(f, df))
-    o <- model.offset(model.frame(f, df))
-    if (is.null(o)) return(cbind(y, x))
-    return(cbind(y, o, x))
+    offset <- model.offset(model.frame(f, df))
+    if (is.null(offset)) return(cbind(y, x))
+    return(cbind(y, offset, x))
 }
 
 #' Coerce a vector to data frame with the orignal values and integer ID values

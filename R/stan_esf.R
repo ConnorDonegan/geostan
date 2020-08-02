@@ -3,7 +3,7 @@
 #' @export
 #' @description Fit a spatial regression model using eigenvector spatial filtering where the spatial filter is 
 #' estimated using the regularized horseshoe prior. 
-#' @param formula A model formula, following the R \link[stats]{formula} syntax. If an offset term is provide for a Poisson model, it will be transformed to the log scale internally. (To add an offset term \code{E} to your model formula use \code{y ~ offset(E)}).  Binomial models are specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
+#' @param formula A model formula, following the R \link[stats]{formula} syntax. Binomial models are specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 #'  These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
@@ -16,7 +16,7 @@
 #' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
 #' \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one-hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
 #' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of the bounded variables. Defaults to \code{bounds = c(0, 100)}.}
-#' \item{offset}{if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}. The model for offset values will be restricted to allow values only greater than or equal to zero.}
+#' \item{offset}{if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}.}
 #' }
 #' @param nsa Include eigenvectors representing negative spatial autocorrelation? Default \code{nsa = FALSE}. Ignored if \code{EV} is provided.
 #' @param threshold Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = 0.25}; ignored if \code{EV} is provided. 
@@ -150,7 +150,8 @@
 #' ## Poisson models. Model Jim Crow era prison sentencing risk in Florida.
 #' data(sentencing)
 #' C <- shape2mat(sentencing, "B")
-#' fit <- stan_esf(sents ~ offset(expected_sents), re = ~ name, family = poisson(),
+#' sentencing$log_e <- log(sentencing$expected_sents)
+#' fit <- stan_esf(sents ~ offset(log_e), re = ~ name, family = poisson(),
 #'                 data = sentencing@data, C = C, chains = 1, iter = 500)
 #' plot(fit, plotfun = 'trace')
 #' stan_rhat(fit$stanfit, "beta_ev") +
@@ -167,7 +168,7 @@
 #'        ggtitle("Relative risk of sentencing, 1905-1910")
 #' }
 #'
-stan_esf <- function(formula, slx, re, data, C, EV, ME, nsa = FALSE, threshold = 0.25, family = gaussian(), p0,
+stan_esf <- function(formula, slx, re, data, C, EV, ME = NULL, nsa = FALSE, threshold = 0.25, family = gaussian(), p0,
                      prior = NULL, prior_intercept = NULL, prior_sigma = NULL, prior_rhs = NULL, prior_nu = NULL,
                      prior_tau = NULL,
                      centerx = FALSE, scalex = FALSE,
@@ -260,153 +261,8 @@ stan_esf <- function(formula, slx, re, data, C, EV, ME, nsa = FALSE, threshold =
   priors <- make_priors(user_priors = priors, y = y, x = x, xcentered = centerx,
                         rhs_scale_global = rhs_scale_global, link = family$link, EV = EV)
   ## DATA MODEL STUFF -------------
-  # some defaults
-  dx_me_unbounded <- 0
-  dx_me_bounded <- 0
-  x_me_bounded_idx = a.zero
-  x_me_unbounded_idx = a.zero
-  bounds <- c(0, 100)
-  if (!missing(ME)) {
-      if (!inherits(ME, "list")) stop("ME must be a list .")
-                # ME model for offset
-      if (length(ME$offset)) {
-          offset_me <- ME$offset
-          model_offset <- 1
-      } else {
-          offset_me <- rep(0, times = n)
-          model_offset <- 0
-      }
-            # return items in data list ready for Stan: with ME model for offset
-      me.list <- list(offset_me = offset_me,
-                      model_offset = model_offset
-                      )
-      if (!is.null(ME$ME)) {
-          if (!inherits(ME$ME, "data.frame")) stop("ME must be a list in which the element named ME is of class data.frame, containing standard errors for the observations.")
-          if  (!all(names(ME$ME) %in% names(as.data.frame(x)))) stop("All column names in ME$ME must be found in the model matrix (from model.matrix(formula, data)). This error may occur if you've included some kind of data transformation in your model formula, such as a logarithm or polynomial, which is not supported for variables with sampling/measurement error.")
-          if (length(ME$bounded)) {
-              if (length(ME$bounded) != ncol(ME$ME)) stop("ME mis-specified: bounded must be a vector with one element per column in the ME dataframe.")
-              bounded <- which(ME$bounded == 1)
-              not.bounded <- which(ME$bounded != 1)
-              if (length(ME$bounds)) {
-                  if(length(ME$bounds) != 2 | !inherits(ME$bounds, "numeric")) stop("ME$bounds must be numeric vector of length 2.")
-                  bounds <- ME$bounds
-              }
-          } else {
-              bounded <- integer(0) #rep(0, times = ncol(ME$ME))
-              not.bounded <- 1:ncol(ME$ME) #rep(1, times = ncol(ME$ME))
-          }           
-                                        # gather any/all variables without ME
-          x.df <- as.data.frame(x.list$x)  
-          x_obs_idx <- as.array( which( !names(x.df) %in% names(ME$ME) )) 
-          x_obs <- as.data.frame(x.df[, x_obs_idx])
-          dx_obs <- ncol(x_obs)
-                                        # now get all of those with ME
-          ## X.me <- data.frame( x.df[, names(ME$ME)] )
-          ## names(X.me) <- names(ME$ME)
-          
-                                        # now X.me needs to be parsed into bounded/non-bounded variables and ordered as x
-          nm_me_unbounded <- names(ME$ME)[not.bounded]
-          x_me_unbounded <- data.frame( x.df[, nm_me_unbounded] )
-          names(x_me_unbounded) <- nm_me_unbounded
-          x_me_unbounded_order <- na.omit( match(names(x.df), names(x_me_unbounded)) )
-          x_me_unbounded <- data.frame(x_me_unbounded[, x_me_unbounded_order])
-          dx_me_unbounded <- ncol(x_me_unbounded)
-          sigma_me_unbounded <- as.matrix(ME$ME[,not.bounded], nrow = n)
-          sigma_me_unbounded <- as.matrix(sigma_me_unbounded[, x_me_unbounded_order], nrow = n)
-          x_me_unbounded_idx <- as.array( which( names(x.df) %in% nm_me_unbounded ))
-          
-          nm_me_bounded <- names(ME$ME)[bounded]
-          x_me_bounded <- data.frame( x.df[, nm_me_bounded] )
-          names(x_me_bounded) <- nm_me_bounded
-          x_me_bounded_order <- na.omit( match(names(x.df), names(x_me_bounded)) )
-          x_me_bounded <- as.matrix(x_me_bounded[, x_me_bounded_order], nrow = n)
-          dx_me_bounded <- ncol(x_me_bounded)
-          sigma_me_bounded <- as.matrix(ME$ME[,bounded], nrow = n)
-          sigma_me_bounded <- as.matrix(sigma_me_bounded[, x_me_bounded_order], nrow = n)
-          x_me_bounded_idx <- as.array( which( names(x.df) %in% nm_me_bounded ))
-
-                                        # handle unused parts
-          if (!dx_obs) {
-              x_obs <- model.matrix(~ 0, tmpdf) 
-              x_obs_idx <- a.zero
-          }
-          if (!dx_me_bounded) {
-              sigma_me_bounded <- x_me_bounded <- matrix(0, nrow = n, ncol = 1)
-              x_me_bounded_idx <- a.zero
-          }
-          if (!dx_me_unbounded) {
-              sigma_me_unbounded <- x_me_unbounded <- matrix(0, nrow = n, ncol = 1)
-              x_me_unbounded_idx <- a.zero
-          }
-                      # return items in data list ready for Stan: with ME model for covariates
-          me.x.list <- list(
-          dx_obs = dx_obs,
-          dx_me_unbounded = dx_me_unbounded,
-          dx_me_bounded = dx_me_bounded,
-          x_obs_idx = x_obs_idx,
-          x_me_bounded_idx = x_me_bounded_idx,
-          x_me_unbounded_idx = x_me_unbounded_idx,
-          bounds = bounds,
-          x_obs = x_obs,
-          x_me_bounded = x_me_bounded,
-          x_me_unbounded = x_me_unbounded,
-          sigma_me_bounded = sigma_me_bounded,
-          sigma_me_unbounded = sigma_me_unbounded
-      )
-          me.list <- c(me.list, me.x.list)
-      } else {
-      # in this case there is just an offset me model but not ME.X
-      x_obs <- x.list$x
-      dx_obs <- ncol(x_obs)
-          if (dx_obs) {
-              x_obs_idx <- as.array(1:dx_obs, dim = dx_obs)
-          } else {
-              x_obs_idx <- a.zero
-          }
-      me.x.list <- list(
-          dx_obs = dx_obs,
-          dx_me_unbounded = dx_me_unbounded,
-          dx_me_bounded = dx_me_bounded,
-          x_obs_idx = x_obs_idx,
-          x_me_bounded_idx = x_me_bounded_idx,
-          x_me_unbounded_idx = x_me_unbounded_idx,
-          bounds = bounds,          
-          x_obs = x_obs,
-          x_me_bounded = matrix(0, nrow = n, ncol = 1),
-          x_me_unbounded = matrix(0, nrow = n, ncol = 1),
-          sigma_me_bounded = matrix(0, nrow = n, ncol = 1),
-          sigma_me_unbounded = matrix(0, nrow = n, ncol = 1)
-      )
-     me.list <- c(me.list, me.x.list)
-      }   
-  }
-      # return items in data list ready for Stan: no ME model at all
-  if (missing(ME)) {
-      x_obs <- x.list$x
-      dx_obs <- ncol(x_obs)
-      if (dx_obs) {
-          x_obs_idx <- as.array(1:dx_obs, dim = dx_obs)
-      } else {
-          x_obs_idx <- a.zero
-      }
-      me.list <- list(
-          dx_obs = dx_obs,
-          dx_me_unbounded = dx_me_unbounded,
-          dx_me_bounded = dx_me_bounded,
-          x_obs_idx = x_obs_idx,
-          x_me_bounded_idx = x_me_bounded_idx,
-          x_me_unbounded_idx = x_me_unbounded_idx,
-          bounds = bounds,          
-          x_obs = x_obs,
-          x_me_bounded = matrix(0, nrow = n, ncol = 1),
-          x_me_unbounded = matrix(0, nrow = n, ncol = 1),
-          sigma_me_bounded = matrix(0, nrow = n, ncol = 1),
-          sigma_me_unbounded = matrix(0, nrow = n, ncol = 1),
-          offset_me = rep(0, times = n),
-          model_offset = 0
-      )
-  }
-    ## MIXED STUFF -------------    
+  me.list <- prep_me_data(ME, family, x.list$x)
+  ## MIXED STUFF -------------    
     standata <- list(
   ## glm data -------------
     y = y,
@@ -447,13 +303,14 @@ stan_esf <- function(formula, slx, re, data, C, EV, ME, nsa = FALSE, threshold =
   if (family$family %in% c("gaussian", "student_t")) pars <- c(pars, 'sigma')
   if (is_student) pars <- c(pars, "nu")
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
-  if (dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
-  if (dx_me_bounded) pars <- c(pars, "x_true_bounded")
+  if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
+  if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
+  if (any(me.list$offset_me != 0)) pars <- c(pars, "offset_est")
   priors <- priors[which(names(priors) %in% c(pars, "rhs"))]
   ## CALL STAN -------------    
    samples <- rstan::sampling(stanmodels$esf, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
   if (missing(C)) C <- NA
-  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x, x_me_unbounded_idx, x_me_bounded_idx)  
+  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)  
   out$data <- ModData
   out$family <- family
   out$formula <- formula

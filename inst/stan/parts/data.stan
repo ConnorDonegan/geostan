@@ -5,7 +5,7 @@
 // lower, upper bound for bounded observational error models
   vector[2] bounds;
 // offest with measurement error information   
-  vector<lower=0>[n] offset_obs; 
+  vector[n] offset_obs; 
   vector<lower=0>[n] offset_me;
   int<lower=0,upper=1> model_offset;
 // connectivity matrix
@@ -25,9 +25,9 @@
   matrix[n, dx_me_unbounded ? dx_me_unbounded : 1] x_me_unbounded;
   matrix<lower=0>[n, dx_me_bounded ? dx_me_bounded : 1] sigma_me_bounded;
   matrix<lower=0>[n, dx_me_unbounded ? dx_me_unbounded : 1] sigma_me_unbounded;
-// exchangeable random effects
+// non-spatial partial pooling [exchangeable 'random effects']
   int<lower=0,upper=1> has_re; // has random effects? (or varying intercept)
-  int<lower=0> n_ids; // number of random effects
+  int<lower=0> n_ids; // number of units
   int<lower=0,upper=n_ids> id[n]; // identifier for the observational units associated with the random effects term
 // priors
   vector[2] alpha_prior; // prior on the intercept

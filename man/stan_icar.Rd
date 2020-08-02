@@ -14,7 +14,7 @@ stan_icar(
   slx,
   re,
   data,
-  ME,
+  ME = NULL,
   C,
   family = poisson(),
   prior = NULL,
@@ -32,7 +32,7 @@ stan_icar(
 )
 }
 \arguments{
-\item{formula}{A model formula, following the R \link[stats]{formula} syntax. If an offset term is provided for a Poisson model, it will be transformed to the log scale internally; to add an offset term \code{E} to a formula use \code{y ~ offset(E)}. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.}
+\item{formula}{A model formula, following the R \link[stats]{formula} syntax. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.}
 
 \item{slx}{Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
@@ -47,7 +47,7 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
 \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one-hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
 \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of the bounded variables. Defaults to \code{bounds = c(0, 100)}.}
-\item{offset}{if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}. The model for offset values will be restricted to allow values only greater than or equal to zero.}
+\item{offset}{if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}.}
 }}
 
 \item{C}{Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.}
@@ -106,9 +106,7 @@ The Stan code for the ICAR component of the model follows Morris et al. (2019).
  The function returns the ICAR component in the parameter \code{phi}.
  The entire posterior distribution of \code{phi}
  can be obtained with the following code: \code{post_phi <- spatial(fit, summary = FALSE)} where \code{fit} is
- the \code{geostan_fit} object returned by a call to \code{stan_icar}. 
- 
- When \code{family = student_t()}, the parameter \code{nu} in the model refers to the degrees of freedom in the Student's t likelihood function for the data.
+ the \code{geostan_fit} object returned by a call to \code{stan_icar}.
 }
 \examples{
 library(ggplot2)
@@ -119,15 +117,16 @@ data(sentencing)
 
 # using a small number of iterations and a single chain only for compilation speed
 C <- shape2mat(sentencing)
-fit.icar <- stan_icar(sents ~ offset(expected_sents), family = poisson(),
+log_e <- log(sentencing$expected_sents)
+fit.icar <- stan_icar(sents ~ offset(log_e), family = poisson(),
                      data = sentencing@data, C = C,
-                    chains = 1, iter = 500)
+                    chains = 1, iter = 300)
 
 # add exchangeable random effects (for a BYM model). See stan_bym2 for a better model.
-fit.bym <- stan_icar(sents ~ offset(expected_sents), re = ~ name,
+fit.bym <- stan_icar(sents ~ offset(log_e), re = ~ name,
                      family = poisson(),
                      data = sentencing@data, C = C,
-                     chains = 1, iter = 500)
+                     chains = 1, iter = 300)
 
 # view WAIC 
 waic(fit.icar)
