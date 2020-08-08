@@ -4,6 +4,7 @@
 #' @export
 #' @param x Numeric vector of input values, length n.
 #' @param w An n x n patial connectivity matrix. See \link[geostan]{shape2mat}. 
+#' @param digits Number of digits to round results to; defaults to \code{digits = 3}.
 #' @return The Moran coefficient, a numeric value.
 #'
 #' @examples
@@ -13,7 +14,7 @@
 #' x <- ohio$unemployment
 #' mc(x, w)
 #'
-mc <- function(x, w) {
+mc <- function(x, w, digits = 3) {
   if(missing(x) | missing(w)) stop("Must provide data x (length n vector) and n x n spatial weights matrix (w).")
     xbar <- mean(x)
     z <- x - xbar
@@ -21,7 +22,38 @@ mc <- function(x, w) {
     A <- sum(rowSums(w))
     n <- length(x)
     mc <- as.numeric( n/A * (z %*% ztilde) / (z %*% z))
-    return(mc)
+    return(round(mc, digits = digits))
+}
+
+#' APLE spatial autocorrelation estimator
+#'
+#' @description The approximate-profile likelihood estimator for the spatial autocorrelation parameter from a simultaneous autoregressive (SAR) model.
+#' @param x Numeric vector of values, length n. This will be standardized internally with \code{scale(x)}.
+#' @param w An n x n row-standardized spatial connectivity matrix. See \link[geostan]{shape2mat}.
+#' @param digits Number of digits to round results to; defaults to \code{digits = 3}.
+#' @return the APLE estimate.
+#'
+#' @source
+#'
+#' Li, Honfei and Calder, Catherine A. and Cressie, Noel (2007). Beyond Moran's I: testing for spatial dependence based on the spatial autoregressive model. Geographical Analysis: 39(4): 357-375.
+#' 
+#' @examples
+#' library(sf)
+#' data(ohio)
+#' w <- shape2mat(ohio, "W")
+#' x <- ohio$unemployment
+#' aple(x, w)
+#'
+aple <- function(x, w, digits = 3) {
+    z <- as.numeric(scale(x))
+    n <- length(z)
+    I <- diag(n)
+    lambda <- eigen(w)$values
+    w2 <- (w + t(w)) / 2
+    top <- t(z) %*% w2 %*% z
+    wl <- (t(w) %*% w + as.numeric(t(lambda) %*% lambda) * I / n)
+    bottom <- t(z) %*% wl %*% z
+    round(as.numeric( top / bottom ), digits = digits)
 }
 
 #' Moran plot
