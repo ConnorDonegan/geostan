@@ -32,7 +32,7 @@ mc <- function(x, w, digits = 3) {
 #' @param w An n x n row-standardized spatial connectivity matrix. See \link[geostan]{shape2mat}.
 #' @param digits Number of digits to round results to; defaults to \code{digits = 3}.
 #' @return the APLE estimate.
-#'
+#' @export
 #' @source
 #'
 #' Li, Honfei and Calder, Catherine A. and Cressie, Noel (2007). Beyond Moran's I: testing for spatial dependence based on the spatial autoregressive model. Geographical Analysis: 39(4): 357-375.
