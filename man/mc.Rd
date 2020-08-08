@@ -4,12 +4,14 @@
 \alias{mc}
 \title{The Moran coefficient}
 \usage{
-mc(x, w)
+mc(x, w, digits = 3)
 }
 \arguments{
 \item{x}{Numeric vector of input values, length n.}
 
 \item{w}{An n x n patial connectivity matrix. See \link[geostan]{shape2mat}.}
+
+\item{digits}{Number of digits to round results to; defaults to \code{digits = 3}.}
 }
 \value{
 The Moran coefficient, a numeric value.
