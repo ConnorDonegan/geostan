@@ -20,7 +20,7 @@
 }
 
 /**
-  * intrinsic autoregressive prior for a vector or random effects (Morris et al 2019)
+  * intrinsic autoregressive prior (Morris et al 2019)
   * @return a vector of parameters (random effects)
   */
   real icar_normal_lpdf(vector phi, int N, int[] node1, int[] node2) {
