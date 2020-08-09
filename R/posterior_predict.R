@@ -141,7 +141,7 @@ posterior_predict <- function(object, newdata, C, samples, predictive = TRUE, re
     alpha <- as.matrix(object, pars = "intercept")[idx,]
     beta <- as.matrix(object, pars = "beta")[idx,]
     if (!spatial & (class(object$slx) == "formula") ) {
-        slx.idx <- grep("b_w\\.", dimnames(beta)[[2]])
+        slx.idx <- grep("w\\.", dimnames(beta)[[2]])
         beta <- as.matrix( beta[,-slx.idx] )
         }    
     mu <- alpha + beta %*% t(x)
