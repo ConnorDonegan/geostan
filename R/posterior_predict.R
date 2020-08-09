@@ -139,11 +139,11 @@ posterior_predict <- function(object, newdata, C, samples, predictive = TRUE, re
     if (scalex) scalex <- object$scale_params$scale
     x <- scale(x, center = centerx, scale = scalex)    
     alpha <- as.matrix(object, pars = "intercept")[idx,]
+    if (spatial & inherits(object$slx, "formula")) {
+        beta <- as.matrix(object, pars = c("gamma", "beta"))[idx,]
+    } else {
     beta <- as.matrix(object, pars = "beta")[idx,]
-    if (!spatial & (class(object$slx) == "formula") ) {
-        slx.idx <- grep("w\\.", dimnames(beta)[[2]])
-        beta <- as.matrix( beta[,-slx.idx] )
-        }    
+    }
     mu <- alpha + beta %*% t(x)
     if (!is.null(offset)) mu <- sweep(mu, 2, offset, "+")
     if (is.null(re_form) & !is.na(object$re[1])) {
