@@ -10,7 +10,7 @@
 #' @examples
 #' library(sf)
 #' data(ohio)
-#' w <- shape2mat(ohio, snap = 1) # snap=1 catches some misaligned borders (WI-IL)
+#' w <- shape2mat(ohio, style = "W")
 #' x <- ohio$unemployment
 #' mc(x, w)
 #'
@@ -76,7 +76,7 @@ aple <- function(x, w, digits = 3) {
 #' library(sf)
 #' data(ohio)
 #' y <- ohio$unemployment
-#' w <- shape2mat(ohio)
+#' w <- shape2mat(ohio, "W")
 #' moran_plot(y, w)
 #'
 moran_plot <- function(y, w, xlab = "y", ylab = "Spatial Lag", pch = 20, col = "darkred", size = 2, alpha = 1, lwd = 0.5) {
@@ -234,10 +234,6 @@ student_t <- function() {
 #' @return A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density (\code{Lpd}). If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
 #' @seealso \code{\link{loo}}
 #' @examples
-#' data(ohio)
-#' fit <- stan_esf(gop_growth ~ 1, data = ohio, C = shape2mat(ohio),
-#'                 chains = 1, iter = 400)
-#' waic(fit)
 #' 
 waic <- function(fit, pointwise = FALSE, digits = 2) {
   ll <- as.matrix(fit, pars = "log_lik")

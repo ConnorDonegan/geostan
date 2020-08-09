@@ -74,15 +74,23 @@
 #' # using a small number of iterations and a single chain only for compilation speed
 #' C <- shape2mat(sentencing)
 #' log_e <- log(sentencing$expected_sents)
-#' fit.icar <- stan_icar(sents ~ offset(log_e), family = poisson(),
-#'                      data = sentencing@data, C = C,
-#'                     chains = 1, iter = 300)
+#' fit.icar <- stan_icar(sents ~ offset(log_e),
+#'                      family = poisson(),
+#'                      data = sentencing,
+#'                      C = C,
+#'                      cores = 1,  # cores = 4,
+#'                      chains = 1, # chains = 4,
+#'                     iter = 200)  # iter = 2e3
 #'
 #' # add exchangeable random effects (for a BYM model). See stan_bym2 for a better model.
-#' fit.bym <- stan_icar(sents ~ offset(log_e), re = ~ name,
+#' fit.bym <- stan_icar(sents ~ offset(log_e),
+#'                      re = ~ name,
 #'                      family = poisson(),
-#'                      data = sentencing@data, C = C,
-#'                      chains = 1, iter = 300)
+#'                      data = sentencing,
+#'                      C = C,
+#'                      cores = 1,  # cores = 4,   
+#'                      chains = 1, # chains = 4,
+#'                      iter = 200) # iter = 2e3
 #'
 #' # view WAIC 
 #' waic(fit.icar)

@@ -60,16 +60,16 @@
 #' data(sentencing)
 #'
 #' # using a small number of iterations and a single chain only for compilation speed
-#' # add C to calculate residual SA internally
-#' C <- shape2mat(sentencing)
+#' # add W to calculate residual SA internally
+#' W <- shape2mat(sentencing, "W")
 #' sentencing$log_e <- log(sentencing$expected_sents)
 #' fit.pois <- stan_glm(sents ~ offset(log_e),
 #'                      re = ~ name,
 #'                      family = poisson(),
-#'                      data = sentencing@data,
-#'                      C = C,
-#'                     chains = 1,#chains=4
-#'                     iter = 400) #iter = 2e3
+#'                      data = sentencing,
+#'                      C = W,
+#'                     chains = 1,# chains = 4, cores = 4,
+#'                     iter = 100) #iter = 2e3
 #'
 #' # diagnostics plot: Rhat values should all by very near 1
 #' library(rstan)
