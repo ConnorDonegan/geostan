@@ -41,7 +41,7 @@ All of the models are able to incorporate additional 'varying intercept' terms f
 
 ### Package installation
 
-Since the package is not on CRAN, unmet dependencies must be installed first. You should first install Rstan by following the [getting started guide](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started). Then you'll also need the following R packages:
+You can try out a development version of the package. Since it is not yet on CRAN, unmet dependencies must be installed first. You should first install Rstan by following the [getting started guide](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started). Then you'll also need the following R packages:
 
 ```{r eval=FALSE}
 if (!require(sf)) install.packages("sf")
@@ -68,7 +68,7 @@ If you use Linux you can install the package using:
 install.packages("https://connordonegan.github.io/assets/geostan_0.0.1.tar.gz", repos = NULL)
 ```
 
-or, also for Linux users only, you may install from source:
+or, also for Linux users only, you may install the latest version from source:
 
 ```{r eval = FALSE}
 remotes::install_github("ConnorDonegan/geostan")

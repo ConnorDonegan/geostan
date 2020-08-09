@@ -29,8 +29,9 @@ Community Suvey.
 
 ### Package installation
 
-Since the package is not on CRAN, unmet dependencies must be installed
-first. You should first install Rstan by following the [getting started
+You can try out a development version of the package. Since it is not
+yet on CRAN, unmet dependencies must be installed first. You should
+first install Rstan by following the [getting started
 guide](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started).
 Then you’ll also need the following R packages:
 
@@ -57,7 +58,8 @@ If you use Linux you can install the package using:
 install.packages("https://connordonegan.github.io/assets/geostan_0.0.1.tar.gz", repos = NULL)
 ```
 
-or, also for Linux users only, you may install from source:
+or, also for Linux users only, you may install the latest version from
+source:
 
 ``` r
 remotes::install_github("ConnorDonegan/geostan")
@@ -185,19 +187,19 @@ fit
     ## Spatial method:  RHS-ESF 
     ## Family:  gaussian 
     ## Link function:  identity 
-    ## Residual Moran Coefficient:  -0.051 
-    ## WAIC:  517.3 
+    ## Residual Moran Coefficient:  -0.048 
+    ## WAIC:  517.29 
     ## Observations:  88 
     ## RHS global shrinkage prior:  1 
     ## Inference for Stan model: esf.
     ## 4 chains, each with iter=2000; warmup=1000; thin=1; 
     ## post-warmup draws per chain=1000, total post-warmup draws=4000.
     ## 
-    ##             mean se_mean    sd  2.5%    25%    50%    75%  97.5% n_eff Rhat
-    ## intercept 10.707   0.006 0.447 9.825 10.411 10.704 11.005 11.583  6314    1
-    ## sigma      4.070   0.007 0.371 3.415  3.817  4.042  4.307  4.885  2508    1
+    ##             mean se_mean    sd  2.5%    25%    50%    75%  97.5% n_eff  Rhat
+    ## intercept 10.702   0.006 0.434 9.857 10.416 10.696 10.997 11.545  5269 1.000
+    ## sigma      4.077   0.008 0.381 3.436  3.805  4.039  4.305  4.901  2469 1.001
     ## 
-    ## Samples were drawn using NUTS(diag_e) at Sun Aug  9 13:06:50 2020.
+    ## Samples were drawn using NUTS(diag_e) at Sun Aug  9 13:14:47 2020.
     ## For each parameter, n_eff is a crude measure of effective sample size,
     ## and Rhat is the potential scale reduction factor on split chains (at 
     ## convergence, Rhat=1).
