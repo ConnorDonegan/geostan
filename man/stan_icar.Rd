@@ -2,7 +2,7 @@
 % Please edit documentation in R/stan_icar.R
 \name{stan_icar}
 \alias{stan_icar}
-\title{ICAR}
+\title{Intrinsic autoregressive models}
 \source{
 Besag, J. (1974). Spatial interaction and the statistical analysis of lattice systems. Journal of the Royal Statistical Society: Series B (Methodological), 36(2), 192-225.
 

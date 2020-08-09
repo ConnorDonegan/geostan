@@ -1,4 +1,4 @@
-#' Sample from the posterior predictive distribution
+#' Draw samples from the posterior predictive distribution
 #'
 #' @description Draw samples from the posterior predictive distribution of a fitted \code{geostan} model. Use the original data or new data, with or without the spatial component and random effects terms.
 #' @export

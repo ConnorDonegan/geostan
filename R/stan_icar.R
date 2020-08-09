@@ -1,4 +1,4 @@
-#' ICAR
+#' Intrinsic autoregressive models
 #'
 #' @export
 #' @description Fit a regression model with an intrinsic conditional auto-regressive (ICAR) spatial component. Only fully connected graphs are currenlty supported (i.e. all polygons must have at least one neighbor and there can be no disconnected islands or regions).

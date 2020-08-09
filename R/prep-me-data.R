@@ -1,4 +1,4 @@
-
+#' internal function to prepare observational error data for Stan
 ##' @param ME user-provided list of observational error stuff
 ##' @param family user-provided family object
 ##' @param x take design matrix from x.list$x

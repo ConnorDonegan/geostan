@@ -1,7 +1,7 @@
-#' BYM2
+#' BYM2 spatial model
 #'
 #' @export
-#' @description Fit the scaled Besag-York-Mollie (BYM2) model introduced by Riebler et al. (2016) with Stan code from Morris et al. (2019). Only fully connected graphs are currenlty supported (i.e. all polygons must have at least one neighbor and there can be no disconnected islands or regions).
+#' @description Fit the Besag-York-Mollie (BYM2) model introduced by Riebler et al. (2016) with Stan code from Morris et al. (2019). Only fully connected graphs are currenlty supported (i.e. all polygons must have at least one neighbor and there can be no disconnected islands or regions).
 #' 
 #' @param formula A model formula, following the R \link[stats]{formula} syntax. Binomial models [not yet implemented for \code{stan_bym2}] are specified by setting the left-hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
@@ -64,6 +64,34 @@
 #' 
 #' Riebler, A., Sørbye, S. H., Simpson, D., & Rue, H. (2016). An intuitive Bayesian spatial model for disease mapping that accounts for scaling. Statistical methods in medical research, 25(4), 1145-1165.
 #'
+#' @examples
+#' \dontrun{
+#' ## The BYM2 currently requires the INLA package to calculate the scale factor;
+#' ## See instructions at http://www.r-inla.org/download
+#' library(sf)
+#' data(sentencing)
+#' C <- shape2mat(C, style = "B")
+#' N <- nrow(C)
+#' ## with INLA installed, you can uncomment and run the following code:
+#' ## library(INLA)
+#' ## N <- nrow(C)
+#' ## adj.matrix <- Matrix::Matrix(C, sparse = TRUE)
+#' ## Q =  Diagonal(N, rowSums(adj.matrix)) - adj.matrix
+#' ## Q_pert = Q + Diagonal(N) * max(diag(Q)) * sqrt(.Machine$double.eps)
+#' ## Q_inv = inla.qinv(Q_pert, constr=list(A = matrix(1,1,N),e=0))
+#' ## scaling_factor <- exp(mean(log(diag(Q_inv))))
+#' ## which gives:
+#' scaling_factor <- 0.7096322
+#'
+#' fit.bym2 <- stan_bym2(sents ~ offset(expected_sents),
+#'                       scaleFactor = scaling_factor,
+#'                       C = C,
+#'                       data = sentencing,
+#'                       family = poisson()
+#'                       )
+#' print(fit.bym2)
+#'
+#' }
 stan_bym2 <- function(formula, slx, scaleFactor, re, data, ME = NULL, C, family = poisson(),
                      prior = NULL, prior_intercept = NULL,  prior_tau = NULL, 
                 centerx = FALSE, scalex = FALSE, chains = 4, iter = 2e3, refresh = 500, pars = NULL,

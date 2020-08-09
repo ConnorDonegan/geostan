@@ -2,7 +2,7 @@
 % Please edit documentation in R/stan_bym2.R
 \name{stan_bym2}
 \alias{stan_bym2}
-\title{BYM2}
+\title{BYM2 spatial model}
 \source{
 Besag, J. (1974). Spatial interaction and the statistical analysis of lattice systems. Journal of the Royal Statistical Society: Series B (Methodological), 36(2), 192-225.
 
@@ -102,7 +102,7 @@ An object of class class \code{geostan_fit} (a list) containing:
 }
 }
 \description{
-Fit the scaled Besag-York-Mollie (BYM2) model introduced by Riebler et al. (2016) with Stan code from Morris et al. (2019). Only fully connected graphs are currenlty supported (i.e. all polygons must have at least one neighbor and there can be no disconnected islands or regions).
+Fit the Besag-York-Mollie (BYM2) model introduced by Riebler et al. (2016) with Stan code from Morris et al. (2019). Only fully connected graphs are currenlty supported (i.e. all polygons must have at least one neighbor and there can be no disconnected islands or regions).
 }
 \details{
 The Stan code for the model follows Morris et al. (2019). The \code{INLA} package is currently required to calculate the scaling factor for the spatial random effects. To install it see \code{http://www.r-inla.org/download}. 

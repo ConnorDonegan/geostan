@@ -143,20 +143,15 @@ logit <- function(p) log(p/(1-p))
 #' Build list of priors
 #' @importFrom stats sd
 #' @noRd
-make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, scaling_factor = 2, link = c("identity", "log", "logit"), EV) {
-  if (link == "log") {
-	  y <- log(y)
-	  y[is.infinite(y)] <- 0
+make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, scaling_factor = 2.5, link = c("identity", "log", "logit"), EV) {
+  if (link != "identity") {
+      scaley <- 1
   }
-  if (link == "logit") {
-	  y <- logit(y[,1] / (y[,1] + y[,2]))
-	  y[is.infinite(y)] <- 0
-  }
-  scaley <- sd(y)
-  alpha_scale <- max(3 * sd(y), 1)
+  if (link == "identity") scaley <- sd(y) else scaley <- 1
+  alpha_scale <- scaling_factor * scaley
   if (xcentered) alpha_mean <- mean(y) else alpha_mean <- 0
   alpha <- c(location = alpha_mean, scale = alpha_scale)
-  alpha <- round(alpha, 4)
+#  alpha <- round(alpha, 4)
   priors <- list(intercept = alpha)
   if (ncol(x)) {
     scalex <- vector(mode = "numeric", length = ncol(x))
@@ -170,7 +165,7 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
       scalex[x_bin] <- scalex_bin
     }
     beta_scale <- scaling_factor * (scaley / scalex)
-    beta_scale <- round(beta_scale, 4)
+#    beta_scale <- round(beta_scale, 4)
     beta_location <- rep(0, times = ncol(x))
     priors$beta <- cbind(beta_location, beta_scale)
     dimnames(priors$beta)[[1]] <- dimnames(x)[[2]]

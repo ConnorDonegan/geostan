@@ -2,7 +2,7 @@
 % Please edit documentation in R/posterior_predict.R
 \name{posterior_predict}
 \alias{posterior_predict}
-\title{Sample from the posterior predictive distribution}
+\title{Draw samples from the posterior predictive distribution}
 \usage{
 posterior_predict(
   object,
