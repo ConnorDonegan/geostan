@@ -2,54 +2,30 @@
 geostan
 =======
 
-Bayesian Spatial Analysis with Stan
------------------------------------
+Bayesian Spatial Analysis
+-------------------------
 
 ### Overview
 
-The **geostan** package provides a user-friendly interface to Bayesian
-models for areal data. It is designed for accessibility and promotion of
-sound spatial analysis workflows. The package is still under development
-and will be released to CRAN later this year.
-
-All of the models are fit using the [Stan](https://mc-stan.org/)
-probabilistic programming language and the syntax draws heavily from the
-[rstanarm](https://github.com/stan-dev/rstanarm) package whenever
-possible in order to maintain consistency for users. It is designed to
-fit into a workflow that moves back and forth between R spatial analysis
-packages ([sf](https://r-spatial.github.io/sf/),
-[sp](https://github.com/edzer/sp),
-[spdep](https://github.com/r-spatial/spdep),
-[ggplot2](https://ggplot2.tidyverse.org/)) and Stan-based Bayesian
-analysis ([rstan](https://mc-stan.org/users/interfaces/rstan),
-[bayesplot](http://mc-stan.org/bayesplot/),
-[loo](https://mc-stan.org/loo/)).
+The **geostan** R package provides a user-friendly interface to
+hierarchical Bayesian models (HBMs) for areal data. It is designed for
+ease of use and promotion of sound spatial analysis workflows with a
+particular emphasis on spatial epidemiology and survey data. All of the
+models are fit using the Stan probabilistic programming language. The
+package is still under development.
 
 The following models are available:
 
--   Generalized linear models, with optional exchangeable (non-spatial)
-    \`random effect’ or varying intercept terms.
--   Eigenvector spatial filtering (ESF) models (known as principal
-    coordinates of neighbour matrices (PCNM) in ecology), following
-    [Donegan et al.](https://doi.org/10.1016/j.spasta.2020.100450)
-    (2020). The spatial filter coefficients are estimated using
-    [Piironen and
-    Vehtari’s](https://projecteuclid.org/euclid.ejs/1513306866) (2017)
-    regularized horseshoe prior.
--   Intrinsic conditional autoregressive (IAR) models, using Stan code
-    from [Morris et
-    al.](https://doi.org/10.1016/j.sste.2019.100301) (2019) following on
-    the work of
-    [Besag](https://doi.org/10.1111/j.2517-6161.1974.tb00999.x) (1974)
-    and [Besag and Kooperberg](https://doi.org/10.1093/biomet/82.4.733)
-    (1995).
--   The scaled Besag-York-Mollie (BYM2) model introduced by [Riebler et
-    al.](https://doi.org/10.1177/0962280216660421) (2016) with Stan code
-    from [Morris et
-    al.](https://doi.org/10.1016/j.sste.2019.100301) (2019) for disease
-    mapping and similar applications, one of many variants of the
-    original [BYM](https://link.springer.com/article/10.1007/BF00116466)
-    model. This currently requires INLA to calculate the scale factor.
+-   Generalized linear models with Gaussian, Student’s *t*, Poisson, and
+    Binomial likelihood functions.
+-   Eigenvector spatial filtering (ESF) models.
+-   Intrinsic conditional autoregressive (IAR) models.
+-   The Besag-York-Mollie (BYM2) model introduced by Riebler et al.
+
+All of the models are able to incorporate additional ‘varying intercept’
+terms for partial pooling of observations, and can also model data
+uncertainty using, e.g., standard errors on estimates from the American
+Community Suvey.
 
 ### Package installation
 
@@ -205,22 +181,23 @@ fit
 
     ## Spatial Regression Results 
     ## Formula: gop_growth ~ 1
+    ## Data models: none
     ## Spatial method:  RHS-ESF 
     ## Family:  gaussian 
     ## Link function:  identity 
-    ## Residual Moran Coefficient:  -0.049 
-    ## WAIC:  517.23 
+    ## Residual Moran Coefficient:  -0.051 
+    ## WAIC:  517.3 
     ## Observations:  88 
     ## RHS global shrinkage prior:  1 
-    ## Inference for Stan model: esf_continuous.
+    ## Inference for Stan model: esf.
     ## 4 chains, each with iter=2000; warmup=1000; thin=1; 
     ## post-warmup draws per chain=1000, total post-warmup draws=4000.
     ## 
     ##             mean se_mean    sd  2.5%    25%    50%    75%  97.5% n_eff Rhat
-    ## intercept 10.706   0.006 0.421 9.876 10.419 10.708 10.998 11.503  5258    1
-    ## sigma      4.080   0.008 0.377 3.410  3.816  4.050  4.315  4.891  2325    1
+    ## intercept 10.707   0.006 0.447 9.825 10.411 10.704 11.005 11.583  6314    1
+    ## sigma      4.070   0.007 0.371 3.415  3.817  4.042  4.307  4.885  2508    1
     ## 
-    ## Samples were drawn using NUTS(diag_e) at Wed Jul  1 18:53:49 2020.
+    ## Samples were drawn using NUTS(diag_e) at Sun Aug  9 13:06:50 2020.
     ## For each parameter, n_eff is a crude measure of effective sample size,
     ## and Rhat is the potential scale reduction factor on split chains (at 
     ## convergence, Rhat=1).
@@ -326,27 +303,40 @@ fig +
 
 <img src="README_files/figure-markdown_github/unnamed-chunk-17-1.png" style="display: block; margin: auto;" />
 
-### References
+### Credit
 
-Besag, J. (1974). Spatial interaction and the statistical analysis of
-lattice systems. *Journal of the Royal Statistical Society: Series B
-(Methodological)*, 36(2), 192-225.
-
-Besag, J., & Kooperberg, C. (1995). On conditional and intrinsic
-autoregressions. *Biometrika*, 82(4), 733-746.
+This package incorporates the work of numerous scholars, especially the
+Stan Development team, Gabry et al.’s **rstantools** package, Morris et
+al.’s implementation of intrinsic autoregressive models in Stan, and
+Piironen and Vehtari’s regularized horseshoe prior. The Bayesian spatial
+filtering models implemented here and **geostan** were first introduced
+in Donegan, Chun, and Hughes (2020) and build on the work of Griffith,
+Chun, and Li (2019).
 
 Besag, J., York, J., & Mollié, A. (1991). Bayesian image restoration,
 with two applications in spatial statistics. *Annals of the institute of
 statistical mathematics*, 43(1), 1-20.
 
+Carpenter, B., Gelman, A., Hoffman, M. D., Lee, D., Goodrich, B.,
+Betancourt, M., Brubaker, M., Guo, J., Li, P., & Riddell, A. (2017).
+Stan: A probabilistic programming language. *Journal of Statistical
+Software*, 76(1).
+
 Donegan, C., Chun, Y., & Hughes, A. E. (2020). Bayesian estimation of
 spatial filters with Moran’s eigenvectors and hierarchical shrinkage
-priors. *Spatial Statistics*, 100450.
+priors. *Spatial Statistics* 38: 100450.
+
+Jonah Gabry, Ben Goodrich and Martin Lysy (2020). rstantools: Tools for
+Developing R Packages Interfacing with ‘Stan’. R package version 2.1.1.
+<a href="https://CRAN.R-project.org/package=rstantools" class="uri">https://CRAN.R-project.org/package=rstantools</a>
+
+Griffith, D., Chun, Y., & Li, B. (2019). *Spatial Regression Analysis
+Using Eigenvector Spatial Filtering*. Academic Press.
 
 Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A.,
 & DiMaggio, C. (2019). Bayesian hierarchical spatial models:
 Implementing the Besag York Mollié model in stan. *Spatial and
-spatio-temporal epidemiology*, 31, 100301.
+Spatio-Temporal Epidemiology*, 31, 100301.
 
 Piironen, J., & Vehtari, A. (2017). Sparsity information and
 regularization in the horseshoe and other shrinkage priors. *Electronic
@@ -354,7 +344,11 @@ Journal of Statistics*, 11(2), 5018-5051.
 
 Riebler, A., Sørbye, S. H., Simpson, D., & Rue, H. (2016). An intuitive
 Bayesian spatial model for disease mapping that accounts for scaling.
-*Statistical methods in medical research*, 25(4), 1145-1165.
+*Statistical Methods in Medical Research*, 25(4), 1145-1165.
 
 Watanabe, S. (2013). A widely applicable Bayesian information criterion.
 *Journal of Machine Learning Research*, 14(Mar), 867-897.
+
+Wikle, C. K., Berliner, L. M., & Cressie, N. (1998). Hierarchical
+Bayesian space-time models. *Environmental and Ecological Statistics*,
+5(2), 117-154.
