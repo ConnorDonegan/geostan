@@ -109,6 +109,35 @@ The Stan code for the model follows Morris et al. (2019). The \code{INLA} packag
    
  The function returns the ICAR spatial component in the parameter \code{ssre} (spatially structured random effect) and the exchangeable random effects in \code{sure} (spatially unstructured random effect); both parameters are returned after being scaled by \code{sigma_re}. The convolved random effect term (already scaled by \code{sigma_re}) is stored in the parameter \code{convolved_re}. To extract a summary of the posterior distribution for the convolved random effect term from a model, use \code{spatial(fit)}, and for the posterior samples use \code{spatial(fit, summary = FALSE)}.
 }
+\examples{
+\dontrun{
+## The BYM2 currently requires the INLA package to calculate the scale factor;
+## See instructions at http://www.r-inla.org/download
+library(sf)
+data(sentencing)
+C <- shape2mat(C, style = "B")
+N <- nrow(C)
+## with INLA installed, you can uncomment and run the following code:
+## library(INLA)
+## N <- nrow(C)
+## adj.matrix <- Matrix::Matrix(C, sparse = TRUE)
+## Q =  Diagonal(N, rowSums(adj.matrix)) - adj.matrix
+## Q_pert = Q + Diagonal(N) * max(diag(Q)) * sqrt(.Machine$double.eps)
+## Q_inv = inla.qinv(Q_pert, constr=list(A = matrix(1,1,N),e=0))
+## scaling_factor <- exp(mean(log(diag(Q_inv))))
+## which gives:
+scaling_factor <- 0.7096322
+
+fit.bym2 <- stan_bym2(sents ~ offset(expected_sents),
+                      scaleFactor = scaling_factor,
+                      C = C,
+                      data = sentencing,
+                      family = poisson()
+                      )
+print(fit.bym2)
+
+}
+}
 \author{
 Connor Donegan, \email{Connor.Donegan@UTDallas.edu}
 }
