@@ -106,7 +106,6 @@ posterior_predict <- function(object, newdata, C, samples, predictive = TRUE, re
     }
     x <- remove_intercept(model.matrix(object$formula, data = newdata))
     offset <- model.offset(model.frame(object$formula, newdata))
-    if (!is.null(offset) & family == "poisson") offset <- log(offset)
     if ( spatial & (class(object$slx) == "formula") ) {
          Wx <- SLX(f = object$slx, DF = newdata, SWM = C)
          x <- cbind(Wx, x)
