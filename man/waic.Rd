@@ -20,10 +20,6 @@ A vector of length 3 with \code{WAIC}, a rough measure of the effective number o
 Widely Application Information Criteria (WAIC) for model evalution
 }
 \examples{
-data(ohio)
-fit <- stan_esf(gop_growth ~ 1, data = ohio, C = shape2mat(ohio),
-                chains = 1, iter = 400)
-waic(fit)
 
 }
 \seealso{

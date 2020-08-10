@@ -57,54 +57,30 @@ library(bayesplot)
 library(ggplot2)
 library(sf)
 data(ohio)
+
 ## fit Ohio election model with a spatial filter
 fit <- stan_esf(gop_growth ~ log(pop_density) + historic_gop + college_educated,
                 data = ohio,
                 family = student_t(),
                 C = shape2mat(ohio),
-                iter = 400, chains = 1)
+                cores = 1,  # cores = 4
+                iter = 200, # iter = 2e3
+                chains = 1) # chains = 4
 
 # posterior predictive check (density overlay)
  # compare distribution of observations to the predictive distribution
 y <- ohio$gop_growth
-yrep <- posterior_predict(fit, samples = 150)
+yrep <- posterior_predict(fit, samples = 100)
 ppc_dens_overlay(y, yrep)
 
-## model convict-leasing era sentencing risk in Florida
-data(sentencing)
-C <- shape2mat(sentencing)
-fit <- stan_esf(sents ~ offset(expected_sents),
-              ##  re = ~ name,
-                data = sentencing,
-                family = poisson(),
-                C = C,
-                chains = 1, iter = 400)
-
-# posterior predictive checks
-yrep <- posterior_predict(fit, samples = 200, seed = 1)
-
- # density overlay
-ppc_dens_overlay(sentencing$sents, yrep)
-
- # map realizations from the model, as relative risk  
-fl <- st_as_sf(sentencing)
-E <- fl$expected_sents
-map_pp <- function(i) {
-   ggplot(fl) +
-   geom_sf(aes(fill = yrep[i,] / E)) +
-   scale_fill_gradient2(midpoint = 1) +
-   theme_void()
-}
-map_pp(1)
-map_pp(20)
-map_pp(90)
-
-
-## plot marginal effects with credible intervals
+## plot marginal effects with credible intervals 
 fit <- stan_esf(gop_growth ~ poly(college_educated, df = 3),
                 data = ohio,
                 C = shape2mat(ohio),
-                chains = 1, iter = 400)
+                cores = 1,  # cores = 4,
+                chains = 1, # chains = 4
+                iter = 200) # iter = 2e3
+
 x <- seq(10, 45, by = 1)
 newdata <- data.frame(college_educated = x)
 pred.df <- posterior_predict(fit, newdata, spatial = FALSE, summary = TRUE)

@@ -41,44 +41,13 @@ All of the models are able to incorporate additional 'varying intercept' terms f
 
 ### Package installation
 
-You can try out a development version of the package. Since it is not yet on CRAN, unmet dependencies must be installed first. You should first install Rstan by following the [getting started guide](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started). Then you'll also need the following R packages:
-
-```{r eval=FALSE}
-if (!require(sf)) install.packages("sf")
-if (!require(spdep)) install.packages("spdep")
-```
-
-
-#### Windows
-
-If you use Windows you can install geostan with the following R code:
-
-```{r eval = FALSE}
-install.packages("https://connordonegan.github.io/assets/geostan_0.0.1.zip", repos = NULL)
-## though some may need:
-install.packages("https://connordonegan.github.io/assets/geostan_0.0.1.zip", repos = NULL, type = "binary")
-```
-
-
-#### Linux
-
-If you use Linux you can install the package using:
-
-```{r eval = FALSE}
-install.packages("https://connordonegan.github.io/assets/geostan_0.0.1.tar.gz", repos = NULL)
-```
-
-or, also for Linux users only, you may install the latest version from source:
+If you're using Linux you can try out a development version of the package:
 
 ```{r eval = FALSE}
 remotes::install_github("ConnorDonegan/geostan")
 ```
 
-
-#### Mac OS
-
-The package is not currently available for Mac users, sorry.
-
+The packages depends on [Rstan](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started), **sf**, and **spdep**. The goals is to release it to CRAN later this year.
 
 ### Demonstration
 

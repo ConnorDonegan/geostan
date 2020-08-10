@@ -29,45 +29,16 @@ Community Suvey.
 
 ### Package installation
 
-You can try out a development version of the package. Since it is not
-yet on CRAN, unmet dependencies must be installed first. You should
-first install Rstan by following the [getting started
-guide](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started).
-Then you’ll also need the following R packages:
-
-``` r
-if (!require(sf)) install.packages("sf")
-if (!require(spdep)) install.packages("spdep")
-```
-
-#### Windows
-
-If you use Windows you can install geostan with the following R code:
-
-``` r
-install.packages("https://connordonegan.github.io/assets/geostan_0.0.1.zip", repos = NULL)
-## though some may need:
-install.packages("https://connordonegan.github.io/assets/geostan_0.0.1.zip", repos = NULL, type = "binary")
-```
-
-#### Linux
-
-If you use Linux you can install the package using:
-
-``` r
-install.packages("https://connordonegan.github.io/assets/geostan_0.0.1.tar.gz", repos = NULL)
-```
-
-or, also for Linux users only, you may install the latest version from
-source:
+If you’re using Linux you can try out a development version of the
+package:
 
 ``` r
 remotes::install_github("ConnorDonegan/geostan")
 ```
 
-#### Mac OS
-
-The package is not currently available for Mac users, sorry.
+The packages depends on
+[Rstan](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started),
+**sf**, and **spdep**. The goals is to release it to CRAN later this year.
 
 ### Demonstration
 
@@ -99,7 +70,7 @@ ggplot(ohio) +
   theme_void()
 ```
 
-<img src="README_files/figure-markdown_github/unnamed-chunk-7-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-markdown_github/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
 
 We can use a Moran plot to visualize the degree of spatial
 autocorrelation in GOP growth. This plots each observation (on the
@@ -112,7 +83,7 @@ moran_plot(ohio$gop_growth, W, xlab = "GOP Growth")
 
     ## `geom_smooth()` using formula 'y ~ x'
 
-<img src="README_files/figure-markdown_github/unnamed-chunk-8-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-markdown_github/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
 
 And we can estimate an ESF model by passing the model formula, data, and
 spatial connectivity matrix to `stan_esf`:
@@ -144,7 +115,7 @@ ggplot(ohio) +
   theme_void()
 ```
 
-<img src="README_files/figure-markdown_github/unnamed-chunk-11-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-markdown_github/unnamed-chunk-8-1.png" style="display: block; margin: auto;" />
 
 We can also obtain summaries of the residuals and fitted values, and
 confirm that there is no residual spatial autocorrelation:
@@ -158,7 +129,7 @@ moran_plot(res, W, xlab = "Residuals")
 
     ## `geom_smooth()` using formula 'y ~ x'
 
-<img src="README_files/figure-markdown_github/unnamed-chunk-12-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-markdown_github/unnamed-chunk-9-1.png" style="display: block; margin: auto;" />
 
 ``` r
  ## fitted values vs. residuals
@@ -169,7 +140,7 @@ ggplot() +
   theme_classic()
 ```
 
-<img src="README_files/figure-markdown_github/unnamed-chunk-12-2.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-markdown_github/unnamed-chunk-9-2.png" style="display: block; margin: auto;" />
 
 Printing the model returns information about the model call (formula and
 likelihood function), diagnostics including residual spatial
@@ -187,8 +158,8 @@ fit
     ## Spatial method:  RHS-ESF 
     ## Family:  gaussian 
     ## Link function:  identity 
-    ## Residual Moran Coefficient:  -0.048 
-    ## WAIC:  517.29 
+    ## Residual Moran Coefficient:  -0.047 
+    ## WAIC:  517.73 
     ## Observations:  88 
     ## RHS global shrinkage prior:  1 
     ## Inference for Stan model: esf.
@@ -196,10 +167,10 @@ fit
     ## post-warmup draws per chain=1000, total post-warmup draws=4000.
     ## 
     ##             mean se_mean    sd  2.5%    25%    50%    75%  97.5% n_eff  Rhat
-    ## intercept 10.702   0.006 0.434 9.857 10.416 10.696 10.997 11.545  5269 1.000
-    ## sigma      4.077   0.008 0.381 3.436  3.805  4.039  4.305  4.901  2469 1.001
+    ## intercept 10.705   0.006 0.423 9.872 10.428 10.703 10.985 11.533  5185 1.000
+    ## sigma      4.084   0.008 0.388 3.424  3.813  4.042  4.330  4.947  2547 1.002
     ## 
-    ## Samples were drawn using NUTS(diag_e) at Sun Aug  9 13:14:47 2020.
+    ## Samples were drawn using NUTS(diag_e) at Mon Aug 10 12:07:53 2020.
     ## For each parameter, n_eff is a crude measure of effective sample size,
     ## and Rhat is the potential scale reduction factor on split chains (at 
     ## convergence, Rhat=1).
@@ -220,7 +191,7 @@ stan_ess(fit$stanfit) +
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-<img src="README_files/figure-markdown_github/unnamed-chunk-14-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-markdown_github/unnamed-chunk-11-1.png" style="display: block; margin: auto;" />
 
 ``` r
 ## check Rhat statistics
@@ -230,7 +201,7 @@ stan_rhat(fit$stanfit) +
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-<img src="README_files/figure-markdown_github/unnamed-chunk-14-2.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-markdown_github/unnamed-chunk-11-2.png" style="display: block; margin: auto;" />
 
 We can fit the model the found in Donegan et al. (2020) with a Studen’t
 t likelihood function and spatially lagged covariates:
@@ -258,7 +229,7 @@ spatial filter. You can also provide more specific names such as
 plot(fit3, "beta", plotfun = "dens")
 ```
 
-<img src="README_files/figure-markdown_github/unnamed-chunk-16-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-markdown_github/unnamed-chunk-13-1.png" style="display: block; margin: auto;" />
 
 The `posterior_predict` function can be used for posterior predictive
 checks together with the bayesplot package (see `?posterior_predict`)
@@ -303,7 +274,7 @@ fig +
   theme_classic()
 ```
 
-<img src="README_files/figure-markdown_github/unnamed-chunk-17-1.png" style="display: block; margin: auto;" />
+<img src="README_files/figure-markdown_github/unnamed-chunk-14-1.png" style="display: block; margin: auto;" />
 
 ### Credit
 

@@ -48,7 +48,7 @@ For details on the symbol parameters see the documentation for \link[ggplot2]{ge
 library(sf)
 data(ohio)
 y <- ohio$unemployment
-w <- shape2mat(ohio)
+w <- shape2mat(ohio, "W")
 moran_plot(y, w)
 
 }
