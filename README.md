@@ -38,7 +38,8 @@ remotes::install_github("ConnorDonegan/geostan")
 
 The packages depends on
 [Rstan](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started),
-**sf**, and **spdep**. The goals is to release it to CRAN later this year.
+**sf**, and **spdep**. The goals is to release it to CRAN later this
+year.
 
 ### Demonstration
 
@@ -158,8 +159,8 @@ fit
     ## Spatial method:  RHS-ESF 
     ## Family:  gaussian 
     ## Link function:  identity 
-    ## Residual Moran Coefficient:  -0.047 
-    ## WAIC:  517.73 
+    ## Residual Moran Coefficient:  -0.048 
+    ## WAIC:  517.79 
     ## Observations:  88 
     ## RHS global shrinkage prior:  1 
     ## Inference for Stan model: esf.
@@ -167,10 +168,10 @@ fit
     ## post-warmup draws per chain=1000, total post-warmup draws=4000.
     ## 
     ##             mean se_mean    sd  2.5%    25%    50%    75%  97.5% n_eff  Rhat
-    ## intercept 10.705   0.006 0.423 9.872 10.428 10.703 10.985 11.533  5185 1.000
-    ## sigma      4.084   0.008 0.388 3.424  3.813  4.042  4.330  4.947  2547 1.002
+    ## intercept 10.694   0.007 0.445 9.822 10.394 10.693 10.994 11.533  4555 1.000
+    ## sigma      4.078   0.008 0.380 3.439  3.812  4.047  4.311  4.894  2189 1.002
     ## 
-    ## Samples were drawn using NUTS(diag_e) at Mon Aug 10 12:07:53 2020.
+    ## Samples were drawn using NUTS(diag_e) at Mon Aug 10 12:12:01 2020.
     ## For each parameter, n_eff is a crude measure of effective sample size,
     ## and Rhat is the potential scale reduction factor on split chains (at 
     ## convergence, Rhat=1).
