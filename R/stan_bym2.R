@@ -24,6 +24,7 @@
 #' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts (not the exchangeable component of the convolved random effects term, but any additional terms specified by the user). The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.
 #' @param scalex Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
+#' @param prior_only Draw samples from the prior distributions of parameters only.
 #' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
 #' @param iter Number of samples per chain. Default \code{iter = 2000}.
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.
@@ -94,7 +95,8 @@
 #' }
 stan_bym2 <- function(formula, slx, scaleFactor, re, data, ME = NULL, C, family = poisson(),
                      prior = NULL, prior_intercept = NULL,  prior_tau = NULL, 
-                centerx = FALSE, scalex = FALSE, chains = 4, iter = 2e3, refresh = 500, pars = NULL,
+                     centerx = FALSE, scalex = FALSE, prior_only = FALSE,
+                     chains = 4, iter = 2e3, refresh = 500, pars = NULL,
                 control = list(adapt_delta = .9, max_treedepth = 15), ...) {
   if (class(family) != "family" | !family$family %in% c("poisson", "binomial")) stop ("Must provide a valid family object: poisson().")
   if (missing(formula) | class(formula) != "formula") stop ("Must provide a valid formula object, as in y ~ offset(E) + x or y ~ 1 for intercept only.")
@@ -135,6 +137,7 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, ME = NULL, C, family 
     } else {
             W <- C / rowSums(C)
             Wx <- SLX(f = slx, DF = tmpdf, SWM = W)
+            if (scalex) Wx <- scale(Wx)            
             dwx <- ncol(Wx)
             dw_nonzero <- sum(W!=0)
             wx_idx <- as.array( which(paste0("w.", dimnames(x)[[2]]) %in% dimnames(Wx)[[2]]), dim = dwx )
@@ -197,7 +200,8 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, ME = NULL, C, family 
     n_edges = n_edges,
     node1 = nbs$node1,
     node2 = nbs$node2,
-    scaling_factor = scaleFactor
+    scaling_factor = scaleFactor,
+    prior_only = prior_only
     )
   standata <- c(standata, me.list)
   if (family$family == "binomial") {

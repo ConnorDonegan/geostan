@@ -39,5 +39,6 @@
   vector[n] y;
   int<lower=0> y_int[n];
   int<lower=0> trials[n];
+  int<lower=0,upper=1> prior_only;
 
 

@@ -27,6 +27,7 @@ stan_bym2(
   prior_tau = NULL,
   centerx = FALSE,
   scalex = FALSE,
+  prior_only = FALSE,
   chains = 4,
   iter = 2000,
   refresh = 500,
@@ -69,6 +70,8 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 \item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.}
 
 \item{scalex}{Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.}
+
+\item{prior_only}{Draw samples from the prior distributions of parameters only.}
 
 \item{chains}{Number of MCMC chains to estimate. Default \code{chains = 4}.}
 
