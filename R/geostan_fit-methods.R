@@ -58,19 +58,21 @@
 #' @method print geostan_fit
 #' @name geostan_fit
 print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digits = 3, ...) {
-  all_pars <- names(x$stanfit)
-  vars <- dimnames(x$data)[[2]]
-  pars <- all_pars[which(all_pars %in% c("intercept", "alpha_tau", paste0("w.", vars), vars, "sigma", "nu"))]
+  pars <- "intercept"
   cat("Spatial Regression Results \n")
   cat("Formula: ")
   print(x$formula)
   if (class(x$slx) == "formula") {
    cat("SLX: ")
-   print(x$slx)    
+   print(x$slx)
+   pars <- c(pars, "gamma")
   }
+  x.pars <- c("beta", "nu", "sigma")
+  if (any(x.pars %in% names(x$priors))) pars <- c(pars, names(x$priors)[grep(paste0(x.pars, collapse="|"), names(x$priors))])   
   if(!any(is.na(x$re))) {
     cat("Random effects: ")
     print(x$re$formula)
+    pars <- c(pars, "alpha_tau")
   }
   cat("Data models: ")
   if (inherits(x$ME, "list")) {
