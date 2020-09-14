@@ -20,7 +20,7 @@ stan_icar(
   prior = NULL,
   prior_intercept = NULL,
   prior_tau = NULL,
-  prior_phi = 1,
+  prior_phi_scale = 1,
   centerx = FALSE,
   scalex = FALSE,
   prior_only = FALSE,
@@ -61,7 +61,7 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{prior_tau}{Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.}
 
-\item{prior_phi}{Prior for the scale of the spatial ICAR component \code{phi}. \code{phi} is scaled by the parameter \code{phi_scale} which is given a positively-constrained (half-) Gaussian prior distribution with its location parameter at zero and scale parameter set to \code{prior_phi}. This defaults to \code{prior_phi = 1}.}
+\item{prior_phi_scale}{Prior for the scale of the spatial ICAR component \code{phi}. \code{phi} is scaled by the parameter \code{phi_scale} which is given a positively-constrained (half-) Gaussian prior distribution with its location parameter at zero and scale parameter set to \code{prior_phi_scale}. This defaults to \code{prior_phi_scale = 1}.}
 
 \item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.}
 
@@ -91,7 +91,7 @@ An object of class class \code{geostan_fit} (a list) containing:
 \item{data}{a data frame containing the model data}
 \item{edges}{The edge list representing all unique sets of neighbors}
 \item{family}{the user-provided or default \code{family} argument used to fit the model}
-\item{formula}{The model formula provided by the user (not including ESF component)}
+\item{formula}{The model formula provided by the user (not including ICAR component)}
 \item{slx}{The \code{slx} formula}
 \item{re}{A list containing \code{re}, the random effects (varying intercepts) formula if provided, and 
  \code{Data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
