@@ -52,8 +52,6 @@
 #'   geom_sf(aes(fill = sf)) +
 #'   scale_fill_gradient2()  
 #' }
-
-
 #' @export
 #' @method print geostan_fit
 #' @name geostan_fit
