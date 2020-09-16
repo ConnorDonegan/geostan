@@ -1,30 +1,3 @@
-#' The Moran coefficient
-#'
-#' @description The Moran coefficient, a measure of spatial autocorrelation (also known as Global Moran's I)
-#' @export
-#' @param x Numeric vector of input values, length n.
-#' @param w An n x n patial connectivity matrix. See \link[geostan]{shape2mat}. 
-#' @param digits Number of digits to round results to; defaults to \code{digits = 3}.
-#' @return The Moran coefficient, a numeric value.
-#'
-#' @examples
-#' library(sf)
-#' data(ohio)
-#' w <- shape2mat(ohio, style = "W")
-#' x <- ohio$unemployment
-#' mc(x, w)
-#'
-mc <- function(x, w, digits = 3) {
-  if(missing(x) | missing(w)) stop("Must provide data x (length n vector) and n x n spatial weights matrix (w).")
-    xbar <- mean(x)
-    z <- x - xbar
-    ztilde <- as.numeric(w %*% z)
-    A <- sum(rowSums(w))
-    n <- length(x)
-    mc <- as.numeric( n/A * (z %*% ztilde) / (z %*% z))
-    return(round(mc, digits = digits))
-}
-
 #' APLE spatial autocorrelation estimator
 #'
 #' @description The approximate-profile likelihood estimator for the spatial autocorrelation parameter from a simultaneous autoregressive (SAR) model.
@@ -54,6 +27,66 @@ aple <- function(x, w, digits = 3) {
     wl <- (t(w) %*% w + as.numeric(t(lambda) %*% lambda) * I / n)
     bottom <- t(z) %*% wl %*% z
     round(as.numeric( top / bottom ), digits = digits)
+}
+
+#' Simulate Spatially Autocorrelated Data
+#'
+#' @description Given a spatial weights matrix and degree of autocorrelation, returns autocorrelated data. 
+#' @export
+#' @param n The number of samples required. Defaults to \code{n=1} to return a \code{k}-length vector; if \code{n>1}, an \code{n x k} matrix is returned (i.e. each row will contain a sample of correlated values).
+#' @param mu A \code{k}-length vector of mean values. Defaults to a vector of zeros with length equal to \code{nrow(W)}.
+#' @param w Row-standardized \code{k x k} spatial weights matrix.
+#' @param rho Spatial autocorrelation parameter in the range [-1, 1]. Typically a scalar value; otherwise a K-length numeric vector.
+#' @param sigma Scale parameter (standard deviation). Defaults to \code{sigma = 1}. Typically a scalar value; otherwise a K-length numeric vector.
+#' @param ... further arguments passed to \code{MASS::mvrnorm}.
+#' @return If \code{n = 1} a vector of the same length as \code{mu}, otherwise an \code{n x \code{length(mu)} matrix with one sample in each row.
+#'
+#' @details Calls \code{MASS::mvrnorm} internally to draw from the multivariate normal distribution. The covariance matrix is specified following the simultaneous autoregressive (SAR) model. 
+#' @examples
+#'
+#' @seealso \link[geostan]{shape2mat} \link[MASS]{mvrnorm} 
+#'
+sim_sar <- function(n = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
+    if (!inherits(w, "matrix") | mode(w) != "numeric" | nrow(w) != ncol(w) | any(rowSums(w)!=1)) stop("W must be a square, row-standardized numeric matrix.")
+    K <- nrow(w)
+    if (missing(mu)) {
+        mu <- rep(0, K)
+    } else {
+        if (length(mu) != K | !inherits(mu, "numeric")) stop("mu must be a numeric vector with length equal to nrow(W).")
+        }
+    if (!inherits(rho, "numeric") | !length(rho) %in% c(1, K) | any(rho > 1 | rho < -1)) stop("rho must be numeric value within range [-1, 1], or a k-length numeric vector where K=nrow(W).")
+    if (!inherits(sigma, "numeric") | !length(sigma) %in% c(1, K) | !all(sigma > 0)) stop("sigma must be a positive numeric value, or k-length numeric vector, with K=nrow(W).")
+    I <- diag(K)
+    S <- crossprod(solve(I - rho * w)) * sigma
+    x <- MASS::mvrnorm(n = n, mu = mu, Sigma = S, ...)
+    return(x)
+}
+
+#' The Moran coefficient
+#'
+#' @description The Moran coefficient, a measure of spatial autocorrelation (also known as Global Moran's I)
+#' @export
+#' @param x Numeric vector of input values, length n.
+#' @param w An n x n patial connectivity matrix. See \link[geostan]{shape2mat}. 
+#' @param digits Number of digits to round results to; defaults to \code{digits = 3}.
+#' @return The Moran coefficient, a numeric value.
+#'
+#' @examples
+#' library(sf)
+#' data(ohio)
+#' w <- shape2mat(ohio, style = "W")
+#' x <- ohio$unemployment
+#' mc(x, w)
+#'
+mc <- function(x, w, digits = 3) {
+  if(missing(x) | missing(w)) stop("Must provide data x (length n vector) and n x n spatial weights matrix (w).")
+    xbar <- mean(x)
+    z <- x - xbar
+    ztilde <- as.numeric(w %*% z)
+    A <- sum(rowSums(w))
+    n <- length(x)
+    mc <- as.numeric( n/A * (z %*% ztilde) / (z %*% z))
+    return(round(mc, digits = digits))
 }
 
 #' Moran plot
