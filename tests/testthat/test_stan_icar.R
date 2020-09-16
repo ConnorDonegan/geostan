@@ -6,7 +6,7 @@ source("helpers.R")
 ##devtools::load_all("~/dev/geostan")
 
 context("stan_icar")
-test_that("Poisson offset model works", {
+test_that("Poisson offset model works, icar", {
     data(sentencing)
     n <- nrow(sentencing)
     C <- shape2mat(sentencing)
@@ -21,9 +21,8 @@ test_that("Poisson offset model works", {
                     iter = iter,
                     refresh = refresh)
     )
-    expect_geostan(fit)
+    expect_geostan(fit)    
 })
-
 
 test_that("IAR accepts covariate ME, multiple bounded x vars", {
     data(ohio)
@@ -65,6 +64,7 @@ test_that("IAR accepts covariate ME, mixed (un-) bounded", {
     expect_geostan(fit)
 })
 
+
 test_that("IAR accepts covariate ME with WX, mixed ME-non-ME", {
     data(ohio)
     C <- shape2mat(ohio)        
@@ -86,7 +86,5 @@ test_that("IAR accepts covariate ME with WX, mixed ME-non-ME", {
     )
     expect_geostan(fit)
 })
-
-
 
 
