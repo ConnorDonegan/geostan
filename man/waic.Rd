@@ -19,9 +19,6 @@ A vector of length 3 with \code{WAIC}, a rough measure of the effective number o
 \description{
 Widely Application Information Criteria (WAIC) for model evalution
 }
-\examples{
-
-}
 \seealso{
 \code{\link{loo}}
 }

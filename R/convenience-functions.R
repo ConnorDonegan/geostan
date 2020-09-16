@@ -39,13 +39,24 @@ aple <- function(x, w, digits = 3) {
 #' @param rho Spatial autocorrelation parameter in the range [-1, 1]. Typically a scalar value; otherwise a K-length numeric vector.
 #' @param sigma Scale parameter (standard deviation). Defaults to \code{sigma = 1}. Typically a scalar value; otherwise a K-length numeric vector.
 #' @param ... further arguments passed to \code{MASS::mvrnorm}.
-#' @return If \code{n = 1} a vector of the same length as \code{mu}, otherwise an \code{n x \code{length(mu)} matrix with one sample in each row.
+#' 
+#' @return
+#'
+#' If \code{n = 1} a vector of the same length as \code{mu}, otherwise an \code{n x \code{length(mu)} matrix with one sample in each row.
 #'
 #' @details Calls \code{MASS::mvrnorm} internally to draw from the multivariate normal distribution. The covariance matrix is specified following the simultaneous autoregressive (SAR) model. 
+#'
 #' @examples
+#' 
+#' data(ohio)
+#' w <- shape2mat(ohio, "W")
+#' x <- sim_sar(w=w, rho=.8)
+#' aple(x, w)
 #'
 #' @seealso \link[geostan]{shape2mat} \link[MASS]{mvrnorm} 
 #'
+#' @importFrom MASS mvrnorm
+#' 
 sim_sar <- function(n = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
     if (!inherits(w, "matrix") | mode(w) != "numeric" | nrow(w) != ncol(w) | any(rowSums(w)!=1)) stop("W must be a square, row-standardized numeric matrix.")
     K <- nrow(w)
@@ -266,7 +277,6 @@ student_t <- function() {
 #' @param digits Defaults to 2. Round results to this many digits.
 #' @return A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density (\code{Lpd}). If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
 #' @seealso \code{\link{loo}}
-#' @examples
 #' 
 waic <- function(fit, pointwise = FALSE, digits = 2) {
   ll <- as.matrix(fit, pars = "log_lik")
