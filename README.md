@@ -18,6 +18,7 @@ The following models are available:
 
 -   Generalized linear models with Gaussian, Student’s *t*, Poisson, and
     Binomial likelihood functions.
+-   Conditional Autoregressive (CAR) models.
 -   Eigenvector spatial filtering (ESF) models.
 -   Intrinsic conditional autoregressive (IAR) models.
 -   The Besag-York-Mollie (BYM2) model introduced by Riebler et al.
@@ -159,19 +160,19 @@ fit
     ## Spatial method:  RHS-ESF 
     ## Family:  gaussian 
     ## Link function:  identity 
-    ## Residual Moran Coefficient:  -0.048 
-    ## WAIC:  517.79 
+    ## Residual Moran Coefficient:  -0.05 
+    ## WAIC:  517.17 
     ## Observations:  88 
     ## RHS global shrinkage prior:  1 
     ## Inference for Stan model: esf.
     ## 4 chains, each with iter=2000; warmup=1000; thin=1; 
     ## post-warmup draws per chain=1000, total post-warmup draws=4000.
     ## 
-    ##             mean se_mean    sd  2.5%    25%    50%    75%  97.5% n_eff  Rhat
-    ## intercept 10.694   0.007 0.445 9.822 10.394 10.693 10.994 11.533  4555 1.000
-    ## sigma      4.078   0.008 0.380 3.439  3.812  4.047  4.311  4.894  2189 1.002
+    ##             mean se_mean    sd  2.5%    25%    50%    75%  97.5% n_eff Rhat
+    ## intercept 10.699   0.005 0.449 9.822 10.398 10.696 10.996 11.586  8742    1
+    ## sigma      4.068   0.007 0.379 3.409  3.806  4.041  4.296  4.894  3098    1
     ## 
-    ## Samples were drawn using NUTS(diag_e) at Mon Aug 10 12:12:01 2020.
+    ## Samples were drawn using NUTS(diag_e) at Wed Sep 16 20:24:10 2020.
     ## For each parameter, n_eff is a crude measure of effective sample size,
     ## and Rhat is the potential scale reduction factor on split chains (at 
     ## convergence, Rhat=1).
@@ -280,12 +281,12 @@ fig +
 ### Credit
 
 This package incorporates the work of numerous scholars, especially the
-Stan Development team, Gabry et al.’s **rstantools** package, Morris et
-al.’s implementation of intrinsic autoregressive models in Stan, and
-Piironen and Vehtari’s regularized horseshoe prior. The Bayesian spatial
-filtering models implemented here and **geostan** were first introduced
-in Donegan, Chun, and Hughes (2020) and build on the work of Griffith,
-Chun, and Li (2019).
+Stan Development team, Gabry et al.’s **rstantools** package, Joseph’s
+implementation of CAR models in Stan, Morris et al.’s implementation of
+intrinsic autoregressive models in Stan, and Piironen and Vehtari’s
+regularized horseshoe prior. The Bayesian spatial filtering models
+implemented here and **geostan** were first introduced in Donegan, Chun,
+and Hughes (2020).
 
 Besag, J., York, J., & Mollié, A. (1991). Bayesian image restoration,
 with two applications in spatial statistics. *Annals of the institute of
@@ -303,6 +304,10 @@ priors. *Spatial Statistics* 38: 100450.
 Jonah Gabry, Ben Goodrich and Martin Lysy (2020). rstantools: Tools for
 Developing R Packages Interfacing with ‘Stan’. R package version 2.1.1.
 <a href="https://CRAN.R-project.org/package=rstantools" class="uri">https://CRAN.R-project.org/package=rstantools</a>
+
+Joseph, Max (2016). Exact Sparse CAR Models in Stan. *Stan Case
+Studies*, Vol. 3.
+<a href="https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html" class="uri">https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html</a>
 
 Griffith, D., Chun, Y., & Li, B. (2019). *Spatial Regression Analysis
 Using Eigenvector Spatial Filtering*. Academic Press.

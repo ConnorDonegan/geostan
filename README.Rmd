@@ -33,6 +33,7 @@ The **geostan** R package provides a user-friendly interface to hierarchical Bay
 The following models are available:
 
 * Generalized linear models with Gaussian, Student’s *t*, Poisson, and Binomial likelihood functions.
+* Conditional Autoregressive (CAR) models.
 * Eigenvector spatial filtering (ESF) models.
 * Intrinsic conditional autoregressive (IAR) models.
 * The Besag-York-Mollie (BYM2) model introduced by Riebler et al.
@@ -205,9 +206,7 @@ fig +
 
 ### Credit
 
-This package incorporates the work of numerous scholars, especially the Stan Development team, Gabry et al.'s **rstantools** package, Morris et al.'s implementation of intrinsic autoregressive models in Stan, and Piironen and Vehtari's regularized horseshoe prior. The Bayesian spatial filtering models implemented here and **geostan** were first introduced in Donegan, Chun, and Hughes (2020) and build on the work of Griffith, Chun, and Li (2019).
-
-
+This package incorporates the work of numerous scholars, especially the Stan Development team, Gabry et al.'s **rstantools** package, Joseph's implementation of CAR models in Stan, Morris et al.'s implementation of intrinsic autoregressive models in Stan, and Piironen and Vehtari's regularized horseshoe prior. The Bayesian spatial filtering models implemented here and **geostan** were first introduced in Donegan, Chun, and Hughes (2020).
 
 Besag, J., York, J., & Mollié, A. (1991). Bayesian image restoration, with two applications in spatial statistics. *Annals of the institute of statistical mathematics*, 43(1), 1-20.
 
@@ -217,6 +216,8 @@ Donegan, C., Chun, Y., & Hughes, A. E. (2020). Bayesian estimation of spatial fi
 
 Jonah Gabry, Ben Goodrich and Martin Lysy (2020). rstantools: Tools for Developing R Packages Interfacing with 'Stan'. R package version 2.1.1. https://CRAN.R-project.org/package=rstantools
   
+Joseph, Max (2016). Exact Sparse CAR Models in Stan. *Stan Case Studies*, Vol. 3. https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html
+
 Griffith, D., Chun, Y., & Li, B. (2019). *Spatial Regression Analysis Using Eigenvector Spatial Filtering*. Academic Press.
 
 Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A., & DiMaggio, C. (2019). Bayesian hierarchical spatial models: Implementing the Besag York Mollié model in stan. *Spatial and Spatio-Temporal Epidemiology*, 31, 100301.

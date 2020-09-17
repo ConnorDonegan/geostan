@@ -32,7 +32,7 @@
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{.9} and \code{max_treedepth = 15}.
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' @details
-#'  The Stan code for the CCAR component of the model is from Max Joseph (see Sources below).
+#'  The Stan code for the CAR component of the model is from Max Joseph (see Sources below).
 #'    
 #'  The function returns the CAR component in the parameter \code{phi}.
 #'  The entire posterior distribution of \code{phi}
