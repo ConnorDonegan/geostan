@@ -94,16 +94,20 @@ stan_car <- function(formula, slx, re, data, ME = NULL, C, family = poisson(),
   if (missing(formula) | class(formula) != "formula") stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
   if (missing(data) | missing(C)) stop("Must provide data (a data.frame or object coercible to a data.frame) and binary connectivity matrix C.")
   if (scalex) centerx = TRUE
-  ## CAR STUFF -------------
-  nbs <- edges(C)
-  n_edges <- nrow(nbs)  
   ## GLM STUFF -------------
   a.zero <- as.array(0, dim = 1)
   tmpdf <- as.data.frame(data)
   mod.mat <- model.matrix(formula, tmpdf)
+  if (nrow(mod.mat) < nrow(tmpdf)) warning("Observations have been dropped, you must have missing values in your data!")    
   n <- nrow(mod.mat)
   family_int <- family_2_int(family)
-  intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0) 
+  intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0)
+  ## CAR STUFF -------------
+  if (any(dim(C) != n)) stop("Dimensions of matrix C must match the number of observations. See ?shape2mat for help creating C.")
+  if (!all(C %in% c(0, 1))) stop("C must be a binary connectivity matrix (0s and 1s only). See ?shape2mat for help creating C.")
+  nbs <- edges(C)
+  n_edges <- nrow(nbs)
+  ## GLM STUFF -------------    
   if (intercept_only) { # x includes slx, if any, for prior specifictions; x.list$x is the processed model matrix without slx terms.
     x <- model.matrix(~ 0, data = tmpdf) 
     dbeta_prior <- 0

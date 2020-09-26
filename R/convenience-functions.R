@@ -42,7 +42,7 @@ aple <- function(x, w, digits = 3) {
 #' 
 #' @return
 #'
-#' If \code{n = 1} a vector of the same length as \code{mu}, otherwise an \code{n x \code{length(mu)} matrix with one sample in each row.
+#' If \code{n = 1} a vector of the same length as \code{mu}, otherwise an \code{n x length(mu)} matrix with one sample in each row.
 #'
 #' @details Calls \code{MASS::mvrnorm} internally to draw from the multivariate normal distribution. The covariance matrix is specified following the simultaneous autoregressive (SAR) model. 
 #'
@@ -78,7 +78,7 @@ sim_sar <- function(n = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' @description The Moran coefficient, a measure of spatial autocorrelation (also known as Global Moran's I)
 #' @export
 #' @param x Numeric vector of input values, length n.
-#' @param w An n x n patial connectivity matrix. See \link[geostan]{shape2mat}. 
+#' @param w An n x n spatial connectivity matrix. See \link[geostan]{shape2mat}. 
 #' @param digits Number of digits to round results to; defaults to \code{digits = 3}.
 #' @return The Moran coefficient, a numeric value.
 #'
@@ -88,6 +88,7 @@ sim_sar <- function(n = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' w <- shape2mat(ohio, style = "W")
 #' x <- ohio$unemployment
 #' mc(x, w)
+#'
 #'
 mc <- function(x, w, digits = 3) {
   if(missing(x) | missing(w)) stop("Must provide data x (length n vector) and n x n spatial weights matrix (w).")
@@ -99,6 +100,91 @@ mc <- function(x, w, digits = 3) {
     mc <- as.numeric( n/A * (z %*% ztilde) / (z %*% z))
     return(round(mc, digits = digits))
 }
+
+
+#' Local Moran's I
+#'
+#' @export
+#' @description A local indicator of spatial association (lisa).
+#'
+#' @param x Numeric vector
+#' @param w An n x n spatial connectivity matrix. See \link[geostan]{shape2mat}. This will automatically be row-standardized!
+#' @param type Return the type of association also (High-High, Low-Low, High-Low, and Low-High)? Defaults to \code{FALSE}.
+#'
+#' @details The values will be standardized with \code{scale(x)} first and \code{w} will be row-standardized. Then the LISA is the product of a value with its mean surrounding value. These are for exploratory analysis and model diagnostics only, not ``cluster detection.'' Values greater than 2 or less than -2 are generally of interest but there is not a sound basis for applying normal distribution theory here.
+#'
+#' An above-average value (i.e. positive z-value) with positive mean spatial lag is of type "High-High"; a low value surrounded by high values is of type "Low-High", and so on.
+#' 
+#' @return If \code{type = FALSE} a numeric vector of lisa values for exploratory analysis of local spatial autocorrelation. If \code{type = TRUE}, a \code{data.frame} with columns \code{zi} (the lisa value) and \code{type}.
+#' 
+lisa <- function(x, w, type = FALSE) {
+    w <- w / rowSums(w)
+    z <- scale(x)
+    lag <- as.numeric(w %*% z)
+    zi <- z * lag
+    if (!type) return (zi)
+    type <- ifelse(z > 0 & lag > 0, "HH",
+         ifelse(z < 0 & lag > 0, "LH",
+         ifelse(z < 0 & lag < 0, "LL",
+         ifelse(z>0 & lag < 0, "HL", NA
+                ))))
+    return (data.frame(zi = zi, type = type))
+}
+
+#' Spatial data diagnostics
+#'
+#' @description Visual diagnostics for areal data and model residuals
+#' 
+#' @param y Either a numeric vector or a \code{geostan_fit} model object (as returned from a call to one of the \code{geostan::stan_*} functions).
+#' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
+#' @param name The name to use on the plot labels; default to "y" or, if \code{y} is a \code{geostan_fit} object, to "Residuals".
+#' @param w An optional spatial connectivity matrix; if not provided, then a row-standardized adjacency matrix will be created using \code{shape2mat(shape, "W")}.
+#' @param threshold LISA values greater than \code{threshold} will have their borders highlighted on the map.
+#'
+#' @export
+#' @return A grid of spatial diagnostic plots including a Moran plot, a map of local Moran's I values, plus a map and histogram of the data. 
+#' 
+#' @importFrom gridExtra grid.arrange
+#' @import ggplot2
+spdiag <- function(y,
+                   shape,
+                   name = "y",
+                   w = shape2mat(shape, "W"),
+                   threshold = 2
+                   ) {
+    if (inherits(y, "geostan_fit")) {
+        ## add aple option ##
+        y <- resid(y)$mean
+        name <- "Residuals"
+        }
+    if (!inherits(shape, "sf")) shape <- st_as_sf(shape)
+    hist <- ggplot() +
+        geom_histogram(aes(y),
+                       fill = "gray20",
+                       col = "gray90")  +
+        theme_classic() +
+        labs(x = name)
+    map.y <- ggplot(shape) +
+        geom_sf(aes(fill = y),
+                lwd = 0.05,
+                col = "gray20") +
+        scale_fill_gradient2(name = name) +
+        theme_void()
+    li <- lisa(y, w)
+    cluster <- abs(li) > threshold
+    local <- ggplot(ohio) +
+        geom_sf(aes(fill = li),
+                lwd = ifelse(cluster, 0.7, 0.05),
+                col = "black"
+                ) +
+        scale_fill_gradient2(name = "LISA") +
+        theme_void()
+    global <- moran_plot(y, w, xlab = name)
+    grid.arrange(hist, map.y,
+                 global, local,
+                 ncol = 2, nrow = 2)
+    }
+
 
 #' Moran plot
 #'

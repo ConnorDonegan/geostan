@@ -180,16 +180,19 @@ stan_esf <- function(formula, slx, re, data, C, EV, ME = NULL, nsa = FALSE, thre
   if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "poisson", "binomial")) stop ("Must provide a valid family object: gaussian(), student_t(), or poisson().")
   if (missing(C) | missing(data)) stop ("Must provide data and a spatiall connectivity matrix C.")
   if (scalex) centerx <- TRUE
-    ## ESF STUFF -------------    
-  if (missing(EV)) EV <- make_EV(C, nsa = nsa, threshold = threshold)  
-  dev <- ncol(EV)
     ## GLM STUFF -------------  
   a.zero <- as.array(0, dim = 1)
   tmpdf <- as.data.frame(data)
   mod.mat <- model.matrix(formula, tmpdf)
+  if (nrow(mod.mat) < nrow(tmpdf)) warning("Observations have been dropped, you must have missing values in your data!")  
   n <- nrow(mod.mat)
   family_int <- family_2_int(family)
   intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0) 
+    ## ESF STUFF -------------    
+  if (missing(EV)) EV <- make_EV(C, nsa = nsa, threshold = threshold)  
+  dev <- ncol(EV)
+  if (nrow(EV) != n) stop("nrow(EV) must equal the number of observations.")
+    ## GLM STUFF -------------  
   if (intercept_only) {
     x <- model.matrix(~ 0, data = tmpdf) 
     dbeta_prior <- 0
@@ -325,7 +328,7 @@ stan_esf <- function(formula, slx, re, data, C, EV, ME = NULL, nsa = FALSE, thre
   out$priors <- priors
   out$scale_params <- scale_params
   if (!missing(ME)) out$ME <- ME
-  out$spatial <- data.frame(par = "esf", method = "RHS-ESF")
+  out$spatial <- data.frame(par = "esf", method = "ESF")
   class(out) <- append("geostan_fit", class(out))
   return (out)
 }
