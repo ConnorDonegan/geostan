@@ -97,10 +97,10 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
 #' @method plot geostan_fit
 plot.geostan_fit <- function(x, pars, plotfun = "dens", ...) {
   if(missing(pars)) {
-    all_pars <- names(x$stanfit)
-    vars <- dimnames(x$data)[[2]]
-    pars <- all_pars[which(all_pars %in% c("intercept", "alpha_tau", paste0("w.", vars), vars, "sigma", "nu"))]      
-    pars <- c(pars, all_pars[which(all_pars == "sigma")])
+      pars <- "intercept"
+      x.pars <- c("beta", "nu", "sigma")
+      if (any(x.pars %in% names(x$priors))) pars <- c(pars, names(x$priors)[grep(paste0(x.pars, collapse="|"), names(x$priors))])
+      if (fit$spatial$method == "CAR") pars <- c(pars, "phi_alpha", "phi_tau")
   }
   rstan::plot(x$stanfit, pars = pars, plotfun = plotfun, ...)
 }
