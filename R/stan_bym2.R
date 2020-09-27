@@ -175,7 +175,7 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, ME = NULL, C, family 
   priors <- list(intercept = prior_intercept, beta = prior, alpha_tau = prior_tau,
                  sigma = NULL, nu = NULL)
   priors <- make_priors(user_priors = priors, y = y, x = x, xcentered = centerx,
-                        link = family$link)
+                        link = family$link, offset = offset)
   ## DATA MODEL STUFF -------------
   me.list <- prep_me_data(ME, family, x.list$x)
   ## MIXED STUFF -------------  

@@ -143,8 +143,12 @@ logit <- function(p) log(p/(1-p))
 #' Build list of priors
 #' @importFrom stats sd
 #' @noRd
-make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, scaling_factor = 2, link = c("identity", "log", "logit"), EV) {
+make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, scaling_factor = 2, link = c("identity", "log", "logit"), EV, offset) {
   if (link == "identity") scaley <- sd(y) else scaley <- 1
+  if (link == "log") {
+      y <- log(y / exp(offset))
+      scaley <- sd(y)
+      }
   alpha_scale <- scaling_factor * scaley
   if (xcentered) alpha_mean <- mean(y) else alpha_mean <- 0
   alpha <- c(location = alpha_mean, scale = alpha_scale)

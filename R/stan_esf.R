@@ -265,7 +265,7 @@ stan_esf <- function(formula, slx, re, data, C, EV, ME = NULL, nsa = FALSE, thre
   is_student <- family$family == "student_t"
   priors <- list(intercept = prior_intercept, beta = prior, sigma = prior_sigma, nu = prior_nu, rhs = prior_rhs, alpha_tau = prior_tau)
   priors <- make_priors(user_priors = priors, y = y, x = x, xcentered = centerx,
-                        rhs_scale_global = rhs_scale_global, link = family$link, EV = EV)
+                        rhs_scale_global = rhs_scale_global, link = family$link, EV = EV, offset = offset)
   ## DATA MODEL STUFF -------------
   me.list <- prep_me_data(ME, family, x.list$x)
   ## MIXED STUFF -------------    

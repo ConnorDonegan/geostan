@@ -174,7 +174,7 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C, family = gaussian(),
   is_student <- family$family == "student_t"
   priors <- list(intercept = prior_intercept, beta = prior, sigma = prior_sigma, nu = prior_nu, alpha_tau = prior_tau)
   priors <- make_priors(user_priors = priors, y = y, x = x, xcentered = centerx,
-                        link = family$link)
+                        link = family$link, offset = offset)
   ## DATA MODEL STUFF -------------  
   me.list <- prep_me_data(ME, family, x.list$x)
   ## GLM STUFF -------------  

@@ -166,7 +166,7 @@ stan_car <- function(formula, slx, re, data, ME = NULL, C, family = poisson(),
   is_student <- family$family == "student_t" # always false
   priors <- list(intercept = prior_intercept, beta = prior, sigma = NULL, nu = NULL, alpha_tau = prior_tau)
   priors <- make_priors(user_priors = priors, y = y, x = x, xcentered = centerx,
-                        link = family$link)
+                        link = family$link, offset = offset)
   ## CAR STUFF -------------
   priors$phi_scale_prior <- prior_phi_scale
   ## DATA MODEL STUFF -------------
