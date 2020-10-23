@@ -172,7 +172,7 @@ spdiag <- function(y,
         theme_void()
     li <- lisa(y, w)
     cluster <- abs(li) > threshold
-    local <- ggplot(ohio) +
+    local <- ggplot(shape) +
         geom_sf(aes(fill = li),
                 lwd = ifelse(cluster, 0.7, 0.05),
                 col = "black"
