@@ -144,12 +144,12 @@ logit <- function(p) log(p/(1-p))
 #' @importFrom stats sd
 #' @noRd
 make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, scaling_factor = 2, link = c("identity", "log", "logit"), EV, offset) {
-  if (link == "identity") scaley <- sd(y) else scaley <- 1
+  if (link == "identity") scale.y <- sd(y) else scale.y <- 1
   if (link == "log") {
       y <- log(y / exp(offset))
-      scaley <- sd(y)
+      scale.y <- sd(y)
       }
-  alpha_scale <- scaling_factor * scaley
+  alpha_scale <- scaling_factor * scale.y
   if (xcentered) alpha_mean <- mean(y) else alpha_mean <- 0
   alpha <- c(location = alpha_mean, scale = alpha_scale)
   priors <- list(intercept = alpha)
@@ -164,7 +164,7 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
       scalex_bin <- apply(as.matrix(x[,x_bin]), 2, function(x) max(x) - min(x))
       scalex[x_bin] <- scalex_bin
     }
-    beta_scale <- scaling_factor * (scaley / scalex)
+    beta_scale <- scaling_factor * (scale.y / scalex)
     beta_location <- rep(0, times = ncol(x))
     priors$beta <- cbind(beta_location, beta_scale)
     dimnames(priors$beta)[[1]] <- dimnames(x)[[2]]
@@ -172,12 +172,12 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
       priors$beta <- matrix(0, nrow = 0, ncol = 2)
   }
   # the following will be ignored when when not needed (RE scale, resid scale, student T df)
-  priors$alpha_tau <- round(c(df = 20, location = 0, scale = scaling_factor * scaley))
-  priors$sigma <- round(c(df = 5, location = 0, scale = scaling_factor * scaley))
+  priors$alpha_tau <- c(df = 20, location = 0, scale = scaling_factor * scale.y)
+  priors$sigma <- c(df = 5, location = 0, scale = scaling_factor * scale.y)
   priors$nu <- c(alpha = 2, beta = 0.1)
   if ("rhs" %in% names(user_priors)) {
       scale_ev <- sd(EV[,1])
-      priors$rhs = c(slab_df = 15, slab_scale = 0.5 * (scaley / scale_ev), scale_global = rhs_scale_global)
+      priors$rhs = c(slab_df = 15, slab_scale = 0.5 * (scale.y / scale_ev), scale_global = rhs_scale_global)
       }
   for (i in seq_along(user_priors)) {
       if (!is.null(user_priors[[i]])) {
