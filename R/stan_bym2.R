@@ -106,7 +106,7 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, ME = NULL, C, family 
   a.zero <- as.array(0, dim = 1)
   tmpdf <- as.data.frame(data)
   mod.mat <- model.matrix(formula, tmpdf)
-  if (nrow(mod.mat) < nrow(tmpdf)) warning("Observations have been dropped, you must have missing values in your data!")  
+  if (nrow(mod.mat) < nrow(tmpdf)) stop("There are missing (NA) values in your data.")  
   n <- nrow(mod.mat)
   family_int <- family_2_int(family)
   intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0) 
