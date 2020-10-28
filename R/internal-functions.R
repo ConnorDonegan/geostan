@@ -71,6 +71,7 @@ make_data <- function(f, df, x) {
 #' 
 #' @noRd
 #' @param id a vector
+#' @param n scalar value, number of zero observations to fill.
 #' @return a data.frame with columns id and idx
 to_index <- function(id, n) {
   if(length(id) == 1) {
