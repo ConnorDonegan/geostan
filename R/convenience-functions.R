@@ -143,7 +143,7 @@ lisa <- function(x, w, type = FALSE) {
 #' @param plot If \code{FALSE}, return a list of \code{gg} plots.
 #'
 #' @export
-#' @return A grid of spatial diagnostic plots including a Moran plot, a map of local Moran's I values, plus a map and histogram of the data. 
+#' @return A grid of spatial diagnostic plots including a Moran plot, a map of local Moran's I values, plus a map and histogram of the data. If fitted \code{geostan} model is provided, model residuals are plotted and mapped.
 #' 
 #' @importFrom gridExtra grid.arrange
 #' @import ggplot2
@@ -191,7 +191,7 @@ spdiag <- function(y,
 
 #' Moran plot
 #'
-#' @description Plots a set of values against their mean spatially lagged values and gives the Moran coefficient as a measure of spatial autocorrelation. 
+#' @description Plots a set of values against their spatially lagged values and gives the Moran coefficient as a measure of spatial autocorrelation. 
 #' @export
 #' @import ggplot2
 #' @param y A numeric vector of length n.
@@ -204,7 +204,8 @@ spdiag <- function(y,
 #' @param alpha Symbol transparency.
 #' @param lwd Width of the regression line. 
 #' @details For details on the symbol parameters see the documentation for \link[ggplot2]{geom_point}. 
-#' @return Returns an object of class \code{gg}, a scatter plot with y on the x-axis and the spatially lagged values on the y-axis (i.e. a Moran plot).
+#' @return Returns a \code{gg} plot, a scatter plot with \code{y} on the x-axis and its spatially lagged values on the y-axis (i.e. a Moran plot).
+#' 
 #' @examples
 #' library(sf)
 #' data(ohio)

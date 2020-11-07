@@ -36,10 +36,10 @@ moran_plot(
 \item{lwd}{Width of the regression line.}
 }
 \value{
-Returns an object of class \code{gg}, a scatter plot with y on the x-axis and the spatially lagged values on the y-axis (i.e. a Moran plot).
+Returns a \code{gg} plot, a scatter plot with \code{y} on the x-axis and its spatially lagged values on the y-axis (i.e. a Moran plot).
 }
 \description{
-Plots a set of values against their mean spatially lagged values and gives the Moran coefficient as a measure of spatial autocorrelation.
+Plots a set of values against their spatially lagged values and gives the Moran coefficient as a measure of spatial autocorrelation.
 }
 \details{
 For details on the symbol parameters see the documentation for \link[ggplot2]{geom_point}.
