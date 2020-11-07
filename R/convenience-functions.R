@@ -139,7 +139,8 @@ lisa <- function(x, w, type = FALSE) {
 #' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
 #' @param name The name to use on the plot labels; default to "y" or, if \code{y} is a \code{geostan_fit} object, to "Residuals".
 #' @param w An optional spatial connectivity matrix; if not provided, then a row-standardized adjacency matrix will be created using \code{shape2mat(shape, "W")}.
-#' @param threshold LISA values greater than \code{threshold} will have their borders highlighted on the map.
+#' @param threshold If a numeric value is provided, LISA values greater than \code{threshold} will have their borders highlighted on the map.
+#' @param plot If \code{FALSE}, return a list of \code{gg} plots.
 #'
 #' @export
 #' @return A grid of spatial diagnostic plots including a Moran plot, a map of local Moran's I values, plus a map and histogram of the data. 
@@ -150,7 +151,8 @@ spdiag <- function(y,
                    shape,
                    name = "y",
                    w = shape2mat(shape, "W"),
-                   threshold = 2
+                   threshold = Inf,
+                   plot = TRUE
                    ) {
     if (inherits(y, "geostan_fit")) {
         ## add aple option ##
@@ -180,9 +182,10 @@ spdiag <- function(y,
         scale_fill_gradient2(name = "LISA") +
         theme_void()
     global <- moran_plot(y, w, xlab = name)
-    grid.arrange(hist, map.y,
+    if (plot) grid.arrange(hist, map.y,
                  global, local,
                  ncol = 2, nrow = 2)
+    return (list(hist, map.y, global, local))
     }
 
 
