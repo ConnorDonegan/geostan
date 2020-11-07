@@ -64,6 +64,3 @@
 #' }
 "sentencing"
 
-#' Indiana counties all-cause mortality, ages 45-54
-#' @description A simple features (sf) dataset for Indiana counties containing total number of deaths per county for the years 2011-2016, ages 45-54 obtained from CDC Wonder. Also includes ACS estimates and standard errors for select county attributes.
-"indiana"
