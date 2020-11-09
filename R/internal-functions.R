@@ -83,15 +83,6 @@ to_index <- function(id, n) {
   res[order(res$rowid), c("id", "idx")]
 }
 
-#' 
-#' @noRd
-family_2_integer <- function(family) {
-    if (family == "gaussian") return(1)
-    if (family == "student_t") return(2)
-    if (family == "binomial") return(3)
-    if (family == "poisson") return(4)
-}
-
 #' Summarize samples from an geostan_fit object
 #' @import stats
 #' @noRd
