@@ -23,7 +23,7 @@
   }
   if (is_binomial) {
     fitted[i] = f[i];
-    residual[i] = f[i]*trials[i] - y_int[i];
+    residual[i] = (f[i] * trials[i] - y_int[i]) / trials[i]; 
     yrep[i] = binomial_rng(trials[i], f[i]);
     log_lik[i] = binomial_lpmf(y_int[i] | trials[i], f[i]);
   }  

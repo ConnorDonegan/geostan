@@ -2123,7 +2123,7 @@ public:
                     current_statement_begin__ = 304;
                     stan::model::assign(residual, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                ((get_base1(f, i, "f", 1) * get_base1(trials, i, "trials", 1)) - get_base1(y_int, i, "y_int", 1)), 
+                                (((get_base1(f, i, "f", 1) * get_base1(trials, i, "trials", 1)) - get_base1(y_int, i, "y_int", 1)) / get_base1(trials, i, "trials", 1)), 
                                 "assigning variable residual");
                     current_statement_begin__ = 305;
                     stan::model::assign(yrep, 

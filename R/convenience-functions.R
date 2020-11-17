@@ -182,11 +182,11 @@ spdiag <- function(y,
         scale_fill_gradient2(name = "LISA") +
         theme_void()
     global <- moran_plot(y, w, xlab = name)
-    if (plot) grid.arrange(hist, map.y,
+    if (plot) { grid.arrange(hist, map.y,
                  global, local,
                  ncol = 2, nrow = 2)
-    return (list(hist, map.y, global, local))
-    }
+    } else return (list(hist, map.y, global, local))
+ }
 
 
 #' Moran plot

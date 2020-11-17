@@ -4,9 +4,11 @@
 \alias{shape2mat}
 \title{Create a spatial weights matrix from a spatial object of class \code{sf} or \code{SpatialPolygons} or \code{SpatialPolygonsDataFrame}}
 \source{
+Griffith, D. A. (2012). Space, time, and space-time eigenvector filter specifications that account for autocorrelation. Estadística Espanola, 54(177), 7-34.
+
 Griffith, D. A., Chun, Y., Li, B. (2020). Spatial Regression Analysis Using Eigenvector Spatial Filtering. Academic Press, Ch. 8.
 
-Tiefelsdorf, M., Griffith, D. A., Boots, B. (1999). "A variance-stabilizing coding scheme for spatial link matrices." Environment and Planning A, 31, pp. 165-180.
+Haining, R. P., & Li, G. (2020). Regression Modelling Wih Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.
 }
 \usage{
 shape2mat(
@@ -26,7 +28,7 @@ shape2mat(
 
 \item{t}{Number of time periods. Currently only the binary coding scheme is available for space-time connectivity matrices.}
 
-\item{st.type}{For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and (the default) "contemp" for contemporaneous specification.}
+\item{st.type}{For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and "contemp" (the default) for contemporaneous specification.}
 
 \item{zero.policy}{Are regions with zero neighbors allowed? Default \code{zero.policy = TRUE} (allowing regions to have zero neighbors). Also passed to \link[spdep]{nb2mat}.}
 
@@ -38,7 +40,12 @@ shape2mat(
 A spatial connectivity matrix
 }
 \description{
-A wrapper function for a string of \code{spdep} (and other) functions required to convert spatail objects to connectivity matrices
+A wrapper function for a string of \code{spdep} (and other) functions required to convert spatail objects to spatial or spatio-temporal connectivity matrices.
+}
+\details{
+Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matricies (Ch. 4) and spatio-temporal connectivity matricies (Ch. 15).
+
+The `lagged' space-time structure connects each observation to its own past (one period lagged) value and the past value of its neighbors. The `contemporaneous' specification links each observation to its neighbors and to its own in situ past (one period lagged) value (Griffith 2012, p. 23).
 }
 \examples{
 data(ohio)
@@ -48,6 +55,7 @@ W <- shape2mat(ohio, "W")
 ## for space-time data
 ## if you have multiple years with same neighbors
 ## provide the geography (for a single year!) and number of years \code{t}
+## defaults to the contemporaneous connectivity structure
 Cst <- shape2mat(ohio, t = 5)
 
 }

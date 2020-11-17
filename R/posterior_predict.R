@@ -78,9 +78,16 @@ posterior_predict <- function(object, newdata, C, samples, predictive = TRUE, re
         warning (paste0("Cannot draw more samples than were taken from the posterior. Using samples = ", N))
         samples <- N
     }
+    family <- object$family$family
+    link <- object$family$link
     idx <- sample(N, samples)
     if (missing(newdata)) {
         preds <- as.matrix(object, pars = "yrep")[idx,]
+        if (family == "binomial") {
+	     y <- model.response(model.frame(object$formula, as.data.frame(object$data)))
+	     trials <- as.integer(y[, 1] + y[, 2])
+	     preds <- sweep(preds, 2, trials, "/")
+    }
         if (summary) {
             mu.samples <- fitted(object, summary = FALSE)
             df <- .pp_summary(preds, mu.samples, object$data, width = width)
@@ -95,8 +102,6 @@ posterior_predict <- function(object, newdata, C, samples, predictive = TRUE, re
         if (missing(C)) stop ("If spatial = TRUE, you must provide spatial weights matrix C to calculate spatial lag of X terms (slx) for this model")
         if ( nrow(newdata) != nrow(C) | (nrow(newdata) != nrow(object$data)) ) stop ("C, newdata, and object$data must have same number of rows.")
     }
-    family <- object$family$family
-    link <- object$family$link
     if (family == "binomial") {
         y <- model.response(model.frame(object$formula, newdata))
         trials <- as.integer(y[, 1] + y[, 2])
