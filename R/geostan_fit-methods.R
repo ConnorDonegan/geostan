@@ -100,7 +100,7 @@ plot.geostan_fit <- function(x, pars, plotfun = "dens", ...) {
       pars <- "intercept"
       x.pars <- c("beta", "nu", "sigma")
       if (any(x.pars %in% names(x$priors))) pars <- c(pars, names(x$priors)[grep(paste0(x.pars, collapse="|"), names(x$priors))])
-      if (fit$spatial$method == "CAR") pars <- c(pars, "phi_alpha", "phi_tau")
+      if (x$spatial$method == "CAR") pars <- c(pars, "phi_alpha", "phi_tau")
   }
   rstan::plot(x$stanfit, pars = pars, plotfun = plotfun, ...)
 }

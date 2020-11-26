@@ -60,6 +60,3 @@
                     + sum(ldet_terms)
                     - tau * (phit_D * phi - alpha * (phit_C * phi)));
   }
-
-
-

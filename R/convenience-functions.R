@@ -155,11 +155,10 @@ spdiag <- function(y,
                    plot = TRUE
                    ) {
     if (inherits(y, "geostan_fit")) {
-        ## add aple option ##
         y <- resid(y)$mean
         name <- "Residuals"
         }
-    if (!inherits(shape, "sf")) shape <- st_as_sf(shape)
+    if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
     hist <- ggplot() +
         geom_histogram(aes(y),
                        fill = "gray20",
@@ -182,7 +181,7 @@ spdiag <- function(y,
         scale_fill_gradient2(name = "LISA") +
         theme_void()
     global <- moran_plot(y, w, xlab = name)
-    if (plot) { grid.arrange(hist, map.y,
+    if (plot) { gridExtra::grid.arrange(hist, map.y,
                  global, local,
                  ncol = 2, nrow = 2)
     } else return (list(hist, map.y, global, local))

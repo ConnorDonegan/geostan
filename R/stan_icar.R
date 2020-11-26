@@ -235,6 +235,7 @@ stan_icar <- function(formula, slx, re, data, ME = NULL, C, family = poisson(),
     node1 = nbs$node1,
     node2 = nbs$node2,
     phi_scale_prior = priors$phi_scale_prior,
+  ## if TRUE, ignore data and likelihood, return prior model
     prior_only = prior_only
     )
   standata <- c(standata, me.list)

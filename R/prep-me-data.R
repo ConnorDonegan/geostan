@@ -51,8 +51,10 @@ prep_me_data <- function(ME, family, x) { # for x pass in x.list$x
           model_offset <- 0
       }
       # start building the return data list
-   me.list <- list(offset_me = offset_me,
-                   model_offset = model_offset)
+    me.list <- list(
+        offset_me = offset_me,
+        model_offset = model_offset
+    )
   if (is.null(ME$se)) {
       # in this case there is just an offset me model but not ME.X
       x_obs <- x
@@ -84,7 +86,7 @@ prep_me_data <- function(ME, family, x) { # for x pass in x.list$x
         if (length(ME$bounded)) {
             if (length(ME$bounded) != ncol(ME$se)) stop("ME mis-specified: bounded must be a vector with one element per column in the ME dataframe.")
             bounded <- which(ME$bounded == 1)
-            not.bounded <- which(ME$bounded != 1)
+            not.bounded <- which(ME$bounded == 0)
             if (length(ME$bounds)) {
                 if(length(ME$bounds) != 2 | !inherits(ME$bounds, "numeric")) stop("ME$bounds must be numeric vector of length 2.")
                 bounds <- ME$bounds
