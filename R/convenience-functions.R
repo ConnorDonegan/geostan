@@ -213,7 +213,7 @@ spdiag <- function(y,
 #' moran_plot(y, w)
 #'
 moran_plot <- function(y, w, xlab = "y", ylab = "Spatial Lag", pch = 20, col = "darkred", size = 2, alpha = 1, lwd = 0.5) {
-    if (!inherits(y, "numeric")) stop("y must be a numeric vector")
+    if (!(inherits(y, "numeric") | inherits(y, "integer"))) stop("y must be a numeric or integer vector")
     sqr <- all( dim(w) == length(y) )
     if (!inherits(w, "matrix") | !sqr) stop("w must be an n x n matrix where n = length(y)")
     ylag <- as.numeric(w %*% y)
