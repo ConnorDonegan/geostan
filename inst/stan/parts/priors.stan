@@ -21,7 +21,7 @@
 
 /**
   * intrinsic autoregressive prior (Morris et al 2019)
-  * @return a vector of parameters (random effects)
+  * @return log probability density of IAR prior model up to an additive constant
   */
   real icar_normal_lpdf(vector phi, int N, int[] node1, int[] node2) {
     return -0.5 * dot_self(phi[node1] - phi[node2]) +
