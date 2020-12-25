@@ -1,3 +1,6 @@
+functions {
+#include parts/priors.stan
+}
 data { 
 #include parts/data.stan
 }

@@ -7,17 +7,21 @@
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 #'  These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param scaleFactor The scaling factor for the ICAR random effect. Currently INLA is required to calculate this. 
+#' @param scale_factor The scaling factor for the ICAR random effect. Currently INLA is required to calculate this. 
 #' @param re If the model includes an additional varying intercept term specify the grouping variable here using formula synatax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
-#' @param ME  To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Observational errors are assigned a Gaussian probability distribution. Elements of the list \code{ME} (by name) may include:
+#' @param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the `true' covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} (by name) may include:
 #' \describe{
+#' 
 #' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
-#' \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one-hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
+#' \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
 #' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of the bounded variables. Defaults to \code{bounds = c(0, 100)}.}
+#' \item{spatial}{Logical value indicating if the models for covariates should include a spatially varying mean (using an eigenvector spatial filter). Defaults to \code{spatial = FALSE}. If \code{spatial = TRUE} and you do not provide both \code{ME$prior_rhs} and \code{EV} then you must provide a connectivity matrix \code{C}.}
+#' \item{prior_rhs}{Optional prior parameters for the regularized horseshoe (RHS) prior used for the ESF data model; only used if \code{ME$spatial = TRUE}. The RHS prior is used for the eigenvector spatial filter (ESF), as in \link[geostan]{stan_esf}. Must be a named list containing vectors \code{slab_df}, \code{slab_scale}, \code{scale_global}, and \code{varname}. The character vector \code{varname} indicates the order of the other parameters (by name).}
 #' \item{offset}{if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}.}
 #' }
 #' @param C Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.
+#' @param EV A matrix of eigenvectors from any (transformed) connectivity matrix (presumably spatial). See \link[geostan]{make_EV} and \link[geostan]{shape2mat}. 
 #' @param family The likelihood function for the outcome variable. Current options are the default \code{family = poisson(link = "log")} and \code{family = binomial(link = "logit")}.
 #' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. 
@@ -30,6 +34,7 @@
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{.9} and \code{max_treedepth = 15}.
+#' @param silent If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' @details 
 #'  The Stan code for the model follows Morris et al. (2019). The \code{INLA} package is currently required to calculate the scaling factor for the spatial random effects. To install it see \code{http://www.r-inla.org/download}. 
@@ -85,7 +90,7 @@
 #' scaling_factor <- 0.7096322
 #'
 #' fit.bym2 <- stan_bym2(sents ~ offset(expected_sents),
-#'                       scaleFactor = scaling_factor,
+#'                       scale_factor = scaling_factor,
 #'                       C = C,
 #'                       data = sentencing,
 #'                       family = poisson()
@@ -93,15 +98,19 @@
 #' print(fit.bym2)
 #'
 #' }
-stan_bym2 <- function(formula, slx, scaleFactor, re, data, ME = NULL, C, family = poisson(),
-                     prior = NULL, prior_intercept = NULL,  prior_tau = NULL, 
-                     centerx = FALSE, scalex = FALSE, prior_only = FALSE,
-                     chains = 4, iter = 2e3, refresh = 500, pars = NULL,
-                control = list(adapt_delta = .9, max_treedepth = 15), ...) {
+stan_bym2 <- function(formula, slx, scale_factor, re, data, ME = NULL, C, EV,
+                      family = poisson(),
+                      prior = NULL, prior_intercept = NULL,  prior_tau = NULL, 
+                      centerx = FALSE, scalex = FALSE, prior_only = FALSE,
+                      chains = 4, iter = 2e3, refresh = 500, pars = NULL,
+                      control = list(adapt_delta = .9, max_treedepth = 15),
+                      silent = FALSE,
+                      ...) {
   if (class(family) != "family" | !family$family %in% c("poisson", "binomial")) stop ("Must provide a valid family object: poisson().")
   if (missing(formula) | class(formula) != "formula") stop ("Must provide a valid formula object, as in y ~ offset(E) + x or y ~ 1 for intercept only.")
   if (missing(data) | missing(C)) stop("Must provide data (a data.frame or object coercible to a data.frame) and connectivity matrix C.")
   if (scalex) centerx = TRUE
+  if (silent) refresh = 0
   ## GLM STUFF -------------  
   a.zero <- as.array(0, dim = 1)
   tmpdf <- as.data.frame(data)
@@ -172,12 +181,10 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, ME = NULL, C, family 
   }
   ## PARAMETER MODEL STUFF -------------  
   is_student = FALSE #// IAR model not compatible with Gaussian/Student's t likelihood
-  priors <- list(intercept = prior_intercept, beta = prior, alpha_tau = prior_tau,
+  user_priors <- list(intercept = prior_intercept, beta = prior, alpha_tau = prior_tau,
                  sigma = NULL, nu = NULL)
-  priors <- make_priors(user_priors = priors, y = y, x = x, xcentered = centerx,
+  priors <- make_priors(user_priors = user_priors, y = y, x = x, xcentered = centerx,
                         link = family$link, offset = offset)
-  ## DATA MODEL STUFF -------------
-  me.list <- prep_me_data(ME, family, x.list$x)
   ## MIXED STUFF -------------  
   standata <- list(
   ## glm data -------------
@@ -204,10 +211,17 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, ME = NULL, C, family 
     n_edges = n_edges,
     node1 = nbs$node1,
     node2 = nbs$node2,
-    scaling_factor = scaleFactor,
+    scaling_factor = scale_factor,
     prior_only = prior_only
     )
+  ## DATA MODEL STUFF -------------
+  me.list <- prep_me_data(ME, x.list$x)
   standata <- c(standata, me.list)
+  if (missing(C)) C <- NA
+  if (missing(EV)) EV <- NA
+  sp.me <- prep_sp_me_data(ME, me.list, C, EV, x.list$x, silent = silent)
+  standata <- c(standata, sp.me)
+  # STAN STUFF  -------------  
   if (family$family == "binomial") {
       # standata$y will be ignored for binomial and poisson models
       standata$y <- standata$y_int <- y[,1] ## must overwrite y with vector
@@ -221,6 +235,9 @@ stan_bym2 <- function(formula, slx, scaleFactor, re, data, ME = NULL, C, family 
   if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
   if (any(me.list$offset_me != 0)) pars <- c(pars, "offset_est")
   priors <- priors[which(names(priors) %in% pars)]
+  ## PRINT STUFF -------------    
+  if (!silent) print_priors(user_priors, priors)
+  ## CALL STAN -------------      
   samples <- rstan::sampling(stanmodels$bym2, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
   out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
   out$data <- ModData

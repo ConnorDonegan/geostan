@@ -4,3 +4,4 @@ src/geostan.dll
 data-raw/
 man/*
 .Rhistory
+*~

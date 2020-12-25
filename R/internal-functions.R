@@ -165,8 +165,8 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
   }
   # the following will be ignored when when not needed (RE scale, resid scale, student T df)
   priors$alpha_tau <- c(df = 20, location = 0, scale = scaling_factor * scale.y)
-  priors$sigma <- c(df = 5, location = 0, scale = scaling_factor * scale.y)
-  priors$nu <- c(alpha = 2, beta = 0.1)
+  priors$sigma <- c(df = 10, location = 0, scale = scaling_factor * scale.y)
+  priors$nu <- c(alpha = 3, beta = 0.2)
   if ("rhs" %in% names(user_priors)) {
       scale_ev <- sd(EV[,1])
       priors$rhs = c(slab_df = 15, slab_scale = 0.5 * (scale.y / scale_ev), scale_global = rhs_scale_global)
@@ -175,7 +175,7 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
       if (!is.null(user_priors[[i]])) {
           par <- names(user_priors)[i]
           priors[[which(names(priors) == par)]] <- user_priors[[i]]
-          }
+      }      
   }
   return(priors)
 }
@@ -203,45 +203,100 @@ clean_results <- function(samples, pars, is_student, has_re, C, Wx, x, x_me_unbo
     g_names = dimnames(Wx)[[2]]
     samples <- par_alias(samples, "^gamma\\[", g_names)        
     }
-  has_b <- "beta" %in% pars  
-  if (has_b) {  
-    b_names = dimnames(x)[[2]] 
-    samples <- par_alias(samples, "^beta\\[", b_names)
-  }
-  if (sum(x_me_unbounded_idx)) {
-      x_names <- dimnames(x)[[2]]
-      x.id <- paste0("x_", rep(x_names[x_me_unbounded_idx], each = n), paste0("[", 1:n, "]"))
-      names(samples)[grep("x_true_unbounded", names(samples))] <- x.id      
-  }
-  if (sum(x_me_bounded_idx)) {
-      x_names <- paste0(dimnames(x)[[2]])
-      x.id <- paste0("x_", rep(x_names[x_me_bounded_idx], each = n), paste0("[", 1:n, "]"))
-      names(samples)[grep("x_true_bounded", names(samples))] <- x.id
-      } 
-  if ("sigma" %in% pars) samples <- par_alias(samples, "^sigma\\[1\\]", "sigma")
-  if (is_student) samples <- par_alias(samples, "^nu\\[1\\]", "nu")
-  if (has_re) samples <- par_alias(samples, "^alpha_tau\\[1\\]", "alpha_tau")
-  main_pars <- pars[which(pars %in% c("intercept", "alpha_tau", "gamma", "beta", "sigma", "nu", "rho"))]
-  summary_list <- lapply(main_pars, post_summary, stanfit = samples)
-  summary <- do.call("rbind", summary_list)
-  summary <- apply(summary, 2, round, 3)
+    has_b <- "beta" %in% pars  
+    if (has_b) {  
+        b_names = dimnames(x)[[2]] 
+        samples <- par_alias(samples, "^beta\\[", b_names)
+    }
+    if (sum(x_me_unbounded_idx)) {
+        x_names <- dimnames(x)[[2]]        
+        for (i in seq_along(x_me_unbounded_idx)) {
+            x.id <- paste0("x_", rep(x_names[x_me_unbounded_idx[i]], times = n), paste0("[", 1:n, "]"))
+            names(samples)[grep(paste0("x_true_unbounded\\[", i, ","), names(samples))] <- x.id          
+        }
+    }   
+    if (sum(x_me_bounded_idx)) {
+        x_names <- dimnames(x)[[2]]
+        for (i in seq_along(x_me_bounded_idx)) {        
+            x.id <- paste0("x_", rep(x_names[x_me_bounded_idx[i]], times = n), paste0("[", 1:n, "]"))
+            names(samples)[grep(paste0("x_true_bounded\\[", i, ","), names(samples))] <- x.id
+        }
+    }
+    
+    if ("sigma" %in% pars) samples <- par_alias(samples, "^sigma\\[1\\]", "sigma")
+    if (is_student) samples <- par_alias(samples, "^nu\\[1\\]", "nu")
+    if (has_re) samples <- par_alias(samples, "^alpha_tau\\[1\\]", "alpha_tau")
+    main_pars <- pars[which(pars %in% c("intercept", "alpha_tau", "gamma", "beta", "sigma", "nu", "rho"))]
+    summary_list <- lapply(main_pars, post_summary, stanfit = samples)
+    summary <- do.call("rbind", summary_list)
+    summary <- apply(summary, 2, round, 3)
   residuals <- as.matrix(samples, pars = "residual")
-  residuals <- apply(residuals, 2, mean)
+    residuals <- apply(residuals, 2, mean)
   if (is.logical(C)) {
       Residual_MC <- C <- Expected_MC <- NA
-      } else {
+  } else {
       Residual_MC <- round(mc(residuals, w = C), 3)
       if (!has_b) {
           n <- length(residuals)
           Expected_MC <- -1/(n - 1)
       } else {
-      Expected_MC <- expected_mc(X = x, C = C)
+          Expected_MC <- expected_mc(X = x, C = C)
       }
      }
-  WAIC <- geostan::waic(samples)
-  diagnostic <- c(WAIC = as.numeric(WAIC[1]), Eff_pars = as.numeric(WAIC[2]), Lpd = as.numeric(WAIC[3]),
-                  Residual_MC = Residual_MC, Expected_MC = Expected_MC)
-  out <- list(summary = summary, diagnostic = diagnostic, stanfit = samples)
-  return(out)
+    WAIC <- geostan::waic(samples)
+    diagnostic <- c(WAIC = as.numeric(WAIC[1]), Eff_pars = as.numeric(WAIC[2]), Lpd = as.numeric(WAIC[3]),
+                    Residual_MC = Residual_MC, Expected_MC = Expected_MC)
+    out <- list(summary = summary, diagnostic = diagnostic, stanfit = samples)
+    return(out)
+}
+
+#' Print priors that were set automatically
+#' 
+#' @noRd
+#' @param user_priors list of prior specifications provided by user, with missing priors set to NULL
+#' @param priors list of priors returned by make_priors, after dropping unneeded parameters.
+#' @return Prints out information using \code{message()}
+print_priors <- function(user_priors, priors) {
+    printed = 0
+  for (i in seq_along(user_priors)) {
+      nm <- names(user_priors)[i]
+      u.p. <- user_priors[[i]]
+      if (is.null(u.p.) & nm %in% names(priors)) {          
+          message("\n*Setting prior parameters for ", nm)
+          p <- priors[[which(names(priors) == nm)]]
+          if (nm == "beta") {
+              message("Gaussian")
+              colnames(p) <- c("Location", "Scale")
+              print(p, row.names = FALSE)
+          }          
+          if (nm == "intercept") {
+              message("Gaussian")
+              message("Location: ", p[1])
+              message("Scale: ", p[2])
+          }
+          if (nm == "sigma") {
+              message("Student's t")
+              message("Degrees of freedom: ", p[1])
+              message("Location: ", p[2])
+              message("Scale: ", p[3])
+          }
+          if (nm == "nu") {
+              message("Gamma")
+              message("alpha: ", p[1])
+              message("beta: ", p[2])
+          }
+          if (nm == "alpha_tau") {
+              message("Student's t")
+              message("Degrees of freedom: ", p[1])
+              message("Location: ", p[2])
+              message("Scale: ", p[3])
+          }
+          if (nm == "rhs") {
+              message("Global shrinkage prior (scale_global): ", p["scale_global"])
+              message("Slab degrees of freedom: ", p["slab_df"])
+              message("Slab scale: ", p["slab_scale"])
+          }
+  }  
+  } 
 }
 

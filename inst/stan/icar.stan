@@ -4,9 +4,9 @@ functions {
 
 data {
 #include parts/data.stan
-  int<lower=0> n_edges;
+  int<lower=0> n_edges; 
   int<lower=1, upper=n> node1[n_edges];
-  int<lower=1, upper=n> node2[n_edges];
+  int<lower=1, upper=n> node2[n_edges]; 
   real<lower=0> phi_scale_prior; 
 }
 
@@ -27,10 +27,10 @@ transformed parameters {
 }
 
 model {
+#include parts/model.stan
 // IAR model
   phi_tilde ~ icar_normal(n, node1, node2);
   phi_scale ~ normal(0, phi_scale_prior);
-#include parts/model.stan
  }
 
 generated quantities {

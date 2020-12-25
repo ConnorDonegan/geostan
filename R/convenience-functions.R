@@ -139,15 +139,14 @@ lisa <- function(x, w, type = FALSE) {
 #' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
 #' @param name The name to use on the plot labels; default to "y" or, if \code{y} is a \code{geostan_fit} object, to "Residuals".
 #' @param w An optional spatial connectivity matrix; if not provided, then a row-standardized adjacency matrix will be created using \code{shape2mat(shape, "W")}.
-#' @param threshold If a numeric value is provided, LISA values greater than \code{threshold} will have their borders highlighted on the map.
 #' @param plot If \code{FALSE}, return a list of \code{gg} plots.
 #'
 #' @export
-#' @return A grid of spatial diagnostic plots including a Moran plot, a map of local Moran's I values, plus a map and histogram of the data. If fitted \code{geostan} model is provided, model residuals are plotted and mapped.
+#' @return A grid of spatial diagnostic plots including a Moran plot plus a map and histogram of \code{y}. If a fitted \code{geostan} model is provided, model residuals are plotted and mapped (i.e. \code{y = resid(fit)$mean}).
 #' 
 #' @importFrom gridExtra grid.arrange
 #' @import ggplot2
-spdiag <- function(y,
+sp_diag <- function(y,
                    shape,
                    name = "y",
                    w = shape2mat(shape, "W"),
@@ -171,21 +170,108 @@ spdiag <- function(y,
                 col = "gray20") +
         scale_fill_gradient2(name = name) +
         theme_void()
-    li <- lisa(y, w)
-    cluster <- abs(li) > threshold
-    local <- ggplot(shape) +
-        geom_sf(aes(fill = li),
-                lwd = ifelse(cluster, 0.7, 0.05),
-                col = "black"
-                ) +
-        scale_fill_gradient2(name = "LISA") +
-        theme_void()
-    global <- moran_plot(y, w, xlab = name)
-    if (plot) { gridExtra::grid.arrange(hist, map.y,
-                 global, local,
-                 ncol = 2, nrow = 2)
-    } else return (list(hist, map.y, global, local))
+    ## li <- lisa(y, w)
+    ## cluster <- abs(li) > threshold
+    ## local <- ggplot(shape) +
+    ##     geom_sf(aes(fill = li),
+    ##             lwd = ifelse(cluster, 0.7, 0.05),
+    ##             col = "black"
+    ##             ) +
+    ##     scale_fill_gradient2(name = "LISA") +
+    ##     theme_void()
+    g.mc <- moran_plot(y, w, xlab = name)
+    if (plot) {
+        gridExtra::grid.arrange(hist, g.mc, map.y, ncol = 3)
+    } else return (list(hist, map.y, global))
  }
+
+
+#' Data model diagnostics
+#'
+#' @description Visual diagnostics for spatial measurement error models. 
+#' 
+#' @param fit A \code{geostan_fit} model object as returned from a call to one of the \code{geostan::stan_*} functions.
+#' @param varname Name of the modeled variable (a character string, as it appears in the model formula).
+#' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
+#' @param w An optional spatial connectivity matrix; if not provided, then a row-standardized adjacency matrix will be created using \code{shape2mat(shape, "W")}.
+#' @param probs Lower and upper quantiles of the credible interval to plot. 
+#' @param plot If \code{FALSE}, return a \code{data.frame} with the raw data values and posterior summary of the modeled variable.
+#' @param size Size of points and lines, passed to \code{geom_pointrange}.
+#' 
+#' @export
+#' @return A grid of spatial diagnostic plots for measurement error (i.e. data) models comparing the raw observations to the posterior distribution of the true values (given the specified observations, standard errors, and model). The Moran scatter plot and map depict the difference between the posterior means and the raw observations (i.e. shrinkage). 
+#' 
+#' @importFrom gridExtra grid.arrange
+#' @import ggplot2
+me_diag <- function(fit,
+                    varname,                    
+                    shape,
+                    w,
+                    probs = c(0.025, 0.975),
+                    plot = TRUE,
+                    size = 0.25
+                    ) {
+    if (!varname %in% colnames(fit$data)) stop("varname is not found in colnames(fit$data). Provide the name of the variable as it appears in the model formula")
+    if (length(varname) != 1) stop("Provide the name of the variable as it appears in the model formula.")
+    if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
+    x.raw <- as.numeric(fit$data[,varname])
+    probs = sort(probs)
+    width = paste0(100 * (probs[2] - probs[1]), "%")     
+    p.lwr <- paste0(100 * probs[1], "%")
+    p.upr <- paste0(100 * probs[2], "%")
+    x <- as.matrix(fit)
+    x.samples <- x[,grep(paste0("^x_", varname), colnames(x))]
+    x.mu <- apply(x.samples, 2, mean)
+    x.ci <- apply(x.samples, 2, quantile, probs = probs)
+    x.lwr <- x.ci[p.lwr, ]
+    x.upr <- x.ci[p.upr, ] 
+    df <- data.frame(
+        x.raw = x.raw,
+        x.mu = x.mu,
+        x.lwr = x.lwr,
+        x.upr = x.upr
+    )
+    if (plot) {
+        xlbl <- paste(varname, "(raw data)")
+        g.points <-  ggplot(df) +
+            geom_abline(
+                slope = 1,
+                intercept = 0,
+                lty = 2
+            ) +
+            geom_pointrange(
+                aes(x = x.raw,
+                    y = x.mu,
+                    ymin = x.lwr,
+                    ymax = x.upr
+                    ),
+                size = size
+            ) +
+            labs(
+                x = xlbl,
+                y = paste("Posterior Mean and", width, "C.I.")
+            ) +                
+            theme_classic()
+        if (!missing(w)) {
+            g.mc <- moran_plot(x.raw - x.mu, w) +
+                labs(x = paste("Posterior mean minus raw data"))
+        } else {
+            w <- shape2mat(shape, style = "W")
+            g.mc <- moran_plot(x.raw - x.mu, w) +
+                labs(x = paste("Posterior mean minus raw data"))            
+        }
+        map.delta <- ggplot(shape) +
+            geom_sf(aes(fill = df$x.mu - df$x.raw),
+                    lwd = 0.05,
+                    col = "gray20") +
+            scale_fill_gradient2(name = paste("Posterior mean minus raw data")) +
+            theme_void() +
+            theme(
+                legend.position = "bottom"
+                ) 
+        return (gridExtra::grid.arrange(g.points, g.mc, map.delta, ncol = 3))
+    } else return(df)
+}
 
 
 #' Moran plot
@@ -234,7 +320,7 @@ moran_plot <- function(y, w, xlab = "y", ylab = "Spatial Lag", pch = 20, col = "
     ) +
         geom_smooth(aes(x = y,
                         y = ylag),
-                method = lm,
+                method = "lm",
                 lwd = lwd,
                 col = "black",
                 se = FALSE) +

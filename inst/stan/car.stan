@@ -33,10 +33,10 @@ transformed parameters {
 }
 
 model {
+#include parts/model.stan
 // CAR model
   phi ~ sparse_car(phi_tau, phi_alpha, C_sparse, D_sparse, lambda, n, C_n);
   phi_tau ~ gamma(phi_tau_prior[1], phi_tau_prior[2]);
-#include parts/model.stan
  }
 
 generated quantities {

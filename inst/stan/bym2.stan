@@ -4,9 +4,9 @@ functions {
 
 data {
 #include parts/data.stan
-  int<lower=0> n_edges;
+  int<lower=0> n_edges; 
   int<lower=1, upper=n> node1[n_edges];
-  int<lower=1, upper=n> node2[n_edges];
+  int<lower=1, upper=n> node2[n_edges]; 
   real<lower=0> scaling_factor; // scales the spatial component
 }
 
@@ -33,12 +33,12 @@ transformed parameters {
 }
 
 model {
+#include parts/model.stan
 // BYM2 model
   phi ~ icar_normal(n, node1, node2);
   theta ~ std_normal();
   logit_rho ~ std_normal();
   sigma_re ~ std_normal();
-#include parts/model.stan
 }
 
 generated quantities {

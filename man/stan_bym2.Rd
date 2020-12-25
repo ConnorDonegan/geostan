@@ -16,11 +16,12 @@ Riebler, A., Sørbye, S. H., Simpson, D., & Rue, H. (2016). An intuitive Bayesia
 stan_bym2(
   formula,
   slx,
-  scaleFactor,
+  scale_factor,
   re,
   data,
   ME = NULL,
   C,
+  EV,
   family = poisson(),
   prior = NULL,
   prior_intercept = NULL,
@@ -33,6 +34,7 @@ stan_bym2(
   refresh = 500,
   pars = NULL,
   control = list(adapt_delta = 0.9, max_treedepth = 15),
+  silent = FALSE,
   ...
 )
 }
@@ -43,21 +45,26 @@ stan_bym2(
 These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.}
 
-\item{scaleFactor}{The scaling factor for the ICAR random effect. Currently INLA is required to calculate this.}
+\item{scale_factor}{The scaling factor for the ICAR random effect. Currently INLA is required to calculate this.}
 
 \item{re}{If the model includes an additional varying intercept term specify the grouping variable here using formula synatax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}.}
 
 \item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.}
 
-\item{ME}{To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Observational errors are assigned a Gaussian probability distribution. Elements of the list \code{ME} (by name) may include:
+\item{ME}{To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the `true' covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} (by name) may include:
 \describe{
+
 \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
-\item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one-hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
+\item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
 \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of the bounded variables. Defaults to \code{bounds = c(0, 100)}.}
+\item{spatial}{Logical value indicating if the models for covariates should include a spatially varying mean (using an eigenvector spatial filter). Defaults to \code{spatial = FALSE}. If \code{spatial = TRUE} and you do not provide both \code{ME$prior_rhs} and \code{EV} then you must provide a connectivity matrix \code{C}.}
+\item{prior_rhs}{Optional prior parameters for the regularized horseshoe (RHS) prior used for the ESF data model; only used if \code{ME$spatial = TRUE}. The RHS prior is used for the eigenvector spatial filter (ESF), as in \link[geostan]{stan_esf}. Must be a named list containing vectors \code{slab_df}, \code{slab_scale}, \code{scale_global}, and \code{varname}. The character vector \code{varname} indicates the order of the other parameters (by name).}
 \item{offset}{if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}.}
 }}
 
 \item{C}{Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.}
+
+\item{EV}{A matrix of eigenvectors from any (transformed) connectivity matrix (presumably spatial). See \link[geostan]{make_EV} and \link[geostan]{shape2mat}.}
 
 \item{family}{The likelihood function for the outcome variable. Current options are the default \code{family = poisson(link = "log")} and \code{family = binomial(link = "logit")}.}
 
@@ -82,6 +89,8 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 \item{pars}{Optional; specify any additional parameters you'd like stored from the Stan model.}
 
 \item{control}{A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{.9} and \code{max_treedepth = 15}.}
+
+\item{silent}{If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.}
 
 \item{...}{Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.}
 }
@@ -132,7 +141,7 @@ N <- nrow(C)
 scaling_factor <- 0.7096322
 
 fit.bym2 <- stan_bym2(sents ~ offset(expected_sents),
-                      scaleFactor = scaling_factor,
+                      scale_factor = scaling_factor,
                       C = C,
                       data = sentencing,
                       family = poisson()

@@ -1,7 +1,6 @@
 Package: geostan
-Title: Bayesian Spatial Analysis with Stan
+Title: Bayesian Spatial Analysis
 Version: 0.0.1
-Year: 2020
 Authors@R: 
     person(given = "Connor",
            family = "Donegan",

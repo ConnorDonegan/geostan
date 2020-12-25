@@ -59,18 +59,17 @@ library(sf)
 data(ohio)
 
 ## fit Ohio election model with a spatial filter
-fit <- stan_esf(gop_growth ~ log(pop_density) + historic_gop + college_educated,
+fit <- stan_esf(gop_growth ~ 1,
                 data = ohio,
-                family = student_t(),
                 C = shape2mat(ohio),
-                cores = 1,  # cores = 4
+                chains = 1,  # chains = 4
                 iter = 200, # iter = 2e3
-                chains = 1) # chains = 4
+                cores = 1) # cores = 4
 
 # posterior predictive check (density overlay)
  # compare distribution of observations to the predictive distribution
 y <- ohio$gop_growth
-yrep <- posterior_predict(fit, samples = 100)
+yrep <- posterior_predict(fit, samples = 75)
 ppc_dens_overlay(y, yrep)
 
 ## plot marginal effects with credible intervals 

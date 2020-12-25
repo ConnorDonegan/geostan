@@ -72,14 +72,15 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
     print(x$re$formula)
     pars <- c(pars, "alpha_tau")
   }
-  cat("Data models: ")
+  cat("Data models (ME): ")
   if (inherits(x$ME, "list")) {
       if (length(x$ME$offset)) cat("offset ")
       if ("se" %in% names(x$ME)) cat(paste(names(x$ME$se), sep = ", "))
+      if ("spatial" %in% names(x$ME)) cat("\nPrior data model: Student's t with spatially varying mean (ESF)") else cat("\nPrior data model: Studen's t")
   } else cat("none")
-  cat("\nSpatial method: ", as.character(x$spatial$method), "\n")
+  cat("\nSpatial method (outcome): ", as.character(x$spatial$method), "\n")
   if (x$spatial$method == "CAR") pars <- c(pars, "phi_alpha", "phi_tau")
-  cat("Family: ", x$family$family, "\n")
+  cat("Likelihood function: ", x$family$family, "\n")
   cat("Link function: ", x$family$link, "\n")
   cat("Residual Moran Coefficient: ", x$diagnostic[grep("Residual_MC", attributes(x$diagnostic)$names)], "\n")
   cat("WAIC: ", x$diagnostic[grep("WAIC", attributes(x$diagnostic)$names)], "\n")
@@ -176,5 +177,4 @@ spatial.geostan_fit <- function(object, summary = TRUE, ...) {
     as.matrix(object$stanfit, pars = par, ...)
   }
 }
-
 

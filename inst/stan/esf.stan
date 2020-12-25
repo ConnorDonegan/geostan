@@ -4,8 +4,8 @@ functions {
 data {
 #include parts/data.stan
 // esf data
-  int<lower=0> dev; // number of eigenvectors 
-  matrix[n, dev] EV; // the eigenvectors
+//  int<lower=0> dev; // number of eigenvectors : now included in parts/data.stan
+//  matrix[n, dev] EV; // the eigenvectors : now included in parts/data.stan
   real<lower=0> scale_global;  // horseshoe parameters
   real<lower=0> slab_scale;
   real<lower=0> slab_df;
@@ -41,6 +41,7 @@ transformed parameters {
 }
 
 model {
+#include parts/model.stan
 // RHS prior model
   z ~ std_normal();
   aux1_local ~ normal(0, 1);
@@ -48,7 +49,6 @@ model {
   aux1_global ~ std_normal();
   aux2_global ~ inv_gamma(0.5, 0.5); // .5 * nu_local, .5 * nu_global, both = 1
   caux ~ inv_gamma(0.5*slab_df, 0.5*slab_df);
-#include parts/model.stan
 }
 
 generated quantities {

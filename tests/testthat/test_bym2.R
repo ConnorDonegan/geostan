@@ -1,9 +1,7 @@
 
 iter=10
-refresh=0
+silent = TRUE
 source("helpers.R")
-
-##devtools::load_all("~/dev/geostan")
 
 context("stan_bym2")
 test_that("BYM2 with offset model works", {
@@ -21,15 +19,15 @@ test_that("BYM2 with offset model works", {
     ## scaling_factor = exp(mean(log(diag(Q_inv))))
     scaling_factor = 0.71
     SW(
-        fit <- stan_bym2(sents ~ offset(expected_sents),
+        fit <- stan_bym2(sents ~ offset(log(expected_sents)),
                     data = sentencing,
                   #  ME = ME,
                     C = C,
-                    scaleFactor = scaling_factor, 
+                    scale_factor = scaling_factor, 
                     chains = 1,
                     family = poisson(),
                     iter = iter,
-                    refresh = refresh)
+                    silent = silent)
     )
     expect_geostan(fit)
 })
@@ -48,11 +46,11 @@ test_that("BYM2 works with covariate ME", {
                     slx = ~ x,
                     ME = ME,
                     C = C,
-                    scaleFactor = scaling_factor, 
+                    scale_factor = scaling_factor, 
                     chains = 1,
                     family = poisson(),
                     iter = iter,
-                    refresh = refresh)
+                    silent = silent)
     )
     expect_geostan(fit)
 })
@@ -72,9 +70,9 @@ test_that("BYM2 binomial works and accepts covariate ME", {
                          family = binomial(),
                          C = C,
                          ME = ME,
-                         scaleFactor = scaling_factor,
+                         scale_factor = scaling_factor,
                          iter = iter,
-                         refresh = refresh,
+                         silent = silent,
                          chains = 1)
                          )
                          

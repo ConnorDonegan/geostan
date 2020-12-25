@@ -1,9 +1,7 @@
-
 iter=30
-refresh=0
+silent = TRUE
 source("helpers.R")
-
-##devtools::load_all("~/dev/geostan")
+## devtools::load_all("~/dev/geostan")
 
 context("stan_esf")
 test_that("Poisson offset model works", {
@@ -19,7 +17,7 @@ test_that("Poisson offset model works", {
                     chains = 1,
                     family = poisson(),
                     iter = iter,
-                    refresh = refresh)
+                    silent = silent)
        )
     expect_geostan(fit)
 })
@@ -35,7 +33,8 @@ test_that("ESF works with covariate ME", {
                        ME = ME,
                        chains = 1,
                        iter = iter,
-                       refresh = refresh))
+                       silent = silent)   
+  )
     expect_geostan(fit)
 })
 
@@ -53,7 +52,7 @@ test_that("ESF accepts covariate ME, multiple x proportions", {
                         ME = ME,
                         chains = 1,
                         iter = iter,
-                        refresh = refresh)
+                        silent = silent)
        )
     expect_geostan(fit)
 })
@@ -72,7 +71,7 @@ test_that("ESF accepts covariate ME, mixed (un-) bounded", {
                         ME = ME,
                         chains = 1,
                         iter = iter,
-                        refresh = refresh)
+                        silent = silent)
     )
     expect_geostan(fit)
 })
@@ -93,7 +92,7 @@ test_that("ESF accepts covariate ME with WX, mixed ME-non-ME", {
                     ME = ME,
                     chains = 1,
                     iter = iter,
-                    refresh = refresh)
+                    silent = silent)
     )
     expect_geostan(fit)
 })

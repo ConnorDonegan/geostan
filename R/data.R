@@ -1,4 +1,4 @@
-#' Ohio Presidential election results
+#' Ohio Presidential election results and county characteristics
 #'
 #' @source
 #'
@@ -8,12 +8,14 @@
 #' 
 #' US Bureau of Labor Statistics, Local Force By County, 2016 Annual Averages. \url{https://www.bls.gov/lau/#cntyaa}
 #'
-#' US Census Bureau, 2016. American Community Survey. B01003, B01003, B15003.
+#' US Census Bureau, 2016. American Community Survey. Tables DP02, DP03, DP05 5-year estimates.
 #'
 #' Kyle Walker, 2018. Tidycensus. \url{https://walkerke.github.io/tidycensus/index.html}
 #'
 #' @description A simple features spatial dataset containing county attributes and Presidential election data for Ohio.
-#'  This is a processed version of the MIT "County Presidential Election Returns 2000-2016" data set augmented with data from the Census Bureau and Bureau of Labor Statistics.
+#'  This is a processed version of the MIT "County Presidential Election Returns 2000-2016" data set augmented with data from the American Community Survey and Bureau of Labor Statistics.
+#'
+#' @details The Bureau of Labor Statistics unemployment estimates are based on the ACS estimates as well as additional information. The BLS estimates were used for the analysis in Donegan et al. (2020). The ACS estimates have standard errors (the BLS estimates do not).
 #'
 #' @format A simple feature collection including the following attributes:
 #' \describe{
@@ -23,11 +25,15 @@
 #'  \item{historic_gop}{Average Republican share of all major party votes, 2000 to 2012}
 #'  \item{trump_2016}{Number of votes for Donald Trump in 2016}
 #'  \item{total_2016}{Total number of Democratic and Republican votes in 2016}
-#'  \item{population}{ACS 2016 5 year population estimate.}
+#'  \item{population}{ACS 2016 5 year population estimate}
 #' \item{pop_density}{Population per square mile (population / ALAND)}
 #'  \item{college_educated}{ACS 2016 5 year estimate of the percent of the population 25 and older with a bachelors degree or higher}
+#' \item{college_educated.se}{Standard error for \code{college_educated}}
 #'  \item{white_nonhispanic}{ACS 2016 5 year estimate of the percent of non-hispanic whites in the population}
+#' \item{white_nonhispanic.se}{Standard error for \code{white_nonhispanic}}
 #'  \item{unemployment}{Local area unemployment estimate from the Bureau of Labor Statistics, 2016}
+#' \item{unemployment.acs}{Civilian unemployment rate estimate from the American Community Survey, 2016}
+#' \item{unemployment.acs.se}{Standard error for \code{unemployment.acs}}
 #' \item{geometry}{County boundaries (polygons) in simple features format}
 #' }
 #' @examples

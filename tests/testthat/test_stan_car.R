@@ -1,6 +1,5 @@
-
 iter=10
-refresh=0
+silent = TRUE
 source("helpers.R")
 
 context("stan_car")
@@ -17,7 +16,7 @@ test_that("Poisson offset model works, car", {
                     chains = 1,
                     family = poisson(),
                     iter = iter,
-                    refresh = refresh)
+                    silent = silent)
     )
     expect_geostan(fit)    
 })
@@ -37,7 +36,7 @@ test_that("CAR accepts covariate ME, mixed (un-) bounded", {
                         ME = ME,
                         chains = 1,
                         iter = iter,
-                        refresh = refresh)
+                        silent = silent)
     )
     expect_geostan(fit)
 })
@@ -61,7 +60,7 @@ test_that("CAR accepts covariate ME with WX, mixed ME-non-ME", {
                     ME = ME,
                     chains = 1,
                     iter = iter,
-                    refresh = refresh)
+                    silent = silent)
     )
     expect_geostan(fit)
 })

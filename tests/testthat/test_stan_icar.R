@@ -1,9 +1,7 @@
 
 iter=10
-refresh=0
+silent = TRUE
 source("helpers.R")
-
-##devtools::load_all("~/dev/geostan")
 
 context("stan_icar")
 test_that("Poisson offset model works, icar", {
@@ -19,7 +17,7 @@ test_that("Poisson offset model works, icar", {
                     chains = 1,
                     family = poisson(),
                     iter = iter,
-                    refresh = refresh)
+                    silent = silent)
     )
     expect_geostan(fit)    
 })
@@ -39,7 +37,7 @@ test_that("IAR accepts covariate ME, multiple bounded x vars", {
                         ME = ME,
                         chains = 1,
                         iter = iter,
-                        refresh = refresh)
+                        silent = silent)
        )
     expect_geostan(fit)
 })
@@ -59,7 +57,7 @@ test_that("IAR accepts covariate ME, mixed (un-) bounded", {
                         ME = ME,
                         chains = 1,
                         iter = iter,
-                        refresh = refresh)
+                        silent = silent)
     )
     expect_geostan(fit)
 })
@@ -82,7 +80,7 @@ test_that("IAR accepts covariate ME with WX, mixed ME-non-ME", {
                     ME = ME,
                     chains = 1,
                     iter = iter,
-                    refresh = refresh)
+                    silent = silent)
     )
     expect_geostan(fit)
 })
