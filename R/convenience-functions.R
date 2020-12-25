@@ -562,3 +562,48 @@ edges <- function(w) {
   return(edges)
 }
 
+#' Standard error of log(x)
+#'
+#' @description Transform the standard error of \code{x} to standard error of \code{log(x)}.
+#'
+#' @param x Estimated value of the variable \code{x}
+#' @param se Standard error of \code{x}
+#' @param method \code{"delta"} method uses a Taylor series approximation; the default method \code{"mc"} uses a monte carlo method.
+#' @param draws Number of draws to take if \code{method = "mc"}.
+#'
+#' @details The delta method returns \code{x^(-1) * se}. The monte carlo method is detailed in the examples section.
+#'
+#' @export 
+#' @examples
+#' 
+#' data(ohio)
+#' x = ohio$unemployment.acs
+#' se = ohio$unemployment.acs.se
+#'
+#' lse1 = se_log(x, se)
+#' lse2 = se_log(x, se, method = "delta")
+#' plot(lse1, lse2); abline(0, 1)
+#'
+#' # the monte carlo method
+#' x = 10
+#' se = 2
+#' z = rnorm(n = 30e3, mean = x,  sd = se)
+#' l.z = log(z)
+#' sd(l.z)
+#' se_log(c(x, x), c(se, se), method = "mc")
+#' 
+se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3) {
+    stopifnot(length(x) == length(se))
+    method <- match.arg(method)
+    if (method == "mc") {
+        se.log <- NULL
+        for (i in seq_along(x)) {            
+            z <- rnorm(n = nsim, mean = x[i], sd = se[i])
+            l.z <- log(z)
+            se.log <- c(se.log, sd(l.z))            
+        }
+        return (se.log)
+    }
+    if (method == "delta") return (x^(-1) * se)
+}
+
