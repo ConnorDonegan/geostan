@@ -138,6 +138,7 @@ logit <- function(p) log(p/(1-p))
 make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, scaling_factor = 2, link = c("identity", "log", "logit"), EV, offset) {
   if (link == "identity") scale.y <- sd(y) else scale.y <- 1
   if (link == "log") {
+      if (any(y == 0)) y[which(y == 0)] <- 1 # local assignment only, not returned
       y <- log(y / exp(offset))
       scale.y <- sd(y)
       }
