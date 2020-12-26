@@ -596,9 +596,9 @@ edges <- function(w) {
 se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, Inf)) {
     stopifnot(length(x) == length(se))
     method <- match.arg(method)
-    stopifnot(bounds[1] >= 0 &
-              bounds[1] < bounds[2])
     if (method == "mc") {
+        stopifnot(bounds[1] >= 0 &
+                  bounds[1] < bounds[2])
         se.log <- NULL
         for (i in seq_along(x)) {            
             z <- rtruncnorm(n = nsim, mean = x[i], sd = se[i],
