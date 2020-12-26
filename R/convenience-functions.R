@@ -570,10 +570,11 @@ edges <- function(w) {
 #' @param se Standard error of \code{x}
 #' @param method \code{"delta"} method uses a Taylor series approximation; the default method \code{"mc"} uses a monte carlo method.
 #' @param draws Number of draws to take if \code{method = "mc"}.
-#'
+#' @param bounds Lower and upper bounds for the variable, used in the monte carlo method. Must be a length-two numeric vector with lower bound greater than or equal to zero (i.e. \code{c(lower, upper)} as in default \code{bounds = c(0, Inf)}.
 #' @details The delta method returns \code{x^(-1) * se}. The monte carlo method is detailed in the examples section.
 #'
-#' @export 
+#' @export
+#' @importFrom rtruncnorm rtruncnorm
 #' @examples
 #' 
 #' data(ohio)
@@ -592,13 +593,16 @@ edges <- function(w) {
 #' sd(l.z)
 #' se_log(c(x, x), c(se, se), method = "mc")
 #' 
-se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3) {
+se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, Inf)) {
     stopifnot(length(x) == length(se))
     method <- match.arg(method)
+    stopifnot(bounds[1] >= 0 &
+              bounds[1] < bounds[2])
     if (method == "mc") {
         se.log <- NULL
         for (i in seq_along(x)) {            
-            z <- rnorm(n = nsim, mean = x[i], sd = se[i])
+            z <- rtruncnorm(n = nsim, mean = x[i], sd = se[i],
+                            a = bounds[1], b = bounds[2])            
             l.z <- log(z)
             se.log <- c(se.log, sd(l.z))            
         }
@@ -607,3 +611,4 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3) {
     if (method == "delta") return (x^(-1) * se)
 }
 
+    
