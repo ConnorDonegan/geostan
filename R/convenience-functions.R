@@ -61,7 +61,7 @@ aple <- function(x, w, digits = 3) {
 #' @importFrom MASS mvrnorm
 #' 
 sim_sar <- function(n = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
-    if (!inherits(w, "matrix") | mode(w) != "numeric" | nrow(w) != ncol(w) | any(rowSums(w)!=1)) stop("W must be a square, row-standardized numeric matrix.")
+    if (!inherits(w, "matrix") | mode(w) != "numeric" | nrow(w) != ncol(w) | !all(rowSums(w) %in% c(0,1))) stop("W must be a square, row-standardized numeric matrix.")
     K <- nrow(w)
     if (missing(mu)) {
         mu <- rep(0, K)
