@@ -40,7 +40,7 @@ shape2mat(
 A spatial connectivity matrix
 }
 \description{
-A wrapper function for a string of \code{spdep} (and other) functions required to convert spatail objects to spatial or spatio-temporal connectivity matrices.
+A wrapper function for a string of \link{spdep} (and other) functions required to convert spatail objects to spatial or spatio-temporal connectivity matrices.
 }
 \details{
 Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matricies (Ch. 4) and spatio-temporal connectivity matricies (Ch. 15).
@@ -60,5 +60,5 @@ Cst <- shape2mat(ohio, t = 5)
 
 }
 \seealso{
-\code{\link{spdep}}
+\link[geostan]{edges}
 }

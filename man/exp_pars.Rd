@@ -28,3 +28,6 @@ used to set the hyper parameter \code{p0}, controlling the hyper-prior scale par
 Following Chun et al. (2016), the expected number of eigenvectors required to remove residual spatial autocorrelation from a model
  is an increasing function of the degree of spatial autocorrelation in the outcome variable and the number of links in the connectivity matrix.
 }
+\seealso{
+\link[geostan]{stan_esf}
+}

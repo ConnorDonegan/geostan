@@ -7,7 +7,7 @@
 moran_plot(
   y,
   w,
-  xlab = "y",
+  xlab = "y (centered)",
   ylab = "Spatial Lag",
   pch = 20,
   col = "darkred",
@@ -43,6 +43,8 @@ Plots a set of values against their spatially lagged values and gives the Moran 
 }
 \details{
 For details on the symbol parameters see the documentation for \link[ggplot2]{geom_point}.
+
+If any observations with no neighbors are found (i.e. \code{any(rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
 }
 \examples{
 library(sf)
@@ -51,4 +53,7 @@ y <- ohio$unemployment
 w <- shape2mat(ohio, "W")
 moran_plot(y, w)
 
+}
+\seealso{
+\link[geostan]{mc} \link[geostan]{lisa} \link[geostan]{aple}
 }

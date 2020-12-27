@@ -19,6 +19,9 @@ The Moran coefficient, a numeric value.
 \description{
 The Moran coefficient, a measure of spatial autocorrelation (also known as Global Moran's I)
 }
+\details{
+If any observations with no neighbors are found (i.e. \code{any(rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
+}
 \examples{
 library(sf)
 data(ohio)
@@ -27,4 +30,7 @@ x <- ohio$unemployment
 mc(x, w)
 
 
+}
+\seealso{
+\link[geostan]{moran_plot} \link[geostan]{lisa} \link[geostan]{aple}
 }

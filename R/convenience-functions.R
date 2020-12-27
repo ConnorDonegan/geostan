@@ -9,7 +9,8 @@
 #' @source
 #'
 #' Li, Honfei and Calder, Catherine A. and Cressie, Noel (2007). Beyond Moran's I: testing for spatial dependence based on the spatial autoregressive model. Geographical Analysis: 39(4): 357-375.
-#' 
+#'
+#' @seealso \link[geostan]{mc} \link[geostan]{moran_plot} \link[geostan]{lisa} \link[geostan]{sim_sar}
 #' @examples
 #' library(sf)
 #' data(ohio)
@@ -46,6 +47,8 @@ aple <- function(x, w, digits = 3) {
 #'
 #' @details Calls \code{MASS::mvrnorm} internally to draw from the multivariate normal distribution. The covariance matrix is specified following the simultaneous autoregressive (SAR) model. 
 #'
+#' @seealso \link[geostan]{aple} 
+#' 
 #' @examples
 #' 
 #' data(ohio)
@@ -82,6 +85,10 @@ sim_sar <- function(n = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' @param digits Number of digits to round results to; defaults to \code{digits = 3}.
 #' @return The Moran coefficient, a numeric value.
 #'
+#' @details If any observations with no neighbors are found (i.e. \code{any(rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
+#'
+#' @seealso \link[geostan]{moran_plot} \link[geostan]{lisa} \link[geostan]{aple}
+#' 
 #' @examples
 #' library(sf)
 #' data(ohio)
@@ -91,7 +98,13 @@ sim_sar <- function(n = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #'
 #'
 mc <- function(x, w, digits = 3) {
-  if(missing(x) | missing(w)) stop("Must provide data x (length n vector) and n x n spatial weights matrix (w).")
+    if(missing(x) | missing(w)) stop("Must provide data x (length n vector) and n x n spatial weights matrix (w).")    
+    if (any(rowSums(w) == 0)) {
+        zero.idx <- which(rowSums(w) == 0)
+        message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data.")
+        x <- x[-zero.idx]
+        w <- w[-zero.idx, -zero.idx]
+    }
     xbar <- mean(x)
     z <- x - xbar
     ztilde <- as.numeric(w %*% z)
@@ -101,6 +114,73 @@ mc <- function(x, w, digits = 3) {
     return(round(mc, digits = digits))
 }
 
+#' Moran plot
+#'
+#' @description Plots a set of values against their spatially lagged values and gives the Moran coefficient as a measure of spatial autocorrelation. 
+#' @export
+#' @import ggplot2
+#' @param y A numeric vector of length n.
+#' @param w An n x n spatial connectivity matrix.
+#' @param xlab Label for the x-axis. 
+#' @param ylab Label for the y-axis.
+#' @param pch Symbol type.
+#' @param col Symbol color. 
+#' @param size Symbol size.
+#' @param alpha Symbol transparency.
+#' @param lwd Width of the regression line. 
+#' @details For details on the symbol parameters see the documentation for \link[ggplot2]{geom_point}.
+#'
+#' If any observations with no neighbors are found (i.e. \code{any(rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
+#' 
+#' @return Returns a \code{gg} plot, a scatter plot with \code{y} on the x-axis and its spatially lagged values on the y-axis (i.e. a Moran plot).
+#'
+#' @seealso \link[geostan]{mc} \link[geostan]{lisa} \link[geostan]{aple}
+#' 
+#' @examples
+#' library(sf)
+#' data(ohio)
+#' y <- ohio$unemployment
+#' w <- shape2mat(ohio, "W")
+#' moran_plot(y, w)
+#'
+moran_plot <- function(y, w, xlab = "y (centered)", ylab = "Spatial Lag", pch = 20, col = "darkred", size = 2, alpha = 1, lwd = 0.5) {
+    if (!(inherits(y, "numeric") | inherits(y, "integer"))) stop("y must be a numeric or integer vector")
+    sqr <- all( dim(w) == length(y) )
+    if (!inherits(w, "matrix") | !sqr) stop("w must be an n x n matrix where n = length(y)")
+    if (any(rowSums(w) == 0)) {
+        zero.idx <- which(rowSums(w) == 0)
+        message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data.")
+        y <- y[-zero.idx]
+        w <- w[-zero.idx, -zero.idx]
+    }    
+    y <- y - mean(y)
+    ylag <- as.numeric(w %*% y)
+    sub <- paste0("MC = ", round(mc(y, w),3))
+    ggplot(data.frame(y = y,
+                      ylag = ylag)) +
+    geom_hline(yintercept = mean(ylag),
+               lty = 3) +
+    geom_vline(xintercept = mean(y),
+               lty = 3) +
+    geom_point(
+        pch = 20,
+        colour = col,
+        size = size,
+        alpha = alpha,
+        aes(x = y,
+            y = ylag)
+    ) +
+        geom_smooth(aes(x = y,
+                        y = ylag),
+                method = "lm",
+                lwd = lwd,
+                col = "black",
+                se = FALSE) +
+    labs(x = xlab,
+         y = ylab,
+         subtitle = sub) +
+    theme_classic() 
+}
 
 #' Local Moran's I
 #'
@@ -116,12 +196,19 @@ mc <- function(x, w, digits = 3) {
 #' An above-average value (i.e. positive z-value) with positive mean spatial lag is of type "High-High"; a low value surrounded by high values is of type "Low-High", and so on.
 #' 
 #' @return If \code{type = FALSE} a numeric vector of lisa values for exploratory analysis of local spatial autocorrelation. If \code{type = TRUE}, a \code{data.frame} with columns \code{zi} (the lisa value) and \code{type}.
+#'
+#' @seealso \link[geostan]{moran_plot} \link[geostan]{mc} \link[geostan]{aple}
 #' 
 lisa <- function(x, w, type = FALSE) {
+    if (any(rowSums(w) == 0)) {
+        zero.idx <- which(rowSums(w) == 0)
+        message(length(zero.idx), " observations with no neighbors found. They will be converted to NA.")
+    }
     w <- w / rowSums(w)
     z <- scale(x)
     lag <- as.numeric(w %*% z)
-    zi <- z * lag
+    zi <- as.numeric(z * lag)
+    zi[zero.idx] <- NA
     if (!type) return (zi)
     type <- ifelse(z > 0 & lag > 0, "HH",
          ifelse(z < 0 & lag > 0, "LH",
@@ -141,9 +228,11 @@ lisa <- function(x, w, type = FALSE) {
 #' @param w An optional spatial connectivity matrix; if not provided, then a row-standardized adjacency matrix will be created using \code{shape2mat(shape, "W")}.
 #' @param plot If \code{FALSE}, return a list of \code{gg} plots.
 #'
-#' @export
 #' @return A grid of spatial diagnostic plots including a Moran plot plus a map and histogram of \code{y}. If a fitted \code{geostan} model is provided, model residuals are plotted and mapped (i.e. \code{y = resid(fit)$mean}).
+#'
+#' @seealso \link[geostan]{me_diag} \link[geostan]{mc} \link[geostan]{moran_plot} \link[geostan]{aple}
 #' 
+#' @export
 #' @importFrom gridExtra grid.arrange
 #' @import ggplot2
 sp_diag <- function(y,
@@ -198,9 +287,10 @@ sp_diag <- function(y,
 #' @param plot If \code{FALSE}, return a \code{data.frame} with the raw data values and posterior summary of the modeled variable.
 #' @param size Size of points and lines, passed to \code{geom_pointrange}.
 #' 
-#' @export
 #' @return A grid of spatial diagnostic plots for measurement error (i.e. data) models comparing the raw observations to the posterior distribution of the true values (given the specified observations, standard errors, and model). The Moran scatter plot and map depict the difference between the posterior means and the raw observations (i.e. shrinkage). 
-#' 
+#'
+#' @seealso \link[geostan]{sp_diag} \link[geostan]{moran_plot} \link[geostan]{mc} \link[geostan]{aple}
+#' @export
 #' @importFrom gridExtra grid.arrange
 #' @import ggplot2
 me_diag <- function(fit,
@@ -273,63 +363,6 @@ me_diag <- function(fit,
     } else return(df)
 }
 
-
-#' Moran plot
-#'
-#' @description Plots a set of values against their spatially lagged values and gives the Moran coefficient as a measure of spatial autocorrelation. 
-#' @export
-#' @import ggplot2
-#' @param y A numeric vector of length n.
-#' @param w An n x n spatial connectivity matrix.
-#' @param xlab Label for the x-axis. 
-#' @param ylab Label for the y-axis.
-#' @param pch Symbol type.
-#' @param col Symbol color. 
-#' @param size Symbol size.
-#' @param alpha Symbol transparency.
-#' @param lwd Width of the regression line. 
-#' @details For details on the symbol parameters see the documentation for \link[ggplot2]{geom_point}. 
-#' @return Returns a \code{gg} plot, a scatter plot with \code{y} on the x-axis and its spatially lagged values on the y-axis (i.e. a Moran plot).
-#' 
-#' @examples
-#' library(sf)
-#' data(ohio)
-#' y <- ohio$unemployment
-#' w <- shape2mat(ohio, "W")
-#' moran_plot(y, w)
-#'
-moran_plot <- function(y, w, xlab = "y", ylab = "Spatial Lag", pch = 20, col = "darkred", size = 2, alpha = 1, lwd = 0.5) {
-    if (!(inherits(y, "numeric") | inherits(y, "integer"))) stop("y must be a numeric or integer vector")
-    sqr <- all( dim(w) == length(y) )
-    if (!inherits(w, "matrix") | !sqr) stop("w must be an n x n matrix where n = length(y)")
-    ylag <- as.numeric(w %*% y)
-    sub <- paste0("MC = ", round(mc(y, w),3))
-    ggplot(data.frame(y = y,
-                      ylag = ylag)) +
-    geom_hline(yintercept = mean(ylag),
-               lty = 3) +
-    geom_vline(xintercept = mean(y),
-               lty = 3) +
-    geom_point(
-        pch = 20,
-        colour = col,
-        size = size,
-        alpha = alpha,
-        aes(x = y,
-            y = ylag)
-    ) +
-        geom_smooth(aes(x = y,
-                        y = ylag),
-                method = "lm",
-                lwd = lwd,
-                col = "black",
-                se = FALSE) +
-    labs(x = xlab,
-         y = ylab,
-         subtitle = sub) +
-    theme_classic() 
-    }
-
 #' Extract eigenfunctions of a connectivity matrix for spatial filtering
 #'
 #' @export
@@ -345,6 +378,7 @@ moran_plot <- function(y, w, xlab = "y", ylab = "Spatial Lag", pch = 20, col = "
 #'
 #' @return A \code{data.frame} of eigenvectors for spatial filtering. If \code{values=TRUE} then a named list is returned with elements \code{eigenvectors} and \code{eigenvalues}.
 #'
+#' @seealso \link[geostan]{stan_esf} \link[geostan]{mc}
 #' @examples
 #' data(ohio)
 #' C <- shape2mat(ohio, style = "B")
@@ -377,16 +411,19 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #'
 #' @export
 #' @import spdep
-#' @description A wrapper function for a string of \code{spdep} (and other) functions required to convert spatail objects to spatial or spatio-temporal connectivity matrices.
+#' @description A wrapper function for a string of \link{spdep} (and other) functions required to convert spatail objects to spatial or spatio-temporal connectivity matrices.
 #' @param shape An object of class \code{sf}, \code{SpatialPolygons} or \code{SpatialPolygonsDataFrame}.
 #' @param style What kind of coding scheme should be used to create the spatial connectivity matrix? Defaults to "B" for binary; use "W" for row-standardized weights; "C" for globally standardized and "S" for the Tiefelsdorf et al.'s (1999) variance-stabilizing scheme. This is passed internally to \link[spdep]{nb2mat}.
 #' @param t Number of time periods. Currently only the binary coding scheme is available for space-time connectivity matrices.
 #' @param st.type For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and "contemp" (the default) for contemporaneous specification.
 #' @param zero.policy Are regions with zero neighbors allowed? Default \code{zero.policy = TRUE} (allowing regions to have zero neighbors). Also passed to \link[spdep]{nb2mat}.
 #' @param queen Passed to \link[spdep]{poly2nb} to set the contiguity condition. Defaults to \code{TRUE} so that a single shared boundary point between polygons is sufficient for them to be considered neighbors.
-#' @param snap Passed to \link[spdep]{poly2nb}; "boundary points less than ‘snap’ distance apart are considered to indicate contiguity." 
+#' @param snap Passed to \link[spdep]{poly2nb}; "boundary points less than ‘snap’ distance apart are considered to indicate contiguity."
+#' 
 #' @return A spatial connectivity matrix
-#' @seealso \code{\link{spdep}}
+#' 
+#' @seealso \link[geostan]{edges}
+#' 
 #' @details
 #'
 #' Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matricies (Ch. 4) and spatio-temporal connectivity matricies (Ch. 15).
@@ -460,7 +497,7 @@ student_t <- function() {
 #' @param pointwise Logical, should a vector of values for each observation be returned? Default is \code{FALSE}.
 #' @param digits Defaults to 2. Round results to this many digits.
 #' @return A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density (\code{Lpd}). If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
-#' @seealso \code{\link{loo}}
+#' @seealso \link{loo}
 #' 
 waic <- function(fit, pointwise = FALSE, digits = 2) {
   ll <- as.matrix(fit, pars = "log_lik")
@@ -502,10 +539,13 @@ expected_mc <- function(X, C) {
 #' @param data The data used to fit the model; must be coercible to a dataframe for use in \code{model.matrix}.
 #' @param C An N x N binary connectivity matrix.
 #' @return Returns a numeric value representing the expected number of eigenvectors required to estimate a spatial filter (i.e. number of non-zero or 'large' coefficients).
+#' 
 #' @details Following Chun et al. (2016), the expected number of eigenvectors required to remove residual spatial autocorrelation from a model
 #'  is an increasing function of the degree of spatial autocorrelation in the outcome variable and the number of links in the connectivity matrix.
 #'
-#'@source
+#' @seealso \link[geostan]{stan_esf}
+#' 
+#' @source
 #'
 #' Chun, Yongwan, Griffith, Daniel A., Lee, Mongyeon, and Sinha, Parmanand (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems 18(1): 67-85.
 #' 
@@ -537,12 +577,14 @@ exp_pars <- function(formula, data, C) {
 
 #' Edge list
 #'
-#' @description Creates a list of unique connected nodes following the graph representation of a spatial connectivity matrix.
+#' @description Creates a list of connected nodes following the graph representation of a spatial connectivity matrix.
 #' @export
 #' @param w A connectivity matrix where connection between two nodes is indicated by non-zero entries.
 #' @return Returns a \code{data.frame} with two columns representing connected pairs of nodes; only unique pairs of nodes are included.
 #'
 #' @details This is used internally for  \link[geostan]{stan_icar} and \link[geostan]{stan_bym2}; it is also needed to create the scaling factor for \code{stan_bym2}.
+#'
+#' @seealso \link[geostan]{shape2mat}
 #' @examples
 #' 
 #' data(sentencing)
@@ -574,7 +616,7 @@ edges <- function(w) {
 #' @details The delta method returns \code{x^(-1) * se}. The monte carlo method is detailed in the examples section.
 #'
 #' @export
-#' @importFrom rtruncnorm rtruncnorm
+#' @importFrom truncnorm rtruncnorm
 #' @examples
 #' 
 #' data(ohio)
@@ -601,7 +643,7 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, 
                   bounds[1] < bounds[2])
         se.log <- NULL
         for (i in seq_along(x)) {            
-            z <- rtruncnorm(n = nsim, mean = x[i], sd = se[i],
+            z <- truncnorm::rtruncnorm(n = nsim, mean = x[i], sd = se[i],
                             a = bounds[1], b = bounds[2])            
             l.z <- log(z)
             se.log <- c(se.log, sd(l.z))            

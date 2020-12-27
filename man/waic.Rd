@@ -20,5 +20,5 @@ A vector of length 3 with \code{WAIC}, a rough measure of the effective number o
 Widely Application Information Criteria (WAIC) for model evalution
 }
 \seealso{
-\code{\link{loo}}
+\link{loo}
 }

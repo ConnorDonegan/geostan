@@ -34,3 +34,6 @@ C <- shape2mat(ohio, style = "B")
 EV <- make_EV(C)
 
 }
+\seealso{
+\link[geostan]{stan_esf} \link[geostan]{mc}
+}

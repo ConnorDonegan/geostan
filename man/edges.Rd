@@ -13,7 +13,7 @@ edges(w)
 Returns a \code{data.frame} with two columns representing connected pairs of nodes; only unique pairs of nodes are included.
 }
 \description{
-Creates a list of unique connected nodes following the graph representation of a spatial connectivity matrix.
+Creates a list of connected nodes following the graph representation of a spatial connectivity matrix.
 }
 \details{
 This is used internally for  \link[geostan]{stan_icar} and \link[geostan]{stan_bym2}; it is also needed to create the scaling factor for \code{stan_bym2}.
@@ -24,4 +24,7 @@ data(sentencing)
 C <- shape2mat(sentencing)
 nbs <- edges(C)
 
+}
+\seealso{
+\link[geostan]{shape2mat}
 }
