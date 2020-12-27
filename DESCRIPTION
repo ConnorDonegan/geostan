@@ -22,6 +22,7 @@ Imports:
     graphics,
     stats,
     MASS,
+    truncnorm,
     gridExtra,
     Rcpp (>= 0.12.0),
     rstan (>= 2.18.1),

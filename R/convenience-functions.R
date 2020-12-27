@@ -239,7 +239,6 @@ sp_diag <- function(y,
                    shape,
                    name = "y",
                    w = shape2mat(shape, "W"),
-                   threshold = Inf,
                    plot = TRUE
                    ) {
     if (inherits(y, "geostan_fit")) {
@@ -611,7 +610,7 @@ edges <- function(w) {
 #' @param x Estimated value of the variable \code{x}
 #' @param se Standard error of \code{x}
 #' @param method \code{"delta"} method uses a Taylor series approximation; the default method \code{"mc"} uses a monte carlo method.
-#' @param draws Number of draws to take if \code{method = "mc"}.
+#' @param nsim Number of draws to take if \code{method = "mc"}.
 #' @param bounds Lower and upper bounds for the variable, used in the monte carlo method. Must be a length-two numeric vector with lower bound greater than or equal to zero (i.e. \code{c(lower, upper)} as in default \code{bounds = c(0, Inf)}.
 #' @details The delta method returns \code{x^(-1) * se}. The monte carlo method is detailed in the examples section.
 #'
@@ -644,7 +643,7 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, 
         se.log <- NULL
         for (i in seq_along(x)) {            
             z <- truncnorm::rtruncnorm(n = nsim, mean = x[i], sd = se[i],
-                            a = bounds[1], b = bounds[2])            
+                                       a = bounds[1], b = bounds[2])            
             l.z <- log(z)
             se.log <- c(se.log, sd(l.z))            
         }
@@ -653,4 +652,3 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, 
     if (method == "delta") return (x^(-1) * se)
 }
 
-    
