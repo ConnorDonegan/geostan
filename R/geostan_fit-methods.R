@@ -68,7 +68,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
   x.pars <- c("beta", "nu", "sigma")
   if (any(x.pars %in% names(x$priors))) pars <- c(pars, names(x$priors)[grep(paste0(x.pars, collapse="|"), names(x$priors))])   
   if(!any(is.na(x$re))) {
-    cat("Random effects: ")
+    cat("Partial pooling (varying intercept): ")
     print(x$re$formula)
     pars <- c(pars, "alpha_tau")
   }
@@ -80,6 +80,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
   } else cat("none")
   cat("\nSpatial method (outcome): ", as.character(x$spatial$method), "\n")
   if (x$spatial$method == "CAR") pars <- c(pars, "phi_alpha", "phi_tau")
+  if (x$spatial$method == "BYM2") pars <- c(pars, "rho") 
   cat("Likelihood function: ", x$family$family, "\n")
   cat("Link function: ", x$family$link, "\n")
   cat("Residual Moran Coefficient: ", x$diagnostic[grep("Residual_MC", attributes(x$diagnostic)$names)], "\n")
@@ -102,6 +103,7 @@ plot.geostan_fit <- function(x, pars, plotfun = "dens", ...) {
       x.pars <- c("beta", "nu", "sigma")
       if (any(x.pars %in% names(x$priors))) pars <- c(pars, names(x$priors)[grep(paste0(x.pars, collapse="|"), names(x$priors))])
       if (x$spatial$method == "CAR") pars <- c(pars, "phi_alpha", "phi_tau")
+      if (x$spatial$method == "BYM2") pars <- c(pars, "rho[1]")
   }
   rstan::plot(x$stanfit, pars = pars, plotfun = plotfun, ...)
 }

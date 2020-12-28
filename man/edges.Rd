@@ -16,7 +16,7 @@ Returns a \code{data.frame} with two columns representing connected pairs of nod
 Creates a list of connected nodes following the graph representation of a spatial connectivity matrix.
 }
 \details{
-This is used internally for  \link[geostan]{stan_icar} and \link[geostan]{stan_bym2}; it is also needed to create the scaling factor for \code{stan_bym2}.
+This is used internally for  \link[geostan]{stan_icar} and it is also helpful for creating the scaling factor for BYM2 models fit with \code{stan_icar}.
 }
 \examples{
 

@@ -223,8 +223,8 @@ clean_results <- function(samples, pars, is_student, has_re, C, Wx, x, x_me_unbo
             names(samples)[grep(paste0("x_true_bounded\\[", i, ","), names(samples))] <- x.id
         }
     }
-    
     if ("sigma" %in% pars) samples <- par_alias(samples, "^sigma\\[1\\]", "sigma")
+    if ("rho" %in% pars) samples <- par_alias(samples, "^rho\\[1\\]", "rho")    
     if (is_student) samples <- par_alias(samples, "^nu\\[1\\]", "nu")
     if (has_re) samples <- par_alias(samples, "^alpha_tau\\[1\\]", "alpha_tau")
     main_pars <- pars[which(pars %in% c("intercept", "alpha_tau", "gamma", "beta", "sigma", "nu", "rho"))]

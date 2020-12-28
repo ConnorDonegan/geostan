@@ -22,6 +22,45 @@ test_that("Poisson offset model works, icar", {
     expect_geostan(fit)    
 })
 
+
+test_that("Poisson offset model works, bym", {
+    data(sentencing)
+    n <- nrow(sentencing)
+    C <- shape2mat(sentencing)
+    ME <- list(offset = rep(10, n))
+    SW(
+        fit <- stan_icar(sents ~ offset(expected_sents),
+                    data = sentencing,
+                    ME = ME,
+                    type = "bym",
+                    C = C,
+                    chains = 1,
+                    family = poisson(),
+                    iter = iter,
+                    silent = silent)
+    )
+    expect_geostan(fit)    
+})
+
+test_that("Poisson offset model works, bym2", {
+    data(sentencing)
+    n <- nrow(sentencing)
+    C <- shape2mat(sentencing)
+    ME <- list(offset = rep(10, n))
+    SW(
+        fit <- stan_icar(sents ~ offset(expected_sents),
+                    data = sentencing,
+                    ME = ME,
+                    type = "bym2",
+                    C = C,
+                    chains = 1,
+                    family = poisson(),
+                    iter = iter,
+                    silent = silent)
+    )
+    expect_geostan(fit)    
+})
+
 test_that("IAR accepts covariate ME, multiple bounded x vars", {
     data(ohio)
     C <- shape2mat(ohio)        

@@ -7,6 +7,8 @@
 Besag, J. (1974). Spatial interaction and the statistical analysis of lattice systems. Journal of the Royal Statistical Society: Series B (Methodological), 36(2), 192-225.
 
 Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A., & DiMaggio, C. (2019). Bayesian hierarchical spatial models: Implementing the Besag York Mollié model in stan. Spatial and spatio-temporal epidemiology, 31, 100301.
+
+Riebler, A., Sorbye, S. H., Simpson, D., & Rue, H. (2016). An intuitive Bayesian spatial model for disease mapping that accounts for scaling. Statistical Methods in Medical Research, 25(4), 1145-1165.
 }
 \usage{
 stan_icar(
@@ -14,6 +16,8 @@ stan_icar(
   slx,
   re,
   data,
+  type = c("iar", "bym", "bym2"),
+  scale_factor = NULL,
   ME = NULL,
   C,
   EV,
@@ -41,15 +45,19 @@ stan_icar(
 These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.}
 
-\item{re}{If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula synatax, as in \code{~ ID}. If this is specified at the observational unit level then it becomes the original Besag-York-Mollie model. In that case this random effects term and the ICAR component are not separately identifiable. The resulting random effects parameter returned is named \code{alpha_re}.}
+\item{re}{If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula synatax, as in \code{~ ID}.  The parameter vector will be named \code{alpha_re}. If this is specified at the observational unit level then it becomes the original Besag-York-Mollie (BYM) model. However, the BYM model is best obtained by setting \code{type = "bym"} instead of manually adding \code{alpha_re}.}
 
 \item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.}
 
-\item{ME}{To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the `true' covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} (by name) may include:
+\item{type}{Defaults to "iar" (partial pooling of neighboring observations through parameter \code{phi}); specify "bym" to add a second parameter vector \code{theta} to perform partial pooling across all observations; specify "bym2" for the innovation introduced by Riebler et al. (2016).}
+
+\item{scale_factor}{For the BYM2 model, optional. If missing, this will be set to a vector of ones. Must be an n-length vector.}
+
+\item{ME}{To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the inferred `true' covariate is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} (by name) may include:
 \describe{
 
 \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
-\item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
+\item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded.}
 \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of the bounded variables. Defaults to \code{bounds = c(0, 100)}.}
 \item{spatial}{Logical value indicating if the models for covariates should include a spatially varying mean (using an eigenvector spatial filter). Defaults to \code{spatial = FALSE}. If \code{spatial = TRUE} and you do not provide both \code{ME$prior_rhs} and \code{EV} then you must provide a connectivity matrix \code{C}.}
 \item{prior_rhs}{Optional prior parameters for the regularized horseshoe (RHS) prior used for the ESF data model; only used if \code{ME$spatial = TRUE}. The RHS prior is used for the eigenvector spatial filter (ESF), as in \link[geostan]{stan_esf}. Must be a named list containing vectors \code{slab_df}, \code{slab_scale}, \code{scale_global}, and \code{varname}. The character vector \code{varname} indicates the order of the other parameters (by name).}
@@ -106,19 +114,22 @@ An object of class class \code{geostan_fit} (a list) containing:
  \code{Data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 \item{priors}{Prior specifications.}
 \item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
-\item{spatial}{A data frame with the name of the spatial component parameter ("phi") and method ("ICAR")}
+\item{spatial}{A data frame with the name of the spatial component parameter ("ssre") and method (\code{toupper(type)})}
 }
 }
 \description{
-Fit a regression model with an intrinsic conditional auto-regressive (ICAR) spatial component. Only fully connected graphs are currenlty supported (i.e. all polygons must have at least one neighbor and there can be no disconnected islands or regions).
+Fit regression models using intrinsic conditional auto-regressive (ICAR) spatial parameter model. Options include the BYM model, the BYM2 model, and a solo IAR term.
 }
 \details{
-The Stan code for the ICAR component of the model follows Morris et al. (2019).
-   
- The function returns the ICAR component in the parameter \code{phi}.
- The entire posterior distribution of \code{phi}
- can be obtained with the following code: \code{post_phi <- spatial(fit, summary = FALSE)} where \code{fit} is
- the \code{geostan_fit} object returned by a call to \code{stan_icar}.
+The Stan code for the ICAR component of the model and the BYM2 option follows Morris et al. (2019). The ICAR component is returned in the parameter named \code{ssre} (spatially structured random effect).
+
+For all models, the ICAR prior is placed on the parameter vector \code{phi}; it is scaled by the scalar parameter \code{spatial_scale}.
+
+For \code{type = "iar"}, the spatial structure is simply \code{ssre[i] = phi[i] * spatial_scale}.
+
+For \code{type = "bym"}, the spatial structure \code{ssre} is the same as \code{"iar"} but an additional parameter vector \code{theta} is added to perform partial pooling across all observations (a `spatially unstructured random effect' \code{sure}), and \code{sure[i] = theta[i] * theta_scale}. The sum \code{phi * spatial_scale + theta * theta_scale = ssre + sure} is often referred to as the ``convolved random effect.''
+
+For \code{type = "bym2"}, \code{ssre} and \code{sure} share a single scale parameter (\code{spatial_scale}) but they are combined using a mixing parameter \code{rho}. The ``convolved random effect'' is then \code{[sqrt(rho / scale_factor) * phi + sqrt((1 - rho)) * theta] * spatial_scale}. The terms are factored out to obtain \code{sure} and \code{ssre}.
 }
 \examples{
 library(ggplot2)
@@ -130,50 +141,33 @@ data(sentencing)
 # using a small number of iterations and a single chain only for compilation speed
 C <- shape2mat(sentencing)
 log_e <- log(sentencing$expected_sents)
-fit.icar <- stan_icar(sents ~ offset(log_e),
-                     family = poisson(),
-                     data = sentencing,
-                     C = C,
-                     cores = 1,  # cores = 4,
-                     chains = 1, # chains = 4,
-                    iter = 200)  # iter = 2e3
 
-# add exchangeable random effects (for a BYM model). See stan_bym2 for a better model.
 fit.bym <- stan_icar(sents ~ offset(log_e),
                      re = ~ name,
                      family = poisson(),
                      data = sentencing,
+                     type = "bym",
                      C = C,
                      cores = 1,  # cores = 4,   
                      chains = 1, # chains = 4,
                      iter = 200) # iter = 2e3
 
-# view WAIC 
-waic(fit.icar)
-waic(fit.bym)
-
 # diagnostics plot: Rhat values should all by very near 1
 library(rstan)
-rstan::stan_rhat(fit.icar$stanfit)
+rstan::stan_rhat(fit.bym$stanfit)
  # see effective sample size for all parameters and generated quantities
  # (including residuals, predicted values, etc.)
-rstan::stan_ess(fit.icar$stanfit)
+rstan::stan_ess(fit.bym$stanfit)
 # or for a particular parameter
-rstan::stan_ess(fit.icar$stanfit, "phi")
+rstan::stan_ess(fit.bym$stanfit, "ssre")
 library(bayesplot)
-yrep <- posterior_predict(fit.icar, samples = 100)
+yrep <- posterior_predict(fit.bym, samples = 100)
 y <- sentencing$sents
 ppc_dens_overlay(y, yrep)
-# map standardized incidence (sentencing) ratios
-E <- sentencing$expected_sents
-sentencing@data$ssr <- fitted(fit.bym)$mean / E
-ggplot(data=st_as_sf(sentencing),
-      aes(fill = ssr)) +
- geom_sf() +
- scale_fill_gradient2(midpoint = 1) +
- theme_bw() +
- ggtitle("Standardized state prison sentencing ratios, 1905-1910")
 
+}
+\seealso{
+\link[geostan]{prep_icar_data} \link[geostan]{stan_car} \link[geostan]{stan_esf}
 }
 \author{
 Connor Donegan, \email{Connor.Donegan@UTDallas.edu}

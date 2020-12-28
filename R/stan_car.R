@@ -25,7 +25,7 @@
 #' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. 
 #' @param prior_tau Set hyperparameters for the scale parameter of varying intercepts \code{re}. The varying intercepts are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.
-#' @param prior_phi_scale Hyperprior parameters for the precision (inverse scale) of the CAR component \code{phi}, a numeric vector of length two. The precisions parameter for \code{phi} is \code{phi_tau} which is assigned a Gamma prior distribution; defaults to \code{prior_phi_scale = c(2, 2)}.
+#' @param prior_phi_precision Hyperprior parameters for the precision (inverse scale) of the CAR component \code{phi}, a numeric vector of length two. The precision parameter for \code{phi} is \code{phi_tau} which is assigned a Gamma prior distribution; defaults to \code{prior_phi_precision = c(2, 2)}.
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.
 #' @param scalex Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param prior_only Draw samples from the prior distributions of parameters only; logical value, defaults to \code{FALSE}.
@@ -37,12 +37,10 @@
 #' @param silent If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' @details
-#'  The Stan code for the CAR component of the model is from Max Joseph (see Sources below).
+#'  The Stan code for the CAR component of the model is from Max Joseph (see sources below).
 #'    
-#'  The function returns the CAR component in the parameter \code{phi}.
-#'  The entire posterior distribution of \code{phi}
-#'  can be obtained with the following code: \code{post_phi <- spatial(fit, summary = FALSE)} where \code{fit} is
-#'  the \code{geostan_fit} object returned by a call to \code{stan_car}. 
+#'  The CAR model is the prior distribution for the parameter vector \code{phi} and has two associated parameters: \code{phi_alpha} which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and \code{phi_tau} which is a precision (inverse scale) parameter.
+#' 
 #'  
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
@@ -88,11 +86,11 @@
 #'                      cores = 1,  # cores = 4,
 #'                      chains = 1, # chains = 4,
 #'                     iter = 200)  # iter = 2e3
-#'
+#' 
 #'
 stan_car <- function(formula, slx, re, data, ME = NULL, C, EV,
                      family = poisson(),
-                     prior = NULL, prior_intercept = NULL, prior_tau = NULL, prior_phi_scale = c(2, 2),
+                     prior = NULL, prior_intercept = NULL, prior_tau = NULL, prior_phi_precision = c(2, 2),
                      centerx = FALSE, scalex = FALSE, prior_only = FALSE,
                      chains = 4, iter = 2e3, refresh = 500, pars = NULL,
                      control = list(adapt_delta = .9, max_treedepth = 15),
@@ -177,7 +175,7 @@ stan_car <- function(formula, slx, re, data, ME = NULL, C, EV,
   priors <- make_priors(user_priors = user_priors, y = y, x = x, xcentered = centerx,
                         link = family$link, offset = offset)
   ## CAR STUFF -------------
-  priors$phi_scale_prior <- prior_phi_scale
+  priors$phi_scale_prior <- prior_phi_precision
   ## MIXED STUFF -------------  
   standata <- list(
   ## glm data -------------

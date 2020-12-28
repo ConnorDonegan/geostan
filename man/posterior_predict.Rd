@@ -32,7 +32,7 @@ posterior_predict(
 
 \item{re_form}{If \code{re_form = NA} any random effects terms will be ignored when making predictions. If default \code{re_form = NULL} is set, then the results will include random effects terms. Those are the only options; this syntax is used to maintain some consistency with other R packages which have additional options.}
 
-\item{spatial}{Include the spatial component in the model predictions? Defaults to \code{TRUE} and will be ignored if the model does not have a spatial comonent (i.e. \code{\link[geostan]{stan_glm}}). For models fit by \code{\link[geostan]{stan_esf}}, \code{\link[geostan]{stan_icar}}, and \code{\link[geostan]{stan_bym2}} this option requires that \code{newdata} have the same number of observations as the data that the model was fit to.}
+\item{spatial}{Include the spatial component in the model predictions? Defaults to \code{TRUE} and will be ignored if the model does not have a spatial comonent (i.e. \code{\link[geostan]{stan_glm}}). For models fit by \code{\link[geostan]{stan_esf}}, \code{\link[geostan]{stan_icar}}, and \code{\link[geostan]{stan_car}} this option requires that \code{newdata} have the same number of observations as the data that the model was fit to.}
 
 \item{summary}{Should the posterior predictions be summarized using quantile intervals? It \code{summary = TRUE} the function returns a data frame with the expected value of the posterior distribution (column \code{mu}) and 100*width credible intervals for, respectively, the posterior predictive distribution (columns \code{pred.lwr}, \code{pred.upr}) and mean outcome (columns \code{mu.lwr}, \code{mu.upr}).}
 
