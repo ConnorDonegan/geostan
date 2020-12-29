@@ -47,6 +47,7 @@ For details on the symbol parameters see the documentation for \link[ggplot2]{ge
 If any observations with no neighbors are found (i.e. \code{any(rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
 }
 \examples{
+
 library(sf)
 data(ohio)
 y <- ohio$unemployment

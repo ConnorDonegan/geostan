@@ -271,39 +271,24 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <p>The CAR model is the prior distribution for the parameter vector <code>phi</code> and has two associated parameters: <code>phi_alpha</code> which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and <code>phi_tau</code> which is a precision (inverse scale) parameter.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>
+    <pre class="examples"><div class='input'><span class='co'># \dontrun{</span>
 <span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ggplot2</span>)
 <span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>bayesplot</span>)
 <span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>sf</span>)
 <span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span>(<span class='kw'>mc.cores</span> <span class='kw'>=</span> <span class='kw pkg'>parallel</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span>())
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>sentencing</span>)
 
-<span class='co'># using a small number of iterations and a single chain only for compilation speed</span>
 <span class='no'>C</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span>(<span class='no'>sentencing</span>)
 <span class='no'>log_e</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='no'>sentencing</span>$<span class='no'>expected_sents</span>)
 <span class='no'>fit.car</span> <span class='kw'>&lt;-</span> <span class='fu'>stan_car</span>(<span class='no'>sents</span> ~ <span class='fu'><a href='https://rdrr.io/r/stats/offset.html'>offset</a></span>(<span class='no'>log_e</span>),
-                     <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span>(),
-                     <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>sentencing</span>,
-                     <span class='kw'>C</span> <span class='kw'>=</span> <span class='no'>C</span>,
-                     <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>,  <span class='co'># cores = 4,</span>
-                     <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='co'># chains = 4,</span>
-                    <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>500</span>)  <span class='co'># iter = 2e3</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 1.15103493100263</span></div><div class='output co'>#&gt; 
-#&gt; SAMPLING FOR MODEL 'car' NOW (CHAIN 1).
-#&gt; Chain 1: 
-#&gt; Chain 1: Gradient evaluation took 4.2e-05 seconds
-#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.42 seconds.
-#&gt; Chain 1: Adjust your expectations accordingly!
-#&gt; Chain 1: 
-#&gt; Chain 1: 
-#&gt; Chain 1: Iteration:   1 / 500 [  0%]  (Warmup)
-#&gt; Chain 1: Iteration: 251 / 500 [ 50%]  (Sampling)
-#&gt; Chain 1: Iteration: 500 / 500 [100%]  (Sampling)
-#&gt; Chain 1: 
-#&gt; Chain 1:  Elapsed Time: 0.235785 seconds (Warm-up)
-#&gt; Chain 1:                0.169671 seconds (Sampling)
-#&gt; Chain 1:                0.405456 seconds (Total)
-#&gt; Chain 1: </div><div class='output co'>#&gt; <span class='warning'>Warning: The largest R-hat is 1.09, indicating chains have not mixed.</span>
+                    <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span>(),
+                    <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>sentencing</span>,
+                    <span class='kw'>C</span> <span class='kw'>=</span> <span class='no'>C</span>,
+                    <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>3</span>,
+                    <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>1e3</span>,
+                    <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>0</span>
+)</div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 1.15103493100263</span></div><div class='output co'>#&gt; <span class='warning'>Warning: The largest R-hat is 1.08, indicating chains have not mixed.</span>
 #&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
 #&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#r-hat</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
 #&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
@@ -311,14 +296,15 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 #&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
 #&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#tail-ess</span></div><div class='input'>
 <span class='co'># posterior predictive check: predicted distribution should resemble observed distribution</span>
-<span class='no'>yrep</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span>(<span class='no'>fit.car</span>, <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>100</span>)
+<span class='no'>yrep</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span>(<span class='no'>fit.car</span>, <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>75</span>)
 <span class='no'>y</span> <span class='kw'>&lt;-</span> <span class='no'>sentencing</span>$<span class='no'>sents</span>
 <span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span>(<span class='no'>y</span>, <span class='no'>yrep</span>)</div><div class='img'><img src='stan_car-1.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='no'>sp.trend</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='spatial.html'>spatial</a></span>(<span class='no'>fit.car</span>)$<span class='no'>mean</span>
 <span class='fu'><a href='https://rdrr.io/pkg/sf/man/st_as_sf.html'>st_as_sf</a></span>(<span class='no'>sentencing</span>) <span class='kw'>%&gt;%</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span>() +
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span>(<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span>(<span class='kw'>fill</span> <span class='kw'>=</span> <span class='no'>sp.trend</span>)) +
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span>()</div><div class='img'><img src='stan_car-2.png' alt='' width='700' height='433' /></div><div class='input'>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span>()</div><div class='img'><img src='stan_car-2.png' alt='' width='700' height='433' /></div><div class='input'> # }
+
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

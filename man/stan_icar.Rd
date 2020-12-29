@@ -132,25 +132,25 @@ For \code{type = "bym"}, the spatial structure \code{ssre} is the same as \code{
 For \code{type = "bym2"}, \code{ssre} and \code{sure} share a single scale parameter (\code{spatial_scale}) but they are combined using a mixing parameter \code{rho}. The ``convolved random effect'' is then \code{[sqrt(rho / scale_factor) * phi + sqrt((1 - rho)) * theta] * spatial_scale}. The terms are factored out to obtain \code{sure} and \code{ssre}.
 }
 \examples{
+\dontrun{
 library(ggplot2)
 library(sf)
 library(rstan)
 options(mc.cores = parallel::detectCores())
 data(sentencing)
 
-# using a small number of iterations and a single chain only for compilation speed
 C <- shape2mat(sentencing)
 log_e <- log(sentencing$expected_sents)
-
 fit.bym <- stan_icar(sents ~ offset(log_e),
                      re = ~ name,
                      family = poisson(),
                      data = sentencing,
                      type = "bym",
                      C = C,
-                     cores = 1,  # cores = 4,   
-                     chains = 1, # chains = 4,
-                     iter = 200) # iter = 2e3
+                     cores = 3,
+                     iter = 1e3,
+                     refresh = 0
+ )
 
 # diagnostics plot: Rhat values should all by very near 1
 library(rstan)
@@ -161,9 +161,10 @@ rstan::stan_ess(fit.bym$stanfit)
 # or for a particular parameter
 rstan::stan_ess(fit.bym$stanfit, "ssre")
 library(bayesplot)
-yrep <- posterior_predict(fit.bym, samples = 100)
+yrep <- posterior_predict(fit.bym, samples = 75)
 y <- sentencing$sents
 ppc_dens_overlay(y, yrep)
+}
 
 }
 \seealso{

@@ -288,65 +288,39 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     <div class='dont-index'><p><a href='prep_icar_data.html'>prep_icar_data</a> <a href='stan_car.html'>stan_car</a> <a href='stan_esf.html'>stan_esf</a></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ggplot2</span>)
+    <pre class="examples"><div class='input'><span class='co'># \dontrun{</span>
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ggplot2</span>)
 <span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>sf</span>)
 <span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>rstan</span>)
 <span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span>(<span class='kw'>mc.cores</span> <span class='kw'>=</span> <span class='kw pkg'>parallel</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span>())
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>sentencing</span>)
 
-<span class='co'># using a small number of iterations and a single chain only for compilation speed</span>
 <span class='no'>C</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span>(<span class='no'>sentencing</span>)
 <span class='no'>log_e</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='no'>sentencing</span>$<span class='no'>expected_sents</span>)
-
 <span class='no'>fit.bym</span> <span class='kw'>&lt;-</span> <span class='fu'>stan_icar</span>(<span class='no'>sents</span> ~ <span class='fu'><a href='https://rdrr.io/r/stats/offset.html'>offset</a></span>(<span class='no'>log_e</span>),
                      <span class='kw'>re</span> <span class='kw'>=</span> ~ <span class='no'>name</span>,
                      <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span>(),
                      <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>sentencing</span>,
                      <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"bym"</span>,
                      <span class='kw'>C</span> <span class='kw'>=</span> <span class='no'>C</span>,
-                     <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>,  <span class='co'># cores = 4,   </span>
-                     <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='co'># chains = 4,</span>
-                     <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>200</span>) <span class='co'># iter = 2e3</span></div><div class='output co'>#&gt; <span class='message'></span>
+                     <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>3</span>,
+                     <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>1e3</span>,
+                     <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>0</span>
+ )</div><div class='output co'>#&gt; <span class='message'></span>
 #&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 1.15103493100263</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for alpha_tau</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt; <span class='message'>Degrees of freedom: 20</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 1.15103493100263</span></div><div class='output co'>#&gt; 
-#&gt; SAMPLING FOR MODEL 'icar' NOW (CHAIN 1).
-#&gt; Chain 1: 
-#&gt; Chain 1: Gradient evaluation took 3.2e-05 seconds
-#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.32 seconds.
-#&gt; Chain 1: Adjust your expectations accordingly!
-#&gt; Chain 1: 
-#&gt; Chain 1: 
-#&gt; Chain 1: WARNING: There aren't enough warmup iterations to fit the
-#&gt; Chain 1:          three stages of adaptation as currently configured.
-#&gt; Chain 1:          Reducing each adaptation stage to 15%/75%/10% of
-#&gt; Chain 1:          the given number of warmup iterations:
-#&gt; Chain 1:            init_buffer = 15
-#&gt; Chain 1:            adapt_window = 75
-#&gt; Chain 1:            term_buffer = 10
-#&gt; Chain 1: 
-#&gt; Chain 1: Iteration:   1 / 200 [  0%]  (Warmup)
-#&gt; Chain 1: Iteration: 101 / 200 [ 50%]  (Sampling)
-#&gt; Chain 1: Iteration: 200 / 200 [100%]  (Sampling)
-#&gt; Chain 1: 
-#&gt; Chain 1:  Elapsed Time: 0.895417 seconds (Warm-up)
-#&gt; Chain 1:                0.725367 seconds (Sampling)
-#&gt; Chain 1:                1.62078 seconds (Total)
-#&gt; Chain 1: </div><div class='output co'>#&gt; <span class='warning'>Warning: The largest R-hat is 1.11, indicating chains have not mixed.</span>
+#&gt; <span class='message'>*Setting prior parameters for alpha_tau</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt; <span class='message'>Degrees of freedom: 20</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 1.15103493100263</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
 #&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#r-hat</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#bulk-ess</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#tail-ess</span></div><div class='input'>
+#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#bulk-ess</span></div><div class='input'>
 <span class='co'># diagnostics plot: Rhat values should all by very near 1</span>
 <span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>rstan</span>)
 <span class='kw pkg'>rstan</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span>(<span class='no'>fit.bym</span>$<span class='no'>stanfit</span>)</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='img'><img src='stan_icar-1.png' alt='' width='700' height='433' /></div><div class='input'> <span class='co'># see effective sample size for all parameters and generated quantities</span>
  <span class='co'># (including residuals, predicted values, etc.)</span>
 <span class='kw pkg'>rstan</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_ess</a></span>(<span class='no'>fit.bym</span>$<span class='no'>stanfit</span>)</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='img'><img src='stan_icar-2.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># or for a particular parameter</span>
 <span class='kw pkg'>rstan</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_ess</a></span>(<span class='no'>fit.bym</span>$<span class='no'>stanfit</span>, <span class='st'>"ssre"</span>)</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='img'><img src='stan_icar-3.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>bayesplot</span>)
-<span class='no'>yrep</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span>(<span class='no'>fit.bym</span>, <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>100</span>)
+<span class='no'>yrep</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span>(<span class='no'>fit.bym</span>, <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>75</span>)
 <span class='no'>y</span> <span class='kw'>&lt;-</span> <span class='no'>sentencing</span>$<span class='no'>sents</span>
-<span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span>(<span class='no'>y</span>, <span class='no'>yrep</span>)</div><div class='img'><img src='stan_icar-4.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span>(<span class='no'>y</span>, <span class='no'>yrep</span>)</div><div class='img'><img src='stan_icar-4.png' alt='' width='700' height='433' /></div><div class='input'># }
+
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

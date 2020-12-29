@@ -14,14 +14,18 @@
 #' @return return either a matrix containing all samples for each observation, or a \code{data.frame} containing a summary values for each observation.
 #' @seealso \link[geostan]{stan_esf} \link[rstan]{stan_plot}
 #' @examples 
-#' 
+#' \dontrun{
 #' library(ggplot2)
 #' library(sf)
 #' data(ohio)
 #' fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density),
 #'                data = ohio,
+#'                scalex = TRUE,
 #'                C = shape2mat(ohio),
-#'                chains = 1, iter = 400)
+#'                chains = 3,
+#'                iter = 1e3,
+#'                refresh = 0 # less printing
+#' )
 #'
 #' # print and plot results
 #' print(fit)
@@ -29,6 +33,7 @@
 #'
 #' beta.samples <- as.matrix(fit, pars = "beta")
 #' beta.mean <- apply(beta.samples, 2, mean)
+#' print(beta.mean)
 #' 
 #' # extract residuals and fitted values
 #' res <- residuals(fit)
@@ -40,10 +45,13 @@
 #' dim(mat)
 #' 
 #' # extract and plot the posterior mean of the spatial filter
-#' ohio$sf <- spatial(fit, summary = TRUE)$mean
+#' sf <- spatial(fit, summary = TRUE)
+#' head(sf)
+#' ohio$sf <- sf$mean
 #' ggplot(ohio) +
 #'   geom_sf(aes(fill = sf)) +
 #'   scale_fill_gradient2()  
+#' }
 #' 
 #' @export
 #' @method print geostan_fit

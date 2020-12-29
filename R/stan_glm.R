@@ -63,11 +63,11 @@
 #' @author Connor Donegan, \email{Connor.Donegan@UTDallas.edu}
 #' 
 #' @examples
+#' \dontrun{
 #' library(ggplot2)
 #' library(sf)
 #' data(sentencing)
 #'
-#' # using a small number of iterations and a single chain only for compilation speed
 #' # optionally add W to calculate residual SA internally
 #' W <- shape2mat(sentencing, "W")
 #' sentencing$log_e <- log(sentencing$expected_sents)
@@ -76,8 +76,10 @@
 #'                      family = poisson(),
 #'                      data = sentencing,
 #'                      C = W,
-#'                     chains = 1,# chains = 4, cores = 4,
-#'                     iter = 500) #iter = 2e3
+#'                     chains = 3,
+#'                     iter = 1500,
+#'                     silent = TRUE
+#'  )
 #'
 #' # diagnostics plot: Rhat values should all by very near 1
 #' library(rstan)
@@ -90,9 +92,9 @@
 
 # posterior predictive check: predicted distribution should resemble observed distribution
 #' library(bayesplot)
-#' yrep <- posterior_predict(fit.pois)
+#' yrep <- posterior_predict(fit.pois, samples = 75)
 #' y <- sentencing$sents
-#' ppc_dens_overlay(y, yrep[1:100,])
+#' ppc_dens_overlay(y, yrep)
 
 #' # map standardized incidence (sentencing) ratios
 #' E <- sentencing$expected_sents
@@ -103,7 +105,7 @@
 #'  scale_fill_gradient2(midpoint = 1) +
 #'  theme_bw() +
 #'  ggtitle("Standardized state prison sentencing ratios, 1905-1910")
-#'
+#' }
 stan_glm <- function(formula, slx, re, data, ME = NULL, C, EV,
                      family = gaussian(),
                      prior = NULL, prior_intercept = NULL, prior_sigma = NULL, prior_nu = NULL,

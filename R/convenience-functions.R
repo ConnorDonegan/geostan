@@ -12,6 +12,7 @@
 #'
 #' @seealso \link[geostan]{mc} \link[geostan]{moran_plot} \link[geostan]{lisa} \link[geostan]{sim_sar}
 #' @examples
+#' 
 #' library(sf)
 #' data(ohio)
 #' w <- shape2mat(ohio, "W")
@@ -90,6 +91,7 @@ sim_sar <- function(n = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' @seealso \link[geostan]{moran_plot} \link[geostan]{lisa} \link[geostan]{aple}
 #' 
 #' @examples
+#' 
 #' library(sf)
 #' data(ohio)
 #' w <- shape2mat(ohio, style = "W")
@@ -137,6 +139,7 @@ mc <- function(x, w, digits = 3) {
 #' @seealso \link[geostan]{mc} \link[geostan]{lisa} \link[geostan]{aple}
 #' 
 #' @examples
+#' 
 #' library(sf)
 #' data(ohio)
 #' y <- ohio$unemployment
@@ -237,11 +240,13 @@ lisa <- function(x, w, type = FALSE) {
 #' @import ggplot2
 #'
 #' @examples
-#' 
+#' \dontrun{
+#' library(sf)
 #' data(ohio)
 #' sp_diag(ohio$gop_growth, ohio)
-#' fit <- stan_esf(gop_growth ~ 1, data = ohio, C = shape2mat(ohio), chains = 1, iter = 500)
+#' fit <- stan_glm(gop_growth ~ 1, data = ohio, chains = 3, iter = 1e3)
 #' sp_diag(fit, ohio)
+#' }
 #' 
 sp_diag <- function(y,
                    shape,
@@ -292,20 +297,25 @@ sp_diag <- function(y,
 #' @importFrom gridExtra grid.arrange
 #' @import ggplot2
 #'
-#' @examples 
+#' @examples
+#' \dontrun{
+#' library(sf)
 #' data(ohio)
 #' C <- shape2mat(ohio)
 #' ME <- list(se = data.frame(unemployment.acs = ohio$unemployment.acs.se),
 #'            spatial = TRUE
 #'          )
-#' fit <- stan_esf(gop_growth ~ unemployment.acs,
+#' fit <- stan_glm(gop_growth ~ unemployment.acs,
 #'                 ME = ME,
 #'                 C = C,
 #'                 data = ohio,
-#'                 chains = 1,
-#'                 iter = 500
+#'                 chains = 3,
+#'                 iter = 1e3,
+#'                 prior_only = TRUE,
+#'                 refresh = 0
 #'                 )
 #' me_diag(fit, "unemployment.acs", ohio)
+#' }
 #' 
 me_diag <- function(fit,
                     varname,                    
@@ -394,6 +404,7 @@ me_diag <- function(fit,
 #'
 #' @seealso \link[geostan]{stan_esf} \link[geostan]{mc}
 #' @examples
+#' 
 #' library(ggplot2)
 #' library(sf)
 #' data(ohio)
@@ -512,6 +523,14 @@ student_t <- function() {
 #' @param digits Defaults to 2. Round results to this many digits.
 #' @return A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density (\code{Lpd}). If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
 #' @seealso \link{loo}
+#'
+#' @examples
+#' 
+#' \dontrun{
+#' data(ohio)
+#' fit <- stan_glm(gop_growth ~ 1, data = ohio, chains = 3, iter = 1500)
+#' waic(fit)
+#' }
 #' 
 waic <- function(fit, pointwise = FALSE, digits = 2) {
   ll <- as.matrix(fit, pars = "log_lik")
@@ -605,6 +624,7 @@ exp_pars <- function(formula, data, C) {
 #' data(sentencing)
 #' C <- shape2mat(sentencing)
 #' nbs <- edges(C)
+#' head(nbs)
 #' 
 edges <- function(w) {
   lw <- apply(w, 1, function(r) {
@@ -692,6 +712,12 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, 
 #' 
 #' @seealso \link[geostan]{stan_icar} \link[geostan]{edges} \link[geostan]{shape2mat}
 #'
+#' @examples
+#' 
+#' data(sentencing)
+#' C <- shape2mat(sentencing)
+#' icar.data.list <- prep_icar_data(C)
+#' 
 #' @export
 #' @importFrom spdep n.comp.nb graph2nb
 prep_icar_data <- function(C, scale_factor = NULL) {

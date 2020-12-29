@@ -19,6 +19,15 @@ A vector of length 3 with \code{WAIC}, a rough measure of the effective number o
 \description{
 Widely Application Information Criteria (WAIC) for model evalution
 }
+\examples{
+
+\dontrun{
+data(ohio)
+fit <- stan_glm(gop_growth ~ 1, data = ohio, chains = 1, iter = 1e3)
+waic(fit)
+}
+
+}
 \seealso{
 \link{loo}
 }

@@ -23,6 +23,7 @@ This is used internally for  \link[geostan]{stan_icar} and it is also helpful fo
 data(sentencing)
 C <- shape2mat(sentencing)
 nbs <- edges(C)
+head(nbs)
 
 }
 \seealso{

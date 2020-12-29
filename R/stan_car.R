@@ -68,26 +68,26 @@
 #' Lawson, Andrew B. (2013). Bayesian Disease Mapping: Hierarchical Modeling in Spatial Epidemiology. CRC Press.
 #'
 #' @examples
-#' 
+#' \dontrun{
 #' library(ggplot2)
 #' library(bayesplot)
 #' library(sf)
 #' options(mc.cores = parallel::detectCores())
 #' data(sentencing)
 #'
-#' # using a small number of iterations and a single chain only for compilation speed
 #' C <- shape2mat(sentencing)
 #' log_e <- log(sentencing$expected_sents)
 #' fit.car <- stan_car(sents ~ offset(log_e),
-#'                      family = poisson(),
-#'                      data = sentencing,
-#'                      C = C,
-#'                      cores = 1,  # cores = 4,
-#'                      chains = 1, # chains = 4,
-#'                     iter = 500)  # iter = 2e3
+#'                     family = poisson(),
+#'                     data = sentencing,
+#'                     C = C,
+#'                     chains = 3,
+#'                     iter = 1500,
+#'                     refresh = 0
+#' )
 #' 
 #' # posterior predictive check: predicted distribution should resemble observed distribution
-#' yrep <- posterior_predict(fit.car, samples = 100)
+#' yrep <- posterior_predict(fit.car, samples = 75)
 #' y <- sentencing$sents
 #' ppc_dens_overlay(y, yrep)
 #'
@@ -96,6 +96,7 @@
 #'   ggplot() +
 #'   geom_sf(aes(fill = sp.trend)) +
 #'   scale_fill_gradient2()
+#'  }
 #' 
 stan_car <- function(formula, slx, re, data, ME = NULL, C, EV,
                      family = poisson(),

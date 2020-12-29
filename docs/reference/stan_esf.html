@@ -309,7 +309,8 @@ The value of <code>p0</code> is used to control the prior degree of sparsity in 
 <p>When <code>family = student_t()</code>, the parameter <code>nu</code> in the model refers to the degrees of freedom in the Student's t likelihood function for the data.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>rstan</span>)</div><div class='output co'>#&gt; <span class='message'>Loading required package: StanHeaders</span></div><div class='output co'>#&gt; <span class='message'>rstan (Version 2.21.2, GitRev: 2e1f913d3ca3)</span></div><div class='output co'>#&gt; <span class='message'>For execution on a local, multicore CPU with excess RAM we recommend calling</span>
+    <pre class="examples"><div class='input'><span class='co'># \dontrun{</span>
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>rstan</span>)</div><div class='output co'>#&gt; <span class='message'>Loading required package: StanHeaders</span></div><div class='output co'>#&gt; <span class='message'>rstan (Version 2.21.2, GitRev: 2e1f913d3ca3)</span></div><div class='output co'>#&gt; <span class='message'>For execution on a local, multicore CPU with excess RAM we recommend calling</span>
 #&gt; <span class='message'>options(mc.cores = parallel::detectCores()).</span>
 #&gt; <span class='message'>To avoid recompilation of unchanged Stan programs, we recommend calling</span>
 #&gt; <span class='message'>rstan_options(auto_write = TRUE)</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>bayesplot</span>)
@@ -322,15 +323,13 @@ The value of <code>p0</code> is used to control the prior degree of sparsity in 
 <span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>stan_esf</span>(<span class='no'>gop_growth</span> ~ <span class='no'>historic_gop</span> + <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='no'>pop_density</span>) + <span class='no'>college_educated</span>,
                 <span class='kw'>slx</span> <span class='kw'>=</span> ~ <span class='no'>historic_gop</span> + <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='no'>pop_density</span>) + <span class='no'>college_educated</span>,
                 <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>ohio</span>,
+                <span class='kw'>scalex</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
                 <span class='kw'>C</span> <span class='kw'>=</span> <span class='no'>C</span>,
                 <span class='kw'>silent</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-                <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-                <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>500</span>,
-                <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'><a href='student_t.html'>student_t</a></span>())</div><div class='output co'>#&gt; <span class='warning'>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#bulk-ess</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#tail-ess</span></div><div class='input'>
+                <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>3</span>,
+                <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>1e3</span>,
+                <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'><a href='student_t.html'>student_t</a></span>())
+
 <span class='co'># use rstan for sampler diagnostics</span>
 <span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span>(<span class='no'>fit</span>$<span class='no'>stanfit</span>)</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='img'><img src='stan_esf-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># see spatial autocorrelation diagnostics</span>
 <span class='fu'>spdiag</span>(<span class='no'>fit</span>, <span class='no'>ohio</span>)</div><div class='output co'>#&gt; <span class='error'>Error in spdiag(fit, ohio): could not find function "spdiag"</span></div><div class='input'>
@@ -341,7 +340,7 @@ The value of <code>p0</code> is used to control the prior degree of sparsity in 
 <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span>(<span class='no'>ohio</span>) +
       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span>(<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span>(<span class='kw'>fill</span> <span class='kw'>=</span> <span class='no'>esf</span>)) +
       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span>() +
-      <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_void</a></span>()</div><div class='img'><img src='stan_esf-3.png' alt='' width='700' height='433' /></div><div class='input'>
+      <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_void</a></span>()</div><div class='img'><img src='stan_esf-3.png' alt='' width='700' height='433' /></div><div class='input'># } 
 
 </div></pre>
   </div>

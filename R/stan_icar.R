@@ -80,25 +80,25 @@
 #' Riebler, A., Sorbye, S. H., Simpson, D., & Rue, H. (2016). An intuitive Bayesian spatial model for disease mapping that accounts for scaling. Statistical Methods in Medical Research, 25(4), 1145-1165.
 #'
 #' @examples
+#' \dontrun{
 #' library(ggplot2)
 #' library(sf)
 #' library(rstan)
 #' options(mc.cores = parallel::detectCores())
 #' data(sentencing)
 #'
-#' # using a small number of iterations and a single chain only for compilation speed
 #' C <- shape2mat(sentencing)
 #' log_e <- log(sentencing$expected_sents)
-#'
 #' fit.bym <- stan_icar(sents ~ offset(log_e),
 #'                      re = ~ name,
 #'                      family = poisson(),
 #'                      data = sentencing,
 #'                      type = "bym",
 #'                      C = C,
-#'                      cores = 1,  # cores = 4,   
-#'                      chains = 1, # chains = 4,
-#'                      iter = 200) # iter = 2e3
+#'                      cores = 3,
+#'                      iter = 1500,
+#'                      refresh = 0
+#'  )
 #'
 #'# diagnostics plot: Rhat values should all by very near 1
 #' library(rstan)
@@ -111,10 +111,11 @@
 
 # posterior predictive check: predicted distribution should resemble observed distribution
 #' library(bayesplot)
-#' yrep <- posterior_predict(fit.bym, samples = 100)
+#' yrep <- posterior_predict(fit.bym, samples = 75)
 #' y <- sentencing$sents
 #' ppc_dens_overlay(y, yrep)
-#'
+#' }
+#' 
 stan_icar <- function(formula, slx, re, data,
                       type = c("iar", "bym", "bym2"),
                       scale_factor = NULL,

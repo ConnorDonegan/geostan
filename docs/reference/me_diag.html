@@ -163,7 +163,9 @@
     <div class='dont-index'><p><a href='sp_diag.html'>sp_diag</a> <a href='moran_plot.html'>moran_plot</a> <a href='mc.html'>mc</a> <a href='aple.html'>aple</a></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>ohio</span>)
+    <pre class="examples"><div class='input'><span class='co'># \dontrun{</span>
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>sf</span>)
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>ohio</span>)
 <span class='no'>C</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span>(<span class='no'>ohio</span>)
 <span class='no'>ME</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>se</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span>(<span class='kw'>unemployment.acs</span> <span class='kw'>=</span> <span class='no'>ohio</span>$<span class='no'>unemployment.acs.se</span>),
            <span class='kw'>spatial</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
@@ -172,8 +174,10 @@
                 <span class='kw'>ME</span> <span class='kw'>=</span> <span class='no'>ME</span>,
                 <span class='kw'>C</span> <span class='kw'>=</span> <span class='no'>C</span>,
                 <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>ohio</span>,
-                <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>1</span>,
-                <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>500</span>
+                <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>3</span>,
+                <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>1e3</span>,
+                <span class='kw'>prior_only</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+                <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>0</span>
                 )</div><div class='output co'>#&gt; <span class='message'>*Setting horseshoe prior for spatial data model, variable: unemployment.acs (Moran coefficient: 0.332)</span>
 #&gt; <span class='message'> global shrinkage scale:0.274115206742928</span>
 #&gt; <span class='message'> slab scale:8.79399168595964</span>
@@ -182,28 +186,8 @@
 #&gt; <span class='message'>*Setting prior parameters for beta</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt;                  Location    Scale
 #&gt; unemployment.acs        0 6.623123</div><div class='output co'>#&gt; <span class='message'></span>
 #&gt; <span class='message'>*Setting prior parameters for sigma</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt; <span class='message'>Degrees of freedom: 10</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 12.488757925385</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for rhs</span></div><div class='output co'>#&gt; <span class='message'>Global shrinkage prior (scale_global): 1</span></div><div class='output co'>#&gt; <span class='message'>Slab degrees of freedom: 15</span></div><div class='output co'>#&gt; <span class='message'>Slab scale: 29.1218447680832</span></div><div class='output co'>#&gt; 
-#&gt; SAMPLING FOR MODEL 'esf' NOW (CHAIN 1).
-#&gt; Chain 1: 
-#&gt; Chain 1: Gradient evaluation took 7e-05 seconds
-#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.7 seconds.
-#&gt; Chain 1: Adjust your expectations accordingly!
-#&gt; Chain 1: 
-#&gt; Chain 1: 
-#&gt; Chain 1: Iteration:   1 / 500 [  0%]  (Warmup)
-#&gt; Chain 1: Iteration: 251 / 500 [ 50%]  (Sampling)
-#&gt; Chain 1: Iteration: 500 / 500 [100%]  (Sampling)
-#&gt; Chain 1: 
-#&gt; Chain 1:  Elapsed Time: 2.23694 seconds (Warm-up)
-#&gt; Chain 1:                1.28842 seconds (Sampling)
-#&gt; Chain 1:                3.52536 seconds (Total)
-#&gt; Chain 1: </div><div class='output co'>#&gt; <span class='warning'>Warning: The largest R-hat is 1.07, indicating chains have not mixed.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#r-hat</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#bulk-ess</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#tail-ess</span></div><div class='input'><span class='fu'>me_diag</span>(<span class='no'>fit</span>, <span class='st'>"unemployment.acs"</span>, <span class='no'>ohio</span>)</div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='me_diag-1.png' alt='' width='700' height='433' /></div><div class='input'>
+#&gt; <span class='message'>*Setting prior parameters for rhs</span></div><div class='output co'>#&gt; <span class='message'>Global shrinkage prior (scale_global): 1</span></div><div class='output co'>#&gt; <span class='message'>Slab degrees of freedom: 15</span></div><div class='output co'>#&gt; <span class='message'>Slab scale: 29.1218447680832</span></div><div class='input'><span class='fu'>me_diag</span>(<span class='no'>fit</span>, <span class='st'>"unemployment.acs"</span>, <span class='no'>ohio</span>)</div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='me_diag-1.png' alt='' width='700' height='433' /></div><div class='input'># }
+
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

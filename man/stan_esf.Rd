@@ -149,6 +149,7 @@ The function returns the spatial filter \code{esf},
  When \code{family = student_t()}, the parameter \code{nu} in the model refers to the degrees of freedom in the Student's t likelihood function for the data.
 }
 \examples{
+\dontrun{
 library(rstan)
 library(bayesplot)
 library(ggplot2)
@@ -160,10 +161,11 @@ C <- shape2mat(ohio, "B")
 fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density) + college_educated,
                 slx = ~ historic_gop + log(pop_density) + college_educated,
                 data = ohio,
+                scalex = TRUE,
                 C = C,
                 silent = TRUE,
-                chains = 1,
-                iter = 500,
+                chains = 3,               
+                iter = 1e3,
                 family = student_t())
 
 # use rstan for sampler diagnostics
@@ -180,7 +182,7 @@ ggplot(ohio) +
       geom_sf(aes(fill = esf)) +
       scale_fill_gradient2() +
       theme_void()
-
+} 
 
 }
 \author{

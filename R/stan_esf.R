@@ -86,7 +86,8 @@
 #'
 #' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In Electronic Journal of Statistics, 11(2):5018-5051. \link{https://projecteuclid.org/euclid.ejs/1513306866}
 #' 
-#' @examples 
+#' @examples
+#' \dontrun{
 #' library(rstan)
 #' library(bayesplot)
 #' library(ggplot2)
@@ -98,10 +99,11 @@
 #' fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density) + college_educated,
 #'                 slx = ~ historic_gop + log(pop_density) + college_educated,
 #'                 data = ohio,
+#'                 scalex = TRUE,
 #'                 C = C,
 #'                 silent = TRUE,
-#'                 chains = 1,
-#'                 iter = 500,
+#'                 chains = 3,               
+#'                 iter = 1500,
 #'                 family = student_t())
 #'
 #' # use rstan for sampler diagnostics
@@ -118,7 +120,7 @@
 #'       geom_sf(aes(fill = esf)) +
 #'       scale_fill_gradient2() +
 #'       theme_void()
-#' 
+#' } 
 #'
 stan_esf <- function(formula, slx, re, data, C, EV, ME = NULL,
                      nsa = FALSE, threshold = 0.25,
