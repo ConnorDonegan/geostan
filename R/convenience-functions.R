@@ -1,4 +1,4 @@
-#' APLE spatial autocorrelation estimator
+#' Spatial autocorrelation estimator
 #'
 #' @description The approximate-profile likelihood estimator for the spatial autocorrelation parameter from a simultaneous autoregressive (SAR) model.
 #' @param x Numeric vector of values, length n. This will be standardized internally with \code{scale(x)}.
@@ -235,6 +235,14 @@ lisa <- function(x, w, type = FALSE) {
 #' @export
 #' @importFrom gridExtra grid.arrange
 #' @import ggplot2
+#'
+#' @examples
+#' 
+#' data(ohio)
+#' sp_diag(ohio$gop_growth, ohio)
+#' fit <- stan_esf(gop_growth ~ 1, data = ohio, C = shape2mat(ohio), chains = 1, iter = 500)
+#' sp_diag(fit, ohio)
+#' 
 sp_diag <- function(y,
                    shape,
                    name = "y",
@@ -258,15 +266,6 @@ sp_diag <- function(y,
                 col = "gray20") +
         scale_fill_gradient2(name = name) +
         theme_void()
-    ## li <- lisa(y, w)
-    ## cluster <- abs(li) > threshold
-    ## local <- ggplot(shape) +
-    ##     geom_sf(aes(fill = li),
-    ##             lwd = ifelse(cluster, 0.7, 0.05),
-    ##             col = "black"
-    ##             ) +
-    ##     scale_fill_gradient2(name = "LISA") +
-    ##     theme_void()
     g.mc <- moran_plot(y, w, xlab = name)
     if (plot) {
         gridExtra::grid.arrange(hist, g.mc, map.y, ncol = 3)
@@ -292,6 +291,22 @@ sp_diag <- function(y,
 #' @export
 #' @importFrom gridExtra grid.arrange
 #' @import ggplot2
+#'
+#' @examples 
+#' data(ohio)
+#' C <- shape2mat(ohio)
+#' ME <- list(se = data.frame(unemployment.acs = ohio$unemployment.acs.se),
+#'            spatial = TRUE
+#'          )
+#' fit <- stan_esf(gop_growth ~ unemployment.acs,
+#'                 ME = ME,
+#'                 C = C,
+#'                 data = ohio,
+#'                 chains = 1,
+#'                 iter = 500
+#'                 )
+#' me_diag(fit, "unemployment.acs", ohio)
+#' 
 me_diag <- function(fit,
                     varname,                    
                     shape,
@@ -379,9 +394,14 @@ me_diag <- function(fit,
 #'
 #' @seealso \link[geostan]{stan_esf} \link[geostan]{mc}
 #' @examples
+#' library(ggplot2)
+#' library(sf)
 #' data(ohio)
 #' C <- shape2mat(ohio, style = "B")
 #' EV <- make_EV(C)
+#' ggplot(ohio) +
+#'   geom_sf(aes(fill = EV[,1])) +
+#'   scale_fill_gradient2()
 #' 
 make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
   if (!isSymmetric(C)) C <- (t(C) + C) / 2
@@ -406,7 +426,7 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
     return(EV)
 }
 
-#' Create a spatial weights matrix from a spatial object of class \code{sf} or \code{SpatialPolygons} or \code{SpatialPolygonsDataFrame}
+#' Create spatial and space-time connectivity matrices
 #'
 #' @export
 #' @import spdep
@@ -420,7 +440,7 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' @param snap Passed to \link[spdep]{poly2nb}; "boundary points less than ‘snap’ distance apart are considered to indicate contiguity."
 #' 
 #' @return A spatial connectivity matrix
-#' 
+#'
 #' @seealso \link[geostan]{edges}
 #' 
 #' @details
@@ -542,6 +562,7 @@ expected_mc <- function(X, C) {
 #' @source
 #'
 #' Chun, Yongwan, Griffith, Daniel A., Lee, Mongyeon, and Sinha, Parmanand (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems 18(1): 67-85.
+#' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. \link{https://doi.org/10.1016/j.spasta.2020.100450}
 #' 
 exp_pars <- function(formula, data, C) {
   nlinks <- length(which(C != 0))
@@ -627,7 +648,8 @@ edges <- function(w) {
 #' z = rnorm(n = 30e3, mean = x,  sd = se)
 #' l.z = log(z)
 #' sd(l.z)
-#' se_log(c(x, x), c(se, se), method = "mc")
+#' se_log(x, se, method = "mc")
+#' se_log(x, se, method = "delta")
 #' 
 se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, Inf)) {
     stopifnot(length(x) == length(se))
@@ -647,7 +669,9 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, 
     if (method == "delta") return (x^(-1) * se)
 }
 
-#' Prepare data items for intrinsic autoregressive models, to pass to Stan.
+#' Prepare data for ICAR models
+#'
+#' @description Given a connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan.
 #' 
 #' @param C connectivity matrix
 #' @param scale_factor n-length vector with the scale factor for each observation's respective group. If not provided by the user it will be fixed to \code{rep(1, n)}

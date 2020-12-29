@@ -5,6 +5,7 @@
 \title{Expected dimensions of an eigenvector spatial filter}
 \source{
 Chun, Yongwan, Griffith, Daniel A., Lee, Mongyeon, and Sinha, Parmanand (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems 18(1): 67-85.
+Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. \link{https://doi.org/10.1016/j.spasta.2020.100450}
 }
 \usage{
 exp_pars(formula, data, C)

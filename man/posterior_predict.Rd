@@ -50,7 +50,7 @@ A matrix of size \code{S} x \code{N} containing samples from the posterior predi
 If \code{summary = TRUE} the return value is a data frame with the expected value of the posterior distribution (column \code{mu}) and 100*width credible intervals for, respectively, the posterior predictive distribution (columns \code{pred.lwr}, \code{pred.upr}) and mean outcome (columns \code{mu.lwr}, \code{mu.upr}). The width of the intervals and the quantiles corresponding to the upper and lower limits of the credible intervals are returned as an attribute of the data frame (use \code{attributes(df)$interval} to retrieve them, where \code{df} is the data frame returned by \code{posterior_predict}).
 }
 \description{
-Draw samples from the posterior predictive distribution of a fitted \code{geostan} model. Use the original data or new data, with or without the spatial component and random effects terms.
+Draw samples from the posterior predictive distribution of a fitted \code{geostan} model. Use the original data or new data, with or without the spatial component and other partial pooling terms.
 }
 \examples{
 library(bayesplot)
@@ -62,6 +62,7 @@ data(ohio)
 fit <- stan_esf(gop_growth ~ 1,
                 data = ohio,
                 C = shape2mat(ohio),
+                silent = TRUE,
                 chains = 1,  # chains = 4
                 iter = 200, # iter = 2e3
                 cores = 1) # cores = 4
@@ -76,6 +77,7 @@ ppc_dens_overlay(y, yrep)
 fit <- stan_esf(gop_growth ~ poly(college_educated, df = 3),
                 data = ohio,
                 C = shape2mat(ohio),
+                silent = TRUE,
                 cores = 1,  # cores = 4,
                 chains = 1, # chains = 4
                 iter = 200) # iter = 2e3
@@ -92,7 +94,7 @@ a <- ggplot(pred.df, aes(x = mu)) +
 a <- a +
     geom_ribbon(aes(ymin = mu.lwr,
                     ymax = mu.upr),
-               fill = "blue", apha = 0.5)
+               fill = "blue", alpha = 0.5)
 
 ## add the credible interval for predicted values
 a +

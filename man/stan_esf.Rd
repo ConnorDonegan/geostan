@@ -2,19 +2,19 @@
 % Please edit documentation in R/stan_esf.R
 \name{stan_esf}
 \alias{stan_esf}
-\title{Regression with spatial filtering}
+\title{Spatial filtering models}
 \source{
-Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems, 18(1), 67-85. 10.1007/s10109-015-0225-3
+Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems, 18(1), 67-85. \link{10.1007/s10109-015-0225-3}
 
 Dray, S., P. Legendre & P. R. Peres-Neto (2006). Spatial modelling: a comprehensive framework for principal coordinate analysis of neighbour matrices (PCNM). Ecological Modeling, 196(3-4), 483-493.
 
-Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. https://doi.org/10.1016/j.spasta.2020.100450
+Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. \link{https://doi.org/10.1016/j.spasta.2020.100450}
 
 Griffith, Daniel A., and P. R. Peres-Neto (2006). "Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses." Ecology 87(10), 2603-2613.
 
 Griffith, D., and Y. Chun (2014). Spatial autocorrelation and spatial filtering, Handbook of Regional Science. Fischer, MM and Nijkamp, P. eds.
 
-Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In Electronic Journal of Statistics, 11(2):5018-5051. https://projecteuclid.org/euclid.ejs/1513306866
+Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In Electronic Journal of Statistics, 11(2):5018-5051. \link{https://projecteuclid.org/euclid.ejs/1513306866}
 }
 \usage{
 stan_esf(
@@ -149,41 +149,29 @@ The function returns the spatial filter \code{esf},
  When \code{family = student_t()}, the parameter \code{nu} in the model refers to the degrees of freedom in the Student's t likelihood function for the data.
 }
 \examples{
-\dontrun{
 library(rstan)
 library(bayesplot)
 library(ggplot2)
 library(sf)
-options(mc.cores = parallel::detectCores())
+options(mc.cores = parallel::detectCores()) 
 
-## model 2016 Presidential election results in Ohio.
-## models here have 1 chain and small iter, only for speed of compilation. 
 data(ohio)
 C <- shape2mat(ohio, "B")
 fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density) + college_educated,
                 slx = ~ historic_gop + log(pop_density) + college_educated,
                 data = ohio,
                 C = C,
+                silent = TRUE,
                 chains = 1,
                 iter = 500,
                 family = student_t())
 
-## trace plots
-plot(fit, plotfun = 'trace')
-
-## Rhat diagnostics (should all be very near 1; greater than, say, 1.05 is getting bad).
-  # this will include all parameters and generated quantities (residuals, log likelihood, etc.)
+# use rstan for sampler diagnostics
 stan_rhat(fit$stanfit)
-
-## to see the eigenvector coefficients only
-stan_rhat(fit$stanfit, par = "beta_ev")
-
-## check effective sample size of the posterior draws
-stan_ess(fit$stanfit)
+# see spatial autocorrelation diagnostics
+spdiag(fit, ohio)
 
 ## summary of estimates
-fit$summary
-print(fit)
 plot(fit, pars = c("beta", "intercept", "sigma"))
 
 ## map the spatial filter
@@ -193,47 +181,6 @@ ggplot(ohio) +
       scale_fill_gradient2() +
       theme_void()
 
-## Moran plot of residuals (looking for residual spatial autocorrelation)
-w <- shape2mat(ohio, "W")
-res <- resid(fit)$mean
-moran_plot(res, w)
-
-## set priors for the main coefficients:
-## coefficient priors must be a matrix with 2 columns (location, scale)
-## the slx terms will be prepended to the model matrix (i.e. state their priors first)
-loc <- rep(0, times=6)
-scale <- rep(1, times=6)
-priors <- cbind(loc, scale)
-## with scalex=TRUE all the covariates will be centered and scaled to have stand. dev = 1
-fit <- stan_esf(gop_growth ~ historic_gop + log(population) + college_educated,
-               slx = ~ historic_gop + log(population) + college_educated,
-               prior = priors,
-               data = ohio,
-               C = C,
-               iter = 400,
-               chains = 1,
-               scalex = TRUE)
-
-## Poisson models. Model Jim Crow era prison sentencing risk in Florida.
-data(sentencing)
-C <- shape2mat(sentencing, "B")
-sentencing$log_e <- log(sentencing$expected_sents)
-fit <- stan_esf(sents ~ offset(log_e), re = ~ name, family = poisson(),
-                data = sentencing@data, C = C, chains = 1, iter = 500)
-plot(fit, plotfun = 'trace')
-stan_rhat(fit$stanfit, "beta_ev") +
-   theme_bw()
-
-## map relative risk ratios
-E <- sentencing$expected_sents
-sentencing$ssr <- fitted(fit)$mean / E
-ggplot(st_as_sf(sentencing),
-       aes(fill = ssr)) +
-       geom_sf() +
-       scale_fill_gradient2(midpoint = 1) +
-       theme_void() +
-       ggtitle("Relative risk of sentencing, 1905-1910")
-}
 
 }
 \author{

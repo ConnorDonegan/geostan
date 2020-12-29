@@ -52,35 +52,28 @@ return either a matrix containing all samples for each observation, or a \code{d
 Methods for fitted geostan models: extract residuals, fitted values, posterior predictive distribution or spatial component from a spatial regression model; extract samples from the posterior distribution; print regression results; plot posterior distributions.
 }
 \examples{
-\dontrun{
+
 library(geostan)
 library(sf)
 data(ohio)
 fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density),
                data = ohio,
                C = shape2mat(ohio),
-               chains = 1, iter = 600)
+               chains = 1, iter = 400)
 
 # print and plot results
 print(fit)
 plot(fit)
-plot(fit, pars = c("alpha", "beta")
-plot(fit, pars = c("b_historic_gop", "b_log(pop_density)"), plotfun = "hist", bins = 30)
-plot(fit, plotfun = "trace")
 
-# extract posterior samples
-as.data.frame(fit)
-as.data.frame(fit, pars = "beta")
-as.data.frame(fit, pars = "b_historic_gop")
-as.array(fit)
-as.matrix(fit)
+beta.samples <- as.matrix(fit, pars = "beta")
+beta.mean <- apply(beta.samples, 2, mean)
 
 # extract residuals and fitted values
 res <- residuals(fit)
-res <- resid(fit) # alias
+res <- resid(fit) 
 head(res)
 f <- fitted(fit)
-plot(f$mean, res$mean)
+plot(f$mean, res$mean, xlab = "fitted values", ylab = "residuals")
 mat <- resid(fit, summary = FALSE)
 dim(mat)
 
@@ -89,7 +82,7 @@ ohio$sf <- spatial(fit, summary = TRUE)$mean
 ggplot(ohio) +
   geom_sf(aes(fill = sf)) +
   scale_fill_gradient2()  
-}
+
 }
 \seealso{
 \link[geostan]{stan_esf} \link[rstan]{stan_plot}

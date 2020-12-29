@@ -28,15 +28,14 @@ rstan_options(auto_write = TRUE)
 
 ### Overview
 
-The **geostan** R package provides a user-friendly interface to hierarchical Bayesian models (HBMs) for areal data. It is designed for ease of use and promotion of sound spatial analysis workflows with a particular emphasis on spatial epidemiology and survey data. All of the models are fit using the Stan probabilistic programming language. The package is still under development.
+The **geostan** R package provides a user-friendly interface to hierarchical Bayesian models (HBMs) for areal data. It is designed for ease of use and promotion of sound spatial analysis workflows with a particular emphasis on spatial epidemiology and survey data. All of the models are fit using the Stan probabilistic programming language. The package is still under development, the goals is to release it to CRAN later this year.
 
 The following models are available:
 
 * Generalized linear models with Gaussian, Student’s *t*, Poisson, and Binomial likelihood functions.
 * Conditional Autoregressive (CAR) models.
 * Eigenvector spatial filtering (ESF) models.
-* Intrinsic conditional autoregressive (IAR) models.
-* The Besag-York-Mollie (BYM2) model introduced by Riebler et al.
+* Intrinsic conditional autoregressive (ICAR) models including Besag-York-Mollie (BYM) models and the innovation (BYM2) introduced by Riebler et al. (2016)
 
 All of the models are able to incorporate additional 'varying intercept' terms for partial pooling of observations, and can also model data uncertainty using, e.g., standard errors on estimates from the American Community Suvey.
 
@@ -47,8 +46,6 @@ If you're using Linux you can try out a development version of the package:
 ```{r eval = FALSE}
 remotes::install_github("ConnorDonegan/geostan")
 ```
-
-The packages depends on [Rstan](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started), **sf**, and **spdep**. The goals is to release it to CRAN later this year.
 
 ### Demonstration
 

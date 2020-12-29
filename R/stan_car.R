@@ -37,10 +37,9 @@
 #' @param silent If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' @details
-#'  The Stan code for the CAR component of the model is from Max Joseph (see sources below).
-#'    
+#'  The Stan code for the CAR component of the model is from Joseph (2016).
+#'   
 #'  The CAR model is the prior distribution for the parameter vector \code{phi} and has two associated parameters: \code{phi_alpha} which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and \code{phi_tau} which is a precision (inverse scale) parameter.
-#' 
 #'  
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
@@ -64,14 +63,14 @@
 #' 
 #' @source
 #'
-#' Gelfand, Alan E., and Penelope Vounatsou. Proper multivariate conditional autoregressive models for spatial data analysis. Biostatistics 4.1 (2003): 11-15.
-#'
-#' Joseph, Max (2016). Exact Sparse CAR Models in Stan. Stan Case Studies, Vol. 3. https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html
+#' Joseph, Max (2016). Exact Sparse CAR Models in Stan. Stan Case Studies, Vol. 3. \link{https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html}
 #' 
 #' Lawson, Andrew B. (2013). Bayesian Disease Mapping: Hierarchical Modeling in Spatial Epidemiology. CRC Press.
 #'
 #' @examples
+#' 
 #' library(ggplot2)
+#' library(bayesplot)
 #' library(sf)
 #' options(mc.cores = parallel::detectCores())
 #' data(sentencing)
@@ -85,9 +84,19 @@
 #'                      C = C,
 #'                      cores = 1,  # cores = 4,
 #'                      chains = 1, # chains = 4,
-#'                     iter = 200)  # iter = 2e3
+#'                     iter = 500)  # iter = 2e3
 #' 
+#' # posterior predictive check: predicted distribution should resemble observed distribution
+#' yrep <- posterior_predict(fit.car, samples = 100)
+#' y <- sentencing$sents
+#' ppc_dens_overlay(y, yrep)
 #'
+#' sp.trend <- spatial(fit.car)$mean
+#' st_as_sf(sentencing) %>%
+#'   ggplot() +
+#'   geom_sf(aes(fill = sp.trend)) +
+#'   scale_fill_gradient2()
+#' 
 stan_car <- function(formula, slx, re, data, ME = NULL, C, EV,
                      family = poisson(),
                      prior = NULL, prior_intercept = NULL, prior_tau = NULL, prior_phi_precision = c(2, 2),

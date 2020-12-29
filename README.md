@@ -9,9 +9,11 @@ Bayesian Spatial Analysis
 
 The **geostan** R package provides a user-friendly interface to
 hierarchical Bayesian models (HBMs) for areal data. It is designed for
-ease of use with a particular emphasis on spatial epidemiology and survey data. All of the
+ease of use and promotion of sound spatial analysis workflows with a
+particular emphasis on spatial epidemiology and survey data. All of the
 models are fit using the Stan probabilistic programming language. The
-package is still under development.
+package is still under development, the goals is to release it to CRAN
+later this year.
 
 The following models are available:
 
@@ -19,8 +21,9 @@ The following models are available:
     Binomial likelihood functions.
 -   Conditional Autoregressive (CAR) models.
 -   Eigenvector spatial filtering (ESF) models.
--   Intrinsic conditional autoregressive (IAR) models.
--   The Besag-York-Mollie (BYM2) model introduced by Riebler et al.
+-   Intrinsic conditional autoregressive (ICAR) models including
+    Besag-York-Mollie (BYM) models and the innovation (BYM2) introduced
+    by Riebler et al. (2016)
 
 All of the models are able to incorporate additional ‘varying intercept’
 terms for partial pooling of observations, and can also model data
@@ -35,11 +38,6 @@ package:
 ``` r
 remotes::install_github("ConnorDonegan/geostan")
 ```
-
-The packages depends on
-[Rstan](https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started),
-**sf**, and **spdep**. The goals is to release it to CRAN later this
-year.
 
 ### Demonstration
 
@@ -94,6 +92,35 @@ spatial connectivity matrix to `stan_esf`:
 C <- shape2mat(ohio, "B")
 fit <- stan_esf(gop_growth ~ 1, data = ohio, C = C)
 ```
+
+    ## 
+    ## *Setting prior parameters for intercept
+
+    ## Gaussian
+
+    ## Location: 0
+
+    ## Scale: 12.488757925385
+
+    ## 
+    ## *Setting prior parameters for sigma
+
+    ## Student's t
+
+    ## Degrees of freedom: 10
+
+    ## Location: 0
+
+    ## Scale: 12.488757925385
+
+    ## 
+    ## *Setting prior parameters for rhs
+
+    ## Global shrinkage prior (scale_global): 1
+
+    ## Slab degrees of freedom: 15
+
+    ## Slab scale: 29.1218447680832
 
 Now `fit` is a list that contains summaries of estimated parameters, the
 `stanfit` model returned by Stan, diagnostics, and other useful
@@ -155,23 +182,23 @@ fit
 
     ## Spatial Regression Results 
     ## Formula: gop_growth ~ 1
-    ## Data models: none
-    ## Spatial method:  RHS-ESF 
-    ## Family:  gaussian 
+    ## Data models (ME): none
+    ## Spatial method (outcome):  ESF 
+    ## Likelihood function:  gaussian 
     ## Link function:  identity 
-    ## Residual Moran Coefficient:  -0.05 
-    ## WAIC:  517.17 
+    ## Residual Moran Coefficient:  -0.048 
+    ## WAIC:  518.36 
     ## Observations:  88 
     ## RHS global shrinkage prior:  1 
     ## Inference for Stan model: esf.
     ## 4 chains, each with iter=2000; warmup=1000; thin=1; 
     ## post-warmup draws per chain=1000, total post-warmup draws=4000.
     ## 
-    ##             mean se_mean    sd  2.5%    25%    50%    75%  97.5% n_eff Rhat
-    ## intercept 10.699   0.005 0.449 9.822 10.398 10.696 10.996 11.586  8742    1
-    ## sigma      4.068   0.007 0.379 3.409  3.806  4.041  4.296  4.894  3098    1
+    ##             mean se_mean    sd  2.5%    25%    50%    75%  97.5% n_eff  Rhat
+    ## intercept 10.707   0.006 0.438 9.850 10.419 10.702 11.000 11.579  5579 1.000
+    ## sigma      4.090   0.009 0.386 3.413  3.815  4.060  4.335  4.906  1950 1.002
     ## 
-    ## Samples were drawn using NUTS(diag_e) at Wed Sep 16 20:24:10 2020.
+    ## Samples were drawn using NUTS(diag_e) at Mon Dec 28 21:36:18 2020.
     ## For each parameter, n_eff is a crude measure of effective sample size,
     ## and Rhat is the potential scale reduction factor on split chains (at 
     ## convergence, Rhat=1).
@@ -215,6 +242,60 @@ fit3 <- stan_esf(gop_growth ~ historic_gop + log(pop_density) + white_nonhispani
                  data = ohio, 
                  C = C)
 ```
+
+    ## 
+    ## *Setting prior parameters for intercept
+
+    ## Gaussian
+
+    ## Location: 10.7142419611244
+
+    ## Scale: 12.488757925385
+
+    ## 
+    ## *Setting prior parameters for beta
+
+    ## Gaussian
+
+    ##                    Location    Scale
+    ## w.historic_gop            0 12.48876
+    ## w.log(pop_density)        0 12.48876
+    ## w.college_educated        0 12.48876
+    ## w.unemployment            0 12.48876
+    ## historic_gop              0 12.48876
+    ## log(pop_density)          0 12.48876
+    ## white_nonhispanic         0 12.48876
+    ## college_educated          0 12.48876
+    ## unemployment              0 12.48876
+
+    ## 
+    ## *Setting prior parameters for sigma
+
+    ## Student's t
+
+    ## Degrees of freedom: 10
+
+    ## Location: 0
+
+    ## Scale: 12.488757925385
+
+    ## 
+    ## *Setting prior parameters for nu
+
+    ## Gamma
+
+    ## alpha: 3
+
+    ## beta: 0.2
+
+    ## 
+    ## *Setting prior parameters for rhs
+
+    ## Global shrinkage prior (scale_global): 0.506351701344575
+
+    ## Slab degrees of freedom: 15
+
+    ## Slab scale: 29.1218447680832
 
 The spatial connectivity matrix `C` is row-standardized internally
 before calculating the spatially lagged covariates, so the constructed

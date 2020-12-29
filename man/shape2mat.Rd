@@ -2,7 +2,7 @@
 % Please edit documentation in R/convenience-functions.R
 \name{shape2mat}
 \alias{shape2mat}
-\title{Create a spatial weights matrix from a spatial object of class \code{sf} or \code{SpatialPolygons} or \code{SpatialPolygonsDataFrame}}
+\title{Create spatial and space-time connectivity matrices}
 \source{
 Griffith, D. A. (2012). Space, time, and space-time eigenvector filter specifications that account for autocorrelation. Estadística Espanola, 54(177), 7-34.
 

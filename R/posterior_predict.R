@@ -1,6 +1,6 @@
 #' Draw samples from the posterior predictive distribution
 #'
-#' @description Draw samples from the posterior predictive distribution of a fitted \code{geostan} model. Use the original data or new data, with or without the spatial component and random effects terms.
+#' @description Draw samples from the posterior predictive distribution of a fitted \code{geostan} model. Use the original data or new data, with or without the spatial component and other partial pooling terms.
 #' @export
 #' @param object A \code{geostan_fit} object.
 #' @param newdata A \code{data.frame} or \code{matrix} with data to use for predictions. Must be named and the names must match the model formula. If the model has an slx term and \code{spatial = TRUE} then \code{newdata} must have the same number of rows as the data used to fit the model.
@@ -28,6 +28,7 @@
 #' fit <- stan_esf(gop_growth ~ 1,
 #'                 data = ohio,
 #'                 C = shape2mat(ohio),
+#'                 silent = TRUE,
 #'                 chains = 1,  # chains = 4
 #'                 iter = 200, # iter = 2e3
 #'                 cores = 1) # cores = 4
@@ -42,6 +43,7 @@
 #' fit <- stan_esf(gop_growth ~ poly(college_educated, df = 3),
 #'                 data = ohio,
 #'                 C = shape2mat(ohio),
+#'                 silent = TRUE,
 #'                 cores = 1,  # cores = 4,
 #'                 chains = 1, # chains = 4
 #'                 iter = 200) # iter = 2e3
@@ -58,7 +60,7 @@
 #' a <- a +
 #'     geom_ribbon(aes(ymin = mu.lwr,
 #'                     ymax = mu.upr),
-#'                fill = "blue", apha = 0.5)
+#'                fill = "blue", alpha = 0.5)
 #'
 #' ## add the credible interval for predicted values
 #' a +
