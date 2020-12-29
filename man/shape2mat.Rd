@@ -13,7 +13,7 @@ Haining, R. P., & Li, G. (2020). Regression Modelling Wih Spatial and Spatial-Te
 \usage{
 shape2mat(
   shape,
-  style = "B",
+  style = c("B", "W", "C", "S"),
   t = 1,
   st.type = "contemp",
   zero.policy = TRUE,

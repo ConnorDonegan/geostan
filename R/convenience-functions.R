@@ -448,16 +448,11 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' ## defaults to the contemporaneous connectivity structure
 #' Cst <- shape2mat(ohio, t = 5)
 #' 
-shape2mat <- function(shape, style = "B", t = 1, st.type = "contemp", zero.policy = TRUE, queen = TRUE, snap = sqrt(.Machine$double.eps)) {
+shape2mat <- function(shape, style = c("B", "W", "C", "S"), t = 1, st.type = "contemp", zero.policy = TRUE, queen = TRUE, snap = sqrt(.Machine$double.eps)) {
+  style <- match.arg(style)
   shape_class <- class(shape)
-  if (!any(c("sf", "SpatialPolygonsDataFrame", "SpatialPolygons") %in% shape_class)) stop("Shape must be of class SpatialPolygonsDataFrame or sf (simple features).")
-  if (any(c("SpatialPolygonsDataFrame", "SpatialPolygons") %in% shape_class)) {
+  if (!any(c("sf", "SpatialPolygonsDataFrame", "SpatialPolygons") %in% shape_class)) stop("Shape must be of class SpatialPolygons, SpatialPolygonsDataFrame, or sf (simple features).")
       w <- spdep::nb2mat(spdep::poly2nb(shape, queen = queen, snap = snap), style = style, zero.policy = zero.policy)
-  }
-  if ("sf" %in% shape_class) {
-          shape_spdf <- sf::as_Spatial(shape)
-          w <- spdep::nb2mat(spdep::poly2nb(shape_spdf, queen = queen, snap = snap), style = style, zero.policy = zero.policy)
-  }
   attributes(w)$dimnames <- NULL
   if (t > 1) { 
       if (style != "B") stop ("Only the binary coding scheme (style = 'B') has been implemented for space-time matrices.")
