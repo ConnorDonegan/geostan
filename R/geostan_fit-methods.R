@@ -15,7 +15,7 @@
 #' @seealso \link[geostan]{stan_esf} \link[rstan]{stan_plot}
 #' @examples 
 #' 
-#' library(geostan)
+#' library(ggplot2)
 #' library(sf)
 #' data(ohio)
 #' fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density),

@@ -1,0 +1,11 @@
+template:
+  params:
+    bootswatch: flatly
+destination: docs
+home:
+  title: R package for Bayesian spatial modeling
+  links:
+  - text: source code and issues
+    href: https://github.com/ConnorDonegan/geostan
+
+

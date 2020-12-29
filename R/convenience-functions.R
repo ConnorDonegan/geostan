@@ -30,7 +30,7 @@ aple <- function(x, w, digits = 3) {
     round(as.numeric( top / bottom ), digits = digits)
 }
 
-#' Simulate Spatially Autocorrelated Data
+#' Simulate spatially autocorrelated data
 #'
 #' @description Given a spatial weights matrix and degree of autocorrelation, returns autocorrelated data. 
 #' @export

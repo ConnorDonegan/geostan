@@ -53,7 +53,7 @@ Methods for fitted geostan models: extract residuals, fitted values, posterior p
 }
 \examples{
 
-library(geostan)
+library(ggplot2)
 library(sf)
 data(ohio)
 fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density),
