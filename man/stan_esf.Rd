@@ -165,7 +165,7 @@ fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density) + college_educated,
                 C = C,
                 silent = TRUE,
                 chains = 3,               
-                iter = 1e3,
+                iter = 1500,
                 family = student_t())
 
 # use rstan for sampler diagnostics

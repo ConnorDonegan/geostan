@@ -109,7 +109,7 @@
 #' # use rstan for sampler diagnostics
 #' stan_rhat(fit$stanfit)
 #' # see spatial autocorrelation diagnostics
-#' spdiag(fit, ohio)
+#' sp_diag(fit, ohio)
 #' 
 #' ## summary of estimates
 #' plot(fit, pars = c("beta", "intercept", "sigma"))

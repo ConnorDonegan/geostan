@@ -23,7 +23,7 @@ Widely Application Information Criteria (WAIC) for model evalution
 
 \dontrun{
 data(ohio)
-fit <- stan_glm(gop_growth ~ 1, data = ohio, chains = 1, iter = 1e3)
+fit <- stan_glm(gop_growth ~ 1, data = ohio, chains = 3, iter = 1500)
 waic(fit)
 }
 

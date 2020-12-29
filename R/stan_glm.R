@@ -89,7 +89,10 @@
 #' rstan::stan_ess(fit.pois$stanfit)
 #' # or for a particular parameter
 #' rstan::stan_ess(fit.pois$stanfit, "alpha_re")
-
+#'
+#' # spatial autocorrelation/residual diagnostics
+#' sp_diag(fit.pois, sentencing)
+#' 
 # posterior predictive check: predicted distribution should resemble observed distribution
 #' library(bayesplot)
 #' yrep <- posterior_predict(fit.pois, samples = 75)

@@ -277,7 +277,6 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>sf</span>)
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>sentencing</span>)
 
-<span class='co'># using a small number of iterations and a single chain only for compilation speed</span>
 <span class='co'># optionally add W to calculate residual SA internally</span>
 <span class='no'>W</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span>(<span class='no'>sentencing</span>, <span class='st'>"W"</span>)
 <span class='no'>sentencing</span>$<span class='no'>log_e</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='no'>sentencing</span>$<span class='no'>expected_sents</span>)
@@ -287,7 +286,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
                      <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>sentencing</span>,
                      <span class='kw'>C</span> <span class='kw'>=</span> <span class='no'>W</span>,
                     <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>3</span>,
-                    <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>1e3</span>,
+                    <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>1500</span>,
                     <span class='kw'>silent</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
  )</div><div class='output co'>#&gt; <span class='warning'>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
 #&gt; <span class='warning'>Running the chains for more iterations may help. See</span>

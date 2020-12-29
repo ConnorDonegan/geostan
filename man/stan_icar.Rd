@@ -148,7 +148,7 @@ fit.bym <- stan_icar(sents ~ offset(log_e),
                      type = "bym",
                      C = C,
                      cores = 3,
-                     iter = 1e3,
+                     iter = 1500,
                      refresh = 0
  )
 
