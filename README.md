@@ -31,4 +31,3 @@ package:
 remotes::install_github("ConnorDonegan/geostan")
 ```
 
-
