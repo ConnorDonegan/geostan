@@ -5,8 +5,7 @@ output:
 editor_options: 
   chunk_output_type: console
 ---
-
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- ::File no longer in use:: README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include=FALSE}
 stopifnot(require(knitr))
