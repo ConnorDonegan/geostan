@@ -1,0 +1,105 @@
+---
+title: "Introduction to spatial modeling with `geostan`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Introduction-to-geostan}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.align = "center",
+  comment = "#>"
+)
+#> run with:  sudo Rscript -e "rmarkdown::render('Introduction-to-geostan.Rmd')"
+```
+
+This vignette covers basic usage of the `geostan` package including:
+
+- descriptive spatial analysis,
+- setting and evaluating prior distributions,
+- fitting generalized linear models,
+- fitting spatial models with `stan_esf`, `stan_icar`, or `stan_car`,
+- producing and interpreting spatial model diagnostics.
+
+### Getting started
+
+Start by loading the `geostan`, `sf`, and `tidyverse` packages into your R environment along with the `sentencing` dataset:
+
+```{r message=FALSE, warning = FALSE}
+library(geostan)
+library(tidyverse)
+library(sf)
+data(ohio)
+```
+
+`ohio` is a simple features object with county-level Presidential vote shares and some county characteristics from the American Community Survey (ACS, 2016 5-year estimates) and Bureau of Labor Statistics (BLS). The data was analyzed using `geostan` in  Donegan et al. (2020). 
+
+```{r}
+head(ohio)
+```
+The variables with trailing `.se` in their names are the standard errors of their respective estimates from the American Community Survey. The dataset includes growth in the Republican (GOP) share of Presidential votes from the average across preceding elections (2004-2012) to 2016. Thus positive values indicate places where Trump improved upon the previous GOP performance and negative values show where he performed worse:
+
+```{r}
+ggplot(ohio) +
+  geom_sf(aes(fill = gop_growth)) +
+  scale_fill_gradient2() +
+  theme_void()
+```
+
+### Spatial weights matrices
+
+All of the spatial diagnostics and models in `geostan` require a spatial connectivity matrix. You can make a connectivity matrix by passing a `SpatialPolygons` or `sf` object to the `shape2mat` function. (It mainly wraps around a couple functions from the `spdep` package). The second argument to `shape2mat` is the scheme for encoding connectivity---"B", the default, produces a binary scheme (1 for neighbors, else 0) and "W" is row-standardized. 
+
+```{r}
+C <- shape2mat(ohio, "B")
+W <- shape2mat(ohio, "W")
+all(rowSums(W) == 1)
+```
+
+### Measuring spatial autocorrelation
+
+`geostan` has three functions for measuring spatial autocorrelation: the Moran coefficient `mc`, the APLE statistic `aple` (approximate profile likelihood estimator of the spatial autocorrelation parameter from a simultaneous autoregressive model), and a Moran scatter plot `moran_plot`. Note that the `aple` is only valid for relative small sample sizes.
+
+When using the row-standardized spatial weights matrix, the Moran plot will show the original values `y` after being centered---`y.c = y - mean(y)`---plotted against the mean spatially-laged value, `W %*% y.c`. The regression line is equal to the Moran coefficient.
+
+```{r}
+y <- ohio$gop_growth
+moran_plot(y, W)
+```
+ The plot is divided into quadrants, which lends points in each quadrant the following interpretation:
+
+- Points the upper-right (1st) quadrant are above-average values surrounded by above-average values (positive SA);
+- Points in the upper-left (2nd) quadrant are below-average values surrounded by above-average values (negative SA);
+- Points in the bottom-left (3rd) quadrant are below-average values surrounded by below-average values (positive SA);
+- Points in the bottom-right (4th) quadrant are above-average values surrounded by below-average values (negative (SA).
+
+Each point is thus a local indicator of spatial autocorrelation (LISA) which we could map to identify areas of high or low SA.
+
+```{r}
+L <- lisa(y, W)
+
+ggplot(ohio) +
+  geom_sf(aes(fill = L)) +
+  scale_fill_gradient2() +
+  theme_void()
+```
+
+If the binary coding scheme is used the spatially laged term is the *sum* of spatially-lagged values and the regression line will not equal the Moran coefficient. 
+
+```{r}
+mc(y, W)
+mc(y, C)
+```
+
+The `aple` requires the row-standardized spatial weights matrix, and arguably provides a more intuitive estimate of the degree of SA:
+```{r}
+aple(y, W)
+```
+
+
+

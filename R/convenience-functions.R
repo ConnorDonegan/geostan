@@ -24,6 +24,10 @@
 #' aple(x, w)
 #'
 aple <- function(x, w, digits = 3) {
+    if (any(rowSums(w) != 1)) {
+        message("Row standardizing w with: w <- w / rowSums(w)")
+        w <- w / rowSums(w)
+    }    
     z <- as.numeric(scale(x))
     n <- length(z)
     I <- diag(n)
@@ -207,15 +211,18 @@ moran_plot <- function(y, w, xlab = "y (centered)", ylab = "Spatial Lag", pch = 
 #' @seealso \link[geostan]{moran_plot} \link[geostan]{mc} \link[geostan]{aple}
 #' 
 lisa <- function(x, w, type = FALSE) {
-    if (any(rowSums(w) == 0)) {
-        zero.idx <- which(rowSums(w) == 0)
-        message(length(zero.idx), " observations with no neighbors found. They will be converted to NA.")
-    }
-    w <- w / rowSums(w)
+    if (any(rowSums(w) != 1)) {
+        message("Row standardizing w with: w <- w / rowSums(w)")
+        w <- w / rowSums(w)
+    }    
     z <- scale(x)
     lag <- as.numeric(w %*% z)
     zi <- as.numeric(z * lag)
-    zi[zero.idx] <- NA
+    if (any(rowSums(w) == 0)) {
+        zero.idx <- which(rowSums(w) == 0)
+        zi[zero.idx] <- NA        
+        message(length(zero.idx), " observations with no neighbors found. They will be converted to NA.")
+    }     
     if (!type) return (zi)
     type <- ifelse(z > 0 & lag > 0, "HH",
          ifelse(z < 0 & lag > 0, "LH",

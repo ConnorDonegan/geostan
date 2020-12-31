@@ -1,5 +1,5 @@
 ## produces warnings without spatialreg package; but spatialreg is not need for geostan.
-CRAN=TRUE
+CRAN=FALSE
 if (!CRAN) {
 library(spdep)
 context("SA indices")

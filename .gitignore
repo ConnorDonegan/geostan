@@ -5,3 +5,4 @@ data-raw/
 man/*
 .Rhistory
 *~
+inst/doc

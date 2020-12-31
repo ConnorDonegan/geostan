@@ -34,6 +34,9 @@ LinkingTo:
     rstan (>= 2.18.1),
     StanHeaders (>= 2.18.0)
 Suggests:
-    testthat
+    testthat,
+    knitr,
+    rmarkdown
 SystemRequirements: GNU make
 RoxygenNote: 7.1.0
+VignetteBuilder: knitr
