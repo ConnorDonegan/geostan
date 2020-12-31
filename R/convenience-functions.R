@@ -1,6 +1,7 @@
 #' Spatial autocorrelation estimator
 #'
-#' @description The approximate-profile likelihood estimator for the spatial autocorrelation parameter from a simultaneous autoregressive (SAR) model.
+#' @description The approximate-profile likelihood estimator for the spatial autocorrelation parameter from a simultaneous autoregressive (SAR) model. The \code{APLE} approximation is unreliable, and may be severely wrong, when the number of observations is large.
+#' 
 #' @param x Numeric vector of values, length n. This will be standardized internally with \code{scale(x)}.
 #' @param w An n x n row-standardized spatial connectivity matrix. See \link[geostan]{shape2mat}.
 #' @param digits Number of digits to round results to; defaults to \code{digits = 3}.
@@ -10,7 +11,10 @@
 #'
 #' Li, Honfei and Calder, Catherine A. and Cressie, Noel (2007). Beyond Moran's I: testing for spatial dependence based on the spatial autoregressive model. Geographical Analysis: 39(4): 357-375.
 #'
-#' @seealso \link[geostan]{mc} \link[geostan]{moran_plot} \link[geostan]{lisa} \link[geostan]{sim_sar}
+#' @seealso \link[geostan]{mc} \link[geostan]{moran_plot} \link[geostan]{lisa} \link[geostan]{sim_sar} \link[spatialreg]{errorsarlm}
+#'
+#' @details To check reliability, the \code{APLE} can be compared to an estimate of the spatial autocorrelation parameter from an intercept-only SAR model. 
+#' 
 #' @examples
 #' 
 #' library(sf)
