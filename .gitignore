@@ -6,3 +6,4 @@ man/*
 .Rhistory
 *~
 inst/doc
+/vignettes/observational-error.Rmd

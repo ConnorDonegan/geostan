@@ -3,6 +3,9 @@
 \name{moran_plot}
 \alias{moran_plot}
 \title{Moran plot}
+\source{
+Anselin, Luc. "Local indicators of spatial association—LISA." Geographical analysis 27, no. 2 (1995): 93-115.
+}
 \usage{
 moran_plot(
   y,
@@ -56,5 +59,5 @@ moran_plot(y, w)
 
 }
 \seealso{
-\link[geostan]{mc} \link[geostan]{lisa} \link[geostan]{aple}
+\link[geostan]{mc}, \link[geostan]{lisa}, \link[geostan]{aple}
 }

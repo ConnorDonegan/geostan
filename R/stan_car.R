@@ -29,9 +29,9 @@
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.
 #' @param scalex Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param prior_only Draw samples from the prior distributions of parameters only; logical value, defaults to \code{FALSE}.
-#' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
-#' @param iter Number of samples per chain. Default \code{iter = 2000}.
-#' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.
+#' @param chains Number of MCMC chains to estimate. 
+#' @param iter Number of samples per chain. 
+#' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Set \code{refresh=0} to silence this.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{.9} and \code{max_treedepth = 15}.
 #' @param silent If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.
@@ -81,8 +81,6 @@
 #'                     family = poisson(),
 #'                     data = sentencing,
 #'                     C = C,
-#'                     chains = 3,
-#'                     iter = 1500,
 #'                     refresh = 0
 #' )
 #' 
@@ -102,7 +100,7 @@ stan_car <- function(formula, slx, re, data, ME = NULL, C, EV,
                      family = poisson(),
                      prior = NULL, prior_intercept = NULL, prior_tau = NULL, prior_phi_precision = c(2, 2),
                      centerx = FALSE, scalex = FALSE, prior_only = FALSE,
-                     chains = 4, iter = 2e3, refresh = 500, pars = NULL,
+                     chains = 4, iter = 10e3, refresh = 500, pars = NULL,
                      control = list(adapt_delta = .9, max_treedepth = 15),
                      silent = FALSE,
                      ...) {

@@ -87,6 +87,21 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
+    </li>
+    <li>
+      <a href="../articles/setting-priors.html">Setting prior distributions</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -126,7 +141,6 @@
   <span class='kw'>prior</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>prior_tau</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>prior_phi_scale</span> <span class='kw'>=</span> <span class='fl'>1</span>,
   <span class='kw'>centerx</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>scalex</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>prior_only</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
@@ -206,10 +220,6 @@ If and when setting priors for <code>beta</code> manually, remember to include p
       <td><p>Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter <code>alpha_tau</code>. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., <code>prior_tau = c(df = 15, location = 0, scale = 5)</code>.</p></td>
     </tr>
     <tr>
-      <th>prior_phi_scale</th>
-      <td><p>Prior for the scale of the spatial ICAR component <code>phi</code>. <code>phi</code> is scaled by the parameter <code>phi_scale</code> which is given a positively-constrained (half-) Gaussian prior distribution with its location parameter at zero and scale parameter set to <code>prior_phi_scale</code>. This defaults to <code>prior_phi_scale = 1</code>.</p></td>
-    </tr>
-    <tr>
       <th>centerx</th>
       <td><p>Should the covariates be centered prior to fitting the model? Defaults to <code>FALSE</code>.</p></td>
     </tr>
@@ -279,7 +289,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>The Stan code for the ICAR component of the model and the BYM2 option follows Morris et al. (2019). The ICAR component is returned in the parameter named <code>ssre</code> (spatially structured random effect).</p>
-<p>For all models, the ICAR prior is placed on the parameter vector <code>phi</code>; it is scaled by the scalar parameter <code>spatial_scale</code>.</p>
+<p>For all models, the ICAR prior is placed on the parameter vector <code>phi</code>; it is scaled by the scalar parameter <code>spatial_scale</code>, specified as follows.</p>
 <p>For <code>type = "iar"</code>, the spatial structure is simply <code>ssre[i] = phi[i] * spatial_scale</code>.</p>
 <p>For <code>type = "bym"</code>, the spatial structure <code>ssre</code> is the same as <code>"iar"</code> but an additional parameter vector <code>theta</code> is added to perform partial pooling across all observations (a `spatially unstructured random effect' <code>sure</code>), and <code>sure[i] = theta[i] * theta_scale</code>. The sum <code>phi * spatial_scale + theta * theta_scale = ssre + sure</code> is often referred to as the ``convolved random effect.''</p>
 <p>For <code>type = "bym2"</code>, <code>ssre</code> and <code>sure</code> share a single scale parameter (<code>spatial_scale</code>) but they are combined using a mixing parameter <code>rho</code>. The ``convolved random effect'' is then <code>[sqrt(rho / scale_factor) * phi + sqrt((1 - rho)) * theta] * spatial_scale</code>. The terms are factored out to obtain <code>sure</code> and <code>ssre</code>.</p>
@@ -303,8 +313,6 @@ If and when setting priors for <code>beta</code> manually, remember to include p
                      <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>sentencing</span>,
                      <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"bym"</span>,
                      <span class='kw'>C</span> <span class='kw'>=</span> <span class='no'>C</span>,
-                     <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>3</span>,
-                     <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>1500</span>,
                      <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>0</span>
  )</div><div class='output co'>#&gt; <span class='message'></span>
 #&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 1.15103493100263</span></div><div class='output co'>#&gt; <span class='message'></span>

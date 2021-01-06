@@ -87,6 +87,21 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
+    </li>
+    <li>
+      <a href="../articles/setting-priors.html">Setting prior distributions</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -129,7 +144,7 @@
   <span class='kw'>scalex</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>prior_only</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
   <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>4</span>,
-  <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>2000</span>,
+  <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>10000</span>,
   <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>500</span>,
   <span class='kw'>pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
   <span class='kw'>control</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='kw'>max_treedepth</span> <span class='kw'>=</span> <span class='fl'>15</span>),
@@ -213,15 +228,15 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>chains</th>
-      <td><p>Number of MCMC chains to estimate. Default <code>chains = 4</code>.</p></td>
+      <td><p>Number of MCMC chains to estimate.</p></td>
     </tr>
     <tr>
       <th>iter</th>
-      <td><p>Number of samples per chain. Default <code>iter = 2000</code>.</p></td>
+      <td><p>Number of samples per chain.</p></td>
     </tr>
     <tr>
       <th>refresh</th>
-      <td><p>Stan will print the progress of the sampler every <code>refresh</code> number of samples. Defaults to <code>500</code>; set <code>refresh=0</code> to silence this.</p></td>
+      <td><p>Stan will print the progress of the sampler every <code>refresh</code> number of samples. Set <code>refresh=0</code> to silence this.</p></td>
     </tr>
     <tr>
       <th>pars</th>
@@ -284,17 +299,9 @@ If and when setting priors for <code>beta</code> manually, remember to include p
                     <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span>(),
                     <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>sentencing</span>,
                     <span class='kw'>C</span> <span class='kw'>=</span> <span class='no'>C</span>,
-                    <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>3</span>,
-                    <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>1500</span>,
                     <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>0</span>
 )</div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 1.15103493100263</span></div><div class='output co'>#&gt; <span class='warning'>Warning: The largest R-hat is 1.06, indicating chains have not mixed.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#r-hat</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#bulk-ess</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#tail-ess</span></div><div class='input'>
+#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 1.15103493100263</span></div><div class='input'>
 <span class='co'># posterior predictive check: predicted distribution should resemble observed distribution</span>
 <span class='no'>yrep</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span>(<span class='no'>fit.car</span>, <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>75</span>)
 <span class='no'>y</span> <span class='kw'>&lt;-</span> <span class='no'>sentencing</span>$<span class='no'>sents</span>

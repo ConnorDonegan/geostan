@@ -30,9 +30,9 @@
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}. 
 #' @param scalex Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param prior_only Draw samples from the prior distributions of parameters only.
-#' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
-#' @param iter Number of samples per chain. Default \code{iter = 2000}.
-#' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.
+#' @param chains Number of MCMC chains to estimate. 
+#' @param iter Number of samples per chain. 
+#' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples; set \code{refresh=0} to silence this.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{0.95} and \code{max_treedepth = 15}.
 #' @param silent If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.
@@ -76,8 +76,6 @@
 #'                      family = poisson(),
 #'                      data = sentencing,
 #'                      C = W,
-#'                     chains = 3,
-#'                     iter = 1500,
 #'                     silent = TRUE
 #'  )
 #'
@@ -93,21 +91,11 @@
 #' # spatial autocorrelation/residual diagnostics
 #' sp_diag(fit.pois, sentencing)
 #' 
-# posterior predictive check: predicted distribution should resemble observed distribution
+# posterior predictive check
 #' library(bayesplot)
 #' yrep <- posterior_predict(fit.pois, samples = 75)
 #' y <- sentencing$sents
 #' ppc_dens_overlay(y, yrep)
-
-#' # map standardized incidence (sentencing) ratios
-#' E <- sentencing$expected_sents
-#' sentencing@data$ssr <- fitted(fit.pois)$mean / E
-#' ggplot(data=st_as_sf(sentencing),
-#'       aes(fill = ssr)) +
-#'  geom_sf() +
-#'  scale_fill_gradient2(midpoint = 1) +
-#'  theme_bw() +
-#'  ggtitle("Standardized state prison sentencing ratios, 1905-1910")
 #' }
 stan_glm <- function(formula, slx, re, data, ME = NULL, C, EV,
                      family = gaussian(),
@@ -115,7 +103,7 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C, EV,
                      prior_tau = NULL,
                      centerx = FALSE, scalex = FALSE,
                      prior_only = FALSE,
-                     chains = 4, iter = 2e3, refresh = 500,
+                     chains = 4, iter = 4e3, refresh = 1e3,
                      pars = NULL,
                      control = list(adapt_delta = 0.95, max_treedepth = 15),
                      silent = FALSE,

@@ -25,7 +25,6 @@ stan_icar(
   prior = NULL,
   prior_intercept = NULL,
   prior_tau = NULL,
-  prior_phi_scale = 1,
   centerx = FALSE,
   scalex = FALSE,
   prior_only = FALSE,
@@ -76,8 +75,6 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{prior_tau}{Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.}
 
-\item{prior_phi_scale}{Prior for the scale of the spatial ICAR component \code{phi}. \code{phi} is scaled by the parameter \code{phi_scale} which is given a positively-constrained (half-) Gaussian prior distribution with its location parameter at zero and scale parameter set to \code{prior_phi_scale}. This defaults to \code{prior_phi_scale = 1}.}
-
 \item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.}
 
 \item{scalex}{Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.}
@@ -123,7 +120,7 @@ Fit regression models using intrinsic conditional auto-regressive (ICAR) spatial
 \details{
 The Stan code for the ICAR component of the model and the BYM2 option follows Morris et al. (2019). The ICAR component is returned in the parameter named \code{ssre} (spatially structured random effect).
 
-For all models, the ICAR prior is placed on the parameter vector \code{phi}; it is scaled by the scalar parameter \code{spatial_scale}.
+For all models, the ICAR prior is placed on the parameter vector \code{phi}; it is scaled by the scalar parameter \code{spatial_scale}, specified as follows.
 
 For \code{type = "iar"}, the spatial structure is simply \code{ssre[i] = phi[i] * spatial_scale}.
 
@@ -147,8 +144,6 @@ fit.bym <- stan_icar(sents ~ offset(log_e),
                      data = sentencing,
                      type = "bym",
                      C = C,
-                     cores = 3,
-                     iter = 1500,
                      refresh = 0
  )
 

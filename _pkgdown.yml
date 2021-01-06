@@ -5,7 +5,7 @@ destination: docs
 home:
   title: R package for Bayesian spatial modeling
   links:
-  - text: source code and issues
+  - text: Source code
     href: https://github.com/ConnorDonegan/geostan
 
 

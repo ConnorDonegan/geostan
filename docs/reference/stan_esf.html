@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Spatial filtering models — stan_esf • geostan</title>
+<title>Spatial filtering — stan_esf • geostan</title>
 
 
 <!-- jquery -->
@@ -39,7 +39,7 @@
 
 
 
-<meta property="og:title" content="Spatial filtering models — stan_esf" />
+<meta property="og:title" content="Spatial filtering — stan_esf" />
 <meta property="og:description" content="Fit a spatial regression model using eigenvector spatial filtering where the spatial filter is 
 estimated using the regularized horseshoe prior." />
 
@@ -88,6 +88,21 @@ estimated using the regularized horseshoe prior." />
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
+    </li>
+    <li>
+      <a href="../articles/setting-priors.html">Setting prior distributions</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -104,7 +119,7 @@ estimated using the regularized horseshoe prior." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Spatial filtering models</h1>
+    <h1>Spatial filtering</h1>
     
     <div class="hidden name"><code>stan_esf.Rd</code></div>
     </div>
@@ -320,27 +335,32 @@ The value of <code>p0</code> is used to control the prior degree of sparsity in 
 
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>ohio</span>)
 <span class='no'>C</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span>(<span class='no'>ohio</span>, <span class='st'>"B"</span>)
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>stan_esf</span>(<span class='no'>gop_growth</span> ~ <span class='no'>historic_gop</span> + <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='no'>pop_density</span>) + <span class='no'>college_educated</span>,
-                <span class='kw'>slx</span> <span class='kw'>=</span> ~ <span class='no'>historic_gop</span> + <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='no'>pop_density</span>) + <span class='no'>college_educated</span>,
+<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'>stan_esf</span>(<span class='no'>gop_growth</span> ~ <span class='no'>historic_gop</span> + <span class='no'>college_educated</span>,
+                <span class='kw'>slx</span> <span class='kw'>=</span> ~ <span class='no'>historic_gop</span> + <span class='no'>college_educated</span>,
                 <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>ohio</span>,
                 <span class='kw'>scalex</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
                 <span class='kw'>C</span> <span class='kw'>=</span> <span class='no'>C</span>,
-                <span class='kw'>silent</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-                <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>3</span>,
-                <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>1500</span>,
-                <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'><a href='student_t.html'>student_t</a></span>())
-
+                <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'><a href='student_t.html'>student_t</a></span>())</div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: 10.7142419611244</span></div><div class='output co'>#&gt; <span class='message'>Scale: 12.488757925385</span></div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for beta</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt;                    Location    Scale
+#&gt; w.historic_gop            0 12.48876
+#&gt; w.college_educated        0 12.48876
+#&gt; historic_gop              0 12.48876
+#&gt; college_educated          0 12.48876</div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for sigma</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt; <span class='message'>Degrees of freedom: 10</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 12.488757925385</span></div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for nu</span></div><div class='output co'>#&gt; <span class='message'>Gamma</span></div><div class='output co'>#&gt; <span class='message'>alpha: 3</span></div><div class='output co'>#&gt; <span class='message'>beta: 0.2</span></div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for rhs</span></div><div class='output co'>#&gt; <span class='message'>Global shrinkage prior (scale_global): 0.243657961549269</span></div><div class='output co'>#&gt; <span class='message'>Slab degrees of freedom: 15</span></div><div class='output co'>#&gt; <span class='message'>Slab scale: 29.1218447680832</span></div><div class='input'>
 <span class='co'># use rstan for sampler diagnostics</span>
 <span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span>(<span class='no'>fit</span>$<span class='no'>stanfit</span>)</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='img'><img src='stan_esf-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># see spatial autocorrelation diagnostics</span>
-<span class='fu'>spdiag</span>(<span class='no'>fit</span>, <span class='no'>ohio</span>)</div><div class='output co'>#&gt; <span class='error'>Error in spdiag(fit, ohio): could not find function "spdiag"</span></div><div class='input'>
+<span class='fu'><a href='sp_diag.html'>sp_diag</a></span>(<span class='no'>fit</span>, <span class='no'>ohio</span>)</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='stan_esf-2.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>## summary of estimates</span>
-<span class='fu'><a href='https://rdrr.io/pkg/sf/man/plot.html'>plot</a></span>(<span class='no'>fit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"beta"</span>, <span class='st'>"intercept"</span>, <span class='st'>"sigma"</span>))</div><div class='img'><img src='stan_esf-2.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/pkg/sf/man/plot.html'>plot</a></span>(<span class='no'>fit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"beta"</span>, <span class='st'>"intercept"</span>, <span class='st'>"sigma"</span>))</div><div class='img'><img src='stan_esf-3.png' alt='' width='700' height='433' /></div><div class='input'>
 <span class='co'>## map the spatial filter</span>
 <span class='no'>ohio</span>$<span class='no'>esf</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='spatial.html'>spatial</a></span>(<span class='no'>fit</span>)$<span class='no'>mean</span>
 <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span>(<span class='no'>ohio</span>) +
       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span>(<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span>(<span class='kw'>fill</span> <span class='kw'>=</span> <span class='no'>esf</span>)) +
       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span>() +
-      <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_void</a></span>()</div><div class='img'><img src='stan_esf-3.png' alt='' width='700' height='433' /></div><div class='input'># } 
+      <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_void</a></span>()</div><div class='img'><img src='stan_esf-4.png' alt='' width='700' height='433' /></div><div class='input'># } 
 
 </div></pre>
   </div>

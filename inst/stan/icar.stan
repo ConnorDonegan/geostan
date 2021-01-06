@@ -12,7 +12,6 @@ data {
   int<lower=1, upper=n> node1[n_edges];
   int<lower=1, upper=n> node2[n_edges];
   vector<lower=0>[n] scale_factor;
-  real<lower=0> phi_scale_prior; 
 }
 
 transformed data {
@@ -39,7 +38,6 @@ transformed parameters {
     rho[1] = inv_logit(logit_rho[1]);
     f += ( sqrt(rho[1] * inv(scale_factor)) .* phi + sqrt(1 - rho[1]) * theta ) * spatial_scale;
   }
-//  f += phi_tilde * phi_scale;
 #include parts/trans_params_expression.stan
 }
 
@@ -67,10 +65,7 @@ model {
    if (type == 3) logit_rho[1] ~ std_normal();
    }
    target += -0.5 * dot_self(phi[node1] - phi[node2]);
-   spatial_scale ~ std_normal();
-// IAR model
-//  phi_tilde ~ icar_normal(n, node1, node2);
-//  phi_scale ~ normal(0, phi_scale_prior);
+  spatial_scale ~ std_normal();
  }
 
 generated quantities {

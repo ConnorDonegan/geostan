@@ -3,6 +3,11 @@
 \name{mc}
 \alias{mc}
 \title{The Moran coefficient}
+\source{
+Chun, Yongwan, and Daniel A. Griffith. Spatial statistics and geostatistics: theory and applications for geographic information science and technology. Sage, 2013.
+
+Cliff, Andrew David, and J. Keith Ord. Spatial processes: models & applications. Taylor & Francis, 1981.
+}
 \usage{
 mc(x, w, digits = 3)
 }
@@ -30,8 +35,7 @@ w <- shape2mat(ohio, style = "W")
 x <- ohio$unemployment
 mc(x, w)
 
-
 }
 \seealso{
-\link[geostan]{moran_plot} \link[geostan]{lisa} \link[geostan]{aple}
+\link[geostan]{moran_plot}, \link[geostan]{lisa}, \link[geostan]{aple}
 }

@@ -19,6 +19,7 @@
 #' If \code{summary = TRUE} the return value is a data frame with the expected value of the posterior distribution (column \code{mu}) and 100*width credible intervals for, respectively, the posterior predictive distribution (columns \code{pred.lwr}, \code{pred.upr}) and mean outcome (columns \code{mu.lwr}, \code{mu.upr}). The width of the intervals and the quantiles corresponding to the upper and lower limits of the credible intervals are returned as an attribute of the data frame (use \code{attributes(df)$interval} to retrieve them, where \code{df} is the data frame returned by \code{posterior_predict}).
 #'
 #' @examples
+#' \dontrun{
 #' library(bayesplot)
 #' library(ggplot2)
 #' library(sf)
@@ -28,10 +29,8 @@
 #' fit <- stan_esf(gop_growth ~ 1,
 #'                 data = ohio,
 #'                 C = shape2mat(ohio),
-#'                 silent = TRUE,
-#'                 chains = 1,  # chains = 4
-#'                 iter = 200, # iter = 2e3
-#'                 cores = 1) # cores = 4
+#'                 refresh = 0
+#' ) 
 #' 
 #' # posterior predictive check (density overlay)
 #'  # compare distribution of observations to the predictive distribution
@@ -67,7 +66,7 @@
 #'   geom_ribbon(aes(ymin = pred.lwr,
 #'                   ymax = pred.upr),
 #'               fill = "blue", alpha = 0.5)
-#' 
+#' }
 #' 
 posterior_predict <- function(object, newdata, C, samples, predictive = TRUE, re_form = NULL, spatial = TRUE, summary = FALSE, width = 0.95, seed, centerx = FALSE, scalex = FALSE) {
     if (!inherits(object, "geostan_fit")) stop ("object must be of class geostan_fit.")

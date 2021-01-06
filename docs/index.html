@@ -46,6 +46,21 @@
 <li>
   <a href="reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
+    </li>
+    <li>
+      <a href="articles/setting-priors.html">Setting prior distributions</a>
+    </li>
+  </ul>
+</li>
       </ul>
 <ul class="nav navbar-nav navbar-right"></ul>
 </div>
@@ -63,7 +78,7 @@
 <div id="geostan" class="section level3">
 <h3 class="hasAnchor">
 <a href="#geostan" class="anchor"></a>geostan</h3>
-<p>The <strong>geostan</strong> R package provides a user-friendly interface to hierarchical Bayesian models (HBMs) for areal data. It is designed for ease of use with a particular emphasis on spatial epidemiology and survey data. All of the models are fit using the Stan probabilistic programming language. The package is still under development.</p>
+<p>The <strong>geostan</strong> R package provides a user-friendly interface to hierarchical Bayesian models (HBMs) for spatial and spatio-temporal data. It is designed for relative ease of use and developed with a particular emphasis on spatial epidemiology and survey data for public health. All of the models are fit using the Stan probabilistic programming language, but users only need to be familiar with the R language.</p>
 <p>The following models are implemented:</p>
 <ul>
 <li>Generalized linear models with Gaussian, Student’s <em>t</em>, Poisson, and Binomial likelihood functions.</li>
@@ -71,12 +86,12 @@
 <li>Eigenvector spatial filtering (ESF) models.</li>
 <li>Intrinsic conditional autoregressive (IAR) models including Besag-York-Mollie (BYM) models and the innovation (BYM2) introduced by Riebler et al. (2016)</li>
 </ul>
-<p>All of the models can incorporate additional ‘varying intercept’ terms for partial pooling of observations across geographies and users are encouraged to model data uncertainty using, e.g., standard errors on estimates from the American Community Suvey.</p>
+<p>All of the models can incorporate additional ‘varying intercept’ terms for partial pooling of observations across geographies and users are encouraged to model observational error using, e.g., standard errors on estimates from the American Community Suvey.</p>
 </div>
 <div id="package-installation" class="section level3">
 <h3 class="hasAnchor">
 <a href="#package-installation" class="anchor"></a>Package installation</h3>
-<p>If you’re using Linux you can try out a development version of the package:</p>
+<p>This package is still under development. If you’re using Linux you can try out a development version of the package:</p>
 <div class="sourceCode"><pre class="r"><span class="kw pkg">remotes</span><span class="kw ns">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html">install_github</a></span>(<span class="st">"ConnorDonegan/geostan"</span>)</pre></div>
 </div>
 
@@ -86,7 +101,7 @@
     <div class="links">
 <h2>Links</h2>
 <ul class="list-unstyled">
-<li>source code and issues at <br><a href="https://github.com/ConnorDonegan/geostan">https://​github.com/​ConnorDonegan/​geostan</a>
+<li>Source code at <br><a href="https://github.com/ConnorDonegan/geostan">https://​github.com/​ConnorDonegan/​geostan</a>
 </li>
 </ul>
 </div>

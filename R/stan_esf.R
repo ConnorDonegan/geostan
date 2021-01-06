@@ -1,4 +1,4 @@
-#' Spatial filtering models
+#' Spatial filtering
 #'
 #' @export
 #' @description Fit a spatial regression model using eigenvector spatial filtering where the spatial filter is 
@@ -96,14 +96,11 @@
 #' 
 #' data(ohio)
 #' C <- shape2mat(ohio, "B")
-#' fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density) + college_educated,
-#'                 slx = ~ historic_gop + log(pop_density) + college_educated,
+#' fit <- stan_esf(gop_growth ~ historic_gop + college_educated,
+#'                 slx = ~ historic_gop + college_educated,
 #'                 data = ohio,
 #'                 scalex = TRUE,
 #'                 C = C,
-#'                 silent = TRUE,
-#'                 chains = 3,               
-#'                 iter = 1500,
 #'                 family = student_t())
 #'
 #' # use rstan for sampler diagnostics

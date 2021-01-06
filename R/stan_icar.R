@@ -28,13 +28,12 @@
 #' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. 
 #' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.
-#' @param prior_phi_scale Prior for the scale of the spatial ICAR component \code{phi}. \code{phi} is scaled by the parameter \code{phi_scale} which is given a positively-constrained (half-) Gaussian prior distribution with its location parameter at zero and scale parameter set to \code{prior_phi_scale}. This defaults to \code{prior_phi_scale = 1}.
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.
 #' @param scalex Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param prior_only Draw samples from the prior distributions of parameters only.
-#' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
-#' @param iter Number of samples per chain. Default \code{iter = 2000}.
-#' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.
+#' @param chains Number of MCMC chains to estimate. 
+#' @param iter Number of samples per chain. .
+#' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples; set \code{refresh=0} to silence this.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{.9} and \code{max_treedepth = 15}.
 #' @param silent If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.
@@ -42,7 +41,7 @@
 #' @details
 #'  The Stan code for the ICAR component of the model and the BYM2 option follows Morris et al. (2019). The ICAR component is returned in the parameter named \code{ssre} (spatially structured random effect).
 #'
-#' For all models, the ICAR prior is placed on the parameter vector \code{phi}; it is scaled by the scalar parameter \code{spatial_scale}.
+#' For all models, the ICAR prior is placed on the parameter vector \code{phi}; it is scaled by the scalar parameter \code{spatial_scale}, specified as follows.
 #'
 #' For \code{type = "iar"}, the spatial structure is simply \code{ssre[i] = phi[i] * spatial_scale}.
 #'
@@ -95,8 +94,6 @@
 #'                      data = sentencing,
 #'                      type = "bym",
 #'                      C = C,
-#'                      cores = 3,
-#'                      iter = 1500,
 #'                      refresh = 0
 #'  )
 #'
@@ -121,9 +118,9 @@ stan_icar <- function(formula, slx, re, data,
                       scale_factor = NULL,
                       ME = NULL, C, EV,
                       family = poisson(),
-                      prior = NULL, prior_intercept = NULL, prior_tau = NULL, prior_phi_scale = 1,
+                      prior = NULL, prior_intercept = NULL, prior_tau = NULL,
                       centerx = FALSE, scalex = FALSE, prior_only = FALSE,
-                      chains = 4, iter = 2e3, refresh = 500, pars = NULL,
+                      chains = 4, iter = 4e3, refresh = 1e3, pars = NULL,
                       control = list(adapt_delta = .9, max_treedepth = 15),
                       silent = FALSE,
                       ...) {
@@ -232,7 +229,6 @@ stan_icar <- function(formula, slx, re, data,
   ## IAR STUFF -------------
   iar.list <- prep_icar_data(C, scale_factor = scale_factor)
   standata <- c(standata, iar.list)
-  standata$phi_scale_prior <- prior_phi_scale
   standata$type <- match(type, c("iar", "bym", "bym2"))
   ## DATA MODEL STUFF -------------  
   me.list <- prep_me_data(ME, x.list$x)

@@ -87,6 +87,21 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
+    </li>
+    <li>
+      <a href="../articles/setting-priors.html">Setting prior distributions</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -285,21 +300,21 @@ If and when setting priors for <code>beta</code> manually, remember to include p
                      <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span>(),
                      <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>sentencing</span>,
                      <span class='kw'>C</span> <span class='kw'>=</span> <span class='no'>W</span>,
-                    <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>3</span>,
-                    <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>1500</span>,
                     <span class='kw'>silent</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
- )</div><div class='output co'>#&gt; <span class='warning'>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#bulk-ess</span></div><div class='input'>
+ )
+
 <span class='co'># diagnostics plot: Rhat values should all by very near 1</span>
 <span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>rstan</span>)
 <span class='kw pkg'>rstan</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span>(<span class='no'>fit.pois</span>$<span class='no'>stanfit</span>)</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='img'><img src='stan_glm-1.png' alt='' width='700' height='433' /></div><div class='input'> <span class='co'># see effective sample size for all parameters and generated quantities</span>
  <span class='co'># (including residuals, predicted values, etc.)</span>
 <span class='kw pkg'>rstan</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_ess</a></span>(<span class='no'>fit.pois</span>$<span class='no'>stanfit</span>)</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='img'><img src='stan_glm-2.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># or for a particular parameter</span>
-<span class='kw pkg'>rstan</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_ess</a></span>(<span class='no'>fit.pois</span>$<span class='no'>stanfit</span>, <span class='st'>"alpha_re"</span>)</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='img'><img src='stan_glm-3.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>bayesplot</span>)
+<span class='kw pkg'>rstan</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_ess</a></span>(<span class='no'>fit.pois</span>$<span class='no'>stanfit</span>, <span class='st'>"alpha_re"</span>)</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='img'><img src='stan_glm-3.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='co'># spatial autocorrelation/residual diagnostics</span>
+<span class='fu'><a href='sp_diag.html'>sp_diag</a></span>(<span class='no'>fit.pois</span>, <span class='no'>sentencing</span>)</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='stan_glm-4.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>bayesplot</span>)
 <span class='no'>yrep</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span>(<span class='no'>fit.pois</span>, <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>75</span>)
 <span class='no'>y</span> <span class='kw'>&lt;-</span> <span class='no'>sentencing</span>$<span class='no'>sents</span>
-<span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span>(<span class='no'>y</span>, <span class='no'>yrep</span>)</div><div class='img'><img src='stan_glm-4.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># map standardized incidence (sentencing) ratios</span>
+<span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span>(<span class='no'>y</span>, <span class='no'>yrep</span>)</div><div class='img'><img src='stan_glm-5.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># map standardized incidence (sentencing) ratios</span>
 <span class='no'>E</span> <span class='kw'>&lt;-</span> <span class='no'>sentencing</span>$<span class='no'>expected_sents</span>
 <span class='no'>sentencing</span>@<span class='kw'>data</span>$<span class='no'>ssr</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/fitted.values.html'>fitted</a></span>(<span class='no'>fit.pois</span>)$<span class='no'>mean</span> / <span class='no'>E</span>
 <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span>(<span class='kw'>data</span><span class='kw'>=</span><span class='fu'><a href='https://rdrr.io/pkg/sf/man/st_as_sf.html'>st_as_sf</a></span>(<span class='no'>sentencing</span>),
@@ -307,7 +322,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span>() +
  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span>(<span class='kw'>midpoint</span> <span class='kw'>=</span> <span class='fl'>1</span>) +
  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_bw</a></span>() +
- <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>ggtitle</a></span>(<span class='st'>"Standardized state prison sentencing ratios, 1905-1910"</span>)</div><div class='img'><img src='stan_glm-5.png' alt='' width='700' height='433' /></div><div class='input'># }
+ <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>ggtitle</a></span>(<span class='st'>"Standardized state prison sentencing ratios, 1905-1910"</span>)</div><div class='img'><img src='stan_glm-6.png' alt='' width='700' height='433' /></div><div class='input'># }
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

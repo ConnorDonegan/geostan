@@ -87,6 +87,21 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
+    </li>
+    <li>
+      <a href="../articles/setting-priors.html">Setting prior distributions</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -202,7 +217,7 @@
 <span class='co'># print and plot results</span>
 <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; Spatial Regression Results 
 #&gt; Formula: gop_growth ~ historic_gop + log(pop_density)
-#&gt; &lt;environment: 0x556a394c5620&gt;
+#&gt; &lt;environment: 0x56456dc14670&gt;
 #&gt; Data models (ME): none
 #&gt; Spatial method (outcome):  ESF 
 #&gt; Likelihood function:  gaussian 
@@ -226,7 +241,7 @@
 #&gt; log(pop_density) 0.999
 #&gt; sigma            1.005
 #&gt; 
-#&gt; Samples were drawn using NUTS(diag_e) at Tue Dec 29 17:52:49 2020.
+#&gt; Samples were drawn using NUTS(diag_e) at Wed Jan  6 13:43:06 2021.
 #&gt; For each parameter, n_eff is a crude measure of effective sample size,
 #&gt; and Rhat is the potential scale reduction factor on split chains (at 
 #&gt; convergence, Rhat=1).</div><div class='input'><span class='fu'><a href='https://rdrr.io/pkg/sf/man/plot.html'>plot</a></span>(<span class='no'>fit</span>)</div><div class='img'><img src='geostan_fit-1.png' alt='' width='700' height='433' /></div><div class='input'>

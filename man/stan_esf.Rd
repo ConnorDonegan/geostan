@@ -2,7 +2,7 @@
 % Please edit documentation in R/stan_esf.R
 \name{stan_esf}
 \alias{stan_esf}
-\title{Spatial filtering models}
+\title{Spatial filtering}
 \source{
 Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems, 18(1), 67-85. \link{10.1007/s10109-015-0225-3}
 
@@ -158,14 +158,11 @@ options(mc.cores = parallel::detectCores())
 
 data(ohio)
 C <- shape2mat(ohio, "B")
-fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density) + college_educated,
-                slx = ~ historic_gop + log(pop_density) + college_educated,
+fit <- stan_esf(gop_growth ~ historic_gop + college_educated,
+                slx = ~ historic_gop + college_educated,
                 data = ohio,
                 scalex = TRUE,
                 C = C,
-                silent = TRUE,
-                chains = 3,               
-                iter = 1500,
                 family = student_t())
 
 # use rstan for sampler diagnostics

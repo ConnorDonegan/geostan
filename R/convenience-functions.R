@@ -1,3 +1,38 @@
+#' Effective sample size for spatial data
+#'
+#' @description An approximate calculation for the effective sample size for spatially autocorrelated data.
+#' 
+#' @param n Number of observations.
+#' @param rho Spatial autocorrelation parameter from a simultaneous autoregressive model.
+#' @return Rerturns $n^*$, a numeric value.
+#'
+#' @details
+#'
+#' @seealso \link[geostan]{sim_sar}, \link[spatialreg]{aple}
+#'
+#' @source
+#'
+#' Griffith, Daniel A. (2005). Effective geographic sample size in the presence of spatial autocorrelation. *Annal of the Association of American Geographers.* Vol. 95(4): 740-760.
+#' 
+#' @examples
+#'
+#' n_eff(100, 0)
+#' n_eff(100, 0.5)
+#' n_eff(100, 0.9)
+#' n_eff(100, 1)
+#'
+#' @export
+#' 
+n_eff <- function(n, rho) {
+    a = 1 / (1 - exp(-1.92369)) 
+    b = (n-1) / n
+    c = (1 - exp(-2.12373 * rho + 0.20024 * sqrt(rho)))
+    n_eff <- n * (1 - a * b * c)
+    return (n_eff)
+}
+
+
+
 #' Spatial autocorrelation estimator
 #'
 #' @description The approximate-profile likelihood estimator for the spatial autocorrelation parameter from a simultaneous autoregressive (SAR) model. The \code{APLE} approximation is unreliable, and may be severely wrong, when the number of observations is large.
@@ -6,14 +41,14 @@
 #' @param w An n x n row-standardized spatial connectivity matrix. See \link[geostan]{shape2mat}.
 #' @param digits Number of digits to round results to; defaults to \code{digits = 3}.
 #' @return the APLE estimate.
-#' @export
+#'
+#' @seealso \link[geostan]{mc}, \link[geostan]{moran_plot}, \link[geostan]{lisa}, \link[geostan]{sim_sar}, \link[spatialreg]{errorsarlm}
+#'
+#' @details To check reliability, the \code{APLE} can be compared to an estimate of the spatial autocorrelation parameter from an intercept-only SAR model. 
+#'
 #' @source
 #'
 #' Li, Honfei and Calder, Catherine A. and Cressie, Noel (2007). Beyond Moran's I: testing for spatial dependence based on the spatial autoregressive model. Geographical Analysis: 39(4): 357-375.
-#'
-#' @seealso \link[geostan]{mc} \link[geostan]{moran_plot} \link[geostan]{lisa} \link[geostan]{sim_sar} \link[spatialreg]{errorsarlm}
-#'
-#' @details To check reliability, the \code{APLE} can be compared to an estimate of the spatial autocorrelation parameter from an intercept-only SAR model. 
 #' 
 #' @examples
 #' 
@@ -23,6 +58,8 @@
 #' x <- ohio$unemployment
 #' aple(x, w)
 #'
+#' @export
+#' 
 aple <- function(x, w, digits = 3) {
     if (any(rowSums(w) != 1)) {
         message("Row standardizing w with: w <- w / rowSums(w)")
@@ -43,20 +80,20 @@ aple <- function(x, w, digits = 3) {
 #'
 #' @description Given a spatial weights matrix and degree of autocorrelation, returns autocorrelated data. 
 #' @export
-#' @param n The number of samples required. Defaults to \code{n=1} to return a \code{k}-length vector; if \code{n>1}, an \code{n x k} matrix is returned (i.e. each row will contain a sample of correlated values).
-#' @param mu A \code{k}-length vector of mean values. Defaults to a vector of zeros with length equal to \code{nrow(W)}.
-#' @param w Row-standardized \code{k x k} spatial weights matrix.
-#' @param rho Spatial autocorrelation parameter in the range [-1, 1]. Typically a scalar value; otherwise a K-length numeric vector.
-#' @param sigma Scale parameter (standard deviation). Defaults to \code{sigma = 1}. Typically a scalar value; otherwise a K-length numeric vector.
+#' @param m The number of samples required. Defaults to \code{m=1} to return an \code{n}-length vector; if \code{m>1}, an \code{m x n} matrix is returned (i.e. each row will contain a sample of correlated values).
+#' @param mu An \code{n}-length vector of mean values. Defaults to a vector of zeros with length equal to \code{nrow(w)}.
+#' @param w Row-standardized \code{n x n} spatial weights matrix.
+#' @param rho Spatial autocorrelation parameter in the range [-1, 1]. Typically a scalar value; otherwise an n-length numeric vector.
+#' @param sigma Scale parameter (standard deviation). Defaults to \code{sigma = 1}. Typically a scalar value; otherwise an n-length numeric vector.
 #' @param ... further arguments passed to \code{MASS::mvrnorm}.
 #' 
 #' @return
 #'
-#' If \code{n = 1} a vector of the same length as \code{mu}, otherwise an \code{n x length(mu)} matrix with one sample in each row.
+#' If \code{m = 1} a vector of the same length as \code{mu}, otherwise an \code{m x length(mu)} matrix with one sample in each row.
 #'
 #' @details Calls \code{MASS::mvrnorm} internally to draw from the multivariate normal distribution. The covariance matrix is specified following the simultaneous autoregressive (SAR) model. 
 #'
-#' @seealso \link[geostan]{aple} 
+#' @seealso \link[geostan]{aple}, \link[geostan]{shape2mat}, \link[MASS]{mvrnorm} 
 #' 
 #' @examples
 #' 
@@ -65,23 +102,21 @@ aple <- function(x, w, digits = 3) {
 #' x <- sim_sar(w=w, rho=.8)
 #' aple(x, w)
 #'
-#' @seealso \link[geostan]{shape2mat} \link[MASS]{mvrnorm} 
-#'
 #' @importFrom MASS mvrnorm
 #' 
-sim_sar <- function(n = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
+sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
     if (!inherits(w, "matrix") | mode(w) != "numeric" | nrow(w) != ncol(w) | !all(rowSums(w) %in% c(0,1))) stop("W must be a square, row-standardized numeric matrix.")
-    K <- nrow(w)
+    N <- nrow(w)
     if (missing(mu)) {
-        mu <- rep(0, K)
+        mu <- rep(0, N)
     } else {
-        if (length(mu) != K | !inherits(mu, "numeric")) stop("mu must be a numeric vector with length equal to nrow(W).")
+        if (length(mu) != N | !inherits(mu, "numeric")) stop("mu must be a numeric vector with length equal to nrow(W).")
         }
-    if (!inherits(rho, "numeric") | !length(rho) %in% c(1, K) | any(rho > 1 | rho < -1)) stop("rho must be numeric value within range [-1, 1], or a k-length numeric vector where K=nrow(W).")
-    if (!inherits(sigma, "numeric") | !length(sigma) %in% c(1, K) | !all(sigma > 0)) stop("sigma must be a positive numeric value, or k-length numeric vector, with K=nrow(W).")
-    I <- diag(K)
+    if (!inherits(rho, "numeric") | !length(rho) %in% c(1, N) | any(rho > 1 | rho < -1)) stop("rho must be numeric value within range [-1, 1], or a k-length numeric vector where K=nrow(W).")
+    if (!inherits(sigma, "numeric") | !length(sigma) %in% c(1, N) | !all(sigma > 0)) stop("sigma must be a positive numeric value, or k-length numeric vector, with K=nrow(W).")
+    I <- diag(N)
     S <- crossprod(solve(I - rho * w)) * sigma
-    x <- MASS::mvrnorm(n = n, mu = mu, Sigma = S, ...)
+    x <- MASS::mvrnorm(n = m, mu = mu, Sigma = S, ...)
     return(x)
 }
 
@@ -96,7 +131,7 @@ sim_sar <- function(n = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #'
 #' @details If any observations with no neighbors are found (i.e. \code{any(rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
 #'
-#' @seealso \link[geostan]{moran_plot} \link[geostan]{lisa} \link[geostan]{aple}
+#' @seealso \link[geostan]{moran_plot}, \link[geostan]{lisa}, \link[geostan]{aple}
 #' 
 #' @examples
 #' 
@@ -106,7 +141,13 @@ sim_sar <- function(n = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' x <- ohio$unemployment
 #' mc(x, w)
 #'
+#' @source
 #'
+#' Chun, Yongwan, and Daniel A. Griffith. Spatial statistics and geostatistics: theory and applications for geographic information science and technology. Sage, 2013.
+#' 
+#' Cliff, Andrew David, and J. Keith Ord. Spatial processes: models & applications. Taylor & Francis, 1981.
+#'
+#' 
 mc <- function(x, w, digits = 3) {
     if(missing(x) | missing(w)) stop("Must provide data x (length n vector) and n x n spatial weights matrix (w).")    
     if (any(rowSums(w) == 0)) {
@@ -144,7 +185,11 @@ mc <- function(x, w, digits = 3) {
 #' 
 #' @return Returns a \code{gg} plot, a scatter plot with \code{y} on the x-axis and its spatially lagged values on the y-axis (i.e. a Moran plot).
 #'
-#' @seealso \link[geostan]{mc} \link[geostan]{lisa} \link[geostan]{aple}
+#' @seealso \link[geostan]{mc}, \link[geostan]{lisa}, \link[geostan]{aple}
+#'
+#' @source
+#'
+#' Anselin, Luc. "Local indicators of spatial association—LISA." Geographical analysis 27, no. 2 (1995): 93-115.
 #' 
 #' @examples
 #' 
@@ -168,7 +213,9 @@ moran_plot <- function(y, w, xlab = "y (centered)", ylab = "Spatial Lag", pch = 
     ylag <- as.numeric(w %*% y)
     sub <- paste0("MC = ", round(mc(y, w),3))
     ggplot(data.frame(y = y,
-                      ylag = ylag)) +
+                      ylag = ylag),
+           aes(x = y, y = ylag)
+           ) +
     geom_hline(yintercept = mean(ylag),
                lty = 3) +
     geom_vline(xintercept = mean(y),
@@ -202,13 +249,17 @@ moran_plot <- function(y, w, xlab = "y (centered)", ylab = "Spatial Lag", pch = 
 #' @param w An n x n spatial connectivity matrix. See \link[geostan]{shape2mat}. This will automatically be row-standardized!
 #' @param type Return the type of association also (High-High, Low-Low, High-Low, and Low-High)? Defaults to \code{FALSE}.
 #'
-#' @details The values will be standardized with \code{scale(x)} first and \code{w} will be row-standardized. Then the LISA is the product of a value with its mean surrounding value. These are for exploratory analysis and model diagnostics only, not ``cluster detection.'' Values greater than 2 or less than -2 are generally of interest but there is not a sound basis for applying normal distribution theory here.
+#' @details The values will be standardized with \code{scale(x)} first and \code{w} will be row-standardized. Then the LISA is the product of a value with its mean surrounding value. These are for exploratory analysis and model diagnostics. The function uses Equation 7 from Anselin (1995).
 #'
 #' An above-average value (i.e. positive z-value) with positive mean spatial lag is of type "High-High"; a low value surrounded by high values is of type "Low-High", and so on.
 #' 
 #' @return If \code{type = FALSE} a numeric vector of lisa values for exploratory analysis of local spatial autocorrelation. If \code{type = TRUE}, a \code{data.frame} with columns \code{zi} (the lisa value) and \code{type}.
 #'
-#' @seealso \link[geostan]{moran_plot} \link[geostan]{mc} \link[geostan]{aple}
+#' @seealso \link[geostan]{moran_plot}, \link[geostan]{mc}, \link[geostan]{aple}
+#'
+#' @source
+#'
+#' Anselin, Luc. "Local indicators of spatial association—LISA." Geographical analysis 27, no. 2 (1995): 93-115.
 #' 
 lisa <- function(x, w, type = FALSE) {
     if (any(rowSums(w) != 1)) {
@@ -244,7 +295,7 @@ lisa <- function(x, w, type = FALSE) {
 #'
 #' @return A grid of spatial diagnostic plots including a Moran plot plus a map and histogram of \code{y}. If a fitted \code{geostan} model is provided, model residuals are plotted and mapped (i.e. \code{y = resid(fit)$mean}).
 #'
-#' @seealso \link[geostan]{me_diag} \link[geostan]{mc} \link[geostan]{moran_plot} \link[geostan]{aple}
+#' @seealso \link[geostan]{me_diag}, \link[geostan]{mc}, \link[geostan]{moran_plot}, \link[geostan]{aple}
 #' 
 #' @export
 #' @importFrom gridExtra grid.arrange
@@ -255,7 +306,7 @@ lisa <- function(x, w, type = FALSE) {
 #' library(sf)
 #' data(ohio)
 #' sp_diag(ohio$gop_growth, ohio)
-#' fit <- stan_glm(gop_growth ~ 1, data = ohio, chains = 3, iter = 1e3)
+#' fit <- stan_glm(gop_growth ~ 1, data = ohio, refresh = 0)
 #' sp_diag(fit, ohio)
 #' }
 #' 
@@ -300,10 +351,11 @@ sp_diag <- function(y,
 #' @param probs Lower and upper quantiles of the credible interval to plot. 
 #' @param plot If \code{FALSE}, return a \code{data.frame} with the raw data values and posterior summary of the modeled variable.
 #' @param size Size of points and lines, passed to \code{geom_pointrange}.
+#' @param index Integer value; use this if you wish to identify observations with the largest `n=index` absolute Delta values; data on the top `n=index` observations ordered by absolute Delta value will be printed to the console and the plots will be labeled with the indices of the identified observations.
 #' 
 #' @return A grid of spatial diagnostic plots for measurement error (i.e. data) models comparing the raw observations to the posterior distribution of the true values (given the specified observations, standard errors, and model). The Moran scatter plot and map depict the difference between the posterior means and the raw observations (i.e. shrinkage). 
 #'
-#' @seealso \link[geostan]{sp_diag} \link[geostan]{moran_plot} \link[geostan]{mc} \link[geostan]{aple}
+#' @seealso \link[geostan]{sp_diag}, \link[geostan]{moran_plot}, \link[geostan]{mc}, \link[geostan]{aple}
 #' @export
 #' @importFrom gridExtra grid.arrange
 #' @import ggplot2
@@ -319,13 +371,12 @@ sp_diag <- function(y,
 #' fit <- stan_glm(gop_growth ~ unemployment.acs,
 #'                 ME = ME,
 #'                 C = C,
-#'                 data = ohio,
-#'                 chains = 3,
-#'                 iter = 1e3,
+#'                 data = ohio, 
 #'                 prior_only = TRUE,
 #'                 refresh = 0
 #'                 )
 #' me_diag(fit, "unemployment.acs", ohio)
+#' me_diag(fit, "unemployment.acs", ohio, index = 3)
 #' }
 #' 
 me_diag <- function(fit,
@@ -334,7 +385,8 @@ me_diag <- function(fit,
                     w,
                     probs = c(0.025, 0.975),
                     plot = TRUE,
-                    size = 0.25
+                    size = 0.25,
+                    index = 0
                     ) {
     if (!varname %in% colnames(fit$data)) stop("varname is not found in colnames(fit$data). Provide the name of the variable as it appears in the model formula")
     if (length(varname) != 1) stop("Provide the name of the variable as it appears in the model formula.")
@@ -356,20 +408,22 @@ me_diag <- function(fit,
         x.lwr = x.lwr,
         x.upr = x.upr
     )
+    df$Delta <- x.mu - x.raw
     if (plot) {
         xlbl <- paste(varname, "(raw data)")
-        g.points <-  ggplot(df) +
+        g.points <-  ggplot(df,
+                            aes(x = x.raw,
+                                y = x.mu,
+                                ymin = x.lwr,
+                                ymax = x.upr
+                                )
+                            ) +
             geom_abline(
                 slope = 1,
                 intercept = 0,
                 lty = 2
             ) +
             geom_pointrange(
-                aes(x = x.raw,
-                    y = x.mu,
-                    ymin = x.lwr,
-                    ymax = x.upr
-                    ),
                 size = size
             ) +
             labs(
@@ -378,25 +432,55 @@ me_diag <- function(fit,
             ) +                
             theme_classic()
         if (!missing(w)) {
-            g.mc <- moran_plot(x.raw - x.mu, w) +
-                labs(x = paste("Posterior mean minus raw data"))
+            g.mc <- moran_plot(df$Delta, w) +
+                labs(
+                    x = expression(paste(Delta, ' (centered)'))
+                     )
         } else {
             w <- shape2mat(shape, style = "W")
-            g.mc <- moran_plot(x.raw - x.mu, w) +
-                labs(x = paste("Posterior mean minus raw data"))            
+            g.mc <- moran_plot(df$Delta, w) +
+                labs(x = expression(paste(Delta, ' (centered)')))            
         }
         map.delta <- ggplot(shape) +
-            geom_sf(aes(fill = df$x.mu - df$x.raw),
+            geom_sf(aes(fill = df$Delta),
                     lwd = 0.05,
                     col = "gray20") +
-            scale_fill_gradient2(name = paste("Posterior mean minus raw data")) +
+            scale_fill_gradient2(name = bquote(Delta)) +
             theme_void() +
             theme(
                 legend.position = "bottom"
-                ) 
+            )
+        if (index) {            
+            message("Identifying the top ", index, " observations as ordered by their Delta values (Delta = posterior mean of x - raw x value):")
+            ordered.ids <- order(abs(df$Delta), decreasing = TRUE)[1:index]
+            print(df[ordered.ids, ])
+            df$ID <- NA
+            df$ID[ordered.ids] <- ordered.ids
+            g.points <- g.points +
+                geom_label(aes(label = df$ID),
+                           na.rm = TRUE,
+                           alpha = 0.9
+                           )
+            g.mc <- g.mc +
+                geom_label(aes(label = df$ID),
+                           alpha=0.9,
+                           na.rm = TRUE
+                           )
+            map.delta <- map.delta +
+                geom_sf(aes(col = !is.na(df$ID),
+                            fill = NULL),
+                        fill = alpha("white", 0)) +
+                scale_color_manual(
+                    breaks =  c(FALSE, TRUE),
+                    values = c(NA, "black"),
+                    guide = FALSE
+                    )
+                    
+        }
         return (gridExtra::grid.arrange(g.points, g.mc, map.delta, ncol = 3))
     } else return(df)
 }
+
 
 #' Extract eigenfunctions of a connectivity matrix for spatial filtering
 #'
@@ -413,7 +497,7 @@ me_diag <- function(fit,
 #'
 #' @return A \code{data.frame} of eigenvectors for spatial filtering. If \code{values=TRUE} then a named list is returned with elements \code{eigenvectors} and \code{eigenvalues}.
 #'
-#' @seealso \link[geostan]{stan_esf} \link[geostan]{mc}
+#' @seealso \link[geostan]{stan_esf}, \link[geostan]{mc}
 #' @examples
 #' 
 #' library(ggplot2)
@@ -721,7 +805,7 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, 
 #'
 #' @details This is used internally to prepare data for \link[geostan]{stan_iar} models. It can also be helpful for fitting custom ICAR models outside of \code{geostan}.
 #' 
-#' @seealso \link[geostan]{stan_icar} \link[geostan]{edges} \link[geostan]{shape2mat}
+#' @seealso \link[geostan]{stan_icar}, \link[geostan]{edges}, \link[geostan]{shape2mat}
 #'
 #' @examples
 #' 
@@ -758,5 +842,32 @@ prep_icar_data <- function(C, scale_factor = NULL) {
         comp.id = nb2$comp.id
     )
     return (l)
+}
+
+#' Download shapefiles
+#'
+#' @description Given a url to a shapefile in a compressed .zip file, download the file and unzip it into a folder in your working directory.
+#' 
+#' @param url url to download a shapefile.
+#' @param folder what to name the new folder in your working directory containing the shapefile
+#' 
+#' @return A folder in your working directory with the shapefile; filepaths are printed to the console.
+#'
+#' @examples
+#'
+#' url <- "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_state_20m.zip"
+#' get_shp(url, "states")
+#' states <- st_read("states")
+#' # to delete "states":
+#' unlink("states", recursive = TRUE)
+#' 
+#' @export
+#' @importFrom utils unzip download.file
+#' 
+get_shp <- function(url, folder = "shape") {
+	tmp.dir <- tempfile(fileext=".zip")
+	download.file(url, destfile = tmp.dir)
+	unzip(tmp.dir, exdir = folder)
+	list.files(folder, full.names = TRUE)
 }
 

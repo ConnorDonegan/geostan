@@ -41,5 +41,5 @@ ggplot(ohio) +
 
 }
 \seealso{
-\link[geostan]{stan_esf} \link[geostan]{mc}
+\link[geostan]{stan_esf}, \link[geostan]{mc}
 }
