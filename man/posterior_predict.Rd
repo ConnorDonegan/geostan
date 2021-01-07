@@ -53,6 +53,7 @@ If \code{summary = TRUE} the return value is a data frame with the expected valu
 Draw samples from the posterior predictive distribution of a fitted \code{geostan} model. Use the original data or new data, with or without the spatial component and other partial pooling terms.
 }
 \examples{
+\dontrun{
 library(bayesplot)
 library(ggplot2)
 library(sf)
@@ -62,10 +63,8 @@ data(ohio)
 fit <- stan_esf(gop_growth ~ 1,
                 data = ohio,
                 C = shape2mat(ohio),
-                silent = TRUE,
-                chains = 1,  # chains = 4
-                iter = 200, # iter = 2e3
-                cores = 1) # cores = 4
+                refresh = 0
+) 
 
 # posterior predictive check (density overlay)
  # compare distribution of observations to the predictive distribution
@@ -101,6 +100,6 @@ a +
   geom_ribbon(aes(ymin = pred.lwr,
                   ymax = pred.upr),
               fill = "blue", alpha = 0.5)
-
+}
 
 }

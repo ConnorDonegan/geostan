@@ -98,6 +98,9 @@
       <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
     </li>
     <li>
+      <a href="../articles/observational-error.html">Observational error models</a>
+    </li>
+    <li>
       <a href="../articles/setting-priors.html">Setting prior distributions</a>
     </li>
   </ul>
@@ -172,7 +175,7 @@
 <span class='no'>se</span> <span class='kw'>=</span> <span class='fl'>2</span>
 <span class='no'>z</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span>(<span class='kw'>n</span> <span class='kw'>=</span> <span class='fl'>30e3</span>, <span class='kw'>mean</span> <span class='kw'>=</span> <span class='no'>x</span>,  <span class='kw'>sd</span> <span class='kw'>=</span> <span class='no'>se</span>)
 <span class='no'>l.z</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='no'>z</span>)
-<span class='fu'><a href='https://rdrr.io/r/stats/sd.html'>sd</a></span>(<span class='no'>l.z</span>)</div><div class='output co'>#&gt; [1] 0.2140842</div><div class='input'><span class='fu'>se_log</span>(<span class='no'>x</span>, <span class='no'>se</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"mc"</span>)</div><div class='output co'>#&gt; [1] 0.2121679</div><div class='input'><span class='fu'>se_log</span>(<span class='no'>x</span>, <span class='no'>se</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"delta"</span>)</div><div class='output co'>#&gt; [1] 0.2</div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/stats/sd.html'>sd</a></span>(<span class='no'>l.z</span>)</div><div class='output co'>#&gt; [1] 0.2128783</div><div class='input'><span class='fu'>se_log</span>(<span class='no'>x</span>, <span class='no'>se</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"mc"</span>)</div><div class='output co'>#&gt; [1] 0.2119434</div><div class='input'><span class='fu'>se_log</span>(<span class='no'>x</span>, <span class='no'>se</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"delta"</span>)</div><div class='output co'>#&gt; [1] 0.2</div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

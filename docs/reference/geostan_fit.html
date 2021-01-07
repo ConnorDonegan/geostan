@@ -98,6 +98,9 @@
       <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
     </li>
     <li>
+      <a href="../articles/observational-error.html">Observational error models</a>
+    </li>
+    <li>
       <a href="../articles/setting-priors.html">Setting prior distributions</a>
     </li>
   </ul>
@@ -196,7 +199,7 @@
     <div class='dont-index'><p><a href='stan_esf.html'>stan_esf</a> <a href='https://mc-stan.org/rstan/reference/stan_plot.html'>stan_plot</a></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># \dontrun{</span>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
 <span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ggplot2</span>)
 <span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>sf</span>)
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>ohio</span>)
@@ -207,88 +210,33 @@
                <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>3</span>,
                <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>1e3</span>,
                <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>0</span> <span class='co'># less printing</span>
-)</div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: 10.7142419611244</span></div><div class='output co'>#&gt; <span class='message'>Scale: 12.488757925385</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for beta</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt;                  Location    Scale
-#&gt; historic_gop            0 12.48876
-#&gt; log(pop_density)        0 12.48876</div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for sigma</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt; <span class='message'>Degrees of freedom: 10</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 12.488757925385</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for rhs</span></div><div class='output co'>#&gt; <span class='message'>Global shrinkage prior (scale_global): 1</span></div><div class='output co'>#&gt; <span class='message'>Slab degrees of freedom: 15</span></div><div class='output co'>#&gt; <span class='message'>Slab scale: 29.1218447680832</span></div><div class='input'>
+)
+
 <span class='co'># print and plot results</span>
-<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>(<span class='no'>fit</span>)</div><div class='output co'>#&gt; Spatial Regression Results 
-#&gt; Formula: gop_growth ~ historic_gop + log(pop_density)
-#&gt; &lt;environment: 0x56456dc14670&gt;
-#&gt; Data models (ME): none
-#&gt; Spatial method (outcome):  ESF 
-#&gt; Likelihood function:  gaussian 
-#&gt; Link function:  identity 
-#&gt; Residual Moran Coefficient:  -0.062 
-#&gt; WAIC:  440.17 
-#&gt; Observations:  88 
-#&gt; RHS global shrinkage prior:  1 
-#&gt; Inference for Stan model: esf.
-#&gt; 3 chains, each with iter=1000; warmup=500; thin=1; 
-#&gt; post-warmup draws per chain=500, total post-warmup draws=1500.
-#&gt; 
-#&gt;                    mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff
-#&gt; intercept        10.710   0.005 0.273 10.175 10.524 10.711 10.894 11.248  2772
-#&gt; historic_gop     -2.643   0.011 0.416 -3.460 -2.930 -2.633 -2.355 -1.828  1314
-#&gt; log(pop_density) -5.617   0.016 0.472 -6.535 -5.929 -5.599 -5.306 -4.715   926
-#&gt; sigma             2.583   0.009 0.237  2.151  2.416  2.577  2.732  3.086   623
-#&gt;                   Rhat
-#&gt; intercept        1.000
-#&gt; historic_gop     1.000
-#&gt; log(pop_density) 0.999
-#&gt; sigma            1.005
-#&gt; 
-#&gt; Samples were drawn using NUTS(diag_e) at Wed Jan  6 13:43:06 2021.
-#&gt; For each parameter, n_eff is a crude measure of effective sample size,
-#&gt; and Rhat is the potential scale reduction factor on split chains (at 
-#&gt; convergence, Rhat=1).</div><div class='input'><span class='fu'><a href='https://rdrr.io/pkg/sf/man/plot.html'>plot</a></span>(<span class='no'>fit</span>)</div><div class='img'><img src='geostan_fit-1.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>(<span class='no'>fit</span>)
+<span class='fu'><a href='https://rdrr.io/pkg/sf/man/plot.html'>plot</a></span>(<span class='no'>fit</span>)
+
 <span class='no'>beta.samples</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>as.matrix</a></span>(<span class='no'>fit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='st'>"beta"</span>)
 <span class='no'>beta.mean</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/apply.html'>apply</a></span>(<span class='no'>beta.samples</span>, <span class='fl'>2</span>, <span class='no'>mean</span>)
-<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>(<span class='no'>beta.mean</span>)</div><div class='output co'>#&gt;     historic_gop log(pop_density) 
-#&gt;        -2.642785        -5.617456 </div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span>(<span class='no'>beta.mean</span>)
+
 <span class='co'># extract residuals and fitted values</span>
 <span class='no'>res</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>residuals</a></span>(<span class='no'>fit</span>)
 <span class='no'>res</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>resid</a></span>(<span class='no'>fit</span>)
-<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span>(<span class='no'>res</span>)</div><div class='output co'>#&gt;                      mean       sd      q.025        q.20         q.50
-#&gt; residual[1]  -1.394724858 1.082185  -3.492486  -2.3263137  -1.39720695
-#&gt; residual[2]  -0.499430149 1.156296  -2.723717  -1.4563700  -0.53903719
-#&gt; residual[3]  -0.169520031 1.332216  -2.712102  -1.3677678  -0.14524802
-#&gt; residual[4]   0.004179592 1.093328  -2.072192  -0.9111004   0.01948238
-#&gt; residual[5] -10.079872128 1.365287 -12.806702 -11.2503770 -10.08564660
-#&gt; residual[6]  -0.586340460 1.320298  -3.145613  -1.6501669  -0.61805606
-#&gt;                   q.80      q.975
-#&gt; residual[1] -0.4830950  0.7416464
-#&gt; residual[2]  0.4557499  1.8616533
-#&gt; residual[3]  0.9768082  2.3948617
-#&gt; residual[4]  0.9084659  2.1151430
-#&gt; residual[5] -8.8689088 -7.4433015
-#&gt; residual[6]  0.4785517  2.0977769</div><div class='input'><span class='no'>f</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/fitted.values.html'>fitted</a></span>(<span class='no'>fit</span>)
-<span class='fu'><a href='https://rdrr.io/pkg/sf/man/plot.html'>plot</a></span>(<span class='no'>f</span>$<span class='no'>mean</span>, <span class='no'>res</span>$<span class='no'>mean</span>, <span class='kw'>xlab</span> <span class='kw'>=</span> <span class='st'>"fitted values"</span>, <span class='kw'>ylab</span> <span class='kw'>=</span> <span class='st'>"residuals"</span>)</div><div class='img'><img src='geostan_fit-2.png' alt='' width='700' height='433' /></div><div class='input'><span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>resid</a></span>(<span class='no'>fit</span>, <span class='kw'>summary</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)
-<span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span>(<span class='no'>mat</span>)</div><div class='output co'>#&gt; [1] 1500   88</div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span>(<span class='no'>res</span>)
+<span class='no'>f</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/fitted.values.html'>fitted</a></span>(<span class='no'>fit</span>)
+<span class='fu'><a href='https://rdrr.io/pkg/sf/man/plot.html'>plot</a></span>(<span class='no'>f</span>$<span class='no'>mean</span>, <span class='no'>res</span>$<span class='no'>mean</span>, <span class='kw'>xlab</span> <span class='kw'>=</span> <span class='st'>"fitted values"</span>, <span class='kw'>ylab</span> <span class='kw'>=</span> <span class='st'>"residuals"</span>)
+<span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>resid</a></span>(<span class='no'>fit</span>, <span class='kw'>summary</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)
+<span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span>(<span class='no'>mat</span>)
+
 <span class='co'># extract and plot the posterior mean of the spatial filter</span>
 <span class='no'>sf</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='spatial.html'>spatial</a></span>(<span class='no'>fit</span>, <span class='kw'>summary</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
-<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span>(<span class='no'>sf</span>)</div><div class='output co'>#&gt;               mean        sd      q.025        q.20        q.50       q.80
-#&gt; esf[1]  1.24871956 1.0353019 -0.8334455  0.36901304  1.25510136  2.1011415
-#&gt; esf[2]  0.29937722 1.0979901 -1.9748424 -0.61312776  0.32983219  1.1996469
-#&gt; esf[3]  0.97612541 1.2394916 -1.5634494 -0.03359518  0.96526845  2.0316175
-#&gt; esf[4]  0.08332139 0.9796594 -1.8194366 -0.73275520  0.06054599  0.8998535
-#&gt; esf[5] -2.33983312 1.2941846 -4.9090477 -3.46472734 -2.33905110 -1.2577319
-#&gt; esf[6]  2.29425486 1.3575322 -0.4915784  1.20158490  2.30740470  3.4161100
-#&gt;            q.975
-#&gt; esf[1] 3.2286875
-#&gt; esf[2] 2.3854663
-#&gt; esf[3] 3.2959324
-#&gt; esf[4] 2.0249841
-#&gt; esf[5] 0.1602606
-#&gt; esf[6] 4.9675513</div><div class='input'><span class='no'>ohio</span>$<span class='no'>sf</span> <span class='kw'>&lt;-</span> <span class='no'>sf</span>$<span class='no'>mean</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span>(<span class='no'>sf</span>)
+<span class='no'>ohio</span>$<span class='no'>sf</span> <span class='kw'>&lt;-</span> <span class='no'>sf</span>$<span class='no'>mean</span>
 <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span>(<span class='no'>ohio</span>) +
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span>(<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span>(<span class='kw'>fill</span> <span class='kw'>=</span> <span class='no'>sf</span>)) +
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span>()</div><div class='img'><img src='geostan_fit-3.png' alt='' width='700' height='433' /></div><div class='input'># }
-
-</div></pre>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span>()
+}</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

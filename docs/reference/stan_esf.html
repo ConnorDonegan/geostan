@@ -40,8 +40,7 @@
 
 
 <meta property="og:title" content="Spatial filtering — stan_esf" />
-<meta property="og:description" content="Fit a spatial regression model using eigenvector spatial filtering where the spatial filter is 
-estimated using the regularized horseshoe prior." />
+<meta property="og:description" content="Fit a spatial regression model using eigenvector spatial filtering." />
 
 
 
@@ -99,6 +98,9 @@ estimated using the regularized horseshoe prior." />
       <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
     </li>
     <li>
+      <a href="../articles/observational-error.html">Observational error models</a>
+    </li>
+    <li>
       <a href="../articles/setting-priors.html">Setting prior distributions</a>
     </li>
   </ul>
@@ -125,8 +127,7 @@ estimated using the regularized horseshoe prior." />
     </div>
 
     <div class="ref-description">
-    <p>Fit a spatial regression model using eigenvector spatial filtering where the spatial filter is 
-estimated using the regularized horseshoe prior.</p>
+    <p>Fit a spatial regression model using eigenvector spatial filtering.</p>
     </div>
 
     <pre class="usage"><span class='fu'>stan_esf</span>(
@@ -280,18 +281,18 @@ The value of <code>p0</code> is used to control the prior degree of sparsity in 
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Other arguments passed to <a href='https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html'>sampling</a>. For multi-core processing, you can use <code>cores = parallel::detectCores()</code>, or run <code><a href='https://rdrr.io/r/base/options.html'>options(mc.cores = parallel::detectCores())</a></code> first.</p></td>
+      <td><p>Other arguments passed to <a href='https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html'>sampling</a>.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
 
-    <p>Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems, 18(1), 67-85. 10.1007/s10109-015-0225-3</p>
+    <p>Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems, 18(1), 67-85. <a href='10.1007/s10109-015-0225-3'>10.1007/s10109-015-0225-3</a></p>
 <p>Dray, S., P. Legendre &amp; P. R. Peres-Neto (2006). Spatial modelling: a comprehensive framework for principal coordinate analysis of neighbour matrices (PCNM). Ecological Modeling, 196(3-4), 483-493.</p>
-<p>Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. https://doi.org/10.1016/j.spasta.2020.100450</p>
+<p>Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. <a href='https://doi.org/10.1016/j.spasta.2020.100450'>https://doi.org/10.1016/j.spasta.2020.100450</a></p>
 <p>Griffith, Daniel A., and P. R. Peres-Neto (2006). "Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses." Ecology 87(10), 2603-2613.</p>
 <p>Griffith, D., and Y. Chun (2014). Spatial autocorrelation and spatial filtering, Handbook of Regional Science. Fischer, MM and Nijkamp, P. eds.</p>
-<p>Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In Electronic Journal of Statistics, 11(2):5018-5051. https://projecteuclid.org/euclid.ejs/1513306866</p>
+<p>Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In Electronic Journal of Statistics, 11(2):5018-5051. <a href='https://projecteuclid.org/euclid.ejs/1513306866'>https://projecteuclid.org/euclid.ejs/1513306866</a></p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl'>
@@ -316,19 +317,12 @@ The value of <code>p0</code> is used to control the prior degree of sparsity in 
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The function returns the spatial filter <code>esf</code>, 
- i.e. the linear combination of eigenvectors representing spatial autocorrelation patterns in the outcome variable. 
- The entire posterior distribution of the spatial filter
- can be obtained with the following code: <code>post_esf &lt;- spatial(fit, summary = FALSE)</code> where <code>fit</code> is
- the <code>geostan_fit</code> object returned by a call to <code>stan_esf</code>.</p> 
-<p>When <code>family = student_t()</code>, the parameter <code>nu</code> in the model refers to the degrees of freedom in the Student's t likelihood function for the data.</p>
+    <p>This function implements the models introduced in Donegan et al. (2020). This is the only spatial modeling approach in `geostan` which is available for continuous data as well as count data.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># \dontrun{</span>
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>rstan</span>)</div><div class='output co'>#&gt; <span class='message'>Loading required package: StanHeaders</span></div><div class='output co'>#&gt; <span class='message'>rstan (Version 2.21.2, GitRev: 2e1f913d3ca3)</span></div><div class='output co'>#&gt; <span class='message'>For execution on a local, multicore CPU with excess RAM we recommend calling</span>
-#&gt; <span class='message'>options(mc.cores = parallel::detectCores()).</span>
-#&gt; <span class='message'>To avoid recompilation of unchanged Stan programs, we recommend calling</span>
-#&gt; <span class='message'>rstan_options(auto_write = TRUE)</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>bayesplot</span>)
+    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>rstan</span>)
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>bayesplot</span>)
 <span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ggplot2</span>)
 <span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>sf</span>)
 <span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span>(<span class='kw'>mc.cores</span> <span class='kw'>=</span> <span class='kw pkg'>parallel</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span>())
@@ -340,29 +334,23 @@ The value of <code>p0</code> is used to control the prior degree of sparsity in 
                 <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>ohio</span>,
                 <span class='kw'>scalex</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
                 <span class='kw'>C</span> <span class='kw'>=</span> <span class='no'>C</span>,
-                <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'><a href='student_t.html'>student_t</a></span>())</div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: 10.7142419611244</span></div><div class='output co'>#&gt; <span class='message'>Scale: 12.488757925385</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for beta</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt;                    Location    Scale
-#&gt; w.historic_gop            0 12.48876
-#&gt; w.college_educated        0 12.48876
-#&gt; historic_gop              0 12.48876
-#&gt; college_educated          0 12.48876</div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for sigma</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt; <span class='message'>Degrees of freedom: 10</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 12.488757925385</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for nu</span></div><div class='output co'>#&gt; <span class='message'>Gamma</span></div><div class='output co'>#&gt; <span class='message'>alpha: 3</span></div><div class='output co'>#&gt; <span class='message'>beta: 0.2</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for rhs</span></div><div class='output co'>#&gt; <span class='message'>Global shrinkage prior (scale_global): 0.243657961549269</span></div><div class='output co'>#&gt; <span class='message'>Slab degrees of freedom: 15</span></div><div class='output co'>#&gt; <span class='message'>Slab scale: 29.1218447680832</span></div><div class='input'>
+                <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'><a href='student_t.html'>student_t</a></span>())
+
 <span class='co'># use rstan for sampler diagnostics</span>
-<span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span>(<span class='no'>fit</span>$<span class='no'>stanfit</span>)</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='img'><img src='stan_esf-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># see spatial autocorrelation diagnostics</span>
-<span class='fu'><a href='sp_diag.html'>sp_diag</a></span>(<span class='no'>fit</span>, <span class='no'>ohio</span>)</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='stan_esf-2.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span>(<span class='no'>fit</span>$<span class='no'>stanfit</span>)
+<span class='co'># see spatial autocorrelation diagnostics</span>
+<span class='fu'><a href='sp_diag.html'>sp_diag</a></span>(<span class='no'>fit</span>, <span class='no'>ohio</span>)
+
 <span class='co'>## summary of estimates</span>
-<span class='fu'><a href='https://rdrr.io/pkg/sf/man/plot.html'>plot</a></span>(<span class='no'>fit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"beta"</span>, <span class='st'>"intercept"</span>, <span class='st'>"sigma"</span>))</div><div class='img'><img src='stan_esf-3.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/pkg/sf/man/plot.html'>plot</a></span>(<span class='no'>fit</span>, <span class='kw'>pars</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"beta"</span>, <span class='st'>"intercept"</span>, <span class='st'>"sigma"</span>))
+
 <span class='co'>## map the spatial filter</span>
 <span class='no'>ohio</span>$<span class='no'>esf</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='spatial.html'>spatial</a></span>(<span class='no'>fit</span>)$<span class='no'>mean</span>
 <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span>(<span class='no'>ohio</span>) +
       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span>(<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span>(<span class='kw'>fill</span> <span class='kw'>=</span> <span class='no'>esf</span>)) +
       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span>() +
-      <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_void</a></span>()</div><div class='img'><img src='stan_esf-4.png' alt='' width='700' height='433' /></div><div class='input'># } 
-
-</div></pre>
+      <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_void</a></span>()
+}</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

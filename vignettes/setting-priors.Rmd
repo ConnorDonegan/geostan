@@ -7,7 +7,7 @@ bibliography: bib.bib
 header-includes:
    - \usepackage{amsmath}
 vignette: >
-  %\VignetteIndexEntry{setting-priors}
+  %\VignetteIndexEntry{Setting prior distributions}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -54,7 +54,7 @@ If you don't provide prior distributions `geostan` will set them for you and wil
 
 ```{r}
  # refresh = 0 suppresses some of the printing from Stan
-fit <- stan_glm(lif40 ~ pcinc, data = nepal, prior_only = TRUE, refresh = 0)
+fit <- stan_glm(lif40 ~ pcinc, data = nepal, prior_only = TRUE, refresh = 0, cores = 1)
 ```
 
 The intercept and coefficients are assigned Gaussian prior distributions centered on zero with scale parameter equal to $2 * s_y$ and $2*\frac{s_y}{s_x}$ respectively (with $s$ the sample standard deviation; similar to the default priors in the `rstanarm` package). For models with a Gaussian or Student's $t$ likelihood, the scale parameter $\sigma$ for the outcome is assigned a half-Student's $t$ model (truncated to be positive) with scale $2 * s_y$. 
@@ -76,7 +76,7 @@ dim(beta.samples)
 If we use the `centerx` (or `scalex`) arguments in `stan_glm` (or any of the `geostan` model fitting functions), the covariates will be centered (or scaled) before the priors are calculated, and the default prior for the intercept will be centered on the data mean $\bar{y}$ rather than zero:
 
 ```{r}
-fit.c <- stan_glm(lif40 ~ pcinc, data = nepal, centerx = TRUE, refresh = 0)
+fit.c <- stan_glm(lif40 ~ pcinc, data = nepal, centerx = TRUE, refresh = 0, cores = 1)
 ```
 Centering or scaling data often improves Stan's sampling speed, sometimes dramatically! 
 
@@ -91,7 +91,7 @@ Again `geostan` will print its default priors before sampling from the model:
 
 ```{r}
 C <- shape2mat(nepal)
-fit.esf <- stan_esf(lif40 ~ pcinc, data = nepal, C = C, centerx = TRUE, prior_only = TRUE, refresh = 0)
+fit.esf <- stan_esf(lif40 ~ pcinc, data = nepal, C = C, centerx = TRUE, prior_only = TRUE, refresh = 0, cores = 1)
 ```
 We can plot samples from the prior distribution:
 

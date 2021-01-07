@@ -57,6 +57,9 @@
       <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
     </li>
     <li>
+      <a href="../articles/observational-error.html">Observational error models</a>
+    </li>
+    <li>
       <a href="../articles/setting-priors.html">Setting prior distributions</a>
     </li>
   </ul>
@@ -142,7 +145,7 @@ We will reference per-capita income (PCI) <code>pcinc</code> and the percentage 
 <p><img src="setting-priors_files/figure-html/unnamed-chunk-6-1.png" width="576" style="display: block; margin: auto;"> We can also extract all the samples from prior distributions as a matrix:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">beta.samples</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="no">fit</span>, <span class="kw">pars</span> <span class="kw">=</span> <span class="st">"beta"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="no">beta.samples</span>)
-<span class="co">#&gt; [1] 4000    1</span></pre></body></html></div>
+<span class="co">#&gt; [1] 8000    1</span></pre></body></html></div>
 <p>If we use the <code>centerx</code> (or <code>scalex</code>) arguments in <code>stan_glm</code> (or any of the <code>geostan</code> model fitting functions), the covariates will be centered (or scaled) before the priors are calculated, and the default prior for the intercept will be centered on the data mean <span class="math inline">\(\bar{y}\)</span> rather than zero:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">fit.c</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/stan_glm.html">stan_glm</a></span>(<span class="no">lif40</span> ~ <span class="no">pcinc</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">nepal</span>, <span class="kw">centerx</span> <span class="kw">=</span> <span class="fl">TRUE</span>, <span class="kw">refresh</span> <span class="kw">=</span> <span class="fl">0</span>)
 <span class="co">#&gt; </span>

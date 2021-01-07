@@ -98,6 +98,9 @@
       <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
     </li>
     <li>
+      <a href="../articles/observational-error.html">Observational error models</a>
+    </li>
+    <li>
       <a href="../articles/setting-priors.html">Setting prior distributions</a>
     </li>
   </ul>
@@ -148,6 +151,7 @@
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>sf</span>)
 <span class='no'>url</span> <span class='kw'>&lt;-</span> <span class='st'>"https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_state_20m.zip"</span>
 <span class='fu'>get_shp</span>(<span class='no'>url</span>, <span class='st'>"states"</span>)</div><div class='output co'>#&gt; [1] "states/cb_2019_us_state_20m.cpg"           
 #&gt; [2] "states/cb_2019_us_state_20m.dbf"           
@@ -155,12 +159,13 @@
 #&gt; [4] "states/cb_2019_us_state_20m.shp"           
 #&gt; [5] "states/cb_2019_us_state_20m.shp.ea.iso.xml"
 #&gt; [6] "states/cb_2019_us_state_20m.shp.iso.xml"   
-#&gt; [7] "states/cb_2019_us_state_20m.shx"           </div><div class='input'><span class='no'>states</span> <span class='kw'>&lt;-</span> <span class='fu'>st_read</span>(<span class='st'>"states"</span>)</div><div class='output co'>#&gt; Reading layer `cb_2019_us_state_20m' from data source `/home/connor/dev/geostan/docs/reference/states' using driver `ESRI Shapefile'
+#&gt; [7] "states/cb_2019_us_state_20m.shx"           </div><div class='input'><span class='no'>states</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>sf</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/sf/man/st_read.html'>st_read</a></span>(<span class='st'>"states"</span>)</div><div class='output co'>#&gt; Reading layer `cb_2019_us_state_20m' from data source `/home/connor/dev/geostan/docs/reference/states' using driver `ESRI Shapefile'
 #&gt; Simple feature collection with 52 features and 9 fields
 #&gt; geometry type:  MULTIPOLYGON
 #&gt; dimension:      XY
 #&gt; bbox:           xmin: -179.1743 ymin: 17.91377 xmax: 179.7739 ymax: 71.35256
-#&gt; CRS:            4269</div><div class='input'><span class='co'># to delete "states":</span>
+#&gt; CRS:            4269</div><div class='input'>
+<span class='co'># to delete "states":</span>
 <span class='fu'><a href='https://rdrr.io/r/base/unlink.html'>unlink</a></span>(<span class='st'>"states"</span>, <span class='kw'>recursive</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -98,6 +98,9 @@
       <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
     </li>
     <li>
+      <a href="../articles/observational-error.html">Observational error models</a>
+    </li>
+    <li>
       <a href="../articles/setting-priors.html">Setting prior distributions</a>
     </li>
   </ul>
@@ -201,7 +204,9 @@
 <p>If <code>summary = TRUE</code> the return value is a data frame with the expected value of the posterior distribution (column <code>mu</code>) and 100*width credible intervals for, respectively, the posterior predictive distribution (columns <code>pred.lwr</code>, <code>pred.upr</code>) and mean outcome (columns <code>mu.lwr</code>, <code>mu.upr</code>). The width of the intervals and the quantiles corresponding to the upper and lower limits of the credible intervals are returned as an attribute of the data frame (use <code>attributes(df)$interval</code> to retrieve them, where <code>df</code> is the data frame returned by <code>posterior_predict</code>).</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>bayesplot</span>)</div><div class='output co'>#&gt; <span class='message'>This is bayesplot version 1.7.2</span></div><div class='output co'>#&gt; <span class='message'>- Online documentation and vignettes at mc-stan.org/bayesplot</span></div><div class='output co'>#&gt; <span class='message'>- bayesplot theme set to bayesplot::theme_default()</span></div><div class='output co'>#&gt; <span class='message'>   * Does _not_ affect other ggplot2 plots</span></div><div class='output co'>#&gt; <span class='message'>   * See ?bayesplot_theme_set for details on theme setting</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ggplot2</span>)
+    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>bayesplot</span>)
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ggplot2</span>)
 <span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>sf</span>)
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>ohio</span>)
 
@@ -209,21 +214,15 @@
 <span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='stan_esf.html'>stan_esf</a></span>(<span class='no'>gop_growth</span> ~ <span class='fl'>1</span>,
                 <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>ohio</span>,
                 <span class='kw'>C</span> <span class='kw'>=</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span>(<span class='no'>ohio</span>),
-                <span class='kw'>silent</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-                <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>1</span>,  <span class='co'># chains = 4</span>
-                <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>200</span>, <span class='co'># iter = 2e3</span>
-                <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>) <span class='co'># cores = 4</span></div><div class='output co'>#&gt; <span class='warning'>Warning: The largest R-hat is 1.17, indicating chains have not mixed.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#r-hat</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#bulk-ess</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#tail-ess</span></div><div class='input'>
+                <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>0</span>
+)
+
 <span class='co'># posterior predictive check (density overlay)</span>
  <span class='co'># compare distribution of observations to the predictive distribution</span>
 <span class='no'>y</span> <span class='kw'>&lt;-</span> <span class='no'>ohio</span>$<span class='no'>gop_growth</span>
 <span class='no'>yrep</span> <span class='kw'>&lt;-</span> <span class='fu'>posterior_predict</span>(<span class='no'>fit</span>, <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>75</span>)
-<span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span>(<span class='no'>y</span>, <span class='no'>yrep</span>)</div><div class='img'><img src='posterior_predict-1.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span>(<span class='no'>y</span>, <span class='no'>yrep</span>)
+
 <span class='co'>## plot marginal effects with credible intervals </span>
 <span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='stan_esf.html'>stan_esf</a></span>(<span class='no'>gop_growth</span> ~ <span class='fu'><a href='https://rdrr.io/r/stats/poly.html'>poly</a></span>(<span class='no'>college_educated</span>, <span class='kw'>df</span> <span class='kw'>=</span> <span class='fl'>3</span>),
                 <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>ohio</span>,
@@ -231,13 +230,8 @@
                 <span class='kw'>silent</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
                 <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>,  <span class='co'># cores = 4,</span>
                 <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='co'># chains = 4</span>
-                <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>200</span>) <span class='co'># iter = 2e3</span></div><div class='output co'>#&gt; <span class='warning'>Warning: The largest R-hat is 1.16, indicating chains have not mixed.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#r-hat</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#bulk-ess</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#tail-ess</span></div><div class='input'>
+                <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>200</span>) <span class='co'># iter = 2e3</span>
+
 <span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>10</span>, <span class='fl'>45</span>, <span class='kw'>by</span> <span class='kw'>=</span> <span class='fl'>1</span>)
 <span class='no'>newdata</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span>(<span class='kw'>college_educated</span> <span class='kw'>=</span> <span class='no'>x</span>)
 <span class='no'>pred.df</span> <span class='kw'>&lt;-</span> <span class='fu'>posterior_predict</span>(<span class='no'>fit</span>, <span class='no'>newdata</span>, <span class='kw'>spatial</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>summary</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
@@ -256,9 +250,8 @@
 <span class='no'>a</span> +
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_ribbon.html'>geom_ribbon</a></span>(<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span>(<span class='kw'>ymin</span> <span class='kw'>=</span> <span class='no'>pred.lwr</span>,
                   <span class='kw'>ymax</span> <span class='kw'>=</span> <span class='no'>pred.upr</span>),
-              <span class='kw'>fill</span> <span class='kw'>=</span> <span class='st'>"blue"</span>, <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>0.5</span>)</div><div class='img'><img src='posterior_predict-2.png' alt='' width='700' height='433' /></div><div class='input'>
-
-</div></pre>
+              <span class='kw'>fill</span> <span class='kw'>=</span> <span class='st'>"blue"</span>, <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>0.5</span>)
+}</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

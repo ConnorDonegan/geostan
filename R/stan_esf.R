@@ -1,8 +1,8 @@
 #' Spatial filtering
 #'
 #' @export
-#' @description Fit a spatial regression model using eigenvector spatial filtering where the spatial filter is 
-#' estimated using the regularized horseshoe prior. 
+#' @description Fit a spatial regression model using eigenvector spatial filtering.
+#' 
 #' @param formula A model formula, following the R \link[stats]{formula} syntax. Binomial models are specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 #'  These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
@@ -41,15 +41,11 @@
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model. Parameters from the RHS prios include \code{tau} (the global shrinkage parameter) and \code{lambda} (the local shrinkage parameter).
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{.99} and \code{max_treedepth = 15}.
 #' @param silent If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.
-#' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
-#' @details 
-#'  The function returns the spatial filter \code{esf}, 
-#'  i.e. the linear combination of eigenvectors representing spatial autocorrelation patterns in the outcome variable. 
-#'  The entire posterior distribution of the spatial filter
-#'  can be obtained with the following code: \code{post_esf <- spatial(fit, summary = FALSE)} where \code{fit} is
-#'  the \code{geostan_fit} object returned by a call to \code{stan_esf}. 
-#'  
-#'  When \code{family = student_t()}, the parameter \code{nu} in the model refers to the degrees of freedom in the Student's t likelihood function for the data.
+#' @param ... Other arguments passed to \link[rstan]{sampling}. 
+#' @details
+#'
+#' This function implements the models introduced in Donegan et al. (2020). This is the only spatial modeling approach in `geostan` which is available for continuous data as well as count data.
+#' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
 #' \item{summary}{Summaries of the main parameters of interest; a data frame}
@@ -74,17 +70,17 @@
 #' 
 #' @source 
 #'
-#' Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems, 18(1), 67-85. \link{10.1007/s10109-015-0225-3}
+#' Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems, 18(1), 67-85. \url{10.1007/s10109-015-0225-3}
 #'
 #' Dray, S., P. Legendre & P. R. Peres-Neto (2006). Spatial modelling: a comprehensive framework for principal coordinate analysis of neighbour matrices (PCNM). Ecological Modeling, 196(3-4), 483-493.
 #' 
-#' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. \link{https://doi.org/10.1016/j.spasta.2020.100450}
+#' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. \url{https://doi.org/10.1016/j.spasta.2020.100450}
 #'
 #' Griffith, Daniel A., and P. R. Peres-Neto (2006). "Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses." Ecology 87(10), 2603-2613.
 #' 
 #' Griffith, D., and Y. Chun (2014). Spatial autocorrelation and spatial filtering, Handbook of Regional Science. Fischer, MM and Nijkamp, P. eds.
 #'
-#' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In Electronic Journal of Statistics, 11(2):5018-5051. \link{https://projecteuclid.org/euclid.ejs/1513306866}
+#' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In Electronic Journal of Statistics, 11(2):5018-5051. \url{https://projecteuclid.org/euclid.ejs/1513306866}
 #' 
 #' @examples
 #' \dontrun{

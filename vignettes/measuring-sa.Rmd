@@ -5,7 +5,7 @@ output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{measuring-sa}
+  %\VignetteIndexEntry{Measuring, visualizaing, and simulating spatial autocorrelation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -159,7 +159,7 @@ Here we will just use the priors provided by `geostan` (as printed out to the co
 [^3]: For more complex models such as the spatial models availabe in `geostan`, a more natural notation is Posterior probability $\propto$ [Process model] $\times$ [Parameter model], which recognizes that the prior can itself be a complex model. This generalizes further to incorporate models of observational error: Posterior probability $\propto$ [Data model] $\times$ [Process model] $\times$ [Parameter model] (Berliner 1996; Cressie and Wikle 2011), which is implemented in geostan models through the `ME` argument.
 
 ```{r}
-fit <- stan_glm(gop_growth ~ 1, data = ohio, refresh = 0)
+fit <- stan_glm(gop_growth ~ 1, data = ohio, refresh = 0, cores = 1)
 ```
 To examine the residuals, $y - \hat{\mu}$, pass the model to `geostan::sp_diag`:
 
@@ -190,7 +190,7 @@ The `geostan` package also provides the `geostan::spatial` method for extracting
 \end{equation}
 
 ```{r fig.width = 6.5}
-fit.esf <- stan_esf(gop_growth ~ 1, data = ohio, C = C, refresh = 0, chains = 4, cores = 4)
+fit.esf <- stan_esf(gop_growth ~ 1, data = ohio, C = C, refresh = 0, cores = 1)
 sp_diag(fit.esf, ohio)
 ```
 The residuals are no longer auto-correlated (a small negative MC value is expected). Instead, the autocorrelation structure has been shifted to the spatial filter. We can extract the spatial filter with the `spatial` method:

@@ -26,9 +26,9 @@
 #' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. 
 #' @param prior_tau Set hyperparameters for the scale parameter of varying intercepts \code{re}. The varying intercepts are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.
 #' @param prior_phi_precision Hyperprior parameters for the precision (inverse scale) of the CAR component \code{phi}, a numeric vector of length two. The precision parameter for \code{phi} is \code{phi_tau} which is assigned a Gamma prior distribution; defaults to \code{prior_phi_precision = c(2, 2)}.
-#' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.
-#' @param scalex Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
-#' @param prior_only Draw samples from the prior distributions of parameters only; logical value, defaults to \code{FALSE}.
+#' @param centerx Logical value indicating if the covariates should be centered prior to fitting the model.
+#' @param scalex Logical value indicating if the covariates be centered and scaled (divided by their standard deviation).
+#' @param prior_only Logical value; if \code{TRUE}, draw samples only from the prior distributions of parameters.
 #' @param chains Number of MCMC chains to estimate. 
 #' @param iter Number of samples per chain. 
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Set \code{refresh=0} to silence this.
@@ -37,6 +37,7 @@
 #' @param silent If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' @details
+#' 
 #'  The Stan code for the CAR component of the model is from Joseph (2016).
 #'   
 #'  The CAR model is the prior distribution for the parameter vector \code{phi} and has two associated parameters: \code{phi_alpha} which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and \code{phi_tau} which is a precision (inverse scale) parameter.
@@ -63,7 +64,7 @@
 #' 
 #' @source
 #'
-#' Joseph, Max (2016). Exact Sparse CAR Models in Stan. Stan Case Studies, Vol. 3. \link{https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html}
+#' Joseph, Max (2016). Exact Sparse CAR Models in Stan. Stan Case Studies, Vol. 3. \url{https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html}
 #' 
 #' Lawson, Andrew B. (2013). Bayesian Disease Mapping: Hierarchical Modeling in Spatial Epidemiology. CRC Press.
 #'

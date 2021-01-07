@@ -29,8 +29,8 @@ stan_icar(
   scalex = FALSE,
   prior_only = FALSE,
   chains = 4,
-  iter = 2000,
-  refresh = 500,
+  iter = 4000,
+  refresh = 1000,
   pars = NULL,
   control = list(adapt_delta = 0.9, max_treedepth = 15),
   silent = FALSE,
@@ -81,11 +81,11 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{prior_only}{Draw samples from the prior distributions of parameters only.}
 
-\item{chains}{Number of MCMC chains to estimate. Default \code{chains = 4}.}
+\item{chains}{Number of MCMC chains to estimate.}
 
-\item{iter}{Number of samples per chain. Default \code{iter = 2000}.}
+\item{iter}{Number of samples per chain. .}
 
-\item{refresh}{Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.}
+\item{refresh}{Stan will print the progress of the sampler every \code{refresh} number of samples; set \code{refresh=0} to silence this.}
 
 \item{pars}{Optional; specify any additional parameters you'd like stored from the Stan model.}
 

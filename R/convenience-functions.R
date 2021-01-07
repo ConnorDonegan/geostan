@@ -1,14 +1,17 @@
 #' Effective sample size for spatial data
 #'
-#' @description An approximate calculation for the effective sample size for spatially autocorrelated data.
+#' @description An approximate calculation for the effective sample size for spatially autocorrelated data. Only valid for approximately normally distributed data.
 #' 
 #' @param n Number of observations.
 #' @param rho Spatial autocorrelation parameter from a simultaneous autoregressive model.
+#' 
 #' @return Rerturns $n^*$, a numeric value.
 #'
 #' @details
 #'
-#' @seealso \link[geostan]{sim_sar}, \link[spatialreg]{aple}
+#' Implements Equation 3 from Griffith (2005). 
+#'
+#' @seealso \link[geostan]{sim_sar}, \link[geostan]{aple}
 #'
 #' @source
 #'
@@ -336,7 +339,7 @@ sp_diag <- function(y,
     g.mc <- moran_plot(y, w, xlab = name)
     if (plot) {
         gridExtra::grid.arrange(hist, g.mc, map.y, ncol = 3)
-    } else return (list(hist, map.y, global))
+    } else return (list(hist, map.y, map.y))
  }
 
 
@@ -676,7 +679,7 @@ expected_mc <- function(X, C) {
 #' @source
 #'
 #' Chun, Yongwan, Griffith, Daniel A., Lee, Mongyeon, and Sinha, Parmanand (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems 18(1): 67-85.
-#' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. \link{https://doi.org/10.1016/j.spasta.2020.100450}
+#' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. \url{https://doi.org/10.1016/j.spasta.2020.100450}
 #' 
 exp_pars <- function(formula, data, C) {
   nlinks <- length(which(C != 0))
@@ -803,7 +806,7 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, 
 #' \item{group_idx}{indices for each observation belonging each group, ordered by group.}
 #' }
 #'
-#' @details This is used internally to prepare data for \link[geostan]{stan_iar} models. It can also be helpful for fitting custom ICAR models outside of \code{geostan}.
+#' @details This is used internally to prepare data for \link[geostan]{stan_icar} models. It can also be helpful for fitting custom ICAR models outside of \code{geostan}.
 #' 
 #' @seealso \link[geostan]{stan_icar}, \link[geostan]{edges}, \link[geostan]{shape2mat}
 #'
@@ -855,9 +858,11 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #'
 #' @examples
 #'
+#' library(sf)
 #' url <- "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_state_20m.zip"
 #' get_shp(url, "states")
-#' states <- st_read("states")
+#' states <- sf::st_read("states")
+#' 
 #' # to delete "states":
 #' unlink("states", recursive = TRUE)
 #' 
