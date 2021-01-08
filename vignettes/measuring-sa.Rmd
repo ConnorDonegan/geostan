@@ -21,11 +21,11 @@ knitr::opts_chunk$set(
 #> run with:  sudo Rscript -e "rmarkdown::render('measuring-sa.Rmd')"
 ```
 
-This vignette covers basic usage of the `geostan` package for measuring, visualizing, and simulating spatial autocorrelation (SA). SA can be defined as systematic spatial patterning in the level of a variable. Positive SA is the tendency for nearby values to be more similar than distant values (i.e. clustering) while negative SA is the tendency for values to be located some distance away from others like them (i.e. repulsion).
+This vignette covers basic usage of the **geostan** package for measuring, visualizing, and simulating spatial autocorrelation (SA) or systematic spatial patterns in the level of a variable. Positive SA is the tendency for nearby values to be more similar than distant values (i.e. clustering) while negative SA is the tendency for values to be located some distance away from others like them (i.e. repulsion).
 
 ## Getting started
 
-Start by loading the `geostan`, `sf`, and `ggplot2` packages into your R environment along with the `ohio` dataset:
+Start by loading the **geostan**, **sf**, and **ggplot2** packages into your R environment along with the `ohio` dataset:
 
 ```{r message=FALSE, warning = FALSE}
 library(geostan)
@@ -34,7 +34,7 @@ library(sf)
 data(ohio)
 ```
 
-`geostan::ohio` is a simple features object with county-level Presidential vote shares compiled by the MIT Election Data and Science Lab (2018) and joined to some county characteristics. The data was analyzed using `geostan` in  Donegan et al. (2020). The dataset includes growth in the Republican (GOP) share of Presidential votes from the average preceding elections (2000-2012) to 2016 (`gop_growth`). Thus positive values of `gop_growth` indicate places where Trump improved upon the previous GOP performance and negative values show where he performed worse:
+`geostan::ohio` is a simple features object with county-level Presidential vote shares compiled by the MIT Election Data and Science Lab (2018) and joined to some county characteristics. The data was analyzed using **geostan** in  Donegan et al. (2020). The dataset includes growth in the Republican (GOP) share of Presidential votes from the average preceding elections (2000-2012) to 2016 (`gop_growth`). Thus positive values of `gop_growth` indicate places where Trump improved upon the previous GOP performance and negative values show where he performed worse:
 
 ```{r}
 ggplot(ohio) +
@@ -45,18 +45,18 @@ ggplot(ohio) +
 
 ## Spatial weights matrices
 
-All of the spatial diagnostics and models in `geostan require a spatial connectivity matrix. You can make a connectivity matrix by passing a `SpatialPolygons` or `sf` object to the `shape2mat` function. (It mainly wraps around a couple functions from the `spdep` package). The second argument to `geostan::shape2mat` is the scheme for encoding connectivity---"B", the default, produces a binary scheme (1 for neighbors, else 0) and "W" is row-standardized. 
+All of the spatial diagnostics and models in **geostan** require a spatial connectivity matrix. You can make a connectivity matrix by passing a `SpatialPolygons` or `sf` object to `geostan::shape2mat`. (It mainly wraps around a couple functions from the **spdep** package). The second argument to `geostan::shape2mat` is the scheme for encoding connectivity---"B", the default, produces a binary scheme (1 for neighbors, else 0) and "W" is row-standardized. 
 
 ```{r}
 C <- shape2mat(ohio, "B")
 W <- shape2mat(ohio, "W")
 all(rowSums(W) == 1)
 ```
-The `geostan::shape2mat` function can also create space-time connectivity matrices which many `geostan` functions will accept without any further modification---but you must ensure your data is properly ordered in space and time to match the connectivity matrix.
+The `geostan::shape2mat` function can also create space-time connectivity matrices which many **geostan** functions will accept without any further modification---but you must ensure your data is properly ordered in space and time to match the connectivity matrix.
 
 ## Measuring spatial autocorrelation
 
-`geostan` has the following functions for measuring spatial autocorrelation:
+**geostan** has the following functions for measuring spatial autocorrelation:
 
 - the Moran scatter plot `geostan::moran_plot`.
 - the Moran coefficient `geostan::mc`,
@@ -67,15 +67,14 @@ The `geostan::shape2mat` function can also create space-time connectivity matric
 
 When using the row-standardized spatial weights matrix, the Moran plot will show the original values `y` after being centered---`y.c = y - mean(y)`---plotted against the mean spatially-laged value (`W %*% y.c`). In this case the regression line is equal to the Moran coefficient:[^2]
 
-[^2]: Using centered data $y_c$ and its spatial lag $\tilde{y_c} = W * y_c$, the Moran coefficient is equal to a scale factor $\frac{n}{c}$ times $\hat{\beta}$ from a bivariate regression of the spatial lag of $y_c$ on itself, where $c = 1'C1$, with $1$ a column vector of ones (i.e. find the sum of the row sums of the connectivity matrix.) For a row-standardized matrix $c = n$ and so $\frac{n}{c} = 1$. Moran's I can be written as $I = \frac{n}{1'C1}\frac{Cov(y_c, \tilde{y_c})}{Var(y_c)} = \frac{n}{1'C1}\hat{\beta}$.
-
+[^2]: Using centered data $y_c$ and its spatial lag $\tilde{y_c} = W * y_c$, the Moran coefficient is equal to a scale factor $\frac{n}{1'C1}$ times $\hat{\beta}$ from a bivariate regression of the spatial lag of $y_c$ on itself, where $1$ a column vector of ones (i.e. the denominator is the sum of the row sums of the connectivity matrix.) For a row-standardized matrix $\frac{n}{1'C1} = 1$. Moran's I can be written as $I = \frac{n}{1'C1}\frac{Cov(y_c, \tilde{y_c})}{Var(y_c)} = \frac{n}{1'C1}\hat{\beta}$.
 
 ```{r}
 y <- ohio$gop_growth
 moran_plot(y, W)
 ```
 
-If instead, we used the binary coding scheme for the spatial weights matrix then the y-axis ($W * y_c$) would show the *sum* of spatially-lagged values and the Moran coefficient will differ from the regression line.
+If instead, we used the binary coding scheme for the spatial weights matrix `C` then the y-axis (`C * y.c`) would show the *sum* of spatially-lagged values and the Moran coefficient will differ from the regression line.
 
 ```{r}
 mc(y, W)
@@ -108,6 +107,8 @@ ggplot(ohio) +
 ```{r}
 aple(y, W)
 ```
+Again, for large number of observations the APLE approximation will break down.
+
 ## Simulating spatially autocorrelated data
 
 You can simulate data from the simultaneous autoregressie model (SAR) using the `geostan::sim_sar` function and providing, at minimum, a row-standardized spatial weights matrix `w` and the degree of SA, `rho`:
@@ -143,7 +144,7 @@ It can also be used for analysis of model residuals. Here we model the mean and 
   y \sim \text{Guassian}(\mu, \sigma).
   \end{equation}
   
-Calculating a probability distribution for parameters $\mu, \sigma$ requires an initial or prior probability be specified for each. By Bayes' theorem, the probability of parameters $\theta$ conditional on the latest data $D$ and our initial information $I$ is proportional the product of two terms: first, the probability of the observations conditional on $\theta$ and $I$, and second, the initial probabity of $\theta$ conditional on $I$ alone:
+Calculating a probability distribution for parameters $\mu, \sigma$ requires an initial or prior probability be specified for each. By Bayes' theorem, the probability of parameters $\theta$ conditional on the latest data $D$ and our initial information $I$ is proportional to the product of two terms: first, the probability of the observations conditional on $\theta$ and $I$, and second, the initial probabity of $\theta$ conditional on $I$ alone:
 \begin{equation}
   p(\theta | D, I) \propto p(D | \theta,I) p(\theta|I).
 \end{equation}
@@ -154,9 +155,9 @@ which is often stated as[^3]
  \text{Posterior probability} \propto \text{Likelihood} \times \text{Prior probability}
  \end{equation}
  
-Here we will just use the priors provided by `geostan` (as printed out to the console):
+Here we will just use the priors provided by **geostan** (as printed out to the console):
 
-[^3]: For more complex models such as the spatial models availabe in `geostan`, a more natural notation is Posterior probability $\propto$ [Process model] $\times$ [Parameter model], which recognizes that the prior can itself be a complex model. This generalizes further to incorporate models of observational error: Posterior probability $\propto$ [Data model] $\times$ [Process model] $\times$ [Parameter model] (Berliner 1996; Cressie and Wikle 2011), which is implemented in geostan models through the `ME` argument.
+[^3]: For more complex models such as the spatial models availabe in **geostan**, a more natural notation is Posterior probability $\propto$ [Process model] $\times$ [Parameter model], which recognizes that the prior can itself be a complex model. This generalizes further to incorporate models of observational error: Posterior probability $\propto$ [Data model] $\times$ [Process model] $\times$ [Parameter model] (Berliner 1996; Cressie and Wikle 2011), which is implemented in geostan models through the `ME` argument.
 
 ```{r}
 fit <- stan_glm(gop_growth ~ 1, data = ohio, refresh = 0, cores = 1)
@@ -167,7 +168,7 @@ To examine the residuals, $y - \hat{\mu}$, pass the model to `geostan::sp_diag`:
 sp_diag(fit, ohio)
 ```
 
-The `geostan` model returns samples drawn from the posterior probability distribution of $\mu$ (fitted values), which can be accessed using `fitted(fit)`. Here $\hat{\mu}$ represents the mean of the posterior distribution of the parameter $\mu$. Thus the following code reproduces the above results, but more transparently:
+The **geostan** model returns samples drawn from the posterior probability distribution of $\mu$ (fitted values), which can be accessed using `fitted(fit)`. Here $\hat{\mu}$ represents the mean of the posterior distribution of the parameter $\mu$. Thus the following code reproduces the above results, but more transparently:
 
 ```{r fig.width = 6.5}
 mu <- fitted(fit)
@@ -183,7 +184,7 @@ sp_diag(deviations, ohio)
 
 ## Estimating and visualizing SA patterns
 
-The `geostan` package also provides the `geostan::spatial` method for extracting the spatial trend component from fitted spatial models (`stan_esf`, `stan_icar`, and `stan_car`). Continuous data can be modeled using eigenvector spatial filtering (ESF) models. ESF models use a linear combination of the eigenvectors $E$ of a transformed spatial connectivity matrix $C$ to identify SA patterns in the data. Each eigenvector contains a distinct map pattern which is indexed by the Moran coefficient (proportional to each respective eigenvalue). `geostan` assigns a horseshoe prior model to the parameter vector $\beta_{E}$, reflecting our initial expectation that a relatively small number of eigenvectors will be sufficient to describe the SA patterns in the data. The result is a spatially varying mean $\mu_i$:
+The **geostan** package also provides the `geostan::spatial` method for extracting the spatial trend component from fitted spatial models (`geostan::stan_esf`, `geostan::stan_icar`, and `geostan::stan_car`). Continuous data can be modeled using eigenvector spatial filtering (ESF) models. ESF models use a linear combination of the eigenvectors $E$ of a transformed spatial connectivity matrix $C$ to identify SA patterns in the data. Each eigenvector contains a distinct map pattern which is indexed by the Moran coefficient (proportional to each respective eigenvalue). **geostan** assigns a horseshoe prior model to the parameter vector $\beta_{E}$, reflecting our initial expectation that a relatively small number of eigenvectors will be sufficient to describe the SA patterns in the data. The result is a spatially varying mean $\mu_i$:
 
 \begin{equation}
   \mu_i = \alpha + E_i * \beta_{EV}

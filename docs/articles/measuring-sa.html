@@ -89,16 +89,16 @@
 
     
     
-<p>This vignette covers basic usage of the <code>geostan</code> package for measuring, visualizing, and simulating spatial autocorrelation (SA). SA can be defined as systematic spatial patterning in the level of a variable. Positive SA is the tendency for nearby values to be more similar than distant values (i.e. clustering) while negative SA is the tendency for values to be located some distance away from others like them (i.e. repulsion).</p>
+<p>This vignette covers basic usage of the <strong>geostan</strong> package for measuring, visualizing, and simulating spatial autocorrelation (SA) or systematic spatial patterns in the level of a variable. Positive SA is the tendency for nearby values to be more similar than distant values (i.e. clustering) while negative SA is the tendency for values to be located some distance away from others like them (i.e. repulsion).</p>
 <div id="getting-started" class="section level2">
 <h2 class="hasAnchor">
 <a href="#getting-started" class="anchor"></a>Getting started</h2>
-<p>Start by loading the <code>geostan</code>, <code>sf</code>, and <code>ggplot2</code> packages into your R environment along with the <code>ohio</code> dataset:</p>
+<p>Start by loading the <strong>geostan</strong>, <strong>sf</strong>, and <strong>ggplot2</strong> packages into your R environment along with the <code>ohio</code> dataset:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">geostan</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">ggplot2</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">sf</span>)
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="no">ohio</span>)</pre></body></html></div>
-<p><code><a href="../reference/ohio.html">geostan::ohio</a></code> is a simple features object with county-level Presidential vote shares compiled by the MIT Election Data and Science Lab (2018) and joined to some county characteristics. The data was analyzed using <code>geostan</code> in Donegan et al. (2020). The dataset includes growth in the Republican (GOP) share of Presidential votes from the average preceding elections (2000-2012) to 2016 (<code>gop_growth</code>). Thus positive values of <code>gop_growth</code> indicate places where Trump improved upon the previous GOP performance and negative values show where he performed worse:</p>
+<p><code><a href="../reference/ohio.html">geostan::ohio</a></code> is a simple features object with county-level Presidential vote shares compiled by the MIT Election Data and Science Lab (2018) and joined to some county characteristics. The data was analyzed using <strong>geostan</strong> in Donegan et al. (2020). The dataset includes growth in the Republican (GOP) share of Presidential votes from the average preceding elections (2000-2012) to 2016 (<code>gop_growth</code>). Thus positive values of <code>gop_growth</code> indicate places where Trump improved upon the previous GOP performance and negative values show where he performed worse:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="no">ohio</span>) +
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="kw">fill</span> <span class="kw">=</span> <span class="no">gop_growth</span>)) +
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html">scale_fill_gradient2</a></span>() +
@@ -108,17 +108,17 @@
 <div id="spatial-weights-matrices" class="section level2">
 <h2 class="hasAnchor">
 <a href="#spatial-weights-matrices" class="anchor"></a>Spatial weights matrices</h2>
-<p>All of the spatial diagnostics and models in <code>geostan require a spatial connectivity matrix. You can make a connectivity matrix by passing a</code>SpatialPolygons<code>or</code>sf<code>object to the</code>shape2mat<code>function. (It mainly wraps around a couple functions from the</code>spdep<code>package). The second argument to</code>geostan::shape2mat` is the scheme for encoding connectivity—“B”, the default, produces a binary scheme (1 for neighbors, else 0) and “W” is row-standardized.</p>
+<p>All of the spatial diagnostics and models in <strong>geostan</strong> require a spatial connectivity matrix. You can make a connectivity matrix by passing a <code>SpatialPolygons</code> or <code>sf</code> object to <code><a href="../reference/shape2mat.html">geostan::shape2mat</a></code>. (It mainly wraps around a couple functions from the <strong>spdep</strong> package). The second argument to <code><a href="../reference/shape2mat.html">geostan::shape2mat</a></code> is the scheme for encoding connectivity—“B”, the default, produces a binary scheme (1 for neighbors, else 0) and “W” is row-standardized.</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">C</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span>(<span class="no">ohio</span>, <span class="st">"B"</span>)
 <span class="no">W</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span>(<span class="no">ohio</span>, <span class="st">"W"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/all.html">all</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/colSums.html">rowSums</a></span>(<span class="no">W</span>) <span class="kw">==</span> <span class="fl">1</span>)
 <span class="co">#&gt; [1] TRUE</span></pre></body></html></div>
-<p>The <code><a href="../reference/shape2mat.html">geostan::shape2mat</a></code> function can also create space-time connectivity matrices which many <code>geostan</code> functions will accept without any further modification—but you must ensure your data is properly ordered in space and time to match the connectivity matrix.</p>
+<p>The <code><a href="../reference/shape2mat.html">geostan::shape2mat</a></code> function can also create space-time connectivity matrices which many <strong>geostan</strong> functions will accept without any further modification—but you must ensure your data is properly ordered in space and time to match the connectivity matrix.</p>
 </div>
 <div id="measuring-spatial-autocorrelation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#measuring-spatial-autocorrelation" class="anchor"></a>Measuring spatial autocorrelation</h2>
-<p><code>geostan</code> has the following functions for measuring spatial autocorrelation:</p>
+<p><strong>geostan</strong> has the following functions for measuring spatial autocorrelation:</p>
 <ul>
 <li>the Moran scatter plot <code><a href="../reference/moran_plot.html">geostan::moran_plot</a></code>.</li>
 <li>the Moran coefficient <code><a href="../reference/mc.html">geostan::mc</a></code>,</li>
@@ -131,7 +131,7 @@
 <span class="fu"><a href="../reference/moran_plot.html">moran_plot</a></span>(<span class="no">y</span>, <span class="no">W</span>)
 <span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></pre></body></html></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-5-1.png" width="336" style="display: block; margin: auto;"></p>
-<p>If instead, we used the binary coding scheme for the spatial weights matrix then the y-axis (<span class="math inline">\(W * y_c\)</span>) would show the <em>sum</em> of spatially-lagged values and the Moran coefficient will differ from the regression line.</p>
+<p>If instead, we used the binary coding scheme for the spatial weights matrix <code>C</code> then the y-axis (<code>C * y.c</code>) would show the <em>sum</em> of spatially-lagged values and the Moran coefficient will differ from the regression line.</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/mc.html">mc</a></span>(<span class="no">y</span>, <span class="no">W</span>)
 <span class="co">#&gt; [1] 0.528</span>
 <span class="fu"><a href="../reference/mc.html">mc</a></span>(<span class="no">y</span>, <span class="no">C</span>)
@@ -159,6 +159,7 @@
 <p><code><a href="../reference/aple.html">geostan::aple</a></code> requires the row-standardized spatial weights matrix, and arguably provides a more intuitive estimate of the degree of SA since the SAR model can be used to generate spatially autocorrelated data:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/aple.html">aple</a></span>(<span class="no">y</span>, <span class="no">W</span>)
 <span class="co">#&gt; [1] 0.796</span></pre></body></html></div>
+<p>Again, for large number of observations the APLE approximation will break down.</p>
 </div>
 <div id="simulating-spatially-autocorrelated-data" class="section level2">
 <h2 class="hasAnchor">
@@ -167,7 +168,7 @@
 <div class="sourceCode"><html><body><pre class="r"><span class="no">x</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span>(<span class="kw">w</span> <span class="kw">=</span> <span class="no">W</span>, <span class="kw">rho</span> <span class="kw">=</span> <span class="fl">0.7</span>)
 
 <span class="fu"><a href="../reference/aple.html">aple</a></span>(<span class="no">x</span>, <span class="no">W</span>)
-<span class="co">#&gt; [1] 0.621</span>
+<span class="co">#&gt; [1] 0.64</span>
 
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="no">ohio</span>) +
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="kw">fill</span> <span class="kw">=</span> <span class="no">x</span>)) +
@@ -178,7 +179,7 @@
 <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="no">X</span>)
 <span class="co">#&gt; [1]  5 88</span>
 <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span>(<span class="no">X</span>, <span class="fl">1</span>, <span class="no">aple</span>, <span class="kw">w</span> <span class="kw">=</span> <span class="no">W</span>)
-<span class="co">#&gt; [1] 0.656 0.657 0.564 0.514 0.756</span></pre></body></html></div>
+<span class="co">#&gt; [1] 0.512 0.766 0.787 0.708 0.665</span></pre></body></html></div>
 </div>
 <div id="spatial-diagnostics-with-sp_diag" class="section level2">
 <h2 class="hasAnchor">
@@ -193,7 +194,7 @@ It can also be used for analysis of model residuals. Here we model the mean and 
 <span class="math display">\[\begin{equation}
   y \sim \text{Guassian}(\mu, \sigma).
   \end{equation}\]</span>
-Calculating a probability distribution for parameters <span class="math inline">\(\mu, \sigma\)</span> requires an initial or prior probability be specified for each. By Bayes’ theorem, the probability of parameters <span class="math inline">\(\theta\)</span> conditional on the latest data <span class="math inline">\(D\)</span> and our initial information <span class="math inline">\(I\)</span> is proportional the product of two terms: first, the probability of the observations conditional on <span class="math inline">\(\theta\)</span> and <span class="math inline">\(I\)</span>, and second, the initial probabity of <span class="math inline">\(\theta\)</span> conditional on <span class="math inline">\(I\)</span> alone:
+Calculating a probability distribution for parameters <span class="math inline">\(\mu, \sigma\)</span> requires an initial or prior probability be specified for each. By Bayes’ theorem, the probability of parameters <span class="math inline">\(\theta\)</span> conditional on the latest data <span class="math inline">\(D\)</span> and our initial information <span class="math inline">\(I\)</span> is proportional to the product of two terms: first, the probability of the observations conditional on <span class="math inline">\(\theta\)</span> and <span class="math inline">\(I\)</span>, and second, the initial probabity of <span class="math inline">\(\theta\)</span> conditional on <span class="math inline">\(I\)</span> alone:
 <span class="math display">\[\begin{equation}
   p(\theta | D, I) \propto p(D | \theta,I) p(\theta|I).
 \end{equation}\]</span>
@@ -201,8 +202,8 @@ Calculating a probability distribution for parameters <span class="math inline">
 <span class="math display">\[\begin{equation}
  \text{Posterior probability} \propto \text{Likelihood} \times \text{Prior probability}
  \end{equation}\]</span>
-<p>Here we will just use the priors provided by <code>geostan</code> (as printed out to the console):</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/stan_glm.html">stan_glm</a></span>(<span class="no">gop_growth</span> ~ <span class="fl">1</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">ohio</span>, <span class="kw">refresh</span> <span class="kw">=</span> <span class="fl">0</span>)
+<p>Here we will just use the priors provided by <strong>geostan</strong> (as printed out to the console):</p>
+<div class="sourceCode"><html><body><pre class="r"><span class="no">fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/stan_glm.html">stan_glm</a></span>(<span class="no">gop_growth</span> ~ <span class="fl">1</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">ohio</span>, <span class="kw">refresh</span> <span class="kw">=</span> <span class="fl">0</span>, <span class="kw">cores</span> <span class="kw">=</span> <span class="fl">1</span>)
 <span class="co">#&gt; </span>
 <span class="co">#&gt; *Setting prior parameters for intercept</span>
 <span class="co">#&gt; Gaussian</span>
@@ -219,7 +220,7 @@ Calculating a probability distribution for parameters <span class="math inline">
 <span class="co">#&gt; `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
 <span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></pre></body></html></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-13-1.png" width="624" style="display: block; margin: auto;"></p>
-<p>The <code>geostan</code> model returns samples drawn from the posterior probability distribution of <span class="math inline">\(\mu\)</span> (fitted values), which can be accessed using <code><a href="https://rdrr.io/r/stats/fitted.values.html">fitted(fit)</a></code>. Here <span class="math inline">\(\hat{\mu}\)</span> represents the mean of the posterior distribution of the parameter <span class="math inline">\(\mu\)</span>. Thus the following code reproduces the above results, but more transparently:</p>
+<p>The <strong>geostan</strong> model returns samples drawn from the posterior probability distribution of <span class="math inline">\(\mu\)</span> (fitted values), which can be accessed using <code><a href="https://rdrr.io/r/stats/fitted.values.html">fitted(fit)</a></code>. Here <span class="math inline">\(\hat{\mu}\)</span> represents the mean of the posterior distribution of the parameter <span class="math inline">\(\mu\)</span>. Thus the following code reproduces the above results, but more transparently:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">mu</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html">fitted</a></span>(<span class="no">fit</span>)
 <span class="no">deviations</span> <span class="kw">&lt;-</span> <span class="no">y</span> - <span class="no">mu</span>$<span class="no">mean</span>
 <span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span>(<span class="no">deviations</span>, <span class="no">ohio</span>)
@@ -236,11 +237,11 @@ Calculating a probability distribution for parameters <span class="math inline">
 <div id="estimating-and-visualizing-sa-patterns" class="section level2">
 <h2 class="hasAnchor">
 <a href="#estimating-and-visualizing-sa-patterns" class="anchor"></a>Estimating and visualizing SA patterns</h2>
-<p>The <code>geostan</code> package also provides the <code><a href="../reference/spatial.html">geostan::spatial</a></code> method for extracting the spatial trend component from fitted spatial models (<code>stan_esf</code>, <code>stan_icar</code>, and <code>stan_car</code>). Continuous data can be modeled using eigenvector spatial filtering (ESF) models. ESF models use a linear combination of the eigenvectors <span class="math inline">\(E\)</span> of a transformed spatial connectivity matrix <span class="math inline">\(C\)</span> to identify SA patterns in the data. Each eigenvector contains a distinct map pattern which is indexed by the Moran coefficient (proportional to each respective eigenvalue). <code>geostan</code> assigns a horseshoe prior model to the parameter vector <span class="math inline">\(\beta_{E}\)</span>, reflecting our initial expectation that a relatively small number of eigenvectors will be sufficient to describe the SA patterns in the data. The result is a spatially varying mean <span class="math inline">\(\mu_i\)</span>:</p>
+<p>The <strong>geostan</strong> package also provides the <code><a href="../reference/spatial.html">geostan::spatial</a></code> method for extracting the spatial trend component from fitted spatial models (<code><a href="../reference/stan_esf.html">geostan::stan_esf</a></code>, <code><a href="../reference/stan_icar.html">geostan::stan_icar</a></code>, and <code><a href="../reference/stan_car.html">geostan::stan_car</a></code>). Continuous data can be modeled using eigenvector spatial filtering (ESF) models. ESF models use a linear combination of the eigenvectors <span class="math inline">\(E\)</span> of a transformed spatial connectivity matrix <span class="math inline">\(C\)</span> to identify SA patterns in the data. Each eigenvector contains a distinct map pattern which is indexed by the Moran coefficient (proportional to each respective eigenvalue). <strong>geostan</strong> assigns a horseshoe prior model to the parameter vector <span class="math inline">\(\beta_{E}\)</span>, reflecting our initial expectation that a relatively small number of eigenvectors will be sufficient to describe the SA patterns in the data. The result is a spatially varying mean <span class="math inline">\(\mu_i\)</span>:</p>
 <span class="math display">\[\begin{equation}
   \mu_i = \alpha + E_i * \beta_{EV}
 \end{equation}\]</span>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">fit.esf</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/stan_esf.html">stan_esf</a></span>(<span class="no">gop_growth</span> ~ <span class="fl">1</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">ohio</span>, <span class="kw">C</span> <span class="kw">=</span> <span class="no">C</span>, <span class="kw">refresh</span> <span class="kw">=</span> <span class="fl">0</span>, <span class="kw">chains</span> <span class="kw">=</span> <span class="fl">4</span>, <span class="kw">cores</span> <span class="kw">=</span> <span class="fl">4</span>)
+<div class="sourceCode"><html><body><pre class="r"><span class="no">fit.esf</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/stan_esf.html">stan_esf</a></span>(<span class="no">gop_growth</span> ~ <span class="fl">1</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">ohio</span>, <span class="kw">C</span> <span class="kw">=</span> <span class="no">C</span>, <span class="kw">refresh</span> <span class="kw">=</span> <span class="fl">0</span>, <span class="kw">cores</span> <span class="kw">=</span> <span class="fl">1</span>)
 <span class="co">#&gt; </span>
 <span class="co">#&gt; *Setting prior parameters for intercept</span>
 <span class="co">#&gt; Gaussian</span>
@@ -286,8 +287,8 @@ Calculating a probability distribution for parameters <span class="math inline">
 <hr>
 <ol>
 <li id="fn1"><p>As a rough rule of thumb, if you have to wait for the <code>aple</code> to calculate, you should be using a different measure.<a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p>Using centered data <span class="math inline">\(y_c\)</span> and its spatial lag <span class="math inline">\(\tilde{y_c} = W * y_c\)</span>, the Moran coefficient is equal to a scale factor <span class="math inline">\(\frac{n}{c}\)</span> times <span class="math inline">\(\hat{\beta}\)</span> from a bivariate regression of the spatial lag of <span class="math inline">\(y_c\)</span> on itself, where <span class="math inline">\(c = 1'C1\)</span>, with <span class="math inline">\(1\)</span> a column vector of ones (i.e. find the sum of the row sums of the connectivity matrix.) For a row-standardized matrix <span class="math inline">\(c = n\)</span> and so <span class="math inline">\(\frac{n}{c} = 1\)</span>. Moran’s I can be written as <span class="math inline">\(I = \frac{n}{1'C1}\frac{Cov(y_c, \tilde{y_c})}{Var(y_c)} = \frac{n}{1'C1}\hat{\beta}\)</span>.<a href="#fnref2">↩</a></p></li>
-<li id="fn3"><p>For more complex models such as the spatial models availabe in <code>geostan</code>, a more natural notation is Posterior probability <span class="math inline">\(\propto\)</span> [Process model] <span class="math inline">\(\times\)</span> [Parameter model], which recognizes that the prior can itself be a complex model. This generalizes further to incorporate models of observational error: Posterior probability <span class="math inline">\(\propto\)</span> [Data model] <span class="math inline">\(\times\)</span> [Process model] <span class="math inline">\(\times\)</span> [Parameter model] (Berliner 1996; Cressie and Wikle 2011), which is implemented in geostan models through the <code>ME</code> argument.<a href="#fnref3">↩</a></p></li>
+<li id="fn2"><p>Using centered data <span class="math inline">\(y_c\)</span> and its spatial lag <span class="math inline">\(\tilde{y_c} = W * y_c\)</span>, the Moran coefficient is equal to a scale factor <span class="math inline">\(\frac{n}{1'C1}\)</span> times <span class="math inline">\(\hat{\beta}\)</span> from a bivariate regression of the spatial lag of <span class="math inline">\(y_c\)</span> on itself, where <span class="math inline">\(1\)</span> a column vector of ones (i.e. the denominator is the sum of the row sums of the connectivity matrix.) For a row-standardized matrix <span class="math inline">\(\frac{n}{1'C1} = 1\)</span>. Moran’s I can be written as <span class="math inline">\(I = \frac{n}{1'C1}\frac{Cov(y_c, \tilde{y_c})}{Var(y_c)} = \frac{n}{1'C1}\hat{\beta}\)</span>.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>For more complex models such as the spatial models availabe in <strong>geostan</strong>, a more natural notation is Posterior probability <span class="math inline">\(\propto\)</span> [Process model] <span class="math inline">\(\times\)</span> [Parameter model], which recognizes that the prior can itself be a complex model. This generalizes further to incorporate models of observational error: Posterior probability <span class="math inline">\(\propto\)</span> [Data model] <span class="math inline">\(\times\)</span> [Process model] <span class="math inline">\(\times\)</span> [Parameter model] (Berliner 1996; Cressie and Wikle 2011), which is implemented in geostan models through the <code>ME</code> argument.<a href="#fnref3">↩</a></p></li>
 </ol>
 </div>
   </div>

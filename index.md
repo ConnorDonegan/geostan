@@ -1,27 +1,30 @@
-### geostan
+# geostan
 
 The **geostan** R package provides a user-friendly interface to
 hierarchical Bayesian models (HBMs) for spatial and spatio-temporal data. It is designed for
 relative ease of use and developed with a particular emphasis on spatial epidemiology and survey data for public health.
 All of the models are fit using the Stan probabilistic programming language, but users only need to be familiar with the R language.
 
-The following models are implemented:
+The package and webiste are still under development but will be completed soon.
 
--   Generalized linear models with Gaussian, Student’s *t*, Poisson, and
-    Binomial likelihood functions.
--   Conditional Autoregressive (CAR) models.
--   Eigenvector spatial filtering (ESF) models.
--   Intrinsic conditional autoregressive (IAR) models including Besag-York-Mollie (BYM) models and the innovation (BYM2) introduced by Riebler et al. (2016)
+## Features
 
-All of the models can incorporate additional ‘varying intercept’
-terms for partial pooling of observations across geographies and users are encouraged to model observational error using, e.g., standard errors on estimates from the American Community Suvey.
+### Spatial data analysis tools
 
-### Package installation
+Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics.
 
-This package is still under development. If you’re using Linux you can try out a development version of the
-package:
+### Spatial regression 
 
-``` r
-remotes::install_github("ConnorDonegan/geostan")
-```
+Model count outcomes with a variety of conditional autoregressive models (CAR, ICAR, BYM, BYM2); model continuous or count outcomes with the eigenvector spatial filtering (ESF) methodology.
 
+### Disease mapping and demography
+
+Model small-area incidence rates or rate-ratios with mortality or disease data.
+
+### Observational error models 
+
+Incorporate critical information on data quality into any **geostan** model. Purpose-built for social, economic, and health surveys such as the American Community Survey (ACS).
+
+### The RStan ecosystem
+
+Full integration with a suite of state-of-the-art R packages for Bayesian inference and model exploration.
