@@ -65,7 +65,7 @@ The `geostan::shape2mat` function can also create space-time connectivity matric
 
 [^1]: As a rough rule of thumb, if you have to wait for the `aple` to calculate, you should be using a different measure.
 
-When using the row-standardized spatial weights matrix, the Moran plot will show the original values `y` after being centered---`y.c = y - mean(y)`---plotted against the mean spatially-laged value (`W %*% y.c`). In this case the regression line is equal to the Moran coefficient:[^2]
+When using the row-standardized spatial weights matrix, the Moran plot will show the original values `y` after being centered---`y.c = y - mean(y)`---plotted against the mean spatially-laged value (`W %*% y.c`):[^2]
 
 [^2]: Using centered data $y_c$ and its spatial lag $\tilde{y_c} = W * y_c$, the Moran coefficient is equal to a scale factor $\frac{n}{1'C1}$ times $\hat{\beta}$ from a bivariate regression of the spatial lag of $y_c$ on itself, where $1$ a column vector of ones (i.e. the denominator is the sum of the row sums of the connectivity matrix.) For a row-standardized matrix $\frac{n}{1'C1} = 1$. Moran's I can be written as $I = \frac{n}{1'C1}\frac{Cov(y_c, \tilde{y_c})}{Var(y_c)} = \frac{n}{1'C1}\hat{\beta}$.
 
@@ -73,15 +73,9 @@ When using the row-standardized spatial weights matrix, the Moran plot will show
 y <- ohio$gop_growth
 moran_plot(y, W)
 ```
+If instead, we use the binary coding scheme for the spatial weights matrix `C` then the y-axis (`C * y.c`) would show the *sum* of spatially-lagged values.
 
-If instead, we used the binary coding scheme for the spatial weights matrix `C` then the y-axis (`C * y.c`) would show the *sum* of spatially-lagged values and the Moran coefficient will differ from the regression line.
-
-```{r}
-mc(y, W)
-mc(y, C)
-```
-
- The Moran plot is divided into quadrants, which lends points in each quadrant the following interpretation:
+The Moran plot is divided into quadrants, which lends points in each quadrant the following interpretation:
 
 - Points in the upper-right (1st) quadrant are above-average values surrounded by above-average values (positive SA);
 - Points in the upper-left (2nd) quadrant are below-average values surrounded by above-average values (negative SA);

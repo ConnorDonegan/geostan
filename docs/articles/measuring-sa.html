@@ -64,7 +64,7 @@
       <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
     </li>
     <li>
-      <a href="../articles/modeling-spatial-data-with-geostan.html">Modeling spatial data with geostan</a>
+      <a href="../articles/modeling-spatial-data-with-geostan.html">Modeling spatial data</a>
     </li>
     <li>
       <a href="../articles/setting-priors.html">Setting prior distributions</a>
@@ -133,12 +133,11 @@
 <li>the APLE statistic <code><a href="../reference/aple.html">geostan::aple</a></code> (Approximate Profile Likelihood Estimator of the spatial autocorrelation parameter from a simultaneous autoregressive model). Note that the <code>aple</code> is an approximation that is only valid for relatively small sample sizes.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>
 </li>
 </ul>
-<p>When using the row-standardized spatial weights matrix, the Moran plot will show the original values <code>y</code> after being centered—<code>y.c = y - mean(y)</code>—plotted against the mean spatially-laged value (<code>W %*% y.c</code>). In this case the regression line is equal to the Moran coefficient:<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
+<p>When using the row-standardized spatial weights matrix, the Moran plot will show the original values <code>y</code> after being centered—<code>y.c = y - mean(y)</code>—plotted against the mean spatially-laged value (<code>W %*% y.c</code>):<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">y</span> <span class="kw">&lt;-</span> <span class="no">ohio</span>$<span class="no">gop_growth</span>
 <span class="fu"><a href="../reference/moran_plot.html">moran_plot</a></span>(<span class="no">y</span>, <span class="no">W</span>)
 <span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></pre></body></html></div>
-<p><img src="measuring-sa_files/figure-html/unnamed-chunk-5-1.png" width="336" style="display: block; margin: auto;"></p>
-<p>If instead, we used the binary coding scheme for the spatial weights matrix <code>C</code> then the y-axis (<code>C * y.c</code>) would show the <em>sum</em> of spatially-lagged values and the Moran coefficient will differ from the regression line.</p>
+<p><img src="measuring-sa_files/figure-html/unnamed-chunk-5-1.png" width="336" style="display: block; margin: auto;"> If instead, we use the binary coding scheme for the spatial weights matrix <code>C</code> then the y-axis (<code>C * y.c</code>) would show the <em>sum</em> of spatially-lagged values.</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/mc.html">mc</a></span>(<span class="no">y</span>, <span class="no">W</span>)
 <span class="co">#&gt; [1] 0.528</span>
 <span class="fu"><a href="../reference/mc.html">mc</a></span>(<span class="no">y</span>, <span class="no">C</span>)
@@ -175,7 +174,7 @@
 <div class="sourceCode"><html><body><pre class="r"><span class="no">x</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span>(<span class="kw">w</span> <span class="kw">=</span> <span class="no">W</span>, <span class="kw">rho</span> <span class="kw">=</span> <span class="fl">0.7</span>)
 
 <span class="fu"><a href="../reference/aple.html">aple</a></span>(<span class="no">x</span>, <span class="no">W</span>)
-<span class="co">#&gt; [1] 0.612</span>
+<span class="co">#&gt; [1] 0.6</span>
 
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="no">ohio</span>) +
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="kw">fill</span> <span class="kw">=</span> <span class="no">x</span>)) +
@@ -186,7 +185,7 @@
 <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="no">X</span>)
 <span class="co">#&gt; [1]  5 88</span>
 <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span>(<span class="no">X</span>, <span class="fl">1</span>, <span class="no">aple</span>, <span class="kw">w</span> <span class="kw">=</span> <span class="no">W</span>)
-<span class="co">#&gt; [1] 0.619 0.613 0.719 0.591 0.760</span></pre></body></html></div>
+<span class="co">#&gt; [1] 0.743 0.566 0.496 0.675 0.694</span></pre></body></html></div>
 </div>
 <div id="spatial-diagnostics-with-sp_diag" class="section level2">
 <h2 class="hasAnchor">
