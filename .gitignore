@@ -1,9 +1,9 @@
 src/geostan.so
 src/geostan.dll
 !man/geostan-internal.Rd
+!man/figures/logo.png
+man/*.Rd
 data-raw/
-man/*
 .Rhistory
 *~
 inst/doc
-/vignettes/observational-error.Rmd
