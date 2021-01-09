@@ -1,4 +1,4 @@
-geostan <img src="man/figures/logo.png" align="right" width="120" />
+## geostan <img src="man/figures/logo.png" align="right" width="120" />
 
 Bayesian Spatial Analysis
 -------------------------
