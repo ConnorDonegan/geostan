@@ -2,7 +2,7 @@
 #'
 #' @source
 #'
-#' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. https://doi.org/10.1016/j.spasta.2020.100450
+#' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. \url{https://doi.org/10.1016/j.spasta.2020.100450}
 #' 
 #' MIT Election Data and Science Lab, 2018, "County Presidential Election Returns 2000-2016", \url{https://doi.org/10.7910/DVN/VOQCHQ}, Harvard Dataverse, V1, UNF:6:ZaxsDvp6RsFitno8ZYlK7w== [fileUNF]
 #' 

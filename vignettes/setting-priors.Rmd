@@ -38,9 +38,11 @@ library(sf)
  Given a url to a shapefile, the `geostan::get_shp` function will download the data and unzip it into your working directory. Download the `nepal` dataset with information on social indicators for 75 districts of Nepal (hosted by [GeoDa](https://geodacenter.github.io/)):
 
 ```{r}
+# saving to a temporary directory
+folder <- tempdir()
 url <- "https://geodacenter.github.io/data-and-lab//data/nepal.zip"
-get_shp(url, "nepal")
-nepal <- st_read("nepal", "nepal")
+get_shp(url, folder)
+nepal <- st_read(folder, "nepal")
 ```
 We will reference per-capita income (PCI) `pcinc` and the percentage of people not expected to survive beyond age 40 `lif40` (or "early mortality"). To work with a fixed example, consider a model that hypothesizes premature mortality rates to be a linear function of per-capita income
 \begin{equation}
@@ -84,8 +86,8 @@ The eigenvector spatial filter (ESF) models (see `geostan::stan_esf`) will also 
 \begin{equation}
   \text{early_mortality}_i = \alpha + EV_i * \beta_{EV} + \text{PCI}_i * \beta_{inc} + e_i
   \end{equation}
-Each of the eigenvectors represent patterns of potential spatial autocorrelation. The challenge of ESF models is that they can have a very high number of parameters to estimate (one for each eigenvector) and often only a small number of them are far from zero. Thus we have some prior information on about how many coefficients are non-zero but we do not have prior information on *which* of them to select.
-The **geostan** package addresses this by assigning a regularized horseshoe (RHS) prior model (@piironen_2017) to the coefficients `beta_ev`. The RHS model concentrates prior probability on zero, aggressively shrinking all of the coefficients to zero; but it also has heavy tails that open up where there is sufficient evidence of a non-zero coefficient, allowing a few parameters to escape the pull toward zero.
+Each of the eigenvectors represent patterns of potential spatial autocorrelation. The challenge of ESF models is that they can have a very high number of parameters to estimate (one for each eigenvector) and often only a small number of them are far from zero.
+The **geostan** package assigns a regularized horseshoe (RHS) prior model (@piironen_2017) to the coefficients `beta_ev`. This concentrates prior probability on zero, aggressively shrinking all of the coefficients to zero; but it also has heavy tails that open up where there is sufficient evidence of a non-zero coefficient, allowing a few parameters to escape the pull toward zero.
 
 Again **geostan** will print its default priors before sampling from the model:
 
@@ -196,7 +198,7 @@ The default prior for the slab is `slab_df = 15` and `slab_scale = 0.5 * sd(y) /
 
 ## Setting priors: ICAR
 
-The Intrinsic Conditional Autoregressive (ICAR) models are based on the Stan code developed in @morris_2019. In each of the available model options (`type = c("icar", "bym", "bym2")`), a parameter vector `\phi` is assigned the ICAR prior (which places high prior probability on smooth spatial trends). The model is fixed, with no priors available to set.
+The Intrinsic Conditional Autoregressive (ICAR) models are based on the Stan code developed in @morris_2019. In each of the available model options (`type = c("icar", "bym", "bym2")`), a parameter vector `phi` is assigned the ICAR prior (which places high prior probability on smooth spatial trends). The model is fixed, with no priors available to set.
 
 To implement the BYM2 model introduced in @riebler_2016 and implemented in Stan by @morris_2019, you must provide an additional `scale_factor` term using the **INLA** package (see [here](https://www.r-inla.org/download-install) for installation instructions).
 

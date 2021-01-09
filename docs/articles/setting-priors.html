@@ -6,6 +6,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Setting prior distributions • geostan</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
@@ -13,6 +19,7 @@
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Setting prior distributions">
 <meta property="og:description" content="geostan">
+<meta property="og:image" content="/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -99,11 +106,19 @@
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">sf</span>)
 <span class="co">#&gt; Linking to GEOS 3.6.2, GDAL 2.2.3, PROJ 4.9.3</span></pre></body></html></div>
 <p>Given a url to a shapefile, the <code><a href="../reference/get_shp.html">geostan::get_shp</a></code> function will download the data and unzip it into your working directory. Download the <code>nepal</code> dataset with information on social indicators for 75 districts of Nepal (hosted by <a href="https://geodacenter.github.io/">GeoDa</a>):</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">url</span> <span class="kw">&lt;-</span> <span class="st">"https://geodacenter.github.io/data-and-lab//data/nepal.zip"</span>
-<span class="fu"><a href="../reference/get_shp.html">get_shp</a></span>(<span class="no">url</span>, <span class="st">"nepal"</span>)
-<span class="co">#&gt; [1] "nepal/nepal.dbf" "nepal/nepal.prj" "nepal/nepal.shp" "nepal/nepal.shx"</span>
-<span class="no">nepal</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/sf/man/st_read.html">st_read</a></span>(<span class="st">"nepal"</span>, <span class="st">"nepal"</span>)
-<span class="co">#&gt; Reading layer `nepal' from data source `/home/connor/dev/geostan/vignettes/nepal' using driver `ESRI Shapefile'</span>
+<div class="sourceCode"><html><body><pre class="r"><span class="co"># saving to a temporary directory</span>
+<span class="no">folder</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempdir</a></span>()
+<span class="no">url</span> <span class="kw">&lt;-</span> <span class="st">"https://geodacenter.github.io/data-and-lab//data/nepal.zip"</span>
+<span class="fu"><a href="../reference/get_shp.html">get_shp</a></span>(<span class="no">url</span>, <span class="no">folder</span>)
+<span class="co">#&gt; [1] "/tmp/RtmpuQDvb2/callr-env-3b511bf0f5ea"</span>
+<span class="co">#&gt; [2] "/tmp/RtmpuQDvb2/file3b51294639e5.zip"  </span>
+<span class="co">#&gt; [3] "/tmp/RtmpuQDvb2/file3b512e878b21.so"   </span>
+<span class="co">#&gt; [4] "/tmp/RtmpuQDvb2/nepal.dbf"             </span>
+<span class="co">#&gt; [5] "/tmp/RtmpuQDvb2/nepal.prj"             </span>
+<span class="co">#&gt; [6] "/tmp/RtmpuQDvb2/nepal.shp"             </span>
+<span class="co">#&gt; [7] "/tmp/RtmpuQDvb2/nepal.shx"</span>
+<span class="no">nepal</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/sf/man/st_read.html">st_read</a></span>(<span class="no">folder</span>, <span class="st">"nepal"</span>)
+<span class="co">#&gt; Reading layer `nepal' from data source `/tmp/RtmpuQDvb2' using driver `ESRI Shapefile'</span>
 <span class="co">#&gt; Simple feature collection with 75 features and 61 fields</span>
 <span class="co">#&gt; geometry type:  POLYGON</span>
 <span class="co">#&gt; dimension:      XY</span>
@@ -145,7 +160,7 @@ We will reference per-capita income (PCI) <code>pcinc</code> and the percentage 
 <p><img src="setting-priors_files/figure-html/unnamed-chunk-6-1.png" width="576" style="display: block; margin: auto;"> We can also extract all the samples from prior distributions as a matrix:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">beta.samples</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="no">fit</span>, <span class="kw">pars</span> <span class="kw">=</span> <span class="st">"beta"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="no">beta.samples</span>)
-<span class="co">#&gt; [1] 4000    1</span></pre></body></html></div>
+<span class="co">#&gt; [1] 8000    1</span></pre></body></html></div>
 <p>If we use the <code>centerx</code> (or <code>scalex</code>) arguments in <code>stan_glm</code> (or any of the <strong>geostan</strong> model fitting functions), the covariates will be centered (or scaled) before the priors are calculated, and the default prior for the intercept will be centered on the data mean <span class="math inline">\(\bar{y}\)</span> rather than zero:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">fit.c</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/stan_glm.html">stan_glm</a></span>(<span class="no">lif40</span> ~ <span class="no">pcinc</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">nepal</span>, <span class="kw">centerx</span> <span class="kw">=</span> <span class="fl">TRUE</span>, <span class="kw">refresh</span> <span class="kw">=</span> <span class="fl">0</span>, <span class="kw">cores</span> <span class="kw">=</span> <span class="fl">1</span>)
 <span class="co">#&gt; </span>
@@ -169,7 +184,7 @@ The eigenvector spatial filter (ESF) models (see <code><a href="../reference/sta
 <span class="math display">\[\begin{equation}
   \text{early_mortality}_i = \alpha + EV_i * \beta_{EV} + \text{PCI}_i * \beta_{inc} + e_i
   \end{equation}\]</span>
-<p>Each of the eigenvectors represent patterns of potential spatial autocorrelation. The challenge of ESF models is that they can have a very high number of parameters to estimate (one for each eigenvector) and often only a small number of them are far from zero. Thus we have some prior information on about how many coefficients are non-zero but we do not have prior information on <em>which</em> of them to select. The <strong>geostan</strong> package addresses this by assigning a regularized horseshoe (RHS) prior model (<span class="citation">Piironen and Vehtari (2017)</span>) to the coefficients <code>beta_ev</code>. The RHS model concentrates prior probability on zero, aggressively shrinking all of the coefficients to zero; but it also has heavy tails that open up where there is sufficient evidence of a non-zero coefficient, allowing a few parameters to escape the pull toward zero.</p>
+<p>Each of the eigenvectors represent patterns of potential spatial autocorrelation. The challenge of ESF models is that they can have a very high number of parameters to estimate (one for each eigenvector) and often only a small number of them are far from zero. The <strong>geostan</strong> package assigns a regularized horseshoe (RHS) prior model (<span class="citation">Piironen and Vehtari (2017)</span>) to the coefficients <code>beta_ev</code>. This concentrates prior probability on zero, aggressively shrinking all of the coefficients to zero; but it also has heavy tails that open up where there is sufficient evidence of a non-zero coefficient, allowing a few parameters to escape the pull toward zero.</p>
 <p>Again <strong>geostan</strong> will print its default priors before sampling from the model:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">C</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span>(<span class="no">nepal</span>)
 <span class="no">fit.esf</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/stan_esf.html">stan_esf</a></span>(<span class="no">lif40</span> ~ <span class="no">pcinc</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">nepal</span>, <span class="kw">C</span> <span class="kw">=</span> <span class="no">C</span>, <span class="kw">centerx</span> <span class="kw">=</span> <span class="fl">TRUE</span>, <span class="kw">prior_only</span> <span class="kw">=</span> <span class="fl">TRUE</span>, <span class="kw">refresh</span> <span class="kw">=</span> <span class="fl">0</span>, <span class="kw">cores</span> <span class="kw">=</span> <span class="fl">1</span>)
@@ -277,7 +292,7 @@ The eigenvector spatial filter (ESF) models (see <code><a href="../reference/sta
 <div id="setting-priors-icar" class="section level2">
 <h2 class="hasAnchor">
 <a href="#setting-priors-icar" class="anchor"></a>Setting priors: ICAR</h2>
-<p>The Intrinsic Conditional Autoregressive (ICAR) models are based on the Stan code developed in <span class="citation">Morris et al. (2019)</span>. In each of the available model options (<code>type = c("icar", "bym", "bym2")</code>), a parameter vector <code>\phi</code> is assigned the ICAR prior (which places high prior probability on smooth spatial trends). The model is fixed, with no priors available to set.</p>
+<p>The Intrinsic Conditional Autoregressive (ICAR) models are based on the Stan code developed in <span class="citation">Morris et al. (2019)</span>. In each of the available model options (<code>type = c("icar", "bym", "bym2")</code>), a parameter vector <code>phi</code> is assigned the ICAR prior (which places high prior probability on smooth spatial trends). The model is fixed, with no priors available to set.</p>
 <p>To implement the BYM2 model introduced in <span class="citation">Riebler et al. (2016)</span> and implemented in Stan by <span class="citation">Morris et al. (2019)</span>, you must provide an additional <code>scale_factor</code> term using the <strong>INLA</strong> package (see <a href="https://www.r-inla.org/download-install">here</a> for installation instructions).</p>
 <p>The following code chunk demonstrates how to calculate the <code>scale_factor</code> argument given a spatial connectivity matrix C, the <code><a href="../reference/prep_icar_data.html">geostan::prep_icar_data</a></code> function, and a user-defined function <code>c_scale</code>:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">INLA</span>)

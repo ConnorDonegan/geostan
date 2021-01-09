@@ -1,11 +1,11 @@
-#' Effective sample size for spatial data
+#' Effective sample size 
 #'
 #' @description An approximate calculation for the effective sample size for spatially autocorrelated data. Only valid for approximately normally distributed data.
 #' 
 #' @param n Number of observations.
 #' @param rho Spatial autocorrelation parameter from a simultaneous autoregressive model.
 #' 
-#' @return Rerturns $n^*$, a numeric value.
+#' @return Rerturns effective sample size n*, a numeric value.
 #'
 #' @details
 #'
@@ -15,7 +15,7 @@
 #'
 #' @source
 #'
-#' Griffith, Daniel A. (2005). Effective geographic sample size in the presence of spatial autocorrelation. *Annal of the Association of American Geographers.* Vol. 95(4): 740-760.
+#' Griffith, Daniel A. (2005). Effective geographic sample size in the presence of spatial autocorrelation. Annal of the Association of American Geographers. Vol. 95(4): 740-760.
 #' 
 #' @examples
 #'
