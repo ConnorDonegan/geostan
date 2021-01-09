@@ -104,9 +104,21 @@ We can also draw samples from prior distribution of the spatial filter itself, w
 
 ```{r}
 sf <- spatial(fit.esf, summary = FALSE)
+```
+
+The new object `sf` is an `m`-by-`n` matrix, where `m` is the number of samples drawn from the posterior distribution and `n` is the number of observations in the data.
+```{r}
 dim(sf)
 ```
-Each of the coefficients has the same marginal probability as `beta_ev[1]`, but samples from the joint prior probability of the coefficients `beta_ev` reveal that the default prior, which is based on the number of observations and the degree of autocorrelation in the outcome variable, assigns high probability on their being some kind of spatial autocorrelation. Each of the samples exhibit a different pattern, arising from various linear combinations of eigenvectors:
+Thus the `i`th column contains samples from the marginal (prior) probability distribution for the spatial filter (i.e. spatially varying mean) at the location of the `i`th observation. This means one can summarize the probability distribution for the spatial filter at the `i`th observation by manipulating `sf` column-wise:
+```{r}
+# one at a time
+mean(sf[,1])
+
+# summarize them all: mean of each column
+apply(sf, 2, mean)
+```
+By contrast, each row is a draw from the *joint* probability distribution of the spatial filter. Each of the coefficients has the same marginal probability as `beta_ev[1]`. But samples from the joint distribution show that the horseshoe prior assigns high probability to the presence of positive spatial autocorrelation (without favoring any particular pattern). Each of the samples exhibit a different pattern, arising from various linear combinations of eigenvectors:
 
 ```{r}
 n.samples <- nrow(sf)

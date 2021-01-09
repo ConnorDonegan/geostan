@@ -64,7 +64,7 @@
       <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
     </li>
     <li>
-      <a href="../articles/observational-error.html">Observational error models</a>
+      <a href="../articles/modeling-spatial-data-with-geostan.html">Modeling spatial data with geostan</a>
     </li>
     <li>
       <a href="../articles/setting-priors.html">Setting prior distributions</a>
@@ -175,7 +175,7 @@
 <div class="sourceCode"><html><body><pre class="r"><span class="no">x</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span>(<span class="kw">w</span> <span class="kw">=</span> <span class="no">W</span>, <span class="kw">rho</span> <span class="kw">=</span> <span class="fl">0.7</span>)
 
 <span class="fu"><a href="../reference/aple.html">aple</a></span>(<span class="no">x</span>, <span class="no">W</span>)
-<span class="co">#&gt; [1] 0.668</span>
+<span class="co">#&gt; [1] 0.612</span>
 
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="no">ohio</span>) +
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="kw">fill</span> <span class="kw">=</span> <span class="no">x</span>)) +
@@ -186,7 +186,7 @@
 <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="no">X</span>)
 <span class="co">#&gt; [1]  5 88</span>
 <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span>(<span class="no">X</span>, <span class="fl">1</span>, <span class="no">aple</span>, <span class="kw">w</span> <span class="kw">=</span> <span class="no">W</span>)
-<span class="co">#&gt; [1] 0.623 0.731 0.695 0.458 0.572</span></pre></body></html></div>
+<span class="co">#&gt; [1] 0.619 0.613 0.719 0.591 0.760</span></pre></body></html></div>
 </div>
 <div id="spatial-diagnostics-with-sp_diag" class="section level2">
 <h2 class="hasAnchor">
