@@ -1,11 +1,11 @@
 ---
-title: "Modeling spatial data with geostan"
+title: "Modeling spatial data"
 author: "Connor Donegan"
 output:
   rmarkdown::html_vignette:
     toc: true
 vignette: >
-  %\VignetteIndexEntry{Modeling spatial data with geostan}
+  %\VignetteIndexEntry{Modeling spatial data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
   fig.width = 3.5,
   comment = "#>"
 )
-#> run with:  sudo Rscript -e "rmarkdown::render('modeling-spatial-data-with-geostan.Rmd')"
+#> run with:  sudo Rscript -e "rmarkdown::render('modeling-spatial-data.Rmd')"
 ```
 
 *under development*
