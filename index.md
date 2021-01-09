@@ -23,10 +23,6 @@ Models for continuous and count data recorded across areal units like counties o
 
 Model small-area incidence rates with mortality or disease data.
 
-### Spatio-temporal models
-
-Model spatial processes unfolding over time.
-
 ### Observational error models 
 
 Incorporate information on data quality into any **geostan** model. Purpose-built for social, economic, and health surveys such as the American Community Survey (ACS).
