@@ -42,10 +42,10 @@ n_eff <- function(n, rho) {
 #' 
 #' @param x Numeric vector of values, length n. This will be standardized internally with \code{scale(x)}.
 #' @param w An n x n row-standardized spatial connectivity matrix. See \link[geostan]{shape2mat}.
-#' @param digits Number of digits to round results to; defaults to \code{digits = 3}.
+#' @param digits Number of digits to round results to.
 #' @return the APLE estimate.
 #'
-#' @seealso \link[geostan]{mc}, \link[geostan]{moran_plot}, \link[geostan]{lisa}, \link[geostan]{sim_sar}, \link[spatialreg]{errorsarlm}
+#' @seealso \link[geostan]{mc}, \link[geostan]{moran_plot}, \link[geostan]{lisa}, \link[geostan]{sim_sar}
 #'
 #' @details To check reliability, the \code{APLE} can be compared to an estimate of the spatial autocorrelation parameter from an intercept-only SAR model. 
 #'
@@ -617,10 +617,11 @@ student_t <- function() {
 #' @description Widely Application Information Criteria (WAIC) for model evalution
 #' @export
 #' @param fit An \code{geostan_fit} object or any Stan model with a parameter named "log_lik", the pointwise log predictive likelihood
-#' @param pointwise Logical, should a vector of values for each observation be returned? Default is \code{FALSE}.
-#' @param digits Defaults to 2. Round results to this many digits.
-#' @return A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density (\code{Lpd}). If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
-#' @seealso \link{loo}
+#' @param pointwise Logical, should a vector of values for each observation be returned? 
+#' @param digits Round results to this many digits.
+#' @return A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density \code{Lpd}. If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
+#' 
+#' @seealso See \link[loo]{waic} as well as the more robust \link[loo]{loo}
 #'
 #' @examples
 #' 
@@ -629,7 +630,6 @@ student_t <- function() {
 #' fit <- stan_glm(gop_growth ~ 1, data = ohio, chains = 3, iter = 1500)
 #' waic(fit)
 #' }
-#' 
 waic <- function(fit, pointwise = FALSE, digits = 2) {
   ll <- as.matrix(fit, pars = "log_lik")
   nsamples <- nrow(ll)

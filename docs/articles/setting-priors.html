@@ -64,7 +64,7 @@
       <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
     </li>
     <li>
-      <a href="../articles/modeling-spatial-data-with-geostan.html">Modeling spatial data with geostan</a>
+      <a href="../articles/modeling-spatial-data-with-geostan.html">Modeling spatial data</a>
     </li>
     <li>
       <a href="../articles/setting-priors.html">Setting prior distributions</a>
@@ -110,15 +110,15 @@
 <span class="no">folder</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempdir</a></span>()
 <span class="no">url</span> <span class="kw">&lt;-</span> <span class="st">"https://geodacenter.github.io/data-and-lab//data/nepal.zip"</span>
 <span class="fu"><a href="../reference/get_shp.html">get_shp</a></span>(<span class="no">url</span>, <span class="no">folder</span>)
-<span class="co">#&gt; [1] "/tmp/Rtmpaa8feB/callr-env-50229efa127"</span>
-<span class="co">#&gt; [2] "/tmp/Rtmpaa8feB/file502238512665.so"  </span>
-<span class="co">#&gt; [3] "/tmp/Rtmpaa8feB/file502239a922c3.zip" </span>
-<span class="co">#&gt; [4] "/tmp/Rtmpaa8feB/nepal.dbf"            </span>
-<span class="co">#&gt; [5] "/tmp/Rtmpaa8feB/nepal.prj"            </span>
-<span class="co">#&gt; [6] "/tmp/Rtmpaa8feB/nepal.shp"            </span>
-<span class="co">#&gt; [7] "/tmp/Rtmpaa8feB/nepal.shx"</span>
+<span class="co">#&gt; [1] "/tmp/Rtmp1WlG6e/callr-env-14f01f730302"</span>
+<span class="co">#&gt; [2] "/tmp/Rtmp1WlG6e/file14f0651c4ccf.so"   </span>
+<span class="co">#&gt; [3] "/tmp/Rtmp1WlG6e/file14f06cd80068.zip"  </span>
+<span class="co">#&gt; [4] "/tmp/Rtmp1WlG6e/nepal.dbf"             </span>
+<span class="co">#&gt; [5] "/tmp/Rtmp1WlG6e/nepal.prj"             </span>
+<span class="co">#&gt; [6] "/tmp/Rtmp1WlG6e/nepal.shp"             </span>
+<span class="co">#&gt; [7] "/tmp/Rtmp1WlG6e/nepal.shx"</span>
 <span class="no">nepal</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/sf/man/st_read.html">st_read</a></span>(<span class="no">folder</span>, <span class="st">"nepal"</span>)
-<span class="co">#&gt; Reading layer `nepal' from data source `/tmp/Rtmpaa8feB' using driver `ESRI Shapefile'</span>
+<span class="co">#&gt; Reading layer `nepal' from data source `/tmp/Rtmp1WlG6e' using driver `ESRI Shapefile'</span>
 <span class="co">#&gt; Simple feature collection with 75 features and 61 fields</span>
 <span class="co">#&gt; geometry type:  POLYGON</span>
 <span class="co">#&gt; dimension:      XY</span>
@@ -160,7 +160,7 @@ We will reference per-capita income (PCI) <code>pcinc</code> and the percentage 
 <p><img src="setting-priors_files/figure-html/unnamed-chunk-6-1.png" width="576" style="display: block; margin: auto;"> We can also extract all the samples from prior distributions as a matrix:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">beta.samples</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(<span class="no">fit</span>, <span class="kw">pars</span> <span class="kw">=</span> <span class="st">"beta"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="no">beta.samples</span>)
-<span class="co">#&gt; [1] 4000    1</span></pre></body></html></div>
+<span class="co">#&gt; [1] 8000    1</span></pre></body></html></div>
 <p>If we use the <code>centerx</code> (or <code>scalex</code>) arguments in <code>stan_glm</code> (or any of the <strong>geostan</strong> model fitting functions), the covariates will be centered (or scaled) before the priors are calculated, and the default prior for the intercept will be centered on the data mean <span class="math inline">\(\bar{y}\)</span> rather than zero:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">fit.c</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/stan_glm.html">stan_glm</a></span>(<span class="no">lif40</span> ~ <span class="no">pcinc</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">nepal</span>, <span class="kw">centerx</span> <span class="kw">=</span> <span class="fl">TRUE</span>, <span class="kw">refresh</span> <span class="kw">=</span> <span class="fl">0</span>, <span class="kw">cores</span> <span class="kw">=</span> <span class="fl">1</span>)
 <span class="co">#&gt; </span>
@@ -219,40 +219,40 @@ The eigenvector spatial filter (ESF) models (see <code><a href="../reference/sta
 <p>Thus the <code>i</code>th column contains samples from the marginal (prior) probability distribution for the spatial filter (i.e. spatially varying mean) at the location of the <code>i</code>th observation. This means one can summarize the probability distribution for the spatial filter at the <code>i</code>th observation by manipulating <code>sf</code> column-wise:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="co"># one at a time</span>
 <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(<span class="no">sf</span>[,<span class="fl">1</span>])
-<span class="co">#&gt; [1] 0.05065076</span>
+<span class="co">#&gt; [1] 0.00156216</span>
 
 <span class="co"># summarize them all: mean of each column</span>
 <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span>(<span class="no">sf</span>, <span class="fl">2</span>, <span class="no">mean</span>)
 <span class="co">#&gt;        esf[1]        esf[2]        esf[3]        esf[4]        esf[5] </span>
-<span class="co">#&gt;  0.0506507585  0.0053373185  0.0169406693 -0.0291580145  0.0030092367 </span>
+<span class="co">#&gt;  0.0015621599 -0.0043015799 -0.0132800804  0.0032521972 -0.0270703616 </span>
 <span class="co">#&gt;        esf[6]        esf[7]        esf[8]        esf[9]       esf[10] </span>
-<span class="co">#&gt;  0.0553945118  0.0200109994 -0.0365697605  0.0031466568  0.0268620340 </span>
+<span class="co">#&gt;  0.0302463565 -0.0223741085 -0.0604079358 -0.0371032423  0.0215212856 </span>
 <span class="co">#&gt;       esf[11]       esf[12]       esf[13]       esf[14]       esf[15] </span>
-<span class="co">#&gt;  0.0198084278 -0.0318041468  0.0189388039 -0.0626191568 -0.0092300249 </span>
+<span class="co">#&gt;  0.0216169235 -0.0398555940  0.0593655326 -0.0445117172  0.0361493748 </span>
 <span class="co">#&gt;       esf[16]       esf[17]       esf[18]       esf[19]       esf[20] </span>
-<span class="co">#&gt; -0.0980916630 -0.0327162069 -0.0625578389 -0.0243358163  0.0001146599 </span>
+<span class="co">#&gt; -0.0510421235  0.0146051788  0.0123506242 -0.0433847995 -0.0480631435 </span>
 <span class="co">#&gt;       esf[21]       esf[22]       esf[23]       esf[24]       esf[25] </span>
-<span class="co">#&gt;  0.0057954153 -0.0430819724  0.0596002449 -0.0058745709 -0.0099766735 </span>
+<span class="co">#&gt; -0.0407872790 -0.0209089565 -0.0133244176  0.0611030186  0.0167972289 </span>
 <span class="co">#&gt;       esf[26]       esf[27]       esf[28]       esf[29]       esf[30] </span>
-<span class="co">#&gt; -0.1126365407  0.0292919991 -0.0222216278  0.0346111036 -0.1107340753 </span>
+<span class="co">#&gt; -0.0682177395  0.0359678968 -0.0005720004  0.0084062625 -0.0678253153 </span>
 <span class="co">#&gt;       esf[31]       esf[32]       esf[33]       esf[34]       esf[35] </span>
-<span class="co">#&gt; -0.1008154154 -0.0462441206  0.0321901640 -0.0406154162 -0.0758975200 </span>
+<span class="co">#&gt; -0.0570710216 -0.0415200907  0.0047964714  0.0500808669  0.0207576862 </span>
 <span class="co">#&gt;       esf[36]       esf[37]       esf[38]       esf[39]       esf[40] </span>
-<span class="co">#&gt;  0.0233613817  0.0385954284 -0.0698691191 -0.0018808345  0.0349495615 </span>
+<span class="co">#&gt;  0.0260176010  0.0462414677  0.0095145035  0.0825607767 -0.0243273474 </span>
 <span class="co">#&gt;       esf[41]       esf[42]       esf[43]       esf[44]       esf[45] </span>
-<span class="co">#&gt;  0.0241837640  0.0221396279  0.0061119679 -0.0049949355  0.0046943879 </span>
+<span class="co">#&gt;  0.0318065672 -0.0445105851  0.0309401903  0.0872974024 -0.0482436368 </span>
 <span class="co">#&gt;       esf[46]       esf[47]       esf[48]       esf[49]       esf[50] </span>
-<span class="co">#&gt; -0.0308201636  0.0157063551  0.0068845857 -0.0137923762 -0.0082688502 </span>
+<span class="co">#&gt;  0.0162978719  0.0399550332  0.0400484950 -0.0653903031 -0.0336085931 </span>
 <span class="co">#&gt;       esf[51]       esf[52]       esf[53]       esf[54]       esf[55] </span>
-<span class="co">#&gt;  0.0229430870  0.0859141202  0.0303479555  0.0643909639 -0.0302887885 </span>
+<span class="co">#&gt;  0.0817964901  0.0236320404  0.0497983130 -0.0155609616 -0.0367587025 </span>
 <span class="co">#&gt;       esf[56]       esf[57]       esf[58]       esf[59]       esf[60] </span>
-<span class="co">#&gt;  0.0301806705  0.0044467691 -0.0135162954  0.0195229120  0.0315500540 </span>
+<span class="co">#&gt;  0.0181238693  0.0717073633 -0.0004315967 -0.0363100755  0.0170789364 </span>
 <span class="co">#&gt;       esf[61]       esf[62]       esf[63]       esf[64]       esf[65] </span>
-<span class="co">#&gt;  0.0685401891  0.1051996494  0.0572691782  0.0180368213 -0.0571642392 </span>
+<span class="co">#&gt; -0.0354193153 -0.0408629603 -0.0665435088  0.0274729382 -0.0042500369 </span>
 <span class="co">#&gt;       esf[66]       esf[67]       esf[68]       esf[69]       esf[70] </span>
-<span class="co">#&gt; -0.0332750873 -0.0347570060 -0.0305386965  0.0142325941  0.0105677618 </span>
+<span class="co">#&gt;  0.0129485377  0.0144009123 -0.0042593762 -0.0087878967  0.0040631672 </span>
 <span class="co">#&gt;       esf[71]       esf[72]       esf[73]       esf[74]       esf[75] </span>
-<span class="co">#&gt;  0.0235672718  0.0042558866  0.0605504796  0.0333809703  0.0411195551</span></pre></body></html></div>
+<span class="co">#&gt;  0.0226084339  0.0271779007 -0.0173739569  0.0010793104  0.0031131733</span></pre></body></html></div>
 <p>By contrast, each row is a draw from the <em>joint</em> probability distribution of the spatial filter. Each of the coefficients has the same marginal probability as <code>beta_ev[1]</code>. But samples from the joint distribution show that the horseshoe prior assigns high probability to the presence of positive spatial autocorrelation (without favoring any particular pattern). Each of the samples exhibit a different pattern, arising from various linear combinations of eigenvectors:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">n.samples</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span>(<span class="no">sf</span>)
 <span class="no">idx</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html">sample</a></span>(<span class="no">n.samples</span>, <span class="kw">size</span> <span class="kw">=</span> <span class="fl">1</span>)

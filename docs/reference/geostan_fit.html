@@ -106,7 +106,7 @@
       <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
     </li>
     <li>
-      <a href="../articles/modeling-spatial-data-with-geostan.html">Modeling spatial data with geostan</a>
+      <a href="../articles/modeling-spatial-data-with-geostan.html">Modeling spatial data</a>
     </li>
     <li>
       <a href="../articles/setting-priors.html">Setting prior distributions</a>
@@ -195,16 +195,18 @@
     </tr>
     <tr>
       <th>summary</th>
-      <td><p>Logical (default <code>summary = TRUE</code>); should the values be summarized with the mean, standard deviation and quantiles (<code>probs = c(.025, .2, .5, .8, .975)</code>) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.</p></td>
+      <td><p>Logical; should the values be summarized with the mean, standard deviation and quantiles (<code>probs = c(.025, .2, .5, .8, .975)</code>) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>return either a matrix containing all samples for each observation, or a <code>data.frame</code> containing a summary values for each observation.</p>
+    <p>Methods <code>residuals</code>, <code>fitted</code>, <code>spatial</code> return a matrix containing all samples for each observation if <code>summary = FALSE</code>, else if <code>summary = TRUE</code> a <code>data.frame</code> containing a summary of the posterior distribution at each observation (of, respectively, residuals, fitted values, or the spatial trend).</p>
+<p><code>plot</code> resturns a <code>ggplot</code> object that can be customized using the <code>ggplot2</code> package.</p>
+<p><code>as.matrix</code>, <code>as.data.frame</code>, <code>as.array</code> return samples from the (joint) posterior distribution of parameters in the format corresponding to their names. The <code>pars</code> argument is used to return samples from only a subset of parameters.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><a href='stan_esf.html'>stan_esf</a> <a href='https://mc-stan.org/rstan/reference/stan_plot.html'>stan_plot</a></p></div>
+    <div class='dont-index'><p><a href='stan_glm.html'>stan_glm</a>, <a href='stan_esf.html'>stan_esf</a>, <a href='stan_icar.html'>stan_icar</a>, <a href='stan_car.html'>stan_car</a>, <a href='https://mc-stan.org/rstan/reference/stan_plot.html'>stan_plot</a>, as.array</p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
@@ -215,8 +217,6 @@
                <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>ohio</span>,
                <span class='kw'>scalex</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
                <span class='kw'>C</span> <span class='kw'>=</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span>(<span class='no'>ohio</span>),
-               <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>3</span>,
-               <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>1e3</span>,
                <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>0</span> <span class='co'># less printing</span>
 )
 

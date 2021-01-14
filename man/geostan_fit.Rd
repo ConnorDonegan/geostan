@@ -43,10 +43,14 @@
 
 \item{object}{A fitted model object of class \code{geostan_fit}.}
 
-\item{summary}{Logical (default \code{summary = TRUE}); should the values be summarized with the mean, standard deviation and quantiles (\code{probs = c(.025, .2, .5, .8, .975)}) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.}
+\item{summary}{Logical; should the values be summarized with the mean, standard deviation and quantiles (\code{probs = c(.025, .2, .5, .8, .975)}) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.}
 }
 \value{
-return either a matrix containing all samples for each observation, or a \code{data.frame} containing a summary values for each observation.
+Methods \code{residuals}, \code{fitted}, \code{spatial} return a matrix containing all samples for each observation if \code{summary = FALSE}, else if \code{summary = TRUE} a \code{data.frame} containing a summary of the posterior distribution at each observation (of, respectively, residuals, fitted values, or the spatial trend).
+
+\code{plot} resturns a \code{ggplot} object that can be customized using the \code{ggplot2} package.
+
+\code{as.matrix}, \code{as.data.frame}, \code{as.array} return samples from the (joint) posterior distribution of parameters in the format corresponding to their names. The \code{pars} argument is used to return samples from only a subset of parameters.
 }
 \description{
 Methods for fitted geostan models: extract residuals, fitted values, posterior predictive distribution or spatial component from a spatial regression model; extract samples from the posterior distribution; print regression results; plot posterior distributions.
@@ -60,8 +64,6 @@ fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density),
                data = ohio,
                scalex = TRUE,
                C = shape2mat(ohio),
-               chains = 3,
-               iter = 1e3,
                refresh = 0 # less printing
 )
 
@@ -93,5 +95,5 @@ ggplot(ohio) +
 
 }
 \seealso{
-\link[geostan]{stan_esf} \link[rstan]{stan_plot}
+\link[geostan]{stan_glm}, \link[geostan]{stan_esf}, \link[geostan]{stan_icar}, \link[geostan]{stan_car}
 }

@@ -1,6 +1,6 @@
-#' The 'geostan' package.
+#' The geostan package.
 #'
-#' @description Bayesian spatial modeling powered by Stan. `geostan` offers access to a variety of hierarchical spatial models using the R formula interface. It is designed for spatial epidemiology and public health research but has broad applicability. 
+#' @description Bayesian spatial modeling powered by Stan. \code{geostan} offers access to a variety of hierarchical spatial models using the R formula interface. It is designed primarily for spatial epidemiology and public health research but is generally applicable to modeling areal data.
 #'
 #' @docType package
 #' @name geostan-package
@@ -11,6 +11,8 @@
 #' @importFrom rstan sampling 
 #'
 #' @references
+#'
+#' Carpenter, B., Gelman, A., Hoffman, M.D., Lee, D., Goodrich, B., Betancourt, M., Brubaker, M., Guo, J., Li, P., Riddell, A., 2017. Stan: A probabilistic programming language. Journal of statistical software 76.
 #'
 #' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. \url{https://doi.org/10.1016/j.spasta.2020.100450}
 #'

@@ -7,5 +7,44 @@ home:
   links:
   - text: Source code
     href: https://github.com/ConnorDonegan/geostan
-
+reference:
+- title: "Package overview"
+- contents:
+  - geostan-package
+- title: "Spatial autocorrelation"
+  desc: >
+    Functions for measuring and visualizing spatial autocorrelation, including regression and observational error model diagnostics
+- contents: 
+  - aple
+  - lisa
+  - mc
+  - me_diag
+  - moran_plot
+  - n_eff
+  - sp_diag
+  - expected_mc
+- title: "Models"
+  desc: "Model fitting functions and methods"
+- contents:
+  - starts_with("stan_")
+  - matches("geostan_fit")
+  - posterior_predict
+  - spatial
+- title: "Convenience functions"
+  desc: Functions for working with spatial data and **geostan** models
+- contents:
+  - edges
+  - exp_pars
+  - get_shp
+  - make_EV
+  - prep_icar_data
+  - se_log
+  - shape2mat
+  - sim_sar
+  - student_t
+  - waic
+- title: "Data"
+- contents:
+  - ohio
+  - sentencing
 

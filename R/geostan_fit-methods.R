@@ -5,14 +5,22 @@
 #' @rdname geostan_fit
 #' @param object A fitted model object of class \code{geostan_fit}.
 #' @param x A fitted model object of class \code{geostan_fit}.
-#' @param summary Logical (default \code{summary = TRUE}); should the values be summarized with the mean, standard deviation and quantiles (\code{probs = c(.025, .2, .5, .8, .975)}) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.
+#' @param summary Logical; should the values be summarized with the mean, standard deviation and quantiles (\code{probs = c(.025, .2, .5, .8, .975)}) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.
 #' @param pars parameters to include; a character string or vector of parameter names.
 #' @param plotfun Argument passed to \code{rstan::plot}. Options include "hist", "trace", and "dens".
 #' @param digits number of digits to print
 #' @param probs Argument passed to \code{quantile}; which quantiles to calculate and print.
 #' @param ... additional arguments.
-#' @return return either a matrix containing all samples for each observation, or a \code{data.frame} containing a summary values for each observation.
-#' @seealso \link[geostan]{stan_esf} \link[rstan]{stan_plot}
+#' @return
+#'
+#' Methods \code{residuals}, \code{fitted}, \code{spatial} return a matrix containing all samples for each observation if \code{summary = FALSE}, else if \code{summary = TRUE} a \code{data.frame} containing a summary of the posterior distribution at each observation (of, respectively, residuals, fitted values, or the spatial trend).
+#'
+#' \code{plot} resturns a \code{ggplot} object that can be customized using the \code{ggplot2} package.
+#'
+#' \code{as.matrix}, \code{as.data.frame}, \code{as.array} return samples from the (joint) posterior distribution of parameters in the format corresponding to their names. The \code{pars} argument is used to return samples from only a subset of parameters.
+#'
+#' @seealso \link[geostan]{stan_glm}, \link[geostan]{stan_esf}, \link[geostan]{stan_icar}, \link[geostan]{stan_car}
+#' 
 #' @examples 
 #' \dontrun{
 #' library(ggplot2)
@@ -22,8 +30,6 @@
 #'                data = ohio,
 #'                scalex = TRUE,
 #'                C = shape2mat(ohio),
-#'                chains = 3,
-#'                iter = 1e3,
 #'                refresh = 0 # less printing
 #' )
 #'
@@ -54,8 +60,10 @@
 #' }
 #' 
 #' @export
+#' 
 #' @method print geostan_fit
 #' @name geostan_fit
+#' 
 print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digits = 3, ...) {
   pars <- "intercept"
   cat("Spatial Regression Results \n")

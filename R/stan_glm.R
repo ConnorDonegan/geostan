@@ -1,4 +1,4 @@
-#' Generalized Linear Models
+#' Generalized linear models
 #'
 #' @export
 #' @description Fit a generalized linear model with (optional) exchangeable random effects. 

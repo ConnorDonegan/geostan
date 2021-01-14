@@ -106,7 +106,7 @@
       <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
     </li>
     <li>
-      <a href="../articles/modeling-spatial-data-with-geostan.html">Modeling spatial data with geostan</a>
+      <a href="../articles/modeling-spatial-data-with-geostan.html">Modeling spatial data</a>
     </li>
     <li>
       <a href="../articles/setting-priors.html">Setting prior distributions</a>
@@ -149,20 +149,20 @@
     </tr>
     <tr>
       <th>pointwise</th>
-      <td><p>Logical, should a vector of values for each observation be returned? Default is <code>FALSE</code>.</p></td>
+      <td><p>Logical, should a vector of values for each observation be returned?</p></td>
     </tr>
     <tr>
       <th>digits</th>
-      <td><p>Defaults to 2. Round results to this many digits.</p></td>
+      <td><p>Round results to this many digits.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A vector of length 3 with <code>WAIC</code>, a rough measure of the effective number of parameters estimated by the model <code>Eff_pars</code>, and log predictive density (<code>Lpd</code>). If <code>pointwise = TRUE</code>, results are returned in a <code>data.frame</code>.</p>
+    <p>A vector of length 3 with <code>WAIC</code>, a rough measure of the effective number of parameters estimated by the model <code>Eff_pars</code>, and log predictive density <code>Lpd</code>. If <code>pointwise = TRUE</code>, results are returned in a <code>data.frame</code>.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p>loo</p></div>
+    <div class='dont-index'><p>See <a href='https://mc-stan.org/loo/reference/waic.html'>waic</a> as well as the more robust <a href='https://mc-stan.org/loo/reference/loo.html'>loo</a></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
