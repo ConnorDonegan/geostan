@@ -1,8 +1,5 @@
 ## geostan <img src="man/figures/logo.png" align="right" width="120" />
 
-Bayesian Spatial Analysis
--------------------------
-
 The **geostan** R package provides a user-friendly interface to
 hierarchical Bayesian models (HBMs) for areal data. It is designed for
 ease of use with a particular emphasis on spatial epidemiology and survey data. All of the
