@@ -7,9 +7,9 @@
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally); you must also provide \code{C} when including \code{slx}.
 #'  Specified covariates will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula synatax, as in \code{~ ID}.  The resulting random effects parameter returned is named \code{alpha_re}.
+#' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in \code{~ ID}.  The resulting random effects parameter returned is named \code{alpha_re}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
-#' @param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the `true' covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} (by name) may include:
+#' @param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the `true' covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
 #' \describe{
 #' 
 #' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
@@ -34,12 +34,13 @@
 #' @param iter Number of samples per chain. 
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples; set \code{refresh=0} to silence this.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
-#' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{0.95} and \code{max_treedepth = 15}.
+#' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} except that \code{adapt_delta} is raised to \code{0.95} and \code{max_treedepth = 15}.
 #' @param silent If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' 
 #' @details
-#'  When \code{family = student_t()}, the parameter \code{nu} in the model refers to the degrees of freedom in the Student's t likelihood function for the data. Spatially lagged covariates will have \code{w.} prefixed to the variable name. Covarites with observational or measurement error (\code{ME}) models will be return with an \code{x_} prefixed to the variable name.
+#'
+#' Fit a generalized linear model using the R formula interface. Default prior distributions are designed to be weakly informative relative to the data. Much of the functionality intended for spatial models, such as the ability to add spatially lagged covariates and observational error models, are also available in \code{stan_glm}. All of \code{geostan}'s spatial models build on top of the same Stan code used in \code{stan_glm}. 
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
@@ -48,7 +49,6 @@
 #'  mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' \item{data}{a data frame containing the model data}
-#' \item{edges}{The edge list representing all unique sets of neighbors}
 #' \item{family}{the user-provided or default \code{family} argument used to fit the model}
 #' \item{formula}{The model formula provided by the user (not including ESF component)}
 #' \item{slx}{The \code{slx} formula}

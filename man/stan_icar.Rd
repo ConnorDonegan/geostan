@@ -44,7 +44,7 @@ stan_icar(
 These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.}
 
-\item{re}{If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula synatax, as in \code{~ ID}.  The parameter vector will be named \code{alpha_re}. If this is specified at the observational unit level then it becomes the original Besag-York-Mollie (BYM) model. However, the BYM model is best obtained by setting \code{type = "bym"} instead of manually adding \code{alpha_re}.}
+\item{re}{If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in \code{~ ID}.  The parameter vector will be named \code{alpha_re}. If this is specified at the observational unit level then it becomes the original Besag-York-Mollie (BYM) model. However, the BYM model is best obtained by setting \code{type = "bym"} instead of manually adding \code{alpha_re}.}
 
 \item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.}
 
@@ -52,7 +52,7 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{scale_factor}{For the BYM2 model, optional. If missing, this will be set to a vector of ones. Must be an n-length vector.}
 
-\item{ME}{To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the inferred `true' covariate is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} (by name) may include:
+\item{ME}{To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the inferred `true' covariate is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
 \describe{
 
 \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
@@ -89,7 +89,7 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{pars}{Optional; specify any additional parameters you'd like stored from the Stan model.}
 
-\item{control}{A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{.9} and \code{max_treedepth = 15}.}
+\item{control}{A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} except that \code{adapt_delta} is raised to \code{.9} and \code{max_treedepth = 15}.}
 
 \item{silent}{If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.}
 
@@ -115,7 +115,7 @@ An object of class class \code{geostan_fit} (a list) containing:
 }
 }
 \description{
-Fit regression models using intrinsic conditional auto-regressive (ICAR) spatial parameter model. Options include the BYM model, the BYM2 model, and a solo IAR term.
+Fit regression models using intrinsic conditional auto-regressive (ICAR) parameter model. Options include the BYM model, the BYM2 model, and a solo ICAR term.
 }
 \details{
 The Stan code for the ICAR component of the model and the BYM2 option follows Morris et al. (2019). The ICAR component is returned in the parameter named \code{ssre} (spatially structured random effect).
@@ -163,7 +163,7 @@ ppc_dens_overlay(y, yrep)
 
 }
 \seealso{
-\link[geostan]{prep_icar_data} \link[geostan]{stan_car} \link[geostan]{stan_esf}
+\link[geostan]{prep_icar_data}, \link[geostan]{stan_car}, \link[geostan]{stan_esf}
 }
 \author{
 Connor Donegan, \email{Connor.Donegan@UTDallas.edu}

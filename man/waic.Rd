@@ -17,7 +17,7 @@ waic(fit, pointwise = FALSE, digits = 2)
 A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density \code{Lpd}. If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
 }
 \description{
-Widely Application Information Criteria (WAIC) for model evalution
+Widely Application Information Criteria (WAIC) for model evaluation
 }
 \examples{
 

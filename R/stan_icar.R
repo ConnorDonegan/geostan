@@ -1,17 +1,17 @@
 #' Intrinsic autoregressive models
 #'
 #' @export
-#' @description Fit regression models using intrinsic conditional auto-regressive (ICAR) spatial parameter model. Options include the BYM model, the BYM2 model, and a solo IAR term. 
+#' @description Fit regression models using intrinsic conditional auto-regressive (ICAR) parameter model. Options include the BYM model, the BYM2 model, and a solo ICAR term. 
 #' 
 #' @param formula A model formula, following the R \link[stats]{formula} syntax. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 #'  These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula synatax, as in \code{~ ID}.  The parameter vector will be named \code{alpha_re}. If this is specified at the observational unit level then it becomes the original Besag-York-Mollie (BYM) model. However, the BYM model is best obtained by setting \code{type = "bym"} instead of manually adding \code{alpha_re}.
+#' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in \code{~ ID}.  The parameter vector will be named \code{alpha_re}. If this is specified at the observational unit level then it becomes the original Besag-York-Mollie (BYM) model. However, the BYM model is best obtained by setting \code{type = "bym"} instead of manually adding \code{alpha_re}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param type Defaults to "iar" (partial pooling of neighboring observations through parameter \code{phi}); specify "bym" to add a second parameter vector \code{theta} to perform partial pooling across all observations; specify "bym2" for the innovation introduced by Riebler et al. (2016).
 #' @param scale_factor For the BYM2 model, optional. If missing, this will be set to a vector of ones. Must be an n-length vector.
-#' @param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the inferred `true' covariate is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} (by name) may include:
+#' @param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the inferred `true' covariate is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
 #' \describe{
 #' 
 #' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
@@ -35,10 +35,11 @@
 #' @param iter Number of samples per chain. .
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples; set \code{refresh=0} to silence this.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
-#' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{.9} and \code{max_treedepth = 15}.
+#' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} except that \code{adapt_delta} is raised to \code{.9} and \code{max_treedepth = 15}.
 #' @param silent If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' @details
+#' 
 #'  The Stan code for the ICAR component of the model and the BYM2 option follows Morris et al. (2019). The ICAR component is returned in the parameter named \code{ssre} (spatially structured random effect).
 #'
 #' For all models, the ICAR prior is placed on the parameter vector \code{phi}; it is scaled by the scalar parameter \code{spatial_scale}, specified as follows.
@@ -69,7 +70,8 @@
 #' 
 #' @author Connor Donegan, \email{Connor.Donegan@UTDallas.edu}
 #'
-#' @seealso \link[geostan]{prep_icar_data} \link[geostan]{stan_car} \link[geostan]{stan_esf}
+#' @seealso \link[geostan]{prep_icar_data}, \link[geostan]{stan_car}, \link[geostan]{stan_esf}
+#' 
 #' @source
 #'
 #' Besag, J. (1974). Spatial interaction and the statistical analysis of lattice systems. Journal of the Royal Statistical Society: Series B (Methodological), 36(2), 192-225.

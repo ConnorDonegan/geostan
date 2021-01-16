@@ -47,7 +47,7 @@
 
 
 <meta property="og:title" content="Intrinsic autoregressive models — stan_icar" />
-<meta property="og:description" content="Fit regression models using intrinsic conditional auto-regressive (ICAR) spatial parameter model. Options include the BYM model, the BYM2 model, and a solo IAR term." />
+<meta property="og:description" content="Fit regression models using intrinsic conditional auto-regressive (ICAR) parameter model. Options include the BYM model, the BYM2 model, and a solo ICAR term." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -135,7 +135,7 @@
     </div>
 
     <div class="ref-description">
-    <p>Fit regression models using intrinsic conditional auto-regressive (ICAR) spatial parameter model. Options include the BYM model, the BYM2 model, and a solo IAR term.</p>
+    <p>Fit regression models using intrinsic conditional auto-regressive (ICAR) parameter model. Options include the BYM model, the BYM2 model, and a solo ICAR term.</p>
     </div>
 
     <pre class="usage"><span class='fu'>stan_icar</span>(
@@ -179,7 +179,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>re</th>
-      <td><p>If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula synatax, as in <code>~ ID</code>.  The parameter vector will be named <code>alpha_re</code>. If this is specified at the observational unit level then it becomes the original Besag-York-Mollie (BYM) model. However, the BYM model is best obtained by setting <code>type = "bym"</code> instead of manually adding <code>alpha_re</code>.</p></td>
+      <td><p>If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in <code>~ ID</code>.  The parameter vector will be named <code>alpha_re</code>. If this is specified at the observational unit level then it becomes the original Besag-York-Mollie (BYM) model. However, the BYM model is best obtained by setting <code>type = "bym"</code> instead of manually adding <code>alpha_re</code>.</p></td>
     </tr>
     <tr>
       <th>data</th>
@@ -195,7 +195,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>ME</th>
-      <td><p>To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the inferred `true' covariate is assigned a Student's t model with optional spatially varying mean. Elements of the list <code>ME</code> (by name) may include:</p><dl'>
+      <td><p>To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the inferred `true' covariate is assigned a Student's t model with optional spatially varying mean. Elements of the list <code>ME</code> may include:</p><dl'>
 
 <dt>se</dt><dd><p>a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
 <dt>bounded</dt><dd><p>If any variables in <code>se</code> are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded.</p></dd>
@@ -260,7 +260,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>control</th>
-      <td><p>A named list of parameters to control the sampler's behavior. See <a href='https://mc-stan.org/rstan/reference/stan.html'>stan</a> for details. The defaults are the same <code><a href='https://mc-stan.org/rstan/reference/stan.html'>rstan::stan</a></code> excep that <code>adapt_delta</code> is raised to <code>.9</code> and <code>max_treedepth = 15</code>.</p></td>
+      <td><p>A named list of parameters to control the sampler's behavior. See <a href='https://mc-stan.org/rstan/reference/stan.html'>stan</a> for details. The defaults are the same <code><a href='https://mc-stan.org/rstan/reference/stan.html'>rstan::stan</a></code> except that <code>adapt_delta</code> is raised to <code>.9</code> and <code>max_treedepth = 15</code>.</p></td>
     </tr>
     <tr>
       <th>silent</th>
@@ -306,7 +306,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <p>For <code>type = "bym2"</code>, <code>ssre</code> and <code>sure</code> share a single scale parameter (<code>spatial_scale</code>) but they are combined using a mixing parameter <code>rho</code>. The ``convolved random effect'' is then <code>[sqrt(rho / scale_factor) * phi + sqrt((1 - rho)) * theta] * spatial_scale</code>. The terms are factored out to obtain <code>sure</code> and <code>ssre</code>.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><a href='prep_icar_data.html'>prep_icar_data</a> <a href='stan_car.html'>stan_car</a> <a href='stan_esf.html'>stan_esf</a></p></div>
+    <div class='dont-index'><p><a href='prep_icar_data.html'>prep_icar_data</a>, <a href='stan_car.html'>stan_car</a>, <a href='stan_esf.html'>stan_esf</a></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {

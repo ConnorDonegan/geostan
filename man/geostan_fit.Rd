@@ -48,7 +48,7 @@
 \value{
 Methods \code{residuals}, \code{fitted}, \code{spatial} return a matrix containing all samples for each observation if \code{summary = FALSE}, else if \code{summary = TRUE} a \code{data.frame} containing a summary of the posterior distribution at each observation (of, respectively, residuals, fitted values, or the spatial trend).
 
-\code{plot} resturns a \code{ggplot} object that can be customized using the \code{ggplot2} package.
+\code{plot} returns a \code{ggplot} object that can be customized using the \code{ggplot2} package.
 
 \code{as.matrix}, \code{as.data.frame}, \code{as.array} return samples from the (joint) posterior distribution of parameters in the format corresponding to their names. The \code{pars} argument is used to return samples from only a subset of parameters.
 }

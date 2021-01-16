@@ -8,7 +8,7 @@ Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). "Eigenvector selection wit
 
 Dray, S., P. Legendre & P. R. Peres-Neto (2006). Spatial modelling: a comprehensive framework for principal coordinate analysis of neighbour matrices (PCNM). Ecological Modeling, 196(3-4), 483-493.
 
-Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. \url{https://doi.org/10.1016/j.spasta.2020.100450}
+Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. <doi.org/10.1016/j.spasta.2020.100450>
 
 Griffith, Daniel A., and P. R. Peres-Neto (2006). "Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses." Ecology 87(10), 2603-2613.
 
@@ -54,7 +54,7 @@ stan_esf(
 These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.}
 
-\item{re}{If the model includes a varying intercept specify the grouping variable here using formula synatax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}.}
+\item{re}{If the model includes a varying intercept specify the grouping variable here using formula syntax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}.}
 
 \item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.}
 
@@ -62,7 +62,7 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{EV}{A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. If provided, still also provide a spatial weights matrix \code{C} for other purposes.  See \link[geostan]{make_EV} and \link[geostan]{shape2mat}.}
 
-\item{ME}{To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the `true' covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} (by name) may include:
+\item{ME}{To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the `true' covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
 \describe{
 
 \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
@@ -106,9 +106,9 @@ The value of \code{p0} is used to control the prior degree of sparsity in the mo
 
 \item{refresh}{Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.}
 
-\item{pars}{Optional; specify any additional parameters you'd like stored from the Stan model. Parameters from the RHS prios include \code{tau} (the global shrinkage parameter) and \code{lambda} (the local shrinkage parameter).}
+\item{pars}{Optional; specify any additional parameters you'd like stored from the Stan model. Parameters from the RHS priors include \code{tau} (the global shrinkage parameter) and \code{lambda} (the local shrinkage parameter).}
 
-\item{control}{A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{.99} and \code{max_treedepth = 15}.}
+\item{control}{A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} except that \code{adapt_delta} is raised to \code{.99} and \code{max_treedepth = 15}.}
 
 \item{silent}{If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.}
 
@@ -139,7 +139,7 @@ An object of class class \code{geostan_fit} (a list) containing:
 Fit a spatial regression model using eigenvector spatial filtering.
 }
 \details{
-This function implements the models introduced in Donegan et al. (2020). This is the only spatial modeling approach in `geostan` which is available for continuous data as well as count data.
+This function implements the models introduced in Donegan et al. (2020). This is the only spatial modeling approach in the \code{geostan} package that is available for continuous data as well as count data.
 }
 \examples{
 \dontrun{

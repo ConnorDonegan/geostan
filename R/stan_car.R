@@ -1,15 +1,15 @@
 #' Conditional autoregressive models
 #'
 #' @export
-#' @description Fit a regression model with a conditional auto-regressive (CAR) spatial component. Only binary weighting schemes are currenlty supported.
+#' @description Fit a regression model with a conditional auto-regressive (CAR) spatial component. Only binary weighting schemes are currently supported.
 #' 
 #' @param formula A model formula, following the R \link[stats]{formula} syntax. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 #'  These will be pre-multiplied by a row-standardized version of the user-provided spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula synatax, as in \code{~ ID}. 
+#' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in \code{~ ID}. 
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
-#' @param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the `true' covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} (by name) may include:
+#' @param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the `true' covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
 #' \describe{
 #' 
 #' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
@@ -33,14 +33,12 @@
 #' @param iter Number of samples per chain. 
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Set \code{refresh=0} to silence this.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
-#' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} excep that \code{adapt_delta} is raised to \code{.9} and \code{max_treedepth = 15}.
+#' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} except that \code{adapt_delta} is raised to \code{.9} and \code{max_treedepth = 15}.
 #' @param silent If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' @details
-#' 
-#'  The Stan code for the CAR component of the model is from Joseph (2016).
-#'   
-#'  The CAR model is the prior distribution for the parameter vector \code{phi} and has two associated parameters: \code{phi_alpha} which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and \code{phi_tau} which is a precision (inverse scale) parameter.
+#'  
+#'  The CAR model is the prior distribution for the parameter vector \code{phi} and has two associated parameters: \code{phi_alpha} which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and \code{phi_tau} which is a precision (inverse scale) parameter. The Stan code for the CAR component of the model is from Joseph (2016).
 #'  
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{

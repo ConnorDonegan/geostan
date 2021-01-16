@@ -5,7 +5,7 @@ hierarchical Bayesian models (HBMs) for spatial and spatio-temporal data. It is 
 relative ease of use and developed with a particular emphasis on spatial epidemiology and survey data for public health.
 All of the models are built with the Stan programming language, but users only need to be familiar with the R language.
 
-The package and webiste are still under development.
+The package and website are still under development.
 
 -------------------------
 

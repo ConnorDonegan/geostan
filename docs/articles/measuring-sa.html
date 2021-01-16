@@ -133,7 +133,7 @@
 <li>the APLE statistic <code><a href="../reference/aple.html">geostan::aple</a></code> (Approximate Profile Likelihood Estimator of the spatial autocorrelation parameter from a simultaneous autoregressive model). Note that the <code>aple</code> is an approximation that is only valid for relatively small sample sizes.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>
 </li>
 </ul>
-<p>When using the row-standardized spatial weights matrix, the Moran plot will show the original values <code>y</code> after being centered—<code>y.c = y - mean(y)</code>—plotted against the mean spatially-laged value (<code>W %*% y.c</code>):<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
+<p>When using the row-standardized spatial weights matrix, the Moran plot will show the original values <code>y</code> after being centered—<code>y.c = y - mean(y)</code>—plotted against the mean spatially-lagged value (<code>W %*% y.c</code>):<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">y</span> <span class="kw">&lt;-</span> <span class="no">ohio</span>$<span class="no">gop_growth</span>
 <span class="fu"><a href="../reference/moran_plot.html">moran_plot</a></span>(<span class="no">y</span>, <span class="no">W</span>)
 <span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></pre></body></html></div>
@@ -166,11 +166,11 @@
 <div id="simulating-spatially-autocorrelated-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#simulating-spatially-autocorrelated-data" class="anchor"></a>Simulating spatially autocorrelated data</h2>
-<p>You can simulate data from the simultaneous autoregressie model (SAR) using the <code><a href="../reference/sim_sar.html">geostan::sim_sar</a></code> function and providing, at minimum, a row-standardized spatial weights matrix <code>w</code> and the degree of SA, <code>rho</code>:</p>
+<p>You can simulate data from the simultaneous autoregressive model (SAR) using the <code><a href="../reference/sim_sar.html">geostan::sim_sar</a></code> function and providing, at minimum, a row-standardized spatial weights matrix <code>w</code> and the degree of SA, <code>rho</code>:</p>
 <div class="sourceCode"><html><body><pre class="r"><span class="no">x</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span>(<span class="kw">w</span> <span class="kw">=</span> <span class="no">W</span>, <span class="kw">rho</span> <span class="kw">=</span> <span class="fl">0.7</span>)
 
 <span class="fu"><a href="../reference/aple.html">aple</a></span>(<span class="no">x</span>, <span class="no">W</span>)
-<span class="co">#&gt; [1] 0.673</span>
+<span class="co">#&gt; [1] 0.709</span>
 
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="no">ohio</span>) +
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="kw">fill</span> <span class="kw">=</span> <span class="no">x</span>)) +
@@ -181,7 +181,7 @@
 <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="no">X</span>)
 <span class="co">#&gt; [1]  5 88</span>
 <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span>(<span class="no">X</span>, <span class="fl">1</span>, <span class="no">aple</span>, <span class="kw">w</span> <span class="kw">=</span> <span class="no">W</span>)
-<span class="co">#&gt; [1] 0.586 0.691 0.620 0.728 0.785</span></pre></body></html></div>
+<span class="co">#&gt; [1] 0.553 0.637 0.706 0.649 0.591</span></pre></body></html></div>
 </div>
 <div id="spatial-diagnostics-with-sp_diag" class="section level2">
 <h2 class="hasAnchor">
@@ -194,9 +194,9 @@
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-10-1.png" width="624" style="display: block; margin: auto;"></p>
 It can also be used for analysis of model residuals. Here we model the mean and variance of <code>gop_growth</code> using a Gaussian probability distribution:
 <span class="math display">\[\begin{equation}
-  y \sim \text{Guassian}(\mu, \sigma).
+  y \sim \text{Gaussian}(\mu, \sigma).
   \end{equation}\]</span>
-Calculating a probability distribution for parameters <span class="math inline">\(\mu, \sigma\)</span> requires an initial or prior probability be specified for each. By Bayes’ theorem, the probability of parameters <span class="math inline">\(\theta\)</span> conditional on the latest data <span class="math inline">\(D\)</span> and our initial information <span class="math inline">\(I\)</span> is proportional to the product of two terms: first, the probability of the observations conditional on <span class="math inline">\(\theta\)</span> and <span class="math inline">\(I\)</span>, and second, the initial probabity of <span class="math inline">\(\theta\)</span> conditional on <span class="math inline">\(I\)</span> alone:
+Calculating a probability distribution for parameters <span class="math inline">\(\mu, \sigma\)</span> requires an initial or prior probability be specified for each. By Bayes’ theorem, the probability of parameters <span class="math inline">\(\theta\)</span> conditional on the latest data <span class="math inline">\(D\)</span> and our initial information <span class="math inline">\(I\)</span> is proportional to the product of two terms: first, the probability of the observations conditional on <span class="math inline">\(\theta\)</span> and <span class="math inline">\(I\)</span>, and second, the initial probability of <span class="math inline">\(\theta\)</span> conditional on <span class="math inline">\(I\)</span> alone:
 <span class="math display">\[\begin{equation}
   p(\theta | D, I) \propto p(D | \theta,I) p(\theta|I).
 \end{equation}\]</span>

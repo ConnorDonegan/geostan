@@ -179,7 +179,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>re</th>
-      <td><p>If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula synatax, as in <code>~ ID</code>.  The resulting random effects parameter returned is named <code>alpha_re</code>.</p></td>
+      <td><p>If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in <code>~ ID</code>.  The resulting random effects parameter returned is named <code>alpha_re</code>.</p></td>
     </tr>
     <tr>
       <th>data</th>
@@ -187,7 +187,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>ME</th>
-      <td><p>To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the `true' covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list <code>ME</code> (by name) may include:</p><dl'>
+      <td><p>To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the `true' covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list <code>ME</code> may include:</p><dl'>
 
 <dt>se</dt><dd><p>a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
 <dt>bounded</dt><dd><p>If any variables in <code>se</code> are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.</p></dd>
@@ -260,7 +260,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>control</th>
-      <td><p>A named list of parameters to control the sampler's behavior. See <a href='https://mc-stan.org/rstan/reference/stan.html'>stan</a> for details. The defaults are the same <code><a href='https://mc-stan.org/rstan/reference/stan.html'>rstan::stan</a></code> excep that <code>adapt_delta</code> is raised to <code>0.95</code> and <code>max_treedepth = 15</code>.</p></td>
+      <td><p>A named list of parameters to control the sampler's behavior. See <a href='https://mc-stan.org/rstan/reference/stan.html'>stan</a> for details. The defaults are the same <code><a href='https://mc-stan.org/rstan/reference/stan.html'>rstan::stan</a></code> except that <code>adapt_delta</code> is raised to <code>0.95</code> and <code>max_treedepth = 15</code>.</p></td>
     </tr>
     <tr>
       <th>silent</th>
@@ -280,7 +280,6 @@ If and when setting priors for <code>beta</code> manually, remember to include p
  mean log pointwise predictive density (<code>lpd</code>), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.</p></dd>
 <dt>stanfit</dt><dd><p>an object of class <code>stanfit</code> returned by <code><a href='https://mc-stan.org/rstan/reference/stan.html'>rstan::stan</a></code></p></dd>
 <dt>data</dt><dd><p>a data frame containing the model data</p></dd>
-<dt>edges</dt><dd><p>The edge list representing all unique sets of neighbors</p></dd>
 <dt>family</dt><dd><p>the user-provided or default <code>family</code> argument used to fit the model</p></dd>
 <dt>formula</dt><dd><p>The model formula provided by the user (not including ESF component)</p></dd>
 <dt>slx</dt><dd><p>The <code>slx</code> formula</p></dd>
@@ -295,7 +294,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>When <code>family = student_t()</code>, the parameter <code>nu</code> in the model refers to the degrees of freedom in the Student's t likelihood function for the data. Spatially lagged covariates will have <code>w.</code> prefixed to the variable name. Covarites with observational or measurement error (<code>ME</code>) models will be return with an <code>x_</code> prefixed to the variable name.</p>
+    <p>Fit a generalized linear model using the R formula interface. Default prior distributions are designed to be weakly informative relative to the data. Much of the functionality intended for spatial models, such as the ability to add spatially lagged covariates and observational error models, are also available in <code>stan_glm</code>. All of <code>geostan</code>'s spatial models build on top of the same Stan code used in <code>stan_glm</code>.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {

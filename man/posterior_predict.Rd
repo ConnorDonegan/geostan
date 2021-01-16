@@ -32,7 +32,7 @@ posterior_predict(
 
 \item{re_form}{If \code{re_form = NA} any random effects terms will be ignored when making predictions. If default \code{re_form = NULL} is set, then the results will include random effects terms. Those are the only options; this syntax is used to maintain some consistency with other R packages which have additional options.}
 
-\item{spatial}{Include the spatial component in the model predictions? Defaults to \code{TRUE} and will be ignored if the model does not have a spatial comonent (i.e. \code{\link[geostan]{stan_glm}}). For models fit by \code{\link[geostan]{stan_esf}}, \code{\link[geostan]{stan_icar}}, and \code{\link[geostan]{stan_car}} this option requires that \code{newdata} have the same number of observations as the data that the model was fit to.}
+\item{spatial}{Include the spatial component in the model predictions? Defaults to \code{TRUE} and will be ignored if the model does not have a spatial component (i.e. \code{\link[geostan]{stan_glm}}). For models fit by \code{\link[geostan]{stan_esf}}, \code{\link[geostan]{stan_icar}}, and \code{\link[geostan]{stan_car}} this option requires that \code{newdata} have the same number of observations as the data that the model was fit to.}
 
 \item{summary}{Should the posterior predictions be summarized using quantile intervals? It \code{summary = TRUE} the function returns a data frame with the expected value of the posterior distribution (column \code{mu}) and 100*width credible intervals for, respectively, the posterior predictive distribution (columns \code{pred.lwr}, \code{pred.upr}) and mean outcome (columns \code{mu.lwr}, \code{mu.upr}).}
 
@@ -76,10 +76,8 @@ ppc_dens_overlay(y, yrep)
 fit <- stan_esf(gop_growth ~ poly(college_educated, df = 3),
                 data = ohio,
                 C = shape2mat(ohio),
-                silent = TRUE,
-                cores = 1,  # cores = 4,
-                chains = 1, # chains = 4
-                iter = 200) # iter = 2e3
+                refresh = 0
+)
 
 x <- seq(10, 45, by = 1)
 newdata <- data.frame(college_educated = x)
@@ -95,7 +93,7 @@ a <- a +
                     ymax = mu.upr),
                fill = "blue", alpha = 0.5)
 
-## add the credible interval for predicted values
+## add the 95\% credible interval for predictive distribution
 a +
   geom_ribbon(aes(ymin = pred.lwr,
                   ymax = pred.upr),

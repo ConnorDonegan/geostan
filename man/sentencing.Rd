@@ -18,7 +18,7 @@ A spatial polygons data frame with the following attributes:
 }
 }
 \source{
-Donegan, Connor. "The Making of Florida's 'Criminal Class': Race, Moderntiy and the Convict Leasing Program." Florida Historical Quarterly 97.4 (2019): 408-434.
+Donegan, Connor. "The Making of Florida's 'Criminal Class': Race, Modernity and the Convict Leasing Program." Florida Historical Quarterly 97.4 (2019): 408-434.
  \url{https://osf.io/2wj7s/}.
 
 Mullen, Lincoln A. and Bratt, Jordon. "USABoundaries: Historical and Contemporary Boundaries of the United States of America,"

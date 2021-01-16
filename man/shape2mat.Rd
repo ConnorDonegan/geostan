@@ -40,10 +40,10 @@ shape2mat(
 A spatial connectivity matrix
 }
 \description{
-A wrapper function for a string of \link{spdep} (and other) functions required to convert spatail objects to spatial or spatio-temporal connectivity matrices.
+A wrapper function for a string of \link{spdep} (and other) functions required to convert spatial objects to spatial or spatio-temporal connectivity matrices.
 }
 \details{
-Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matricies (Ch. 4) and spatio-temporal connectivity matricies (Ch. 15).
+Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matrices (Ch. 4) and spatio-temporal connectivity matricies (Ch. 15).
 
 The `lagged' space-time structure connects each observation to its own past (one period lagged) value and the past value of its neighbors. The `contemporaneous' specification links each observation to its neighbors and to its own in situ past (one period lagged) value (Griffith 2012, p. 23).
 }

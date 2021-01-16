@@ -5,7 +5,7 @@
 #' @param n Number of observations.
 #' @param rho Spatial autocorrelation parameter from a simultaneous autoregressive model.
 #' 
-#' @return Rerturns effective sample size n*, a numeric value.
+#' @return Returns effective sample size n*, a numeric value.
 #'
 #' @details
 #'
@@ -15,7 +15,7 @@
 #'
 #' @source
 #'
-#' Griffith, Daniel A. (2005). Effective geographic sample size in the presence of spatial autocorrelation. Annal of the Association of American Geographers. Vol. 95(4): 740-760.
+#' Griffith, Daniel A. (2005). Effective geographic sample size in the presence of spatial autocorrelation. Annals of the Association of American Geographers. Vol. 95(4): 740-760.
 #' 
 #' @examples
 #'
@@ -539,7 +539,7 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #'
 #' @export
 #' @import spdep
-#' @description A wrapper function for a string of \link{spdep} (and other) functions required to convert spatail objects to spatial or spatio-temporal connectivity matrices.
+#' @description A wrapper function for a string of \link{spdep} (and other) functions required to convert spatial objects to spatial or spatio-temporal connectivity matrices.
 #' @param shape An object of class \code{sf}, \code{SpatialPolygons} or \code{SpatialPolygonsDataFrame}.
 #' @param style What kind of coding scheme should be used to create the spatial connectivity matrix? Defaults to "B" for binary; use "W" for row-standardized weights; "C" for globally standardized and "S" for the Tiefelsdorf et al.'s (1999) variance-stabilizing scheme. This is passed internally to \link[spdep]{nb2mat}.
 #' @param t Number of time periods. Currently only the binary coding scheme is available for space-time connectivity matrices.
@@ -554,7 +554,7 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' 
 #' @details
 #'
-#' Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matricies (Ch. 4) and spatio-temporal connectivity matricies (Ch. 15).
+#' Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matrices (Ch. 4) and spatio-temporal connectivity matricies (Ch. 15).
 #'
 #' The `lagged' space-time structure connects each observation to its own past (one period lagged) value and the past value of its neighbors. The `contemporaneous' specification links each observation to its neighbors and to its own in situ past (one period lagged) value (Griffith 2012, p. 23).
 #' @source
@@ -614,7 +614,7 @@ student_t <- function() {
 
 #' WAIC
 #'
-#' @description Widely Application Information Criteria (WAIC) for model evalution
+#' @description Widely Application Information Criteria (WAIC) for model evaluation
 #' @export
 #' @param fit An \code{geostan_fit} object or any Stan model with a parameter named "log_lik", the pointwise log predictive likelihood
 #' @param pointwise Logical, should a vector of values for each observation be returned? 
@@ -857,15 +857,16 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' @return A folder in your working directory with the shapefile; filepaths are printed to the console.
 #'
 #' @examples
-#'
+#' \dontrun{
 #' library(sf)
 #' url <- "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_state_20m.zip"
-#' get_shp(url, "states")
-#' states <- sf::st_read("states")
+#' folder <- tempdir()
+#' get_shp(url, folder)
+#' states <- sf::st_read(folder)
 #' 
-#' # to delete "states":
-#' unlink("states", recursive = TRUE)
-#' 
+#' # to delete it:
+#' unlink(folder, recursive = TRUE)
+#' }
 #' @export
 #' @importFrom utils unzip download.file
 #' 

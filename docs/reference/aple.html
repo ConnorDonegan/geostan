@@ -168,12 +168,11 @@
     <p>To check reliability, the <code>APLE</code> can be compared to an estimate of the spatial autocorrelation parameter from an intercept-only SAR model.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><a href='mc.html'>mc</a>, <a href='moran_plot.html'>moran_plot</a>, <a href='lisa.html'>lisa</a>, <a href='sim_sar.html'>sim_sar</a>, <a href='https://rdrr.io/pkg/spatialreg/man/ML_models.html'>errorsarlm</a></p></div>
+    <div class='dont-index'><p><a href='mc.html'>mc</a>, <a href='moran_plot.html'>moran_plot</a>, <a href='lisa.html'>lisa</a>, <a href='sim_sar.html'>sim_sar</a></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>sf</span>)
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>ohio</span>)
+<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>sf</span>)</div><div class='output co'>#&gt; <span class='message'>Linking to GEOS 3.6.2, GDAL 2.2.3, PROJ 4.9.3</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>ohio</span>)
 <span class='no'>w</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span>(<span class='no'>ohio</span>, <span class='st'>"W"</span>)
 <span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='no'>ohio</span>$<span class='no'>unemployment</span>
 <span class='fu'>aple</span>(<span class='no'>x</span>, <span class='no'>w</span>)</div><div class='output co'>#&gt; [1] 0.794</div><div class='input'>

@@ -65,7 +65,7 @@ The `geostan::shape2mat` function can also create space-time connectivity matric
 
 [^1]: As a rough rule of thumb, if you have to wait for the `aple` to calculate, you should be using a different measure.
 
-When using the row-standardized spatial weights matrix, the Moran plot will show the original values `y` after being centered---`y.c = y - mean(y)`---plotted against the mean spatially-laged value (`W %*% y.c`):[^2]
+When using the row-standardized spatial weights matrix, the Moran plot will show the original values `y` after being centered---`y.c = y - mean(y)`---plotted against the mean spatially-lagged value (`W %*% y.c`):[^2]
 
 [^2]: Using centered data $y_c$ and its spatial lag $\tilde{y_c} = W * y_c$, the Moran coefficient is equal to a scale factor $\frac{n}{1'C1}$ times $\hat{\beta}$ from a bivariate regression of the spatial lag of $y_c$ on itself, where $1$ a column vector of ones (i.e. the denominator is the sum of the row sums of the connectivity matrix.) For a row-standardized matrix $\frac{n}{1'C1} = 1$. Moran's I can be written as $I = \frac{n}{1'C1}\frac{Cov(y_c, \tilde{y_c})}{Var(y_c)} = \frac{n}{1'C1}\hat{\beta}$.
 
@@ -105,7 +105,7 @@ Again, for large number of observations the APLE approximation will break down.
 
 ## Simulating spatially autocorrelated data
 
-You can simulate data from the simultaneous autoregressie model (SAR) using the `geostan::sim_sar` function and providing, at minimum, a row-standardized spatial weights matrix `w` and the degree of SA, `rho`:
+You can simulate data from the simultaneous autoregressive model (SAR) using the `geostan::sim_sar` function and providing, at minimum, a row-standardized spatial weights matrix `w` and the degree of SA, `rho`:
 
 ```{r}
 x <- sim_sar(w = W, rho = 0.7)
@@ -135,10 +135,10 @@ sp_diag(y, ohio)
 
 It can also be used for analysis of model residuals. Here we model the mean and variance of `gop_growth` using a Gaussian probability distribution:
  \begin{equation}
-  y \sim \text{Guassian}(\mu, \sigma).
+  y \sim \text{Gaussian}(\mu, \sigma).
   \end{equation}
   
-Calculating a probability distribution for parameters $\mu, \sigma$ requires an initial or prior probability be specified for each. By Bayes' theorem, the probability of parameters $\theta$ conditional on the latest data $D$ and our initial information $I$ is proportional to the product of two terms: first, the probability of the observations conditional on $\theta$ and $I$, and second, the initial probabity of $\theta$ conditional on $I$ alone:
+Calculating a probability distribution for parameters $\mu, \sigma$ requires an initial or prior probability be specified for each. By Bayes' theorem, the probability of parameters $\theta$ conditional on the latest data $D$ and our initial information $I$ is proportional to the product of two terms: first, the probability of the observations conditional on $\theta$ and $I$, and second, the initial probability of $\theta$ conditional on $I$ alone:
 \begin{equation}
   p(\theta | D, I) \propto p(D | \theta,I) p(\theta|I).
 \end{equation}

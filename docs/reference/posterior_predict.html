@@ -182,7 +182,7 @@
     </tr>
     <tr>
       <th>spatial</th>
-      <td><p>Include the spatial component in the model predictions? Defaults to <code>TRUE</code> and will be ignored if the model does not have a spatial comonent (i.e. <code><a href='stan_glm.html'>stan_glm</a></code>). For models fit by <code><a href='stan_esf.html'>stan_esf</a></code>, <code><a href='stan_icar.html'>stan_icar</a></code>, and <code><a href='stan_car.html'>stan_car</a></code> this option requires that <code>newdata</code> have the same number of observations as the data that the model was fit to.</p></td>
+      <td><p>Include the spatial component in the model predictions? Defaults to <code>TRUE</code> and will be ignored if the model does not have a spatial component (i.e. <code><a href='stan_glm.html'>stan_glm</a></code>). For models fit by <code><a href='stan_esf.html'>stan_esf</a></code>, <code><a href='stan_icar.html'>stan_icar</a></code>, and <code><a href='stan_car.html'>stan_car</a></code> this option requires that <code>newdata</code> have the same number of observations as the data that the model was fit to.</p></td>
     </tr>
     <tr>
       <th>summary</th>
@@ -235,10 +235,8 @@
 <span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='stan_esf.html'>stan_esf</a></span>(<span class='no'>gop_growth</span> ~ <span class='fu'><a href='https://rdrr.io/r/stats/poly.html'>poly</a></span>(<span class='no'>college_educated</span>, <span class='kw'>df</span> <span class='kw'>=</span> <span class='fl'>3</span>),
                 <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>ohio</span>,
                 <span class='kw'>C</span> <span class='kw'>=</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span>(<span class='no'>ohio</span>),
-                <span class='kw'>silent</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-                <span class='kw'>cores</span> <span class='kw'>=</span> <span class='fl'>1</span>,  <span class='co'># cores = 4,</span>
-                <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='co'># chains = 4</span>
-                <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>200</span>) <span class='co'># iter = 2e3</span>
+                <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>0</span>
+)
 
 <span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span>(<span class='fl'>10</span>, <span class='fl'>45</span>, <span class='kw'>by</span> <span class='kw'>=</span> <span class='fl'>1</span>)
 <span class='no'>newdata</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span>(<span class='kw'>college_educated</span> <span class='kw'>=</span> <span class='no'>x</span>)
@@ -254,7 +252,7 @@
                     <span class='kw'>ymax</span> <span class='kw'>=</span> <span class='no'>mu.upr</span>),
                <span class='kw'>fill</span> <span class='kw'>=</span> <span class='st'>"blue"</span>, <span class='kw'>alpha</span> <span class='kw'>=</span> <span class='fl'>0.5</span>)
 
-<span class='co'>## add the credible interval for predicted values</span>
+<span class='co'>## add the 95% credible interval for predictive distribution</span>
 <span class='no'>a</span> +
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_ribbon.html'>geom_ribbon</a></span>(<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span>(<span class='kw'>ymin</span> <span class='kw'>=</span> <span class='no'>pred.lwr</span>,
                   <span class='kw'>ymax</span> <span class='kw'>=</span> <span class='no'>pred.upr</span>),
