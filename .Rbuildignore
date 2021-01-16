@@ -11,3 +11,4 @@ README_files/
 ^pkgdown$
 ^LICENSE\.md$
 ^index.md$
+^data-raw/*
