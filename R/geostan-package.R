@@ -1,4 +1,4 @@
-#' The geostan package.
+#' The geostan R package.
 #'
 #' @description Bayesian spatial modeling powered by Stan. \code{geostan} offers access to a variety of hierarchical spatial models using the R formula interface. It is designed primarily for spatial epidemiology and public health research but is generally applicable to modeling areal data.
 #'

@@ -224,10 +224,11 @@ clean_results <- function(samples, pars, is_student, has_re, C, Wx, x, x_me_unbo
         }
     }
     if ("sigma" %in% pars) samples <- par_alias(samples, "^sigma\\[1\\]", "sigma")
-    if ("rho" %in% pars) samples <- par_alias(samples, "^rho\\[1\\]", "rho")    
+    if ("rho" %in% pars) samples <- par_alias(samples, "^rho\\[1\\]", "rho")
+    if ("theta_scale" %in% pars) samples <- par_alias(samples, "^theta_scale\\[1\\]", "theta_scale")       
     if (is_student) samples <- par_alias(samples, "^nu\\[1\\]", "nu")
     if (has_re) samples <- par_alias(samples, "^alpha_tau\\[1\\]", "alpha_tau")
-    main_pars <- pars[which(pars %in% c("intercept", "alpha_tau", "gamma", "beta", "sigma", "nu", "rho"))]
+    main_pars <- pars[which(pars %in% c("nu", "intercept", "alpha_tau", "gamma", "beta", "sigma", "rho", "spatial_scale", "theta_scale"))]
     summary_list <- lapply(main_pars, post_summary, stanfit = samples)
     summary <- do.call("rbind", summary_list)
     summary <- apply(summary, 2, round, 3)
