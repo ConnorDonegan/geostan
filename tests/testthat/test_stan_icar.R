@@ -4,15 +4,14 @@ silent = TRUE
 source("helpers.R")
 
 context("stan_icar")
-test_that("Poisson offset model works, icar", {
+test_that("Poisson model works, icar: icar", {
     data(sentencing)
     n <- nrow(sentencing)
     C <- shape2mat(sentencing)
-    ME <- list(offset = rep(10, n))
     SW(
-        fit <- stan_icar(sents ~ offset(expected_sents),
+        fit <- stan_icar(sents ~ offset(log(expected_sents)),
                     data = sentencing,
-                    ME = ME,
+                    type = "icar",
                     C = C,
                     chains = 1,
                     family = poisson(),
@@ -23,15 +22,13 @@ test_that("Poisson offset model works, icar", {
 })
 
 
-test_that("Poisson offset model works, bym", {
+test_that("Poisson offset model works, icar: bym", {
     data(sentencing)
     n <- nrow(sentencing)
     C <- shape2mat(sentencing)
-    ME <- list(offset = rep(10, n))
     SW(
-        fit <- stan_icar(sents ~ offset(expected_sents),
+        fit <- stan_icar(sents ~ offset(log(expected_sents)),
                     data = sentencing,
-                    ME = ME,
                     type = "bym",
                     C = C,
                     chains = 1,
@@ -42,15 +39,13 @@ test_that("Poisson offset model works, bym", {
     expect_geostan(fit)    
 })
 
-test_that("Poisson offset model works, bym2", {
+test_that("Poisson model works, icar: bym2", {
     data(sentencing)
     n <- nrow(sentencing)
     C <- shape2mat(sentencing)
-    ME <- list(offset = rep(10, n))
     SW(
-        fit <- stan_icar(sents ~ offset(expected_sents),
+        fit <- stan_icar(sents ~ offset(log(expected_sents)),
                     data = sentencing,
-                    ME = ME,
                     type = "bym2",
                     C = C,
                     chains = 1,

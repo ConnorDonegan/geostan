@@ -3,14 +3,12 @@ silent = TRUE
 source("helpers.R")
 
 context("stan_glm")
-test_that("Poisson offset model works", {
+test_that("Poisson model works", {
     data(sentencing)
     n <- nrow(sentencing)
-    ME <- list(offset = rep(10, n))
     SW(
         fit <- stan_glm(sents ~ offset(log(expected_sents)),
                     data = sentencing,
-                    ME = ME,
                     chains = 1,
                     family = poisson(),
                     init_r = 0.2,

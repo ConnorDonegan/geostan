@@ -3,15 +3,13 @@ silent = TRUE
 source("helpers.R")
 
 context("stan_car")
-test_that("Poisson offset model works, car", {
+test_that("Poisson CAR model works", {
     data(sentencing)
     n <- nrow(sentencing)
     C <- shape2mat(sentencing)
-    ME <- list(offset = rep(10, n))
     SW(
-        fit <- stan_car(sents ~ offset(expected_sents),
+        fit <- stan_car(sents ~ offset(log(expected_sents)),
                     data = sentencing,
-                    ME = ME,
                     C = C,
                     chains = 1,
                     family = poisson(),

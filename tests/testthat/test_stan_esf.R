@@ -8,11 +8,9 @@ test_that("Poisson offset model works", {
     data(sentencing)
     n <- nrow(sentencing)
     C <- shape2mat(sentencing)
-    ME <- list(offset = rep(10, n))
     SW(
-        fit <- stan_esf(sents ~ offset(expected_sents),
+        fit <- stan_esf(sents ~ offset(log(expected_sents)),
                     data = sentencing,
-                    ME = ME,
                     C = C,
                     chains = 1,
                     family = poisson(),

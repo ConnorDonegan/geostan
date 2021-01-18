@@ -16,7 +16,7 @@ stan_icar(
   slx,
   re,
   data,
-  type = c("iar", "bym", "bym2"),
+  type = c("icar", "bym", "bym2"),
   scale_factor = NULL,
   ME = NULL,
   C,
@@ -48,19 +48,17 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.}
 
-\item{type}{Defaults to "iar" (partial pooling of neighboring observations through parameter \code{phi}); specify "bym" to add a second parameter vector \code{theta} to perform partial pooling across all observations; specify "bym2" for the innovation introduced by Riebler et al. (2016).}
+\item{type}{Defaults to "icar" (partial pooling of neighboring observations through parameter \code{phi}); specify "bym" to add a second parameter vector \code{theta} to perform partial pooling across all observations; specify "bym2" for the innovation introduced by Riebler et al. (2016).}
 
 \item{scale_factor}{For the BYM2 model, optional. If missing, this will be set to a vector of ones. Must be an n-length vector.}
 
-\item{ME}{To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the inferred `true' covariate is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
+\item{ME}{To model observational error (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
 \describe{
-
 \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
-\item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded.}
+\item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
 \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of the bounded variables. Defaults to \code{bounds = c(0, 100)}.}
 \item{spatial}{Logical value indicating if the models for covariates should include a spatially varying mean (using an eigenvector spatial filter). Defaults to \code{spatial = FALSE}. If \code{spatial = TRUE} and you do not provide both \code{ME$prior_rhs} and \code{EV} then you must provide a connectivity matrix \code{C}.}
 \item{prior_rhs}{Optional prior parameters for the regularized horseshoe (RHS) prior used for the ESF data model; only used if \code{ME$spatial = TRUE}. The RHS prior is used for the eigenvector spatial filter (ESF), as in \link[geostan]{stan_esf}. Must be a named list containing vectors \code{slab_df}, \code{slab_scale}, \code{scale_global}, and \code{varname}. The character vector \code{varname} indicates the order of the other parameters (by name).}
-\item{offset}{if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}.}
 }}
 
 \item{C}{Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.}
@@ -122,9 +120,9 @@ The Stan code for the ICAR component of the model and the BYM2 option follows Mo
 
 For all models, the ICAR prior is placed on the parameter vector \code{phi}; it is scaled by the scalar parameter \code{spatial_scale}, specified as follows.
 
-For \code{type = "iar"}, the spatial structure is simply \code{ssre[i] = phi[i] * spatial_scale}.
+For \code{type = "icar"}, the spatial structure is simply \code{ssre[i] = phi[i] * spatial_scale}.
 
-For \code{type = "bym"}, the spatial structure \code{ssre} is the same as \code{"iar"} but an additional parameter vector \code{theta} is added to perform partial pooling across all observations (a `spatially unstructured random effect' \code{sure}), and \code{sure[i] = theta[i] * theta_scale}. The sum \code{phi * spatial_scale + theta * theta_scale = ssre + sure} is often referred to as the ``convolved random effect.''
+For \code{type = "bym"}, the spatial structure \code{ssre} is the same as \code{"icar"} but an additional parameter vector \code{theta} is added to perform partial pooling across all observations (a `spatially unstructured random effect' \code{sure}), and \code{sure[i] = theta[i] * theta_scale}. The sum \code{phi * spatial_scale + theta * theta_scale = ssre + sure} is often referred to as the ``convolved random effect.''
 
 For \code{type = "bym2"}, \code{ssre} and \code{sure} share a single scale parameter (\code{spatial_scale}) but they are combined using a mixing parameter \code{rho}. The ``convolved random effect'' is then \code{[sqrt(rho / scale_factor) * phi + sqrt((1 - rho)) * theta] * spatial_scale}. The terms are factored out to obtain \code{sure} and \code{ssre}.
 }
