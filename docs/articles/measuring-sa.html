@@ -46,7 +46,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -101,25 +101,28 @@
 <h2 class="hasAnchor">
 <a href="#getting-started" class="anchor"></a>Getting started</h2>
 <p>Start by loading the <strong>geostan</strong>, <strong>sf</strong>, and <strong>ggplot2</strong> packages into your R environment along with the <code>ohio</code> dataset:</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">geostan</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">ggplot2</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="no">sf</span>)
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span>(<span class="no">ohio</span>)</pre></body></html></div>
-<p><code><a href="../reference/ohio.html">geostan::ohio</a></code> is a simple features object with county-level Presidential vote shares compiled by the MIT Election Data and Science Lab (2018) and joined to some county characteristics. The data was analyzed using <strong>geostan</strong> in Donegan et al. (2020). The dataset includes growth in the Republican (GOP) share of Presidential votes from the average preceding elections (2000-2012) to 2016 (<code>gop_growth</code>). Thus positive values of <code>gop_growth</code> indicate places where Trump improved upon the previous GOP performance and negative values show where he performed worse:</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="no">ohio</span>) +
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="kw">fill</span> <span class="kw">=</span> <span class="no">gop_growth</span>)) +
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html">scale_fill_gradient2</a></span>() +
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_void</a></span>()</pre></body></html></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">geostan</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/">sf</a></span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="va">ohio</span><span class="op">)</span></code></pre></div>
+<p><code><a href="../reference/ohio.html">geostan::ohio</a></code> is a simple features object with county-level Presidential vote shares compiled by the MIT Election Data and Science Lab (2018) and joined to some county characteristics. The data was analyzed using <strong>geostan</strong> in Donegan et al. (2020). The dataset includes growth in the Republican (GOP) share of Presidential votes from the average preceding elections (2000-2012) to 2016 (<code>gop_growth</code>). Thus positive values of <code>gop_growth</code> indicate places where Trump improved upon the previous GOP performance and negative values show where he performed worse:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">ohio</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">gop_growth</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html">scale_fill_gradient2</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_void</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-3-1.png" width="336" style="display: block; margin: auto;"></p>
 </div>
 <div id="spatial-weights-matrices" class="section level2">
 <h2 class="hasAnchor">
 <a href="#spatial-weights-matrices" class="anchor"></a>Spatial weights matrices</h2>
 <p>All of the spatial diagnostics and models in <strong>geostan</strong> require a spatial connectivity matrix. You can make a connectivity matrix by passing a <code>SpatialPolygons</code> or <code>sf</code> object to <code><a href="../reference/shape2mat.html">geostan::shape2mat</a></code>. (It mainly wraps around a couple functions from the <strong>spdep</strong> package). The second argument to <code><a href="../reference/shape2mat.html">geostan::shape2mat</a></code> is the scheme for encoding connectivity—“B”, the default, produces a binary scheme (1 for neighbors, else 0) and “W” is row-standardized.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">C</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span>(<span class="no">ohio</span>, <span class="st">"B"</span>)
-<span class="no">W</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span>(<span class="no">ohio</span>, <span class="st">"W"</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/all.html">all</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/colSums.html">rowSums</a></span>(<span class="no">W</span>) <span class="kw">==</span> <span class="fl">1</span>)
-<span class="co">#&gt; [1] TRUE</span></pre></body></html></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">ohio</span>, <span class="st">"B"</span><span class="op">)</span>
+<span class="va">W</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">ohio</span>, <span class="st">"W"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/all.html">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html">rowSums</a></span><span class="op">(</span><span class="va">W</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span>
+<span class="co">#&gt; [1] TRUE</span></code></pre></div>
 <p>The <code><a href="../reference/shape2mat.html">geostan::shape2mat</a></code> function can also create space-time connectivity matrices which many <strong>geostan</strong> functions will accept without any further modification—but you must ensure your data is properly ordered in space and time to match the connectivity matrix.</p>
 </div>
 <div id="measuring-spatial-autocorrelation" class="section level2">
@@ -130,13 +133,14 @@
 <li>the Moran scatter plot <code><a href="../reference/moran_plot.html">geostan::moran_plot</a></code>.</li>
 <li>the Moran coefficient <code><a href="../reference/mc.html">geostan::mc</a></code>,</li>
 <li>local indicator of spatial autocorrelation <code><a href="../reference/lisa.html">geostan::lisa</a></code>,</li>
-<li>the APLE statistic <code><a href="../reference/aple.html">geostan::aple</a></code> (Approximate Profile Likelihood Estimator of the spatial autocorrelation parameter from a simultaneous autoregressive model). Note that the <code>aple</code> is an approximation that is only valid for relatively small sample sizes.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>
+<li>the APLE statistic <code><a href="../reference/aple.html">geostan::aple</a></code> (Approximate Profile Likelihood Estimator of the spatial autocorrelation parameter from a simultaneous autoregressive model). Note that the <code>aple</code> is an approximation that is only valid for relatively small sample sizes.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>
 </li>
 </ul>
-<p>When using the row-standardized spatial weights matrix, the Moran plot will show the original values <code>y</code> after being centered—<code>y.c = y - mean(y)</code>—plotted against the mean spatially-lagged value (<code>W %*% y.c</code>):<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">y</span> <span class="kw">&lt;-</span> <span class="no">ohio</span>$<span class="no">gop_growth</span>
-<span class="fu"><a href="../reference/moran_plot.html">moran_plot</a></span>(<span class="no">y</span>, <span class="no">W</span>)
-<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></pre></body></html></div>
+<p>When using the row-standardized spatial weights matrix, the Moran plot will show the original values <code>y</code> after being centered—<code>y.c = y - mean(y)</code>—plotted against the mean spatially-lagged value (<code>W %*% y.c</code>):<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a></p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">ohio</span><span class="op">$</span><span class="va">gop_growth</span>
+<span class="fu"><a href="../reference/moran_plot.html">moran_plot</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">W</span><span class="op">)</span>
+<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-5-1.png" width="336" style="display: block; margin: auto;"> If instead, we use the binary coding scheme for the spatial weights matrix <code>C</code> then the y-axis (<code>C * y.c</code>) would show the <em>sum</em> of spatially-lagged values.</p>
 <p>The Moran plot is divided into quadrants, which lends points in each quadrant the following interpretation:</p>
 <ul>
@@ -146,66 +150,70 @@
 <li>Points in the bottom-right (4th) quadrant are above-average values surrounded by below-average values (negative (SA).</li>
 </ul>
 <p>Each point is thus a local indicator of spatial autocorrelation (LISA) which are often mapped to identify areas of high or low SA. Following Anselin (1995, Equation 7), the LISA values are simply the product of the value on the x-axis with their corresponding y-axis value; and the mean of all LISAs is proportionate to the Moran coefficient.</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">Lisa</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/lisa.html">lisa</a></span>(<span class="no">y</span>, <span class="no">W</span>)
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">Lisa</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lisa.html">lisa</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">W</span><span class="op">)</span>
 
-<span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(<span class="no">Lisa</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">Lisa</span><span class="op">)</span>
 <span class="co">#&gt; [1] 0.5220273</span>
-<span class="fu"><a href="../reference/mc.html">mc</a></span>(<span class="no">y</span>, <span class="no">W</span>)
+<span class="fu"><a href="../reference/mc.html">mc</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">W</span><span class="op">)</span>
 <span class="co">#&gt; [1] 0.528</span>
 
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="no">ohio</span>) +
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="kw">fill</span> <span class="kw">=</span> <span class="no">Lisa</span>)) +
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html">scale_fill_gradient2</a></span>() +
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_void</a></span>()</pre></body></html></div>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">ohio</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">Lisa</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html">scale_fill_gradient2</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_void</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-6-1.png" width="336" style="display: block; margin: auto;"></p>
 <p><code><a href="../reference/aple.html">geostan::aple</a></code> requires the row-standardized spatial weights matrix, and arguably provides a more intuitive estimate of the degree of SA since the SAR model can be used to generate spatially autocorrelated data:</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/aple.html">aple</a></span>(<span class="no">y</span>, <span class="no">W</span>)
-<span class="co">#&gt; [1] 0.796</span></pre></body></html></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/aple.html">aple</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">W</span><span class="op">)</span>
+<span class="co">#&gt; [1] 0.796</span></code></pre></div>
 <p>Again, for large number of observations the APLE approximation will break down.</p>
 </div>
 <div id="simulating-spatially-autocorrelated-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#simulating-spatially-autocorrelated-data" class="anchor"></a>Simulating spatially autocorrelated data</h2>
 <p>You can simulate data from the simultaneous autoregressive model (SAR) using the <code><a href="../reference/sim_sar.html">geostan::sim_sar</a></code> function and providing, at minimum, a row-standardized spatial weights matrix <code>w</code> and the degree of SA, <code>rho</code>:</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">x</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span>(<span class="kw">w</span> <span class="kw">=</span> <span class="no">W</span>, <span class="kw">rho</span> <span class="kw">=</span> <span class="fl">0.7</span>)
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>w <span class="op">=</span> <span class="va">W</span>, rho <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span>
 
-<span class="fu"><a href="../reference/aple.html">aple</a></span>(<span class="no">x</span>, <span class="no">W</span>)
-<span class="co">#&gt; [1] 0.709</span>
+<span class="fu"><a href="../reference/aple.html">aple</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">W</span><span class="op">)</span>
+<span class="co">#&gt; [1] 0.761</span>
 
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="no">ohio</span>) +
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="kw">fill</span> <span class="kw">=</span> <span class="no">x</span>)) +
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html">scale_fill_gradient2</a></span>() +
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_void</a></span>()</pre></body></html></div>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">ohio</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html">scale_fill_gradient2</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_void</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-8-1.png" width="336" style="display: block; margin: auto;"> By default <code><a href="../reference/sim_sar.html">geostan::sim_sar</a></code> will return a single n-length draw from the multivariate normal model (with covariance matrix specified following the SAR model). By setting the argument <span class="math inline">\(m\)</span> to an integer value greater than one <code>sim_sar</code> will return an <span class="math inline">\(m \times n\)</span> matrix, with each row holding an n-length draw from the SAR model:</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">X</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span>(<span class="kw">m</span> <span class="kw">=</span> <span class="fl">5</span>, <span class="kw">w</span> <span class="kw">=</span> <span class="no">W</span>, <span class="kw">rho</span> <span class="kw">=</span> <span class="fl">0.7</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="no">X</span>)
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>m <span class="op">=</span> <span class="fl">5</span>, w <span class="op">=</span> <span class="va">W</span>, rho <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> 
+<span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>
 <span class="co">#&gt; [1]  5 88</span>
-<span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span>(<span class="no">X</span>, <span class="fl">1</span>, <span class="no">aple</span>, <span class="kw">w</span> <span class="kw">=</span> <span class="no">W</span>)
-<span class="co">#&gt; [1] 0.553 0.637 0.706 0.649 0.591</span></pre></body></html></div>
+<span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span><span class="op">(</span><span class="va">X</span>, <span class="fl">1</span>, <span class="va">aple</span>, w <span class="op">=</span> <span class="va">W</span><span class="op">)</span>
+<span class="co">#&gt; [1] 0.751 0.717 0.702 0.504 0.757</span></code></pre></div>
 </div>
 <div id="spatial-diagnostics-with-sp_diag" class="section level2">
 <h2 class="hasAnchor">
 <a href="#spatial-diagnostics-with-sp_diag" class="anchor"></a>Spatial diagnostics with <code>sp_diag</code>
 </h2>
 <p><code><a href="../reference/sp_diag.html">geostan::sp_diag</a></code> provides visual diagnostics for spatial data:</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span>(<span class="no">y</span>, <span class="no">ohio</span>)
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">ohio</span><span class="op">)</span>
 <span class="co">#&gt; `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
-<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></pre></body></html></div>
+<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-10-1.png" width="624" style="display: block; margin: auto;"></p>
-It can also be used for analysis of model residuals. Here we model the mean and variance of <code>gop_growth</code> using a Gaussian probability distribution:
-<span class="math display">\[\begin{equation}
+<p>It can also be used for analysis of model residuals. Here we model the mean and variance of <code>gop_growth</code> using a Gaussian probability distribution: <span class="math display">\[\begin{equation}
   y \sim \text{Gaussian}(\mu, \sigma).
-  \end{equation}\]</span>
-Calculating a probability distribution for parameters <span class="math inline">\(\mu, \sigma\)</span> requires an initial or prior probability be specified for each. By Bayes’ theorem, the probability of parameters <span class="math inline">\(\theta\)</span> conditional on the latest data <span class="math inline">\(D\)</span> and our initial information <span class="math inline">\(I\)</span> is proportional to the product of two terms: first, the probability of the observations conditional on <span class="math inline">\(\theta\)</span> and <span class="math inline">\(I\)</span>, and second, the initial probability of <span class="math inline">\(\theta\)</span> conditional on <span class="math inline">\(I\)</span> alone:
-<span class="math display">\[\begin{equation}
+  \end{equation}\]</span></p>
+<p>Calculating a probability distribution for parameters <span class="math inline">\(\mu, \sigma\)</span> requires an initial or prior probability be specified for each. By Bayes’ theorem, the probability of parameters <span class="math inline">\(\theta\)</span> conditional on the latest data <span class="math inline">\(D\)</span> and our initial information <span class="math inline">\(I\)</span> is proportional to the product of two terms: first, the probability of the observations conditional on <span class="math inline">\(\theta\)</span> and <span class="math inline">\(I\)</span>, and second, the initial probability of <span class="math inline">\(\theta\)</span> conditional on <span class="math inline">\(I\)</span> alone: <span class="math display">\[\begin{equation}
   p(\theta | D, I) \propto p(D | \theta,I) p(\theta|I).
-\end{equation}\]</span>
-<p>which is often stated as<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
-<span class="math display">\[\begin{equation}
+\end{equation}\]</span></p>
+<p>which is often stated as<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></p>
+<p><span class="math display">\[\begin{equation}
  \text{Posterior probability} \propto \text{Likelihood} \times \text{Prior probability}
- \end{equation}\]</span>
+ \end{equation}\]</span></p>
 <p>Here we will just use the priors provided by <strong>geostan</strong> (as printed out to the console):</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">fit</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/stan_glm.html">stan_glm</a></span>(<span class="no">gop_growth</span> ~ <span class="fl">1</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">ohio</span>, <span class="kw">refresh</span> <span class="kw">=</span> <span class="fl">0</span>, <span class="kw">cores</span> <span class="kw">=</span> <span class="fl">1</span>)
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="va">gop_growth</span> <span class="op">~</span> <span class="fl">1</span>, data <span class="op">=</span> <span class="va">ohio</span>, refresh <span class="op">=</span> <span class="fl">0</span>, cores <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; *Setting prior parameters for intercept</span>
 <span class="co">#&gt; Gaussian</span>
@@ -216,34 +224,38 @@ Calculating a probability distribution for parameters <span class="math inline">
 <span class="co">#&gt; Student's t</span>
 <span class="co">#&gt; Degrees of freedom: 10</span>
 <span class="co">#&gt; Location: 0</span>
-<span class="co">#&gt; Scale: 12.488757925385</span></pre></body></html></div>
+<span class="co">#&gt; Scale: 12.488757925385</span></code></pre></div>
 <p>To examine the residuals, <span class="math inline">\(y - \hat{\mu}\)</span>, pass the model to <code><a href="../reference/sp_diag.html">geostan::sp_diag</a></code>:</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span>(<span class="no">fit</span>, <span class="no">ohio</span>)
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">ohio</span><span class="op">)</span>
 <span class="co">#&gt; `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
-<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></pre></body></html></div>
+<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-12-1.png" width="624" style="display: block; margin: auto;"></p>
 <p>The <strong>geostan</strong> model returns samples drawn from the posterior probability distribution of <span class="math inline">\(\mu\)</span> (fitted values), which can be accessed using <code><a href="https://rdrr.io/r/stats/fitted.values.html">fitted(fit)</a></code>. Here <span class="math inline">\(\hat{\mu}\)</span> represents the mean of the posterior distribution of the parameter <span class="math inline">\(\mu\)</span>. Thus the following code reproduces the above results, but more transparently:</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">mu</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html">fitted</a></span>(<span class="no">fit</span>)
-<span class="no">deviations</span> <span class="kw">&lt;-</span> <span class="no">y</span> - <span class="no">mu</span>$<span class="no">mean</span>
-<span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span>(<span class="no">deviations</span>, <span class="no">ohio</span>)
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
+<span class="va">deviations</span> <span class="op">&lt;-</span> <span class="va">y</span> <span class="op">-</span> <span class="va">mu</span><span class="op">$</span><span class="va">mean</span>
+<span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">deviations</span>, <span class="va">ohio</span><span class="op">)</span>
 <span class="co">#&gt; `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
-<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></pre></body></html></div>
+<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-13-1.png" width="624" style="display: block; margin: auto;"></p>
-<div class="sourceCode"><html><body><pre class="r">
-## also the same:
-## mu &lt;- as.matrix(fit, pars = "fitted")
-## mu &lt;- apply(mu, 2, mean)
-## deviations &lt;- y - mu
-## sp_diag(deviations, ohio)</pre></body></html></div>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R">
+<span class="co">## also the same:</span>
+<span class="co">## mu &lt;- as.matrix(fit, pars = "fitted")</span>
+<span class="co">## mu &lt;- apply(mu, 2, mean)</span>
+<span class="co">## deviations &lt;- y - mu</span>
+<span class="co">## sp_diag(deviations, ohio)</span></code></pre></div>
 </div>
 <div id="estimating-and-visualizing-sa-patterns" class="section level2">
 <h2 class="hasAnchor">
 <a href="#estimating-and-visualizing-sa-patterns" class="anchor"></a>Estimating and visualizing SA patterns</h2>
 <p>The <strong>geostan</strong> package also provides the <code><a href="../reference/spatial.html">geostan::spatial</a></code> method for extracting the spatial trend component from fitted spatial models (<code><a href="../reference/stan_esf.html">geostan::stan_esf</a></code>, <code><a href="../reference/stan_icar.html">geostan::stan_icar</a></code>, and <code><a href="../reference/stan_car.html">geostan::stan_car</a></code>). Continuous data can be modeled using eigenvector spatial filtering (ESF) models. ESF models use a linear combination of the eigenvectors <span class="math inline">\(E\)</span> of a transformed spatial connectivity matrix <span class="math inline">\(C\)</span> to identify SA patterns in the data. Each eigenvector contains a distinct map pattern which is indexed by the Moran coefficient (proportional to each respective eigenvalue). <strong>geostan</strong> assigns a horseshoe prior model to the parameter vector <span class="math inline">\(\beta_{E}\)</span>, reflecting our initial expectation that a relatively small number of eigenvectors will be sufficient to describe the SA patterns in the data. The result is a spatially varying mean <span class="math inline">\(\mu_i\)</span>:</p>
-<span class="math display">\[\begin{equation}
+<p><span class="math display">\[\begin{equation}
   \mu_i = \alpha + E_i * \beta_{EV}
-\end{equation}\]</span>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">fit.esf</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/stan_esf.html">stan_esf</a></span>(<span class="no">gop_growth</span> ~ <span class="fl">1</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">ohio</span>, <span class="kw">C</span> <span class="kw">=</span> <span class="no">C</span>, <span class="kw">refresh</span> <span class="kw">=</span> <span class="fl">0</span>, <span class="kw">cores</span> <span class="kw">=</span> <span class="fl">1</span>)
+\end{equation}\]</span></p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">fit.esf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_esf.html">stan_esf</a></span><span class="op">(</span><span class="va">gop_growth</span> <span class="op">~</span> <span class="fl">1</span>, data <span class="op">=</span> <span class="va">ohio</span>, C <span class="op">=</span> <span class="va">C</span>, refresh <span class="op">=</span> <span class="fl">0</span>, cores <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; *Setting prior parameters for intercept</span>
 <span class="co">#&gt; Gaussian</span>
@@ -260,16 +272,17 @@ Calculating a probability distribution for parameters <span class="math inline">
 <span class="co">#&gt; Global shrinkage prior (scale_global): 1</span>
 <span class="co">#&gt; Slab degrees of freedom: 15</span>
 <span class="co">#&gt; Slab scale: 29.1218447680832</span>
-<span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span>(<span class="no">fit.esf</span>, <span class="no">ohio</span>)
+<span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit.esf</span>, <span class="va">ohio</span><span class="op">)</span>
 <span class="co">#&gt; `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
-<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></pre></body></html></div>
+<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-14-1.png" width="624" style="display: block; margin: auto;"> The residuals are no longer auto-correlated (a small negative MC value is expected). Instead, the autocorrelation structure has been shifted to the spatial filter. We can extract the spatial filter with the <code>spatial</code> method:</p>
-<div class="sourceCode"><html><body><pre class="r"><span class="no">mu.esf</span> <span class="kw">&lt;-</span> <span class="fu"><a href="../reference/spatial.html">spatial</a></span>(<span class="no">fit.esf</span>)$<span class="no">mean</span>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">mu.esf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/spatial.html">spatial</a></span><span class="op">(</span><span class="va">fit.esf</span><span class="op">)</span><span class="op">$</span><span class="va">mean</span>
 
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(<span class="no">ohio</span>) +
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span>(<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="kw">fill</span> <span class="kw">=</span> <span class="no">mu.esf</span>)) +
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html">scale_fill_gradient2</a></span>() +
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_void</a></span>()</pre></body></html></div>
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">ohio</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">mu.esf</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html">scale_fill_gradient2</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_void</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-15-1.png" width="336" style="display: block; margin: auto;"></p>
 </div>
 <div id="references" class="section level2">
@@ -280,7 +293,7 @@ Calculating a probability distribution for parameters <span class="math inline">
 <p>Bivand R, Wong DWS (2018). “Comparing implementations of global and local indicators of spatial association.” <em>TEST</em>, 27(3), 716–748. <a href="https://doi.org/10.1007/s11749-018-0599-x" class="uri">https://doi.org/10.1007/s11749-018-0599-x</a>.</p>
 <p>Chun, Yongwan, and Daniel A. Griffith (2013). <em>Spatial statistics and geostatistics: theory and applications for geographic information science and technology</em>. Sage.</p>
 <p>Cressie, Noel and Wikle, Christopher K. (2011). <em>Statistics for Spatio-Temporal Data.</em> Wiley.</p>
-<p>Donegan, Connor, Yongwan chun and Amy E. Hughes (2020). “Bayesian estimation of spatial filters with Moran’s eigenvectors and hierarchical shrinkage priors.” <em>Spatial Statistics</em> 38: 100450. <a href="https://osf.io/fah3z/" class="uri">https://osf.io/fah3z/</a> Data and code: <a href="https://github.com/ConnorDonegan/ESF" class="uri">https://github.com/ConnorDonegan/ESF</a>.</p>
+<p>Donegan, Connor, Yongwan chun and Amy E. Hughes (2020). “Bayesian estimation of spatial filters with Moran’s eigenvectors and hierarchical shrinkage priors.” <em>Spatial Statistics</em> 38: 100450. <a href="https://osf.io/fah3z/">https://osf.io/fah3z/</a> Data and code: <a href="https://github.com/ConnorDonegan/ESF">https://github.com/ConnorDonegan/ESF</a>.</p>
 <p>Jeffreys, Sir Harold (1961). <em>Theory of Probability.</em> Oxford University Press.</p>
 <p>Li, Hongfei, Catherine A. Calder, and Noel Cressie (2007). “Beyond Moran’s I: testing for spatial dependence based on the spatial autoregressive model.” <em>Geographical Analysis</em> 39, no. 4: 357-375.</p>
 <p>MIT Election Data and Science Lab (2018). “County Presidential Election Returns 2000-2016”, URL:<a href="https://doi.org/10.7910/DVN/VOQCHQ" class="uri">https://doi.org/10.7910/DVN/VOQCHQ</a>, Harvard Dataverse, V1.</p>
@@ -288,9 +301,9 @@ Calculating a probability distribution for parameters <span class="math inline">
 <div class="footnotes">
 <hr>
 <ol>
-<li id="fn1"><p>As a rough rule of thumb, if you have to wait for the <code>aple</code> to calculate, you should be using a different measure.<a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p>Using centered data <span class="math inline">\(y_c\)</span> and its spatial lag <span class="math inline">\(\tilde{y_c} = W * y_c\)</span>, the Moran coefficient is equal to a scale factor <span class="math inline">\(\frac{n}{1'C1}\)</span> times <span class="math inline">\(\hat{\beta}\)</span> from a bivariate regression of the spatial lag of <span class="math inline">\(y_c\)</span> on itself, where <span class="math inline">\(1\)</span> a column vector of ones (i.e. the denominator is the sum of the row sums of the connectivity matrix.) For a row-standardized matrix <span class="math inline">\(\frac{n}{1'C1} = 1\)</span>. Moran’s I can be written as <span class="math inline">\(I = \frac{n}{1'C1}\frac{Cov(y_c, \tilde{y_c})}{Var(y_c)} = \frac{n}{1'C1}\hat{\beta}\)</span>.<a href="#fnref2">↩</a></p></li>
-<li id="fn3"><p>For more complex models such as the spatial models availabe in <strong>geostan</strong>, a more natural notation is Posterior probability <span class="math inline">\(\propto\)</span> [Process model] <span class="math inline">\(\times\)</span> [Parameter model], which recognizes that the prior can itself be a complex model. This generalizes further to incorporate models of observational error: Posterior probability <span class="math inline">\(\propto\)</span> [Data model] <span class="math inline">\(\times\)</span> [Process model] <span class="math inline">\(\times\)</span> [Parameter model] (Berliner 1996; Cressie and Wikle 2011), which is implemented in geostan models through the <code>ME</code> argument.<a href="#fnref3">↩</a></p></li>
+<li id="fn1"><p>As a rough rule of thumb, if you have to wait for the <code>aple</code> to calculate, you should be using a different measure.<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p>Using centered data <span class="math inline">\(y_c\)</span> and its spatial lag <span class="math inline">\(\tilde{y_c} = W * y_c\)</span>, the Moran coefficient is equal to a scale factor <span class="math inline">\(\frac{n}{1'C1}\)</span> times <span class="math inline">\(\hat{\beta}\)</span> from a bivariate regression of the spatial lag of <span class="math inline">\(y_c\)</span> on itself, where <span class="math inline">\(1\)</span> a column vector of ones (i.e. the denominator is the sum of the row sums of the connectivity matrix.) For a row-standardized matrix <span class="math inline">\(\frac{n}{1'C1} = 1\)</span>. Moran’s I can be written as <span class="math inline">\(I = \frac{n}{1'C1}\frac{Cov(y_c, \tilde{y_c})}{Var(y_c)} = \frac{n}{1'C1}\hat{\beta}\)</span>.<a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p>For more complex models such as the spatial models availabe in <strong>geostan</strong>, a more natural notation is Posterior probability <span class="math inline">\(\propto\)</span> [Process model] <span class="math inline">\(\times\)</span> [Parameter model], which recognizes that the prior can itself be a complex model. This generalizes further to incorporate models of observational error: Posterior probability <span class="math inline">\(\propto\)</span> [Data model] <span class="math inline">\(\times\)</span> [Process model] <span class="math inline">\(\times\)</span> [Parameter model] (Berliner 1996; Cressie and Wikle 2011), which is implemented in geostan models through the <code>ME</code> argument.<a href="#fnref3" class="footnote-back">↩</a></p></li>
 </ol>
 </div>
   </div>
@@ -310,7 +323,7 @@ Calculating a probability distribution for parameters <span class="math inline">
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

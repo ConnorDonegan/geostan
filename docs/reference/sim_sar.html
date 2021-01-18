@@ -88,7 +88,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -138,7 +138,7 @@
     <p>Given a spatial weights matrix and degree of autocorrelation, returns autocorrelated data.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>sim_sar</span>(<span class='kw'>m</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>mu</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span>(<span class='fl'>0</span>, <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span>(<span class='no'>w</span>)), <span class='no'>w</span>, <span class='no'>rho</span>, <span class='kw'>sigma</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>sim_sar</span><span class='op'>(</span>m <span class='op'>=</span> <span class='fl'>1</span>, mu <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>nrow</a></span><span class='op'>(</span><span class='va'>w</span><span class='op'>)</span><span class='op'>)</span>, <span class='va'>w</span>, <span class='va'>rho</span>, sigma <span class='op'>=</span> <span class='fl'>1</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -181,10 +181,11 @@
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>ohio</span>)
-<span class='no'>w</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span>(<span class='no'>ohio</span>, <span class='st'>"W"</span>)
-<span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'>sim_sar</span>(<span class='kw'>w</span><span class='kw'>=</span><span class='no'>w</span>, <span class='kw'>rho</span><span class='kw'>=</span><span class='fl'>.8</span>)
-<span class='fu'><a href='aple.html'>aple</a></span>(<span class='no'>x</span>, <span class='no'>w</span>)</div><div class='output co'>#&gt; [1] 0.587</div><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>
+<span class='va'>w</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>ohio</span>, <span class='st'>"W"</span><span class='op'>)</span>
+<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'>sim_sar</span><span class='op'>(</span>w<span class='op'>=</span><span class='va'>w</span>, rho<span class='op'>=</span><span class='fl'>.8</span><span class='op'>)</span>
+<span class='fu'><a href='aple.html'>aple</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; [1] 0.753</div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -201,7 +202,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

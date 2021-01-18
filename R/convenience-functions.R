@@ -865,7 +865,7 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' states <- sf::st_read(folder)
 #' 
 #' # to delete it:
-#' unlink(folder, recursive = TRUE)
+#' # unlink(folder, recursive = TRUE)
 #' }
 #' @export
 #' @importFrom utils unzip download.file

@@ -88,7 +88,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -138,7 +138,7 @@
     <p>Given a url to a shapefile in a compressed .zip file, download the file and unzip it into a folder in your working directory.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>get_shp</span>(<span class='no'>url</span>, <span class='kw'>folder</span> <span class='kw'>=</span> <span class='st'>"shape"</span>)</pre>
+    <pre class="usage"><span class='fu'>get_shp</span><span class='op'>(</span><span class='va'>url</span>, folder <span class='op'>=</span> <span class='st'>"shape"</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -158,16 +158,34 @@
     <p>A folder in your working directory with the shapefile; filepaths are printed to the console.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>sf</span>)
-<span class='no'>url</span> <span class='kw'>&lt;-</span> <span class='st'>"https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_state_20m.zip"</span>
-<span class='no'>folder</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/tempfile.html'>tempdir</a></span>()
-<span class='fu'>get_shp</span>(<span class='no'>url</span>, <span class='no'>folder</span>)
-<span class='no'>states</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>sf</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/pkg/sf/man/st_read.html'>st_read</a></span>(<span class='no'>folder</span>)
-
+    <pre class="examples"><div class='input'><span class='co'># \dontrun{</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
+<span class='va'>url</span> <span class='op'>&lt;-</span> <span class='st'>"https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_state_20m.zip"</span>
+<span class='va'>folder</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/tempfile.html'>tempdir</a></span><span class='op'>(</span><span class='op'>)</span>
+<span class='fu'>get_shp</span><span class='op'>(</span><span class='va'>url</span>, <span class='va'>folder</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;  [1] "/tmp/RtmpAV5wnZ/callr-env-3372f110b72c2"            
+#&gt;  [2] "/tmp/RtmpAV5wnZ/cb_2019_us_state_20m.cpg"           
+#&gt;  [3] "/tmp/RtmpAV5wnZ/cb_2019_us_state_20m.dbf"           
+#&gt;  [4] "/tmp/RtmpAV5wnZ/cb_2019_us_state_20m.prj"           
+#&gt;  [5] "/tmp/RtmpAV5wnZ/cb_2019_us_state_20m.shp"           
+#&gt;  [6] "/tmp/RtmpAV5wnZ/cb_2019_us_state_20m.shp.ea.iso.xml"
+#&gt;  [7] "/tmp/RtmpAV5wnZ/cb_2019_us_state_20m.shp.iso.xml"   
+#&gt;  [8] "/tmp/RtmpAV5wnZ/cb_2019_us_state_20m.shx"           
+#&gt;  [9] "/tmp/RtmpAV5wnZ/downlit"                            
+#&gt; [10] "/tmp/RtmpAV5wnZ/file3372f52a12407"                  
+#&gt; [11] "/tmp/RtmpAV5wnZ/file3372f602c1f37"                  
+#&gt; [12] "/tmp/RtmpAV5wnZ/file3372f6ec9ce44.so"               
+#&gt; [13] "/tmp/RtmpAV5wnZ/file3372fb707a09.zip"               </div><div class='input'><span class='va'>states</span> <span class='op'>&lt;-</span> <span class='fu'>sf</span><span class='fu'>::</span><span class='fu'><a href='https://r-spatial.github.io/sf/reference/st_read.html'>st_read</a></span><span class='op'>(</span><span class='va'>folder</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; Reading layer `cb_2019_us_state_20m' from data source `/tmp/RtmpAV5wnZ' using driver `ESRI Shapefile'
+#&gt; Simple feature collection with 52 features and 9 fields
+#&gt; geometry type:  MULTIPOLYGON
+#&gt; dimension:      XY
+#&gt; bbox:           xmin: -179.1743 ymin: 17.91377 xmax: 179.7739 ymax: 71.35256
+#&gt; geographic CRS: NAD83</div><div class='input'>
 <span class='co'># to delete it:</span>
-<span class='fu'><a href='https://rdrr.io/r/base/unlink.html'>unlink</a></span>(<span class='no'>folder</span>, <span class='kw'>recursive</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)
-}</div></pre>
+<span class='co'># unlink(folder, recursive = TRUE)</span>
+<span class='co'># }</span>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -183,7 +201,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

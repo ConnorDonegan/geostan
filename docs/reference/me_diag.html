@@ -88,7 +88,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -138,16 +138,16 @@
     <p>Visual diagnostics for spatial measurement error models.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>me_diag</span>(
-  <span class='no'>fit</span>,
-  <span class='no'>varname</span>,
-  <span class='no'>shape</span>,
-  <span class='no'>w</span>,
-  <span class='kw'>probs</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>0.025</span>, <span class='fl'>0.975</span>),
-  <span class='kw'>plot</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>size</span> <span class='kw'>=</span> <span class='fl'>0.25</span>,
-  <span class='kw'>index</span> <span class='kw'>=</span> <span class='fl'>0</span>
-)</pre>
+    <pre class="usage"><span class='fu'>me_diag</span><span class='op'>(</span>
+  <span class='va'>fit</span>,
+  <span class='va'>varname</span>,
+  <span class='va'>shape</span>,
+  <span class='va'>w</span>,
+  probs <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.025</span>, <span class='fl'>0.975</span><span class='op'>)</span>,
+  plot <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  size <span class='op'>=</span> <span class='fl'>0.25</span>,
+  index <span class='op'>=</span> <span class='fl'>0</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -162,7 +162,7 @@
     </tr>
     <tr>
       <th>shape</th>
-      <td><p>An object of class <code>sf</code> or another spatial object coercible to <code>sf</code> with <code><a href='https://rdrr.io/pkg/sf/man/st_as_sf.html'>sf::st_as_sf</a></code> such as <code>SpatialPolygonsDataFrame</code>.</p></td>
+      <td><p>An object of class <code>sf</code> or another spatial object coercible to <code>sf</code> with <code><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>sf::st_as_sf</a></code> such as <code>SpatialPolygonsDataFrame</code>.</p></td>
     </tr>
     <tr>
       <th>w</th>
@@ -194,23 +194,35 @@
     <div class='dont-index'><p><a href='sp_diag.html'>sp_diag</a>, <a href='moran_plot.html'>moran_plot</a>, <a href='mc.html'>mc</a>, <a href='aple.html'>aple</a></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>sf</span>)
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>ohio</span>)
-<span class='no'>C</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span>(<span class='no'>ohio</span>)
-<span class='no'>ME</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>se</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span>(<span class='kw'>unemployment.acs</span> <span class='kw'>=</span> <span class='no'>ohio</span>$<span class='no'>unemployment.acs.se</span>),
-           <span class='kw'>spatial</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>
-         )
-<span class='no'>fit</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='stan_glm.html'>stan_glm</a></span>(<span class='no'>gop_growth</span> ~ <span class='no'>unemployment.acs</span>,
-                <span class='kw'>ME</span> <span class='kw'>=</span> <span class='no'>ME</span>,
-                <span class='kw'>C</span> <span class='kw'>=</span> <span class='no'>C</span>,
-                <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>ohio</span>,
-                <span class='kw'>prior_only</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-                <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>0</span>
-                )
-<span class='fu'>me_diag</span>(<span class='no'>fit</span>, <span class='st'>"unemployment.acs"</span>, <span class='no'>ohio</span>)
-<span class='fu'>me_diag</span>(<span class='no'>fit</span>, <span class='st'>"unemployment.acs"</span>, <span class='no'>ohio</span>, <span class='kw'>index</span> <span class='kw'>=</span> <span class='fl'>3</span>)
-}</div></pre>
+    <pre class="examples"><div class='input'><span class='co'># \dontrun{</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>
+<span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>
+<span class='va'>ME</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>se <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>unemployment.acs <span class='op'>=</span> <span class='va'>ohio</span><span class='op'>$</span><span class='va'>unemployment.acs.se</span><span class='op'>)</span>,
+           spatial <span class='op'>=</span> <span class='cn'>TRUE</span>
+         <span class='op'>)</span>
+<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_glm.html'>stan_glm</a></span><span class='op'>(</span><span class='va'>gop_growth</span> <span class='op'>~</span> <span class='va'>unemployment.acs</span>,
+                ME <span class='op'>=</span> <span class='va'>ME</span>,
+                C <span class='op'>=</span> <span class='va'>C</span>,
+                data <span class='op'>=</span> <span class='va'>ohio</span>, 
+                prior_only <span class='op'>=</span> <span class='cn'>TRUE</span>,
+                refresh <span class='op'>=</span> <span class='fl'>0</span>
+                <span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>*Setting horseshoe prior for spatial data model, variable: unemployment.acs (Moran coefficient: 0.332)</span>
+#&gt; <span class='message'> global shrinkage scale:0.274115206742928</span>
+#&gt; <span class='message'> slab scale:8.79399168595964</span>
+#&gt; <span class='message'> slab degrees of freedom:15</span></div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 12.488757925385</span></div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for beta</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt;                  Location    Scale
+#&gt; unemployment.acs        0 6.623123</div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for sigma</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt; <span class='message'>Degrees of freedom: 10</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 12.488757925385</span></div><div class='input'><span class='fu'>me_diag</span><span class='op'>(</span><span class='va'>fit</span>, <span class='st'>"unemployment.acs"</span>, <span class='va'>ohio</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='me_diag-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'>me_diag</span><span class='op'>(</span><span class='va'>fit</span>, <span class='st'>"unemployment.acs"</span>, <span class='va'>ohio</span>, index <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>Identifying the top 3 observations as ordered by their Delta values (Delta = posterior mean of x - raw x value):</span></div><div class='output co'>#&gt;                        x.raw      x.mu    x.lwr    x.upr      Delta
+#&gt; x_unemployment.acs[53]  11.2 10.054763 8.297518 11.95572 -1.1452369
+#&gt; x_unemployment.acs[66]  11.1  9.983886 7.910319 12.18591 -1.1161142
+#&gt; x_unemployment.acs[40]  11.2 10.268700 8.360609 12.27628 -0.9313002</div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='me_diag-2.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># }</span>
+
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -226,7 +238,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

@@ -89,7 +89,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -140,12 +140,12 @@
  This is a processed version of the MIT "County Presidential Election Returns 2000-2016" data set augmented with data from the American Community Survey and Bureau of Labor Statistics.</p>
     </div>
 
-    <pre class="usage"><span class='no'>ohio</span></pre>
+    <pre class="usage"><span class='va'>ohio</span></pre>
 
 
     <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>A simple feature collection including the following attributes:</p><dl'>
+    <p>A simple feature collection including the following attributes:</p><dl>
  <dt>GEOID</dt><dd><p>Six digit combined state and county FIPS code</p></dd>
  <dt>county</dt><dd><p>County name</p></dd>
  <dt>gop_growth</dt><dd><p>Change in the Republican vote share from historic (2000 - 2012) average vote share to 2016 vote share (i.e. (trump_2016/total_2016) - historic_gop). Data only includes Democratic and Republican votes (i.e. two-party vote share).</p></dd>
@@ -177,10 +177,11 @@
     <p>The Bureau of Labor Statistics unemployment estimates are based on the ACS estimates as well as additional information. The BLS estimates were used for the analysis in Donegan et al. (2020). The ACS estimates have standard errors (the BLS estimates do not).</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>sf</span>)
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>ohio</span>)
-}</div></pre>
+    <pre class="examples"><div class='input'><span class='co'># \dontrun{</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>
+<span class='co'># }</span>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -196,7 +197,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>

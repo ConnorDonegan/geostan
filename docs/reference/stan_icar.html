@@ -88,7 +88,7 @@
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -138,31 +138,31 @@
     <p>Fit regression models using intrinsic conditional auto-regressive (ICAR) parameter model. Options include the BYM model, the BYM2 model, and a solo ICAR term.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>stan_icar</span>(
-  <span class='no'>formula</span>,
-  <span class='no'>slx</span>,
-  <span class='no'>re</span>,
-  <span class='no'>data</span>,
-  <span class='kw'>type</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"iar"</span>, <span class='st'>"bym"</span>, <span class='st'>"bym2"</span>),
-  <span class='kw'>scale_factor</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>ME</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='no'>C</span>,
-  <span class='no'>EV</span>,
-  <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span>(),
-  <span class='kw'>prior</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>prior_intercept</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>prior_tau</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>centerx</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>scalex</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>prior_only</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='kw'>chains</span> <span class='kw'>=</span> <span class='fl'>4</span>,
-  <span class='kw'>iter</span> <span class='kw'>=</span> <span class='fl'>4000</span>,
-  <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>1000</span>,
-  <span class='kw'>pars</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-  <span class='kw'>control</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>adapt_delta</span> <span class='kw'>=</span> <span class='fl'>0.9</span>, <span class='kw'>max_treedepth</span> <span class='kw'>=</span> <span class='fl'>15</span>),
-  <span class='kw'>silent</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>,
-  <span class='no'>...</span>
-)</pre>
+    <pre class="usage"><span class='fu'>stan_icar</span><span class='op'>(</span>
+  <span class='va'>formula</span>,
+  <span class='va'>slx</span>,
+  <span class='va'>re</span>,
+  <span class='va'>data</span>,
+  type <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"icar"</span>, <span class='st'>"bym"</span>, <span class='st'>"bym2"</span><span class='op'>)</span>,
+  scale_factor <span class='op'>=</span> <span class='cn'>NULL</span>,
+  ME <span class='op'>=</span> <span class='cn'>NULL</span>,
+  <span class='va'>C</span>,
+  <span class='va'>EV</span>,
+  family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span>,
+  prior <span class='op'>=</span> <span class='cn'>NULL</span>,
+  prior_intercept <span class='op'>=</span> <span class='cn'>NULL</span>,
+  prior_tau <span class='op'>=</span> <span class='cn'>NULL</span>,
+  centerx <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  scalex <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  prior_only <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  chains <span class='op'>=</span> <span class='fl'>4</span>,
+  iter <span class='op'>=</span> <span class='fl'>4000</span>,
+  refresh <span class='op'>=</span> <span class='fl'>1000</span>,
+  pars <span class='op'>=</span> <span class='cn'>NULL</span>,
+  control <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>adapt_delta <span class='op'>=</span> <span class='fl'>0.9</span>, max_treedepth <span class='op'>=</span> <span class='fl'>15</span><span class='op'>)</span>,
+  silent <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  <span class='va'>...</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -187,7 +187,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>type</th>
-      <td><p>Defaults to "iar" (partial pooling of neighboring observations through parameter <code>phi</code>); specify "bym" to add a second parameter vector <code>theta</code> to perform partial pooling across all observations; specify "bym2" for the innovation introduced by Riebler et al. (2016).</p></td>
+      <td><p>Defaults to "icar" (partial pooling of neighboring observations through parameter <code>phi</code>); specify "bym" to add a second parameter vector <code>theta</code> to perform partial pooling across all observations; specify "bym2" for the innovation introduced by Riebler et al. (2016).</p></td>
     </tr>
     <tr>
       <th>scale_factor</th>
@@ -195,14 +195,12 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>ME</th>
-      <td><p>To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the inferred `true' covariate is assigned a Student's t model with optional spatially varying mean. Elements of the list <code>ME</code> may include:</p><dl'>
-
+      <td><p>To model observational error (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list <code>ME</code> may include:</p><dl>
 <dt>se</dt><dd><p>a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
-<dt>bounded</dt><dd><p>If any variables in <code>se</code> are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded.</p></dd>
+<dt>bounded</dt><dd><p>If any variables in <code>se</code> are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.</p></dd>
 <dt>bounds</dt><dd><p>A numeric vector of length two providing the upper and lower bounds, respectively, of the bounded variables. Defaults to <code>bounds = c(0, 100)</code>.</p></dd>
 <dt>spatial</dt><dd><p>Logical value indicating if the models for covariates should include a spatially varying mean (using an eigenvector spatial filter). Defaults to <code>spatial = FALSE</code>. If <code>spatial = TRUE</code> and you do not provide both <code>ME$prior_rhs</code> and <code>EV</code> then you must provide a connectivity matrix <code>C</code>.</p></dd>
 <dt>prior_rhs</dt><dd><p>Optional prior parameters for the regularized horseshoe (RHS) prior used for the ESF data model; only used if <code>ME$spatial = TRUE</code>. The RHS prior is used for the eigenvector spatial filter (ESF), as in <a href='stan_esf.html'>stan_esf</a>. Must be a named list containing vectors <code>slab_df</code>, <code>slab_scale</code>, <code>scale_global</code>, and <code>varname</code>. The character vector <code>varname</code> indicates the order of the other parameters (by name).</p></dd>
-<dt>offset</dt><dd><p>if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name <code>offset</code>.</p></dd>
 
 </dl></td>
     </tr>
@@ -279,7 +277,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <p>Riebler, A., Sorbye, S. H., Simpson, D., &amp; Rue, H. (2016). An intuitive Bayesian spatial model for disease mapping that accounts for scaling. Statistical Methods in Medical Research, 25(4), 1145-1165.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl'>
+    <p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl>
 <dt>summary</dt><dd><p>Summaries of the main parameters of interest; a data frame</p></dd>
 <dt>diagnostic</dt><dd><p>Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (<code>eff_pars</code>) and 
  mean log pointwise predictive density (<code>lpd</code>), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.</p></dd>
@@ -301,45 +299,52 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <p>The Stan code for the ICAR component of the model and the BYM2 option follows Morris et al. (2019). The ICAR component is returned in the parameter named <code>ssre</code> (spatially structured random effect).</p>
 <p>For all models, the ICAR prior is placed on the parameter vector <code>phi</code>; it is scaled by the scalar parameter <code>spatial_scale</code>, specified as follows.</p>
-<p>For <code>type = "iar"</code>, the spatial structure is simply <code>ssre[i] = phi[i] * spatial_scale</code>.</p>
-<p>For <code>type = "bym"</code>, the spatial structure <code>ssre</code> is the same as <code>"iar"</code> but an additional parameter vector <code>theta</code> is added to perform partial pooling across all observations (a `spatially unstructured random effect' <code>sure</code>), and <code>sure[i] = theta[i] * theta_scale</code>. The sum <code>phi * spatial_scale + theta * theta_scale = ssre + sure</code> is often referred to as the ``convolved random effect.''</p>
+<p>For <code>type = "icar"</code>, the spatial structure is simply <code>ssre[i] = phi[i] * spatial_scale</code>.</p>
+<p>For <code>type = "bym"</code>, the spatial structure <code>ssre</code> is the same as <code>"icar"</code> but an additional parameter vector <code>theta</code> is added to perform partial pooling across all observations (a `spatially unstructured random effect' <code>sure</code>), and <code>sure[i] = theta[i] * theta_scale</code>. The sum <code>phi * spatial_scale + theta * theta_scale = ssre + sure</code> is often referred to as the ``convolved random effect.''</p>
 <p>For <code>type = "bym2"</code>, <code>ssre</code> and <code>sure</code> share a single scale parameter (<code>spatial_scale</code>) but they are combined using a mixing parameter <code>rho</code>. The ``convolved random effect'' is then <code>[sqrt(rho / scale_factor) * phi + sqrt((1 - rho)) * theta] * spatial_scale</code>. The terms are factored out to obtain <code>sure</code> and <code>ssre</code>.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><a href='prep_icar_data.html'>prep_icar_data</a>, <a href='stan_car.html'>stan_car</a>, <a href='stan_esf.html'>stan_esf</a></p></div>
+    <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
+
+    <p>Connor Donegan, <a href='mailto:Connor.Donegan@UTDallas.edu'>Connor.Donegan@UTDallas.edu</a></p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>ggplot2</span>)
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>sf</span>)
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>rstan</span>)
-<span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span>(<span class='kw'>mc.cores</span> <span class='kw'>=</span> <span class='kw pkg'>parallel</span><span class='kw ns'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span>())
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>sentencing</span>)
+    <pre class="examples"><div class='input'><span class='co'># \dontrun{</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/rstan'>rstan</a></span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span><span class='op'>(</span>mc.cores <span class='op'>=</span> <span class='fu'>parallel</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span>
 
-<span class='no'>C</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span>(<span class='no'>sentencing</span>)
-<span class='no'>log_e</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span>(<span class='no'>sentencing</span>$<span class='no'>expected_sents</span>)
-<span class='no'>fit.bym</span> <span class='kw'>&lt;-</span> <span class='fu'>stan_icar</span>(<span class='no'>sents</span> ~ <span class='fu'><a href='https://rdrr.io/r/stats/offset.html'>offset</a></span>(<span class='no'>log_e</span>),
-                     <span class='kw'>re</span> <span class='kw'>=</span> ~ <span class='no'>name</span>,
-                     <span class='kw'>family</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span>(),
-                     <span class='kw'>data</span> <span class='kw'>=</span> <span class='no'>sentencing</span>,
-                     <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"bym"</span>,
-                     <span class='kw'>C</span> <span class='kw'>=</span> <span class='no'>C</span>,
-                     <span class='kw'>refresh</span> <span class='kw'>=</span> <span class='fl'>0</span>
- )
-
+<span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span>
+<span class='va'>log_e</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>$</span><span class='va'>expected_sents</span><span class='op'>)</span>
+<span class='va'>fit.bym</span> <span class='op'>&lt;-</span> <span class='fu'>stan_icar</span><span class='op'>(</span><span class='va'>sents</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/offset.html'>offset</a></span><span class='op'>(</span><span class='va'>log_e</span><span class='op'>)</span>,
+                     re <span class='op'>=</span> <span class='op'>~</span> <span class='va'>name</span>,
+                     family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span>,
+                     data <span class='op'>=</span> <span class='va'>sentencing</span>,
+                     type <span class='op'>=</span> <span class='st'>"bym"</span>,
+                     C <span class='op'>=</span> <span class='va'>C</span>,
+                     refresh <span class='op'>=</span> <span class='fl'>0</span>
+ <span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 1.15103493100263</span></div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for alpha_tau</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt; <span class='message'>Degrees of freedom: 20</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 1.15103493100263</span></div><div class='input'>
 <span class='co'># diagnostics plot: Rhat values should all by very near 1</span>
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>rstan</span>)
-<span class='kw pkg'>rstan</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span>(<span class='no'>fit.bym</span>$<span class='no'>stanfit</span>)
- <span class='co'># see effective sample size for all parameters and generated quantities</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/rstan'>rstan</a></span><span class='op'>)</span>
+<span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span><span class='op'>(</span><span class='va'>fit.bym</span><span class='op'>$</span><span class='va'>stanfit</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='img'><img src='stan_icar-1.png' alt='' width='700' height='433' /></div><div class='input'> <span class='co'># see effective sample size for all parameters and generated quantities</span>
  <span class='co'># (including residuals, predicted values, etc.)</span>
-<span class='kw pkg'>rstan</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_ess</a></span>(<span class='no'>fit.bym</span>$<span class='no'>stanfit</span>)
-<span class='co'># or for a particular parameter</span>
-<span class='kw pkg'>rstan</span><span class='kw ns'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_ess</a></span>(<span class='no'>fit.bym</span>$<span class='no'>stanfit</span>, <span class='st'>"ssre"</span>)
-<span class='fu'><a href='https://rdrr.io/r/base/library.html'>library</a></span>(<span class='no'>bayesplot</span>)
-<span class='no'>yrep</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span>(<span class='no'>fit.bym</span>, <span class='kw'>samples</span> <span class='kw'>=</span> <span class='fl'>75</span>)
-<span class='no'>y</span> <span class='kw'>&lt;-</span> <span class='no'>sentencing</span>$<span class='no'>sents</span>
-<span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span>(<span class='no'>y</span>, <span class='no'>yrep</span>)
-}</div></pre>
+<span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_ess</a></span><span class='op'>(</span><span class='va'>fit.bym</span><span class='op'>$</span><span class='va'>stanfit</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='img'><img src='stan_icar-2.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># or for a particular parameter</span>
+<span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_ess</a></span><span class='op'>(</span><span class='va'>fit.bym</span><span class='op'>$</span><span class='va'>stanfit</span>, <span class='st'>"ssre"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='img'><img src='stan_icar-3.png' alt='' width='700' height='433' /></div><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/bayesplot/'>bayesplot</a></span><span class='op'>)</span>
+<span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span><span class='op'>(</span><span class='va'>fit.bym</span>, samples <span class='op'>=</span> <span class='fl'>75</span><span class='op'>)</span>
+<span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span>
+<span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>yrep</span><span class='op'>)</span>
+</div><div class='img'><img src='stan_icar-4.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># }</span>
+
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -355,7 +360,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
 </div>
 
       </footer>
