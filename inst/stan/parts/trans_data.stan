@@ -15,7 +15,7 @@
   is_poisson =  family == 3;
   is_binomial = family == 4;
   has_sigma  =  family < 3;
-  has_offset = sum(offset_obs) != 0;
+  has_offset = sum(offset) != 0;
   dx_all = dx_obs + dx_me_bounded + dx_me_unbounded;
   has_me = (dx_all > dx_obs);
   if (dwx) {

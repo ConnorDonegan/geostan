@@ -9,7 +9,7 @@
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
 #' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in \code{~ ID}. 
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
-#' @param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the `true' covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
+#' @param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
 #' \describe{
 #' 
 #' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
@@ -17,7 +17,6 @@
 #' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of the bounded variables. Defaults to \code{bounds = c(0, 100)}.}
 #' \item{spatial}{Logical value indicating if the models for covariates should include a spatially varying mean (using an eigenvector spatial filter). Defaults to \code{spatial = FALSE}. If \code{spatial = TRUE} and you do not provide both \code{ME$prior_rhs} and \code{EV} then you must provide a connectivity matrix \code{C}.}
 #' \item{prior_rhs}{Optional prior parameters for the regularized horseshoe (RHS) prior used for the ESF data model; only used if \code{ME$spatial = TRUE}. The RHS prior is used for the eigenvector spatial filter (ESF), as in \link[geostan]{stan_esf}. Must be a named list containing vectors \code{slab_df}, \code{slab_scale}, \code{scale_global}, and \code{varname}. The character vector \code{varname} indicates the order of the other parameters (by name).}
-#' \item{offset}{if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}.}
 #' }
 #' @param C Binary spatial connectivity matrix. This is used for the CAR prior and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms (it will be row-standardized before calculating \code{slx} terms).
 #' @param EV A matrix of eigenvectors from any (transformed) connectivity matrix (presumably spatial). See \link[geostan]{make_EV} and \link[geostan]{shape2mat}. 
@@ -191,7 +190,7 @@ stan_car <- function(formula, slx, re, data, ME = NULL, C, EV,
     trials = rep(0, length(y)),
     n = n,
     dbeta_prior = dbeta_prior,
-    offset_obs = offset,
+    offset = offset,
     has_re = has_re,
     n_ids = n_ids,
     id = id_index$idx,
@@ -233,7 +232,6 @@ stan_car <- function(formula, slx, re, data, ME = NULL, C, EV,
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
   if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
   if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
-  if (any(me.list$offset_me != 0)) pars <- c(pars, "offset_est")
   priors <- priors[which(names(priors) %in% pars)]
   ## PRINT STUFF -------------    
   if (!silent) print_priors(user_priors, priors)

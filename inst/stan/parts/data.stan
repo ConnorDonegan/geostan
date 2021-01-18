@@ -3,10 +3,8 @@
 // number of observations
   int<lower=0> n; 
   
-// offest with measurement error information   
-  vector[n] offset_obs; 
-  vector<lower=0>[n] offset_me;
-  int<lower=0,upper=1> model_offset;
+// offset
+  vector[n] offset; 
   
 // connectivity matrix
   int<lower=0> dwx;
@@ -46,9 +44,9 @@
   vector<lower=0>[spatial_me ? dx_me_bounded : 0] scale_global_me_bounded;
   
 // non-spatial partial pooling 
-  int<lower=0,upper=1> has_re; // has random effects? (or varying intercept)
+  int<lower=0,upper=1> has_re; // has varying intercept?
   int<lower=0> n_ids; // number of units
-  int<lower=0,upper=n_ids> id[n]; // identifier for the observational units associated with the random effects term
+  int<lower=0,upper=n_ids> id[n]; // identifier for the observational units associated with the varying intercepts
 // priors
   vector[2] alpha_prior; // prior on the intercept
   int<lower=0> dbeta_prior;  

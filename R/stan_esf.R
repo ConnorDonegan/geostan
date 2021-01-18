@@ -11,7 +11,7 @@
 #' @param C Spatial connectivity matrix which will be used to calculate eigenvectors, residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.
 #' @param EV A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. If provided, still also provide a spatial weights matrix \code{C} for other purposes.  See \link[geostan]{make_EV} and \link[geostan]{shape2mat}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
-#'@param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates or offset term, provide a named list. Errors are assigned a Gaussian probability distribution and the `true' covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
+#' @param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
 #' \describe{
 #' 
 #' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
@@ -19,7 +19,6 @@
 #' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of the bounded variables. Defaults to \code{bounds = c(0, 100)}.}
 #' \item{spatial}{Logical value indicating if the models for covariates should include a spatially varying mean (using an eigenvector spatial filter). Defaults to \code{spatial = FALSE}. If \code{spatial = TRUE} and you do not provide both \code{ME$prior_rhs} and \code{EV} then you must provide a connectivity matrix \code{C}.}
 #' \item{prior_rhs}{Optional prior parameters for the regularized horseshoe (RHS) prior used for the ESF data model; only used if \code{ME$spatial = TRUE}. The RHS prior is used for the eigenvector spatial filter (ESF), as in \link[geostan]{stan_esf}. Must be a named list containing vectors \code{slab_df}, \code{slab_scale}, \code{scale_global}, and \code{varname}. The character vector \code{varname} indicates the order of the other parameters (by name).}
-#' \item{offset}{if you have an offset term with measurement error, include a vector of standard errors to the list and assign it the name \code{offset}.}
 #' }
 #' @param nsa Include eigenvectors representing negative spatial autocorrelation? Default \code{nsa = FALSE}. Ignored if \code{EV} is provided.
 #' @param threshold Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = 0.25}; ignored if \code{EV} is provided. 
@@ -128,7 +127,7 @@ stan_esf <- function(formula, slx, re, data, C, EV, ME = NULL,
                      ...) {
   if (missing(formula)) stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
   if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "poisson", "binomial")) stop ("Must provide a valid family object: gaussian(), student_t(), or poisson().")
-  if (missing(C) | missing(data)) stop ("Must provide data and a spatiall connectivity matrix C.")
+  if (missing(C) | missing(data)) stop ("Must provide data and a spatial connectivity matrix C.")
   if (scalex) centerx <- TRUE
   if (silent) refresh = 0
     ## GLM STUFF -------------  
@@ -225,7 +224,7 @@ stan_esf <- function(formula, slx, re, data, C, EV, ME = NULL,
     trials = rep(0, length(y)),
     n = n,
     dbeta_prior = dbeta_prior,
-    offset_obs = offset,
+    offset = offset,
     has_re = has_re,
     n_ids = n_ids,
     id = id_index$idx,
@@ -269,7 +268,6 @@ stan_esf <- function(formula, slx, re, data, C, EV, ME = NULL,
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
   if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
   if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
-  if (any(me.list$offset_me != 0)) pars <- c(pars, "offset_est")
   priors <- priors[which(names(priors) %in% c(pars, "rhs"))]
     ## PRINT STUFF -------------    
   if (!silent) print_priors(user_priors, priors)

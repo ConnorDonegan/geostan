@@ -34,9 +34,4 @@
   vector<lower=0>[dev] aux2_local_me_bounded[spatial_me ? dx_me_bounded : 0];
   vector<lower=0>[spatial_me ? dx_me_bounded : 0] caux_me_bounded;
   vector[dev] z_ev_me_bounded[spatial_me ? dx_me_bounded : 0];
-// offset model
-  vector<lower=0>[model_offset ? n : 0] offset_est;
-  real<lower=0> mu_offset[model_offset ? 1: 0];  
-  real<lower=0> sigma_offset[model_offset ? 1 : 0];
-  real<lower=0> nu_offset[model_offset ? 1 : 0];  
 

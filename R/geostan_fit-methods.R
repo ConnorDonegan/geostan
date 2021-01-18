@@ -83,7 +83,6 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
   }
   cat("Data models (ME): ")
   if (inherits(x$ME, "list")) {
-      if (length(x$ME$offset)) cat("offset ")
       if ("se" %in% names(x$ME)) cat(paste(names(x$ME$se), sep = ", "))
       if ("spatial" %in% names(x$ME)) cat("\nPrior data model: Student's t with spatially varying mean (ESF)") else cat("\nPrior data model: Studen's t")
   } else cat("none")

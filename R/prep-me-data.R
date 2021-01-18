@@ -4,7 +4,7 @@
 ##' @param ME user-provided list of observational error stuff
 ##' @param x take design matrix from x.list$x
 ##' 
-##' @return Partial data list to pass to Stan
+##' @return Partial data list to pass to Stan. 
 ##' @noRd
 prep_me_data <- function(ME, x) { # for x pass in x.list$x
    # some defaults
@@ -17,7 +17,7 @@ prep_me_data <- function(ME, x) { # for x pass in x.list$x
   x_me_bounded_idx = a.zero
   x_me_unbounded_idx = a.zero
   bounds <- c(0, 100)
-  if (is.null(ME)) { # return items in data list ready for Stan: no ME model at all
+  if (is.null(ME)) { # return items in data list ready for Stan: no ME model at all. 
       x_obs <- x
       dx_obs <- ncol(x_obs)
       if (dx_obs) {
@@ -45,7 +45,7 @@ prep_me_data <- function(ME, x) { # for x pass in x.list$x
    return(me.list)
   }
   if (!inherits(ME, "list")) stop("ME must be a list .")
-  if (length(ME$offset)) { # ME model for offset 
+  if (length(ME$offset)) { # ME model for offset; holding for future implementation. Ignored.
         offset_me <- ME$offset
         model_offset <- 1
       } else {
