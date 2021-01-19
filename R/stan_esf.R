@@ -43,7 +43,7 @@
 #' @param ... Other arguments passed to \link[rstan]{sampling}. 
 #' @details
 #'
-#' This function implements the models introduced in Donegan et al. (2020). This is the only spatial modeling approach in the \code{geostan} package that is available for continuous data as well as count data.
+#' This function implements the spatial regression models introduced in Donegan et al. (2020).
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{

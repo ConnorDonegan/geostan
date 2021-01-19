@@ -601,7 +601,7 @@ shape2mat <- function(shape, style = c("B", "W", "C", "S"), t = 1, st.type = "co
       w <- spdep::nb2mat(spdep::poly2nb(shape, queen = queen, snap = snap), style = style, zero.policy = zero.policy)
   attributes(w)$dimnames <- NULL
   if (t > 1) { 
-      if (style != "B") stop ("Only the binary coding scheme (style = 'B') has been implemented for space-time matrices.")
+      if (style != "B") stop ("Only the binary coding scheme (style = 'B') has been implemented for space-time matrices, but you can row-standardize any matrix using: 'W = C / rowSums(C)' where C is a binary-coded connectivity matrix.")
       ## binary temporal connectivity matrix
       s <- nrow(w)
       Ct <- matrix(0, nrow = t, ncol = t)
@@ -613,7 +613,7 @@ shape2mat <- function(shape, style = c("B", "W", "C", "S"), t = 1, st.type = "co
           Is <- diag(1, nrow = s)
           w <- kronecker(It, w) + kronecker(Ct, Is)
       }
-      }
+  }
   return(w)
 }
 

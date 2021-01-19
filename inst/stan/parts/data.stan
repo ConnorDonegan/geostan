@@ -25,11 +25,11 @@
   int<lower=0> x_me_bounded_idx[dx_me_bounded ? dx_me_bounded : 1];
     // `observed' data and ME data (unbounded and bounded)
   matrix[n, dx_obs ? dx_obs : 0] x_obs;
-  vector[n] x_me_unbounded[dx_me_unbounded ? dx_me_unbounded : 0];
-  vector<lower=bounds[1],upper=bounds[2]>[n] x_me_bounded[dx_me_bounded ? dx_me_bounded : 0];
+  vector[n] x_me_unbounded[dx_me_unbounded];
+  vector<lower=bounds[1],upper=bounds[2]>[n] x_me_bounded[dx_me_bounded];
     // standard errors of ME data
-  vector<lower=0>[n] sigma_me_unbounded[dx_me_unbounded ? dx_me_unbounded : 0];
-  vector<lower=0>[n] sigma_me_bounded[dx_me_bounded ? dx_me_bounded : 0];
+  vector<lower=0>[n] sigma_me_unbounded[dx_me_unbounded];
+  vector<lower=0>[n] sigma_me_bounded[dx_me_bounded];
   // Spatial observational error model (ME)
   int<lower=1> dev; // lower=1 to allow for an empty EV matrix (is column vector of zeros when not needed)
   matrix[n,dev] EV; // eigenvectors for spatial filter

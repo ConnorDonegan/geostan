@@ -522,13 +522,13 @@ public:
             }
             current_statement_begin__ = 93;
             validate_non_negative_index("x_me_unbounded", "n", n);
-            validate_non_negative_index("x_me_unbounded", "(dx_me_unbounded ? dx_me_unbounded : 0 )", (dx_me_unbounded ? dx_me_unbounded : 0 ));
-            context__.validate_dims("data initialization", "x_me_unbounded", "vector_d", context__.to_vec((dx_me_unbounded ? dx_me_unbounded : 0 ),n));
-            x_me_unbounded = std::vector<Eigen::Matrix<double, Eigen::Dynamic, 1> >((dx_me_unbounded ? dx_me_unbounded : 0 ), Eigen::Matrix<double, Eigen::Dynamic, 1>(n));
+            validate_non_negative_index("x_me_unbounded", "dx_me_unbounded", dx_me_unbounded);
+            context__.validate_dims("data initialization", "x_me_unbounded", "vector_d", context__.to_vec(dx_me_unbounded,n));
+            x_me_unbounded = std::vector<Eigen::Matrix<double, Eigen::Dynamic, 1> >(dx_me_unbounded, Eigen::Matrix<double, Eigen::Dynamic, 1>(n));
             vals_r__ = context__.vals_r("x_me_unbounded");
             pos__ = 0;
             size_t x_me_unbounded_j_1_max__ = n;
-            size_t x_me_unbounded_k_0_max__ = (dx_me_unbounded ? dx_me_unbounded : 0 );
+            size_t x_me_unbounded_k_0_max__ = dx_me_unbounded;
             for (size_t j_1__ = 0; j_1__ < x_me_unbounded_j_1_max__; ++j_1__) {
                 for (size_t k_0__ = 0; k_0__ < x_me_unbounded_k_0_max__; ++k_0__) {
                     x_me_unbounded[k_0__](j_1__) = vals_r__[pos__++];
@@ -536,56 +536,56 @@ public:
             }
             current_statement_begin__ = 94;
             validate_non_negative_index("x_me_bounded", "n", n);
-            validate_non_negative_index("x_me_bounded", "(dx_me_bounded ? dx_me_bounded : 0 )", (dx_me_bounded ? dx_me_bounded : 0 ));
-            context__.validate_dims("data initialization", "x_me_bounded", "vector_d", context__.to_vec((dx_me_bounded ? dx_me_bounded : 0 ),n));
-            x_me_bounded = std::vector<Eigen::Matrix<double, Eigen::Dynamic, 1> >((dx_me_bounded ? dx_me_bounded : 0 ), Eigen::Matrix<double, Eigen::Dynamic, 1>(n));
+            validate_non_negative_index("x_me_bounded", "dx_me_bounded", dx_me_bounded);
+            context__.validate_dims("data initialization", "x_me_bounded", "vector_d", context__.to_vec(dx_me_bounded,n));
+            x_me_bounded = std::vector<Eigen::Matrix<double, Eigen::Dynamic, 1> >(dx_me_bounded, Eigen::Matrix<double, Eigen::Dynamic, 1>(n));
             vals_r__ = context__.vals_r("x_me_bounded");
             pos__ = 0;
             size_t x_me_bounded_j_1_max__ = n;
-            size_t x_me_bounded_k_0_max__ = (dx_me_bounded ? dx_me_bounded : 0 );
+            size_t x_me_bounded_k_0_max__ = dx_me_bounded;
             for (size_t j_1__ = 0; j_1__ < x_me_bounded_j_1_max__; ++j_1__) {
                 for (size_t k_0__ = 0; k_0__ < x_me_bounded_k_0_max__; ++k_0__) {
                     x_me_bounded[k_0__](j_1__) = vals_r__[pos__++];
                 }
             }
-            size_t x_me_bounded_i_0_max__ = (dx_me_bounded ? dx_me_bounded : 0 );
+            size_t x_me_bounded_i_0_max__ = dx_me_bounded;
             for (size_t i_0__ = 0; i_0__ < x_me_bounded_i_0_max__; ++i_0__) {
                 check_greater_or_equal(function__, "x_me_bounded[i_0__]", x_me_bounded[i_0__], get_base1(bounds, 1, "bounds", 1));
                 check_less_or_equal(function__, "x_me_bounded[i_0__]", x_me_bounded[i_0__], get_base1(bounds, 2, "bounds", 1));
             }
             current_statement_begin__ = 96;
             validate_non_negative_index("sigma_me_unbounded", "n", n);
-            validate_non_negative_index("sigma_me_unbounded", "(dx_me_unbounded ? dx_me_unbounded : 0 )", (dx_me_unbounded ? dx_me_unbounded : 0 ));
-            context__.validate_dims("data initialization", "sigma_me_unbounded", "vector_d", context__.to_vec((dx_me_unbounded ? dx_me_unbounded : 0 ),n));
-            sigma_me_unbounded = std::vector<Eigen::Matrix<double, Eigen::Dynamic, 1> >((dx_me_unbounded ? dx_me_unbounded : 0 ), Eigen::Matrix<double, Eigen::Dynamic, 1>(n));
+            validate_non_negative_index("sigma_me_unbounded", "dx_me_unbounded", dx_me_unbounded);
+            context__.validate_dims("data initialization", "sigma_me_unbounded", "vector_d", context__.to_vec(dx_me_unbounded,n));
+            sigma_me_unbounded = std::vector<Eigen::Matrix<double, Eigen::Dynamic, 1> >(dx_me_unbounded, Eigen::Matrix<double, Eigen::Dynamic, 1>(n));
             vals_r__ = context__.vals_r("sigma_me_unbounded");
             pos__ = 0;
             size_t sigma_me_unbounded_j_1_max__ = n;
-            size_t sigma_me_unbounded_k_0_max__ = (dx_me_unbounded ? dx_me_unbounded : 0 );
+            size_t sigma_me_unbounded_k_0_max__ = dx_me_unbounded;
             for (size_t j_1__ = 0; j_1__ < sigma_me_unbounded_j_1_max__; ++j_1__) {
                 for (size_t k_0__ = 0; k_0__ < sigma_me_unbounded_k_0_max__; ++k_0__) {
                     sigma_me_unbounded[k_0__](j_1__) = vals_r__[pos__++];
                 }
             }
-            size_t sigma_me_unbounded_i_0_max__ = (dx_me_unbounded ? dx_me_unbounded : 0 );
+            size_t sigma_me_unbounded_i_0_max__ = dx_me_unbounded;
             for (size_t i_0__ = 0; i_0__ < sigma_me_unbounded_i_0_max__; ++i_0__) {
                 check_greater_or_equal(function__, "sigma_me_unbounded[i_0__]", sigma_me_unbounded[i_0__], 0);
             }
             current_statement_begin__ = 97;
             validate_non_negative_index("sigma_me_bounded", "n", n);
-            validate_non_negative_index("sigma_me_bounded", "(dx_me_bounded ? dx_me_bounded : 0 )", (dx_me_bounded ? dx_me_bounded : 0 ));
-            context__.validate_dims("data initialization", "sigma_me_bounded", "vector_d", context__.to_vec((dx_me_bounded ? dx_me_bounded : 0 ),n));
-            sigma_me_bounded = std::vector<Eigen::Matrix<double, Eigen::Dynamic, 1> >((dx_me_bounded ? dx_me_bounded : 0 ), Eigen::Matrix<double, Eigen::Dynamic, 1>(n));
+            validate_non_negative_index("sigma_me_bounded", "dx_me_bounded", dx_me_bounded);
+            context__.validate_dims("data initialization", "sigma_me_bounded", "vector_d", context__.to_vec(dx_me_bounded,n));
+            sigma_me_bounded = std::vector<Eigen::Matrix<double, Eigen::Dynamic, 1> >(dx_me_bounded, Eigen::Matrix<double, Eigen::Dynamic, 1>(n));
             vals_r__ = context__.vals_r("sigma_me_bounded");
             pos__ = 0;
             size_t sigma_me_bounded_j_1_max__ = n;
-            size_t sigma_me_bounded_k_0_max__ = (dx_me_bounded ? dx_me_bounded : 0 );
+            size_t sigma_me_bounded_k_0_max__ = dx_me_bounded;
             for (size_t j_1__ = 0; j_1__ < sigma_me_bounded_j_1_max__; ++j_1__) {
                 for (size_t k_0__ = 0; k_0__ < sigma_me_bounded_k_0_max__; ++k_0__) {
                     sigma_me_bounded[k_0__](j_1__) = vals_r__[pos__++];
                 }
             }
-            size_t sigma_me_bounded_i_0_max__ = (dx_me_bounded ? dx_me_bounded : 0 );
+            size_t sigma_me_bounded_i_0_max__ = dx_me_bounded;
             for (size_t i_0__ = 0; i_0__ < sigma_me_bounded_i_0_max__; ++i_0__) {
                 check_greater_or_equal(function__, "sigma_me_bounded[i_0__]", sigma_me_bounded[i_0__], 0);
             }
