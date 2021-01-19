@@ -36,10 +36,12 @@
       } else {
       for (j in 1:dx_me_unbounded) {
       	  x_me_unbounded[j] ~ normal(x_true_unbounded[j], sigma_me_unbounded[j]);
-	  x_true_unbounded[j] ~ student_t(nu_x_true_unbounded[j], mu_x_true_unbounded[j], sigma_x_true_unbounded[j]);
+	  x_true_unbounded[j] ~ student_t(nu_x_true_unbounded[j], mu_x_true_unbounded[j], sigma_x_true_unbounded[j]);          
     }
   }
-   nu_x_true_unbounded ~ gamma(3, 0.2);   
+   nu_x_true_unbounded ~ gamma(3, 0.2);
+   mu_x_true_unbounded ~ normal(prior_mean_x_true_unbounded, 2 * prior_scale_x_true_unbounded);
+   sigma_x_true_unbounded ~ student_t(10, 0, 2 * prior_scale_x_true_unbounded);
 }
   if (dx_me_bounded) {
     if (spatial_me) {
@@ -68,8 +70,11 @@
       	  x_me_bounded[j] ~ normal(x_true_bounded[j], sigma_me_bounded[j]);
 	  x_true_bounded[j] ~ student_t(nu_x_true_bounded[j], mu_x_true_bounded[j], sigma_x_true_bounded[j]);
     }
+    
   }
-   nu_x_true_bounded ~ gamma(3, 0.2);   
+   nu_x_true_bounded ~ gamma(3, 0.2);
+   mu_x_true_bounded ~ normal(prior_mean_x_true_unbounded, 2 * prior_scale_x_true_bounded);
+   sigma_x_true_bounded ~ student_t(10, 0, 2 * prior_scale_x_true_bounded);
 }
 // partial pooling of observations across all groups/geographies (varying intercept)
   if (has_re) {

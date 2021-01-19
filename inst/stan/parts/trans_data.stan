@@ -6,6 +6,10 @@
   int<lower=0,upper=1> has_sigma;
   int<lower=0,upper=1> has_offset;
   int<lower=0> dx_all;
+  vector[dx_me_unbounded] prior_scale_x_true_unbounded;
+  vector[dx_me_unbounded] prior_mean_x_true_unbounded;
+  vector[dx_me_bounded] prior_scale_x_true_bounded;
+  vector[dx_me_bounded] prior_mean_x_true_bounded;
   vector[dw_nonzero] w;
   int v[dw_nonzero];
   int u[n + 1];
@@ -26,6 +30,16 @@
   if ((!has_me) && dwx) {
      WX = W * x_obs[,wx_idx];
   }
-
-
+  if (dx_me_unbounded) {
+    for (j in 1:dx_me_unbounded) {
+       prior_scale_x_true_unbounded[j] = sd(x_me_unbounded[j]);
+       prior_mean_x_true_unbounded[j] = mean(x_me_unbounded[j]);
+    }
+  }
+  if (dx_me_bounded) {
+    for (j in 1:dx_me_bounded) {
+       prior_scale_x_true_bounded[j] = sd(x_me_bounded[j]);
+       prior_mean_x_true_bounded[j] = mean(x_me_bounded[j]);
+    }
+  }
   
