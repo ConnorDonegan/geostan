@@ -149,7 +149,7 @@
     </tr>
     <tr>
       <th>w</th>
-      <td><p>An n x n spatial connectivity matrix. See <a href='shape2mat.html'>shape2mat</a>. This will automatically be row-standardized!</p></td>
+      <td><p>An n x n spatial connectivity matrix. See <a href='shape2mat.html'>shape2mat</a>. If <code>w</code> is not row standardized (<code><a href='https://rdrr.io/r/base/all.html'>all(rowSums(w) == 1)</a></code>), it will automatically be row-standardized.</p></td>
     </tr>
     <tr>
       <th>type</th>
@@ -165,8 +165,8 @@
     <p>If <code>type = FALSE</code> a numeric vector of lisa values for exploratory analysis of local spatial autocorrelation. If <code>type = TRUE</code>, a <code>data.frame</code> with columns <code>zi</code> (the lisa value) and <code>type</code>.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The values will be standardized with <code><a href='https://rdrr.io/r/base/scale.html'>scale(x)</a></code> first and <code>w</code> will be row-standardized. Then the LISA is the product of a value with its mean surrounding value. These are for exploratory analysis and model diagnostics. The function uses Equation 7 from Anselin (1995).</p>
-<p>An above-average value (i.e. positive z-value) with positive mean spatial lag is of type "High-High"; a low value surrounded by high values is of type "Low-High", and so on.</p>
+    <p>The values will be standardized with <code>z = scale(x)</code> first and <code>w</code> will be row-standardized if needed. The LISA values are the product of each <code>z</code> value with their respective mean surrounding value <code>lagz = w %*% z</code>; <code>lisa = z * lagz</code>. These are for exploratory analysis and model diagnostics. The function uses Equation 7 from Anselin (1995).</p>
+<p>An above-average value (i.e. positive z-value) with positive mean spatial lag indicates local positive spatial autocorrelation and is designated type "High-High"; a low value surrounded by high values indicates negative spatial autocorrelation and is designated type "Low-High", and so on. See <code><span class="pkg">geostan</span></code> vignettes for more details.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><a href='moran_plot.html'>moran_plot</a>, <a href='mc.html'>mc</a>, <a href='aple.html'>aple</a></p></div>

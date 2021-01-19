@@ -330,12 +330,9 @@ The value of <code>p0</code> is used to control the prior degree of sparsity in 
     <p>Connor Donegan, <a href='mailto:Connor.Donegan@UTDallas.edu'>Connor.Donegan@UTDallas.edu</a></p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># \dontrun{</span>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/rstan'>rstan</a></span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>Loading required package: StanHeaders</span></div><div class='output co'>#&gt; <span class='message'>rstan (Version 2.21.2, GitRev: 2e1f913d3ca3)</span></div><div class='output co'>#&gt; <span class='message'>For execution on a local, multicore CPU with excess RAM we recommend calling</span>
-#&gt; <span class='message'>options(mc.cores = parallel::detectCores()).</span>
-#&gt; <span class='message'>To avoid recompilation of unchanged Stan programs, we recommend calling</span>
-#&gt; <span class='message'>rstan_options(auto_write = TRUE)</span></div><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/bayesplot/'>bayesplot</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/bayesplot/'>bayesplot</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span><span class='op'>(</span>mc.cores <span class='op'>=</span> <span class='fu'>parallel</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> 
@@ -348,31 +345,22 @@ The value of <code>p0</code> is used to control the prior degree of sparsity in 
                 scalex <span class='op'>=</span> <span class='cn'>TRUE</span>,
                 C <span class='op'>=</span> <span class='va'>C</span>,
                 family <span class='op'>=</span> <span class='fu'><a href='student_t.html'>student_t</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: 10.7142419611244</span></div><div class='output co'>#&gt; <span class='message'>Scale: 12.488757925385</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for beta</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt;                    Location    Scale
-#&gt; w.historic_gop            0 12.48876
-#&gt; w.college_educated        0 12.48876
-#&gt; historic_gop              0 12.48876
-#&gt; college_educated          0 12.48876</div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for sigma</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt; <span class='message'>Degrees of freedom: 10</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 12.488757925385</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for nu</span></div><div class='output co'>#&gt; <span class='message'>Gamma</span></div><div class='output co'>#&gt; <span class='message'>alpha: 3</span></div><div class='output co'>#&gt; <span class='message'>beta: 0.2</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for rhs</span></div><div class='output co'>#&gt; <span class='message'>Global shrinkage prior (scale_global): 0.243657961549269</span></div><div class='output co'>#&gt; <span class='message'>Slab degrees of freedom: 15</span></div><div class='output co'>#&gt; <span class='message'>Slab scale: 29.1218447680832</span></div><div class='input'>
+
 <span class='co'># use rstan for sampler diagnostics</span>
 <span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>$</span><span class='va'>stanfit</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='img'><img src='stan_esf-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># see spatial autocorrelation diagnostics</span>
+<span class='co'># see spatial autocorrelation diagnostics</span>
 <span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>ohio</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='stan_esf-2.png' alt='' width='700' height='433' /></div><div class='input'>
+
 <span class='co'>## summary of estimates</span>
 <span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>fit</span>, pars <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"beta"</span>, <span class='st'>"intercept"</span>, <span class='st'>"sigma"</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='img'><img src='stan_esf-3.png' alt='' width='700' height='433' /></div><div class='input'>
+
 <span class='co'>## map the spatial filter</span>
 <span class='va'>ohio</span><span class='op'>$</span><span class='va'>esf</span> <span class='op'>&lt;-</span> <span class='fu'><a href='spatial.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
 <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span> <span class='op'>+</span>
       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>esf</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
       <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_void</a></span><span class='op'>(</span><span class='op'>)</span>
-</div><div class='img'><img src='stan_esf-4.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># } </span>
+<span class='op'>}</span> 
 
 </div></pre>
   </div>

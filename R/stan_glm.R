@@ -67,14 +67,11 @@
 #' library(sf)
 #' data(sentencing)
 #'
-#' # optionally add W to calculate residual SA internally
-#' W <- shape2mat(sentencing, "W")
 #' sentencing$log_e <- log(sentencing$expected_sents)
 #' fit.pois <- stan_glm(sents ~ offset(log_e),
 #'                      re = ~ name,
 #'                      family = poisson(),
 #'                      data = sentencing,
-#'                      C = W,
 #'                     silent = TRUE
 #'  )
 #'

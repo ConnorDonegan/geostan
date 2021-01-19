@@ -112,17 +112,17 @@
 <span class="va">folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempdir</a></span><span class="op">(</span><span class="op">)</span>
 <span class="va">url</span> <span class="op">&lt;-</span> <span class="st">"https://geodacenter.github.io/data-and-lab//data/nepal.zip"</span>
 <span class="fu"><a href="../reference/get_shp.html">get_shp</a></span><span class="op">(</span><span class="va">url</span>, <span class="va">folder</span><span class="op">)</span>
-<span class="co">#&gt; [1] "/tmp/RtmpnHtSTp/callr-env-3386577362bf4"</span>
-<span class="co">#&gt; [2] "/tmp/RtmpnHtSTp/file338651ec33071.so"   </span>
-<span class="co">#&gt; [3] "/tmp/RtmpnHtSTp/file338654a64ff28"      </span>
-<span class="co">#&gt; [4] "/tmp/RtmpnHtSTp/file3386574007868.zip"  </span>
-<span class="co">#&gt; [5] "/tmp/RtmpnHtSTp/file33865772458e0"      </span>
-<span class="co">#&gt; [6] "/tmp/RtmpnHtSTp/nepal.dbf"              </span>
-<span class="co">#&gt; [7] "/tmp/RtmpnHtSTp/nepal.prj"              </span>
-<span class="co">#&gt; [8] "/tmp/RtmpnHtSTp/nepal.shp"              </span>
-<span class="co">#&gt; [9] "/tmp/RtmpnHtSTp/nepal.shx"</span>
+<span class="co">#&gt; [1] "/tmp/RtmpS9pLZl/callr-env-34519764ee347"</span>
+<span class="co">#&gt; [2] "/tmp/RtmpS9pLZl/file3451910eb53f3"      </span>
+<span class="co">#&gt; [3] "/tmp/RtmpS9pLZl/file3451935edc932.so"   </span>
+<span class="co">#&gt; [4] "/tmp/RtmpS9pLZl/file3451940e48641.zip"  </span>
+<span class="co">#&gt; [5] "/tmp/RtmpS9pLZl/file3451941aeab49"      </span>
+<span class="co">#&gt; [6] "/tmp/RtmpS9pLZl/nepal.dbf"              </span>
+<span class="co">#&gt; [7] "/tmp/RtmpS9pLZl/nepal.prj"              </span>
+<span class="co">#&gt; [8] "/tmp/RtmpS9pLZl/nepal.shp"              </span>
+<span class="co">#&gt; [9] "/tmp/RtmpS9pLZl/nepal.shx"</span>
 <span class="va">nepal</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html">st_read</a></span><span class="op">(</span><span class="va">folder</span>, <span class="st">"nepal"</span><span class="op">)</span>
-<span class="co">#&gt; Reading layer `nepal' from data source `/tmp/RtmpnHtSTp' using driver `ESRI Shapefile'</span>
+<span class="co">#&gt; Reading layer `nepal' from data source `/tmp/RtmpS9pLZl' using driver `ESRI Shapefile'</span>
 <span class="co">#&gt; Simple feature collection with 75 features and 61 fields</span>
 <span class="co">#&gt; geometry type:  POLYGON</span>
 <span class="co">#&gt; dimension:      XY</span>
@@ -229,36 +229,40 @@
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># one at a time</span>
 <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">sf</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span>
-<span class="co">#&gt; [1] -0.09141728</span>
+<span class="co">#&gt; [1] -0.06755919</span>
 
 <span class="co"># summarize them all: mean of each column</span>
 <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span><span class="op">(</span><span class="va">sf</span>, <span class="fl">2</span>, <span class="va">mean</span><span class="op">)</span>
-<span class="co">#&gt;       esf[1]       esf[2]       esf[3]       esf[4]       esf[5]       esf[6] </span>
-<span class="co">#&gt; -0.091417280  0.045987936  0.009634458 -0.069990419  0.020326987 -0.014457391 </span>
-<span class="co">#&gt;       esf[7]       esf[8]       esf[9]      esf[10]      esf[11]      esf[12] </span>
-<span class="co">#&gt; -0.012038207 -0.012021771  0.017248107 -0.033614613 -0.035540044 -0.082458358 </span>
-<span class="co">#&gt;      esf[13]      esf[14]      esf[15]      esf[16]      esf[17]      esf[18] </span>
-<span class="co">#&gt;  0.039900171 -0.090664629  0.072906632 -0.081124333  0.071389214  0.046978562 </span>
-<span class="co">#&gt;      esf[19]      esf[20]      esf[21]      esf[22]      esf[23]      esf[24] </span>
-<span class="co">#&gt; -0.018090623 -0.005602992 -0.038237170  0.036316774 -0.022672810 -0.051663097 </span>
-<span class="co">#&gt;      esf[25]      esf[26]      esf[27]      esf[28]      esf[29]      esf[30] </span>
-<span class="co">#&gt; -0.047206505  0.006649721 -0.066043321 -0.028717701 -0.042484767  0.024422598 </span>
-<span class="co">#&gt;      esf[31]      esf[32]      esf[33]      esf[34]      esf[35]      esf[36] </span>
-<span class="co">#&gt;  0.026353871 -0.014265300 -0.033801209 -0.034620934 -0.036081497 -0.031574381 </span>
-<span class="co">#&gt;      esf[37]      esf[38]      esf[39]      esf[40]      esf[41]      esf[42] </span>
-<span class="co">#&gt; -0.011382080 -0.093824061 -0.025626551  0.030580363 -0.069626349  0.055604246 </span>
-<span class="co">#&gt;      esf[43]      esf[44]      esf[45]      esf[46]      esf[47]      esf[48] </span>
-<span class="co">#&gt; -0.078747896  0.059065001  0.094393849  0.104205642  0.017901975 -0.076414155 </span>
-<span class="co">#&gt;      esf[49]      esf[50]      esf[51]      esf[52]      esf[53]      esf[54] </span>
-<span class="co">#&gt;  0.042293455  0.004076015  0.050610685  0.068048301  0.022505463  0.054655921 </span>
-<span class="co">#&gt;      esf[55]      esf[56]      esf[57]      esf[58]      esf[59]      esf[60] </span>
-<span class="co">#&gt;  0.079259460  0.056407203  0.089342719  0.083009315  0.032373518 -0.061825405 </span>
-<span class="co">#&gt;      esf[61]      esf[62]      esf[63]      esf[64]      esf[65]      esf[66] </span>
-<span class="co">#&gt; -0.022673742  0.004092241  0.048739436  0.040637011  0.024120369  0.061948538 </span>
-<span class="co">#&gt;      esf[67]      esf[68]      esf[69]      esf[70]      esf[71]      esf[72] </span>
-<span class="co">#&gt;  0.074885515 -0.052602878  0.005615409  0.033497163 -0.017419615 -0.105336148 </span>
-<span class="co">#&gt;      esf[73]      esf[74]      esf[75] </span>
-<span class="co">#&gt; -0.013565609 -0.041473471  0.008923464</span></code></pre></div>
+<span class="co">#&gt;        esf[1]        esf[2]        esf[3]        esf[4]        esf[5] </span>
+<span class="co">#&gt; -0.0675591939 -0.0500327687 -0.0887778870 -0.0582332452 -0.0107487602 </span>
+<span class="co">#&gt;        esf[6]        esf[7]        esf[8]        esf[9]       esf[10] </span>
+<span class="co">#&gt;  0.0514778950  0.0109698927  0.0165879598  0.0030725752  0.0043851221 </span>
+<span class="co">#&gt;       esf[11]       esf[12]       esf[13]       esf[14]       esf[15] </span>
+<span class="co">#&gt;  0.0070471414  0.0117850618  0.0017957823  0.0218081310 -0.0005284999 </span>
+<span class="co">#&gt;       esf[16]       esf[17]       esf[18]       esf[19]       esf[20] </span>
+<span class="co">#&gt;  0.0285999653  0.0077237769  0.0311334813  0.0469659003  0.0726975101 </span>
+<span class="co">#&gt;       esf[21]       esf[22]       esf[23]       esf[24]       esf[25] </span>
+<span class="co">#&gt;  0.0580018595  0.0358890422  0.0808478311  0.0127451703  0.0170769149 </span>
+<span class="co">#&gt;       esf[26]       esf[27]       esf[28]       esf[29]       esf[30] </span>
+<span class="co">#&gt; -0.0050182596  0.0269742234  0.0043956041  0.0239831678 -0.0093621126 </span>
+<span class="co">#&gt;       esf[31]       esf[32]       esf[33]       esf[34]       esf[35] </span>
+<span class="co">#&gt; -0.0117875542  0.0110581287  0.0209299396  0.0054926959  0.0168071309 </span>
+<span class="co">#&gt;       esf[36]       esf[37]       esf[38]       esf[39]       esf[40] </span>
+<span class="co">#&gt;  0.0054883943  0.0030674307  0.0260027816  0.0115008648 -0.0290400245 </span>
+<span class="co">#&gt;       esf[41]       esf[42]       esf[43]       esf[44]       esf[45] </span>
+<span class="co">#&gt; -0.0793481028  0.0004878103 -0.0628995708  0.0282262180  0.0401159571 </span>
+<span class="co">#&gt;       esf[46]       esf[47]       esf[48]       esf[49]       esf[50] </span>
+<span class="co">#&gt;  0.0886359093 -0.0286561054 -0.0886069641  0.0053836462 -0.0377352638 </span>
+<span class="co">#&gt;       esf[51]       esf[52]       esf[53]       esf[54]       esf[55] </span>
+<span class="co">#&gt; -0.0028932673 -0.0508843512 -0.0552876835 -0.0672106382  0.0732246851 </span>
+<span class="co">#&gt;       esf[56]       esf[57]       esf[58]       esf[59]       esf[60] </span>
+<span class="co">#&gt; -0.0033718759  0.0489803794  0.0560868295  0.0040947324 -0.0191288805 </span>
+<span class="co">#&gt;       esf[61]       esf[62]       esf[63]       esf[64]       esf[65] </span>
+<span class="co">#&gt; -0.0197043290 -0.0795869308 -0.0342842518  0.0686338627 -0.0103924186 </span>
+<span class="co">#&gt;       esf[66]       esf[67]       esf[68]       esf[69]       esf[70] </span>
+<span class="co">#&gt;  0.0429116694 -0.0010709688 -0.0270338655  0.0417658046 -0.0148559856 </span>
+<span class="co">#&gt;       esf[71]       esf[72]       esf[73]       esf[74]       esf[75] </span>
+<span class="co">#&gt; -0.0358187810 -0.0563676354  0.0043353657 -0.0374904353 -0.0354776335</span></code></pre></div>
 <p>By contrast, each row is a draw from the <em>joint</em> probability distribution of the spatial filter. Each of the coefficients has the same marginal probability as <code>beta_ev[1]</code>. But samples from the joint distribution show that the horseshoe prior assigns high probability to the presence of positive spatial autocorrelation (without favoring any particular pattern). Each of the samples exhibit a different pattern, arising from various linear combinations of eigenvectors:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">n.samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">sf</span><span class="op">)</span>

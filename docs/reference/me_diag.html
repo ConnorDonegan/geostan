@@ -194,7 +194,7 @@
     <div class='dont-index'><p><a href='sp_diag.html'>sp_diag</a>, <a href='moran_plot.html'>moran_plot</a>, <a href='mc.html'>mc</a>, <a href='aple.html'>aple</a></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># \dontrun{</span>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>
 <span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>
@@ -208,19 +208,9 @@
                 prior_only <span class='op'>=</span> <span class='cn'>TRUE</span>,
                 refresh <span class='op'>=</span> <span class='fl'>0</span>
                 <span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>*Setting horseshoe prior for spatial data model, variable: unemployment.acs (Moran coefficient: 0.332)</span>
-#&gt; <span class='message'> global shrinkage scale:0.274115206742928</span>
-#&gt; <span class='message'> slab scale:8.79399168595964</span>
-#&gt; <span class='message'> slab degrees of freedom:15</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 12.488757925385</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for beta</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt;                  Location    Scale
-#&gt; unemployment.acs        0 6.623123</div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for sigma</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt; <span class='message'>Degrees of freedom: 10</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 12.488757925385</span></div><div class='input'><span class='fu'>me_diag</span><span class='op'>(</span><span class='va'>fit</span>, <span class='st'>"unemployment.acs"</span>, <span class='va'>ohio</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='me_diag-1.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'>me_diag</span><span class='op'>(</span><span class='va'>fit</span>, <span class='st'>"unemployment.acs"</span>, <span class='va'>ohio</span>, index <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>Identifying the top 3 observations as ordered by their Delta values (Delta = posterior mean of x - raw x value):</span></div><div class='output co'>#&gt;                        x.raw      x.mu    x.lwr    x.upr      Delta
-#&gt; x_unemployment.acs[53]  11.2 10.054763 8.297518 11.95572 -1.1452369
-#&gt; x_unemployment.acs[66]  11.1  9.983886 7.910319 12.18591 -1.1161142
-#&gt; x_unemployment.acs[40]  11.2 10.268700 8.360609 12.27628 -0.9313002</div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='me_diag-2.png' alt='' width='700' height='433' /></div><div class='input'><span class='co'># }</span>
+<span class='fu'>me_diag</span><span class='op'>(</span><span class='va'>fit</span>, <span class='st'>"unemployment.acs"</span>, <span class='va'>ohio</span><span class='op'>)</span>
+<span class='fu'>me_diag</span><span class='op'>(</span><span class='va'>fit</span>, <span class='st'>"unemployment.acs"</span>, <span class='va'>ohio</span>, index <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span>
+<span class='op'>}</span>
 
 </div></pre>
   </div>

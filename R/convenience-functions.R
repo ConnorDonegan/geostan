@@ -249,12 +249,14 @@ moran_plot <- function(y, w, xlab = "y (centered)", ylab = "Spatial Lag", pch = 
 #' @description A local indicator of spatial association (lisa).
 #'
 #' @param x Numeric vector
-#' @param w An n x n spatial connectivity matrix. See \link[geostan]{shape2mat}. This will automatically be row-standardized!
+#' @param w An n x n spatial connectivity matrix. See \link[geostan]{shape2mat}. If \code{w} is not row standardized (\code{all(rowSums(w) == 1)}), it will automatically be row-standardized.
 #' @param type Return the type of association also (High-High, Low-Low, High-Low, and Low-High)? Defaults to \code{FALSE}.
 #'
-#' @details The values will be standardized with \code{scale(x)} first and \code{w} will be row-standardized. Then the LISA is the product of a value with its mean surrounding value. These are for exploratory analysis and model diagnostics. The function uses Equation 7 from Anselin (1995).
+#' @details
 #'
-#' An above-average value (i.e. positive z-value) with positive mean spatial lag is of type "High-High"; a low value surrounded by high values is of type "Low-High", and so on.
+#' The values will be standardized with \code{z = scale(x)} first and \code{w} will be row-standardized if needed. The LISA values are the product of each \code{z} value with their respective mean surrounding value \code{lagz = w \%*\% z}; \code{lisa = z * lagz}. These are for exploratory analysis and model diagnostics. The function uses Equation 7 from Anselin (1995).
+#'
+#' An above-average value (i.e. positive z-value) with positive mean spatial lag indicates local positive spatial autocorrelation and is designated type "High-High"; a low value surrounded by high values indicates negative spatial autocorrelation and is designated type "Low-High", and so on.
 #' 
 #' @return If \code{type = FALSE} a numeric vector of lisa values for exploratory analysis of local spatial autocorrelation. If \code{type = TRUE}, a \code{data.frame} with columns \code{zi} (the lisa value) and \code{type}.
 #'
@@ -263,6 +265,21 @@ moran_plot <- function(y, w, xlab = "y (centered)", ylab = "Spatial Lag", pch = 
 #' @source
 #'
 #' Anselin, Luc. "Local indicators of spatial association—LISA." Geographical analysis 27, no. 2 (1995): 93-115.
+#'
+#' @examples
+#' 
+#' library(ggplot2)
+#' library(sf)
+#' 
+#' data(ohio)
+#' w <- shape2mat(ohio, "W")
+#' x <- ohio$unemployment
+#' li = lisa(x, w)
+#' head(li)
+#'
+#' ggplot(ohio, aes(fill = li)) +
+#'   geom_sf() +
+#'   scale_fill_gradient2()
 #' 
 lisa <- function(x, w, type = FALSE) {
     if (any(rowSums(w) != 1)) {
