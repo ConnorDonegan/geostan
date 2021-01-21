@@ -179,7 +179,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>re</th>
-      <td><p>If the model includes a varying intercept term <code>alpha_re</code> specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re ~ N(0, alpha_tau)</code>, <code>alpha_tau ~ Student_t(d.f., location, scale)</code>.</p></td>
+      <td><p>If the model includes a varying intercept term <code>alpha_re</code> specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re ~ N(0, alpha_tau)</code>, <code>alpha_tau ~ Student_t(d.f., location, scale)</code>. With the CAR model, any <code>alpha_re</code> term should be at a different level or scale than the observations (i.e., a different scale than the CAR model). In other words, do not try to replicate the BYM model using the CAR model because that would be redundant.</p></td>
     </tr>
     <tr>
       <th>data</th>

@@ -47,7 +47,7 @@
 
 
 <meta property="og:title" content="Prepare data for ICAR models — prep_icar_data" />
-<meta property="og:description" content="Given a connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan." />
+<meta property="og:description" content="Given a symmetric n x n connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -135,7 +135,7 @@
     </div>
 
     <div class="ref-description">
-    <p>Given a connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan.</p>
+    <p>Given a symmetric n x n connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan.</p>
     </div>
 
     <pre class="usage"><span class='fu'>prep_icar_data</span><span class='op'>(</span><span class='va'>C</span>, scale_factor <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
@@ -155,19 +155,23 @@
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>list of data to add to Stan data list:</p><dl>
+    <p>list of data to add to Stan data list:</p>
+<dl>
 <dt>k</dt><dd><p>number of groups</p></dd>
 <dt>group_size</dt><dd><p>number of nodes per group</p></dd>
 <dt>n_edges</dt><dd><p>number of connections between nodes (unique pairs only)</p></dd>
 <dt>node1</dt><dd><p>first node</p></dd>
 <dt>node2</dt><dd><p>second node. (node1[i] and node2[i] form a connected pair)</p></dd>
-<dt>group_idx</dt><dd><p>indices for each observation belonging each group, ordered by group.</p></dd>
+<dt>weight</dt><dd><p>The element <code>C[node1, node2]</code>.</p></dd>
+<dt>group_idx</dt><dd><p>indices for each observation belonging each group, ordered by group</p></dd>
+<dt>scale_factor</dt><dd><p>k-length vector of ones. Placeholder for user-specified information.</p></dd>
+<dt>comp_id</dt><dd><p>n-length vector indicating the group membership of each observation.</p></dd>
 
 </dl>
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>This is used internally to prepare data for <a href='stan_icar.html'>stan_icar</a> models. It can also be helpful for fitting custom ICAR models outside of <code>geostan</code>.</p>
+    <p>This is used internally to prepare data for <a href='stan_icar.html'>stan_icar</a> models. It can also be helpful for fitting custom ICAR models outside of <code>geostan</code>. Makes use of <a href='https://rdrr.io/pkg/spdep/man/graphneigh.html'>graph2nb</a> and <a href='https://rdrr.io/pkg/spdep/man/compon.html'>n.comp.nb</a>.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><a href='stan_icar.html'>stan_icar</a>, <a href='edges.html'>edges</a>, <a href='shape2mat.html'>shape2mat</a></p></div>

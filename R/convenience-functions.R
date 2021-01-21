@@ -811,7 +811,7 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, 
 
 #' Prepare data for ICAR models
 #'
-#' @description Given a connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan.
+#' @description Given a symmetric n x n connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan.
 #' 
 #' @param C connectivity matrix
 #' @param scale_factor n-length vector with the scale factor for each observation's respective group. If not provided by the user it will be fixed to \code{rep(1, n)}
@@ -826,6 +826,7 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, 
 #' \item{n_edges}{number of connections between nodes (unique pairs only)}
 #' \item{node1}{first node}
 #' \item{node2}{second node. (node1[i] and node2[i] form a connected pair)}
+#' \item{weight}{The element \code{C[node1, node2]}.}
 #' \item{group_idx}{indices for each observation belonging each group, ordered by group}
 #' \item{scale_factor}{k-length vector of ones. Placeholder for user-specified information.}
 #' \item{comp_id}{n-length vector indicating the group membership of each observation.}
