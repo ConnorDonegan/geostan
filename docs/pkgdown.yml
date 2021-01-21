@@ -2,8 +2,8 @@ pandoc: '2.5'
 pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
+  building-models: building-models.html
   measuring-sa: measuring-sa.html
-  modeling-spatial-data-with-geostan: modeling-spatial-data-with-geostan.html
   setting-priors: setting-priors.html
-last_built: 2021-01-18T22:36Z
+last_built: 2021-01-21T00:43Z
 

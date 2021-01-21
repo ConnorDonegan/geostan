@@ -9,14 +9,16 @@ Chun, Yongwan, and Daniel A. Griffith. Spatial statistics and geostatistics: the
 Cliff, Andrew David, and J. Keith Ord. Spatial processes: models & applications. Taylor & Francis, 1981.
 }
 \usage{
-mc(x, w, digits = 3)
+mc(x, w, digits = 3, warn = TRUE)
 }
 \arguments{
 \item{x}{Numeric vector of input values, length n.}
 
 \item{w}{An n x n spatial connectivity matrix. See \link[geostan]{shape2mat}.}
 
-\item{digits}{Number of digits to round results to; defaults to \code{digits = 3}.}
+\item{digits}{Number of digits to round results to.}
+
+\item{warn}{If FALSE, no warning will be printed to inform you when observations with zero neighbors have been dropped.}
 }
 \value{
 The Moran coefficient, a numeric value.

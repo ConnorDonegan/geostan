@@ -206,7 +206,7 @@ stan_car <- function(formula, slx, re, data, ME = NULL, C, EV,
     wx_idx = wx_idx,
   ## car data -------------
     C_n = n_edges,
-    C_sparse = nbs,
+    C_sparse = nbs[,c("node1", "node2")],
     D_sparse = rowSums(C),
     C = C,
     phi_tau_prior = priors$phi_scale_prior,

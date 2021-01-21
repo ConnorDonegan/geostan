@@ -103,10 +103,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
+      <a href="../articles/building-models.html">building-models</a>
     </li>
     <li>
-      <a href="../articles/modeling-spatial-data-with-geostan.html">Modeling spatial data</a>
+      <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
     </li>
     <li>
       <a href="../articles/setting-priors.html">Setting prior distributions</a>
@@ -138,7 +138,7 @@
     <p>The Moran coefficient, a measure of spatial autocorrelation (also known as Global Moran's I)</p>
     </div>
 
-    <pre class="usage"><span class='fu'>mc</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span>, digits <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>mc</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span>, digits <span class='op'>=</span> <span class='fl'>3</span>, warn <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -153,7 +153,11 @@
     </tr>
     <tr>
       <th>digits</th>
-      <td><p>Number of digits to round results to; defaults to <code>digits = 3</code>.</p></td>
+      <td><p>Number of digits to round results to.</p></td>
+    </tr>
+    <tr>
+      <th>warn</th>
+      <td><p>If FALSE, no warning will be printed to inform you when observations with zero neighbors have been dropped.</p></td>
     </tr>
     </table>
 

@@ -10,13 +10,13 @@ edges(w)
 \item{w}{A connectivity matrix where connection between two nodes is indicated by non-zero entries.}
 }
 \value{
-Returns a \code{data.frame} with two columns representing connected pairs of nodes; only unique pairs of nodes are included.
+Returns a \code{data.frame} with three columns. The first two columns (\code{node1} and \code{node2}) contain the indices of connected pairs of nodes; only unique pairs of nodes are included. The third column (\code{weight}) contains the element \code{w[node1, node2]}.
 }
 \description{
 Creates a list of connected nodes following the graph representation of a spatial connectivity matrix.
 }
 \details{
-This is used internally for  \link[geostan]{stan_icar} and it is also helpful for creating the scaling factor for BYM2 models fit with \code{stan_icar}.
+This is used internally for \link[geostan]{stan_icar} and it is also helpful for creating the scaling factor for BYM2 models fit with \code{stan_icar}.
 }
 \examples{
 
@@ -27,5 +27,5 @@ head(nbs)
 
 }
 \seealso{
-\link[geostan]{shape2mat}
+\link[geostan]{shape2mat}, \link[geostan]{prep_icar_data}, \link[geostan]{stan_icar}
 }

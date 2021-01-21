@@ -61,10 +61,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
+      <a href="../articles/building-models.html">building-models</a>
     </li>
     <li>
-      <a href="../articles/modeling-spatial-data-with-geostan.html">Modeling spatial data</a>
+      <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
     </li>
     <li>
       <a href="../articles/setting-priors.html">Setting prior distributions</a>
@@ -177,7 +177,7 @@
 <code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>w <span class="op">=</span> <span class="va">W</span>, rho <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span>
 
 <span class="fu"><a href="../reference/aple.html">aple</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">W</span><span class="op">)</span>
-<span class="co">#&gt; [1] 0.681</span>
+<span class="co">#&gt; [1] 0.592</span>
 
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">ohio</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
@@ -189,7 +189,7 @@
 <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>
 <span class="co">#&gt; [1]  5 88</span>
 <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span><span class="op">(</span><span class="va">X</span>, <span class="fl">1</span>, <span class="va">aple</span>, w <span class="op">=</span> <span class="va">W</span><span class="op">)</span>
-<span class="co">#&gt; [1] 0.461 0.778 0.695 0.613 0.723</span></code></pre></div>
+<span class="co">#&gt; [1] 0.600 0.710 0.576 0.756 0.543</span></code></pre></div>
 </div>
 <div id="spatial-diagnostics-with-sp_diag" class="section level2">
 <h2 class="hasAnchor">

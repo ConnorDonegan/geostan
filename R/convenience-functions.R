@@ -129,7 +129,9 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' @export
 #' @param x Numeric vector of input values, length n.
 #' @param w An n x n spatial connectivity matrix. See \link[geostan]{shape2mat}. 
-#' @param digits Number of digits to round results to; defaults to \code{digits = 3}.
+#' @param digits Number of digits to round results to.
+#' @param warn If FALSE, no warning will be printed to inform you when observations with zero neighbors have been dropped. 
+#' 
 #' @return The Moran coefficient, a numeric value.
 #'
 #' @details If any observations with no neighbors are found (i.e. \code{any(rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
@@ -151,11 +153,11 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' Cliff, Andrew David, and J. Keith Ord. Spatial processes: models & applications. Taylor & Francis, 1981.
 #'
 #' 
-mc <- function(x, w, digits = 3) {
+mc <- function(x, w, digits = 3, warn = TRUE) {
     if(missing(x) | missing(w)) stop("Must provide data x (length n vector) and n x n spatial weights matrix (w).")    
     if (any(rowSums(w) == 0)) {
         zero.idx <- which(rowSums(w) == 0)
-        message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data.")
+        if (warn) message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data.")
         x <- x[-zero.idx]
         w <- w[-zero.idx, -zero.idx]
     }
@@ -729,11 +731,14 @@ exp_pars <- function(formula, data, C) {
 #' @description Creates a list of connected nodes following the graph representation of a spatial connectivity matrix.
 #' @export
 #' @param w A connectivity matrix where connection between two nodes is indicated by non-zero entries.
-#' @return Returns a \code{data.frame} with two columns representing connected pairs of nodes; only unique pairs of nodes are included.
+#' 
+#' @return
+#' 
+#' Returns a \code{data.frame} with three columns. The first two columns (\code{node1} and \code{node2}) contain the indices of connected pairs of nodes; only unique pairs of nodes are included. The third column (\code{weight}) contains the element \code{w[node1, node2]}.
 #'
-#' @details This is used internally for  \link[geostan]{stan_icar} and it is also helpful for creating the scaling factor for BYM2 models fit with \code{stan_icar}.
+#' @details This is used internally for \link[geostan]{stan_icar} and it is also helpful for creating the scaling factor for BYM2 models fit with \code{stan_icar}.
 #'
-#' @seealso \link[geostan]{shape2mat}
+#' @seealso \link[geostan]{shape2mat}, \link[geostan]{prep_icar_data}, \link[geostan]{stan_icar}
 #' @examples
 #' 
 #' data(sentencing)
@@ -747,7 +752,7 @@ edges <- function(w) {
   })
   all.edges <- lapply(1:length(lw), function(i) {
     nbs <- lw[[i]]
-    if(length(nbs)) data.frame(node1 = i, node2 = nbs)
+    if(length(nbs)) data.frame(node1 = i, node2 = nbs, weight = w[i, nbs])
   })
   all.edges <- do.call("rbind", all.edges)
   edges <- all.edges[which(all.edges$node1 < all.edges$node2),]
@@ -837,9 +842,8 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, 
 #' @importFrom spdep n.comp.nb graph2nb
 prep_icar_data <- function(C, scale_factor = NULL) {
     n <- nrow(C)
-    if (inherits(scale_factor, "NULL")) scale_factor <- rep(1, n)
     E <- edges(C)
-    G <- list(np = nrow(C), # confrom to spdep graph structure
+    G <- list(np = nrow(C), # conform to spdep graph structure
               from = E$node1,
               to = E$node2,
               nedges = nrow(E)
@@ -847,6 +851,7 @@ prep_icar_data <- function(C, scale_factor = NULL) {
     class(G) <- "Graph"
     nb2 <- spdep::n.comp.nb(spdep::graph2nb(G))
     k = nb2$nc
+    if (inherits(scale_factor, "NULL")) scale_factor <- rep(1, n)    
     group_idx = NULL
     for (j in 1:k) group_idx <- c(group_idx, which(nb2$comp.id == j))
     group_size <- NULL
@@ -857,6 +862,7 @@ prep_icar_data <- function(C, scale_factor = NULL) {
         n_edges = nrow(E),
         node1 = E$node1,
         node2 = E$node2,
+        weight = E$weight,
         group_idx = array(group_idx, dim = n),
         scale_factor = scale_factor,
         comp.id = nb2$comp.id
