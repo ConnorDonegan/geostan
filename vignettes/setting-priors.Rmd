@@ -212,7 +212,7 @@ The default prior for the slab is `slab_df = 15` and `slab_scale = 0.5 * sd(y) /
 
 The Intrinsic Conditional Autoregressive (ICAR) models are based on the Stan code developed in @morris_2019. In each of the available model options (`type = c("icar", "bym", "bym2")`), a parameter vector `phi` is assigned the ICAR prior (which places high prior probability on smooth spatial trends). The model is fixed, with no priors available to set.
 
-To implement the BYM2 model introduced in @riebler_2016 and implemented in Stan by @morris_2019, you must provide an additional `scale_factor` term using the **INLA** package (see [here](https://www.r-inla.org/download-install) for installation instructions).
+To implement the BYM2 model introduced in @riebler_2016 and implemented in Stan by @morris_2019, you must provide an additional `scale_factor` term using the **INLA** package (see [here](https://www.r-inla.org/download-install) for installation instructions). 
 
 The following code chunk demonstrates how to calculate the `scale_factor` argument given a spatial connectivity matrix C, the `geostan::prep_icar_data` function, and a user-defined function `c_scale`:
 
@@ -234,16 +234,17 @@ c_scale <- function(C) {
 C <- shape2mat(nepal)
 icar.data <- prep_icar_data(C)
 
-scale_factor <- vector(mode = "numeric", length = n)
+k <- icar.data$k
+scale_factor <- vector(mode = "numeric", length = k)
 for (j in 1:k) {
     g.idx <- which(icar.data$comp.id == j) 
     if (length(g.idx) == 1) {
-        scale_factor[g.idx] <- 1 
+        scale_factor[j] <- 1 
         next
     }    
     Cg <- C[g.idx, g.idx] 
     scale.j <- c_scale(Cg)
-    scale_factor[g.idx] <- scale.j
+    scale_factor[j] <- scale.j
 }
 ```
 
@@ -255,16 +256,16 @@ fit <- stan_icar(y ~ offset(log_population), data = data, type = "bym2", C = C, 
 
 ## Setting priors: CAR
 
-The `stan_car` model follows the Stan code created by @joseph_2016. The only adjustable parameter specific to this model is the Gamma prior on the precision parameter for the spatial component `phi` (coded as `phi_tau`). The default Gamma prior is Gamma (2, 2). If you wish to change it you can do so by updating `prior_phi_precision`, such as
+The only adjustable parameter specific to the CAR model is the prior on the scale parameter. The default is weakly informative. The CAR model is a multivariate Gaussian distribution specified as followings:
+
+$$ \phi \sim MVGauss(0, \sigma * (D - \alpha * C)^{-1}) $$
+
+where $\phi$ is a vector of parameters to model and $\sigma$ is the scale parameter. C is a connectivity matrix while the diagonal elements of matrix D adjust the variance of each observation. For instance, the default specification sets the diagonal elements of D equal to the number of neighbors of each respective observation. $\alpha$ controls the degree of spatial autocorrelation. $\alpha$ will be less than zero when negative spatial autocorrelation patterns (similar values appear far from each other, like a checkerboard) predominate, and it is positive when the predominate pattern is positive spatial autocorrelation with a maximum value of 1. This parameter is not comparable to the spatial autocorrelation parameter from the SAR model or the APLE, despite some similarity.
+
+The scale is given a half-Student's t prior ("half" meaning it is constrained to positive values only), requiring parameters for degrees of freedom, location, and scale. The following code sets the prior to 30 degrees of freedom, location 0, and unit scale:
 
 ```{r eval = FALSE}
-fit <- stan_car(y ~ offset(log_population), data = data, C = C, prior_phi_precision = c(1, 1))
-```
-
-
-```{r show = FALSE}
-# delete the nepal data 
-unlink("nepal", recursive = TRUE)
+fit <- stan_car(y ~ offset(log_population), data = data, C = C, prior_car_scale = c(30, 0, 1))
 ```
 
 ## References
