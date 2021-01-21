@@ -50,7 +50,7 @@ Methods \code{residuals}, \code{fitted}, \code{spatial} return a matrix containi
 
 \code{plot} returns a \code{ggplot} object that can be customized using the \code{ggplot2} package.
 
-\code{as.matrix}, \code{as.data.frame}, \code{as.array} return samples from the (joint) posterior distribution of parameters in the format corresponding to their names. The \code{pars} argument is used to return samples from only a subset of parameters.
+\code{as.matrix}, \code{as.data.frame}, \code{as.array} return samples from the joint posterior distribution of parameters in the format corresponding to their names. The \code{pars} argument is used to return samples from only a subset of parameters.
 }
 \description{
 Methods for fitted geostan models: extract residuals, fitted values, posterior predictive distribution or spatial component from a spatial regression model; extract samples from the posterior distribution; print regression results; plot posterior distributions.

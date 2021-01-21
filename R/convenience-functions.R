@@ -819,16 +819,21 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, 
 #' @importFrom spdep poly2nb n.comp.nb
 #' 
 #' @return list of data to add to Stan data list:
+#' 
 #' \describe{
 #' \item{k}{number of groups}
 #' \item{group_size}{number of nodes per group}
 #' \item{n_edges}{number of connections between nodes (unique pairs only)}
 #' \item{node1}{first node}
 #' \item{node2}{second node. (node1[i] and node2[i] form a connected pair)}
-#' \item{group_idx}{indices for each observation belonging each group, ordered by group.}
+#' \item{group_idx}{indices for each observation belonging each group, ordered by group}
+#' \item{scale_factor}{k-length vector of ones. Placeholder for user-specified information.}
+#' \item{comp_id}{n-length vector indicating the group membership of each observation.}
 #' }
 #'
-#' @details This is used internally to prepare data for \link[geostan]{stan_icar} models. It can also be helpful for fitting custom ICAR models outside of \code{geostan}.
+#' @details
+#'
+#' This is used internally to prepare data for \link[geostan]{stan_icar} models. It can also be helpful for fitting custom ICAR models outside of \code{geostan}. Makes use of \link[spdep]{graph2nb} and \link[spdep]{n.comp.nb}.
 #' 
 #' @seealso \link[geostan]{stan_icar}, \link[geostan]{edges}, \link[geostan]{shape2mat}
 #'
@@ -851,7 +856,7 @@ prep_icar_data <- function(C, scale_factor = NULL) {
     class(G) <- "Graph"
     nb2 <- spdep::n.comp.nb(spdep::graph2nb(G))
     k = nb2$nc
-    if (inherits(scale_factor, "NULL")) scale_factor <- rep(1, n)    
+    if (inherits(scale_factor, "NULL")) scale_factor <- array(rep(1, k), dim = k)
     group_idx = NULL
     for (j in 1:k) group_idx <- c(group_idx, which(nb2$comp.id == j))
     group_size <- NULL
@@ -865,7 +870,7 @@ prep_icar_data <- function(C, scale_factor = NULL) {
         weight = E$weight,
         group_idx = array(group_idx, dim = n),
         scale_factor = scale_factor,
-        comp.id = nb2$comp.id
+        comp_id = nb2$comp.id
     )
     return (l)
 }

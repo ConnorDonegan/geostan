@@ -17,7 +17,7 @@
 #'
 #' \code{plot} returns a \code{ggplot} object that can be customized using the \code{ggplot2} package.
 #'
-#' \code{as.matrix}, \code{as.data.frame}, \code{as.array} return samples from the (joint) posterior distribution of parameters in the format corresponding to their names. The \code{pars} argument is used to return samples from only a subset of parameters.
+#' \code{as.matrix}, \code{as.data.frame}, \code{as.array} return samples from the joint posterior distribution of parameters in the format corresponding to their names. The \code{pars} argument is used to return samples from only a subset of parameters.
 #'
 #' @seealso \link[geostan]{stan_glm}, \link[geostan]{stan_esf}, \link[geostan]{stan_icar}, \link[geostan]{stan_car}
 #' 
@@ -96,7 +96,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
   cat("Residual Moran Coefficient: ", x$diagnostic[grep("Residual_MC", attributes(x$diagnostic)$names)], "\n")
   cat("WAIC: ", x$diagnostic[grep("WAIC", attributes(x$diagnostic)$names)], "\n")
   cat("Observations: ", nrow(x$data), "\n")
-  if(x$spatial[1] == "esf") {
+  if (x$spatial[1] == "esf") {
     cat("RHS global shrinkage prior: ", round(x$priors$rhs["scale_global"], 2), "\n")
   }
   print(x$stanfit, pars = pars, digits = digits, probs = probs, ...)

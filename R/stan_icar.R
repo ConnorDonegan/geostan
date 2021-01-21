@@ -1,16 +1,16 @@
 #' Intrinsic autoregressive models
 #'
 #' @export
-#' @description Fit regression models using intrinsic conditional auto-regressive (ICAR) parameter model. Options include the BYM model, the BYM2 model, and a solo ICAR term. 
+#' @description Assign the intrinsic conditional auto-regressive (ICAR) prior model to parameters. Options include the BYM model, the BYM2 model, and a solo ICAR term. 
 #' 
 #' @param formula A model formula, following the R \link[stats]{formula} syntax. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 #'  These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in \code{~ ID}.  The parameter vector will be named \code{alpha_re}. If this is specified at the observational unit level then it becomes the original Besag-York-Mollie (BYM) model. However, the BYM model is best obtained by setting \code{type = "bym"} instead of manually adding \code{alpha_re}.
+#' @param re If the model includes a varying intercept term \code{alpha_re} specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}. Before using this, read the \code{Details} section and the \code{type} argument.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
-#' @param type Defaults to "icar" (partial pooling of neighboring observations through parameter \code{phi}); specify "bym" to add a second parameter vector \code{theta} to perform partial pooling across all observations; specify "bym2" for the innovation introduced by Riebler et al. (2016).
-#' @param scale_factor For the BYM2 model, optional. If missing, this will be set to a vector of ones. Must be an n-length vector.
+#' @param type Defaults to "icar" (partial pooling of neighboring observations through parameter \code{phi}); specify "bym" to add a second parameter vector \code{theta} to perform partial pooling across all observations; specify "bym2" for the innovation introduced by Riebler et al. (2016). See \code{Details} for more information.
+#' @param scale_factor For the BYM2 model, optional. If missing, this will be set to a vector of ones. 
 #' @param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
 #' \describe{
 #' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
@@ -20,7 +20,8 @@
 #' \item{prior_rhs}{Optional prior parameters for the regularized horseshoe (RHS) prior used for the ESF data model; only used if \code{ME$spatial = TRUE}. The RHS prior is used for the eigenvector spatial filter (ESF), as in \link[geostan]{stan_esf}. Must be a named list containing vectors \code{slab_df}, \code{slab_scale}, \code{scale_global}, and \code{varname}. The character vector \code{varname} indicates the order of the other parameters (by name).}
 #' }
 #' 
-#' @param C Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.
+#' @param C Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms. \code{C} must be a symmetric \code{n x n} matrix with entries between 0 and 1. The binary coding scheme is generally a good default and can be obtained using \code{shape2mat(shape, style = "B")}.
+#' 
 #' @param EV A matrix of eigenvectors from any (transformed) connectivity matrix (presumably spatial). See \link[geostan]{make_EV} and \link[geostan]{shape2mat}. 
 #' @param family The likelihood function for the outcome variable. Current options are \code{binomial(link = "logit")} and \code{poisson(link = "log")}. 
 #' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
@@ -38,15 +39,15 @@
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' @details
 #' 
-#'  The Stan code for the ICAR component of the model and the BYM2 option follows Morris et al. (2019). The ICAR component is returned in the parameter named \code{ssre} (spatially structured random effect).
+#'  The Stan code for the ICAR component of the model and the BYM2 option draws from Morris et al. (2019) with adjustments to enable non-binary weights and disconnected graph structures. The ICAR parameters are returned in the parameter vector named \code{phi}. The ICAR prior model is equivalent to a CAR model with the spatial autocorrelation parameter \code{car_alpha} equal to 1 (see \link[geostan]{stan_car}). Thus the ICAR term \code{phi} forms a smooth surface, akin to a spatially varying mean. Ofter, an observational-level random effect term \code{theta} is added in to model deviations from the local mean. The combination \code{phi + theta} is known as the BYM model (Besag et al. 1991). The BYM model is, in part, a means to evade the computational demands of the proper CAR model (which for moderately sized data sets is no longer prohibitive on a laptop computer).
 #'
-#' For all models, the ICAR prior is placed on the parameter vector \code{phi}; it is scaled by the scalar parameter \code{spatial_scale}, specified as follows.
+#' The ICAR prior is placed on the parameter vector \code{phi_tilde} (which is approximately on the standard normal scale); it is scaled by the scalar parameter \code{spatial_scale}. The models are specified as follows:
 #'
-#' For \code{type = "icar"}, the spatial structure is simply \code{ssre[i] = phi[i] * spatial_scale}.
+#' If \code{type = "icar"}, the spatial structure is simply \code{phi[i] = phi_tilde[i] * spatial_scale}.
 #'
-#' For \code{type = "bym"}, the spatial structure \code{ssre} is the same as \code{"icar"} but an additional parameter vector \code{theta} is added to perform partial pooling across all observations (a `spatially unstructured random effect' \code{sure}), and \code{sure[i] = theta[i] * theta_scale}. The sum \code{phi * spatial_scale + theta * theta_scale = ssre + sure} is often referred to as the ``convolved random effect.''
+#' If \code{type = "bym"}, the spatial structure \code{phi} is the same as \code{"icar"} but an additional parameter vector \code{theta} is added to perform partial pooling across all observations.  \code{theta[i] = theta_tilde[i] * theta_scale}. The sum \code{phi_tilde * spatial_scale + theta_tilde * theta_scale = phi + theta = convolution} is often referred to as the ``convolved random effect.'' It is returned in the parameter vector named \code{convolution}.
 #'
-#' For \code{type = "bym2"}, \code{ssre} and \code{sure} share a single scale parameter (\code{spatial_scale}) but they are combined using a mixing parameter \code{rho}. The ``convolved random effect'' is then \code{[sqrt(rho / scale_factor) * phi + sqrt((1 - rho)) * theta] * spatial_scale}. The terms are factored out to obtain \code{sure} and \code{ssre}.
+#' For \code{type = "bym2"}, \code{phi_tilde} and \code{theta_tilde} share a single scale parameter (\code{spatial_scale}) but they are combined using a mixing parameter \code{rho}. The convolution is then \code{convolution = [sqrt(rho / scale_factor) * phi_tilde + sqrt((1 - rho)) * theta_tilde] * spatial_scale}. For convenience, the model will return the convolution term and also factor it into parameters \code{phi} and \code{theta}. The actual calculation of the convolution term is specified to ensure that observations with zero neighbors are handled properly.
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
@@ -55,24 +56,25 @@
 #'  mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' \item{data}{a data frame containing the model data}
-#' \item{edges}{The edge list representing all unique sets of neighbors}
+#' \item{edges}{The edge list representing all unique sets of neighbors and the weight attached to each pair (i.e., their corresponding element in the connectivity matrix  C}
 #' \item{family}{the user-provided or default \code{family} argument used to fit the model}
 #' \item{formula}{The model formula provided by the user (not including ICAR component)}
 #' \item{slx}{The \code{slx} formula}
-#' \item{re}{A list containing \code{re}, the random effects (varying intercepts) formula if provided, and 
-#'  \code{Data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
+#' \item{re}{A list with two name elements, \code{formula} and \code{Data}, containing the formula \code{re} and a data frame with columns \code{id} (the grouping variable) and \code{idx} (the index values assigned to each group).}
 #' \item{priors}{Prior specifications.}
 #' \item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
-#' \item{spatial}{A data frame with the name of the spatial component parameter ("ssre") and method (\code{toupper(type)})}
+#' \item{spatial}{A data frame with the name of the spatial parameter (\code{"phi"} if \code{type = "icar"} else \code{"convolution"}) and method (\code{toupper(type)}).}
 #' }
 #' 
 #' @author Connor Donegan, \email{Connor.Donegan@UTDallas.edu}
 #'
-#' @seealso \link[geostan]{prep_icar_data}, \link[geostan]{stan_car}, \link[geostan]{stan_esf}
+#' @seealso \link[geostan]{prep_icar_data}, \link[geostan]{shape2mat}, \link[geostan]{stan_car}, \link[geostan]{stan_esf}, \link[geostan]{stan_glm}
 #' 
 #' @source
 #'
 #' Besag, J. (1974). Spatial interaction and the statistical analysis of lattice systems. Journal of the Royal Statistical Society: Series B (Methodological), 36(2), 192-225.
+#'
+#' Besag, J., York, J., & Mollié, A. (1991). Bayesian image restoration, with two applications in spatial statistics. Annals of the institute of statistical mathematics, 43(1), 1-20.
 #' 
 #' Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A., & DiMaggio, C. (2019). Bayesian hierarchical spatial models: Implementing the Besag York Mollié model in stan. Spatial and spatio-temporal epidemiology, 31, 100301.
 #'
@@ -89,7 +91,6 @@
 #' C <- shape2mat(sentencing)
 #' log_e <- log(sentencing$expected_sents)
 #' fit.bym <- stan_icar(sents ~ offset(log_e),
-#'                      re = ~ name,
 #'                      family = poisson(),
 #'                      data = sentencing,
 #'                      type = "bym",
@@ -104,11 +105,11 @@
 #'  # (including residuals, predicted values, etc.)
 #' rstan::stan_ess(fit.bym$stanfit)
 #' # or for a particular parameter
-#' rstan::stan_ess(fit.bym$stanfit, "ssre")
+#' rstan::stan_ess(fit.bym$stanfit, "phi")
 
 # posterior predictive check: predicted distribution should resemble observed distribution
 #' library(bayesplot)
-#' yrep <- posterior_predict(fit.bym, samples = 75)
+#' yrep <- posterior_predict(fit.bym, samples = 95)
 #' y <- sentencing$sents
 #' ppc_dens_overlay(y, yrep)
 #' }
@@ -136,9 +137,8 @@ stan_icar <- function(formula, slx, re, data,
   mod.mat <- model.matrix(formula, tmpdf)
   if (nrow(mod.mat) < nrow(tmpdf)) stop("There are missing (NA) values in your data.")
   n <- nrow(mod.mat)
-  ## IAR STUFF -------------
+  ## ICAR STUFF -------------
   if (any(dim(C) != n)) stop("Dimensions of matrix C must match the number of observations. See ?shape2mat for help creating C.")
-  if (!all(C %in% c(0, 1))) message("C will be treated as if it were a binary connectivity matrix (0s and 1s only).")  
   ## GLM STUFF -------------
   family_int <- family_2_int(family)
   intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0)
@@ -226,7 +226,7 @@ stan_icar <- function(formula, slx, re, data,
   ## if TRUE, ignore data and likelihood, return prior model
     prior_only = prior_only
   )
-  ## IAR STUFF -------------
+  ## ICAR STUFF -------------
   iar.list <- prep_icar_data(C, scale_factor = scale_factor)
   standata <- c(standata, iar.list)
   standata$type <- match(type, c("icar", "bym", "bym2"))
@@ -243,9 +243,9 @@ stan_icar <- function(formula, slx, re, data,
       standata$y <- standata$y_int <- y[,1]
       standata$trials <- y[,1] + y[,2]
   }
-  pars <- c(pars, 'intercept', 'residual', 'log_lik', 'yrep', 'fitted', 'ssre', 'spatial_scale')
-  if (type == "bym2") pars <- c(pars, "sure", "rho", "convolved_re")
-  if (type == "bym") pars <- c(pars, "sure", "theta_scale", "convolved_re")
+  pars <- c(pars, 'intercept', 'residual', 'log_lik', 'yrep', 'fitted', 'phi', 'spatial_scale')
+  if (type == "bym2") pars <- c(pars, "theta", "rho", "convolution")
+  if (type == "bym") pars <- c(pars, "theta", "theta_scale", "convolution")
   if (!intercept_only) pars <- c(pars, 'beta')
   if (dwx) pars <- c(pars, 'gamma')
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
@@ -266,7 +266,8 @@ stan_icar <- function(formula, slx, re, data,
   out$priors <- priors
   out$scale_params <- scale_params
   if (!missing(ME)) out$ME <- ME
-  out$spatial <- data.frame(par = "ssre", method = toupper(type))
+  if (type == "icar") sp_par <- "phi" else sp_par <- "convolution"
+  out$spatial <- data.frame(par = sp_par, method = toupper(type))
   class(out) <- append("geostan_fit", class(out))
   return (out)
 }
