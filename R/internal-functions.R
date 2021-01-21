@@ -259,7 +259,6 @@ clean_results <- function(samples, pars, is_student, has_re, C, Wx, x, x_me_unbo
 #' @param priors list of priors returned by make_priors, after dropping unneeded parameters.
 #' @return Prints out information using \code{message()}
 print_priors <- function(user_priors, priors) {
-    printed = 0
   for (i in seq_along(user_priors)) {
       nm <- names(user_priors)[i]
       u.p. <- user_priors[[i]]

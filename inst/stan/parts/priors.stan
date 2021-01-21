@@ -28,35 +28,38 @@
       normal_lpdf(sum(phi) | 0, 0.001 * N);
   }
 
-
-/** Conditaional Autoregressive Prior (M. Joseph)
-  * Return the log probability of a proper conditional autoregressive (CAR) prior 
-  * with a sparse representation for the adjacency matrix
-  *
-  * @param phi Vector containing the parameters with a CAR prior
-  * @param tau Precision parameter for the CAR prior (real)
-  * @param alpha Dependence (usually spatial) parameter for the CAR prior (real)
-  * @param C_sparse Sparse representation of adjacency matrix (int array)
-  * @param n Length of phi (int)
-  * @param C_n Number of adjacent pairs (int)
-  * @param D_sparse Number of neighbors for each location (vector)
-  * @param lambda Eigenvalues of D^{-1/2}*C*D^{-1/2} (vector)
-  *
-  * @return Log probability density of CAR prior up to additive constant
-  */
-  real sparse_car_lpdf(vector phi, real tau, real alpha, int[,] C_sparse, vector D_sparse, vector lambda, int n, int C_n) {
-      row_vector[n] phit_D; // phi' * D
-      row_vector[n] phit_C; // phi' * C
-      vector[n] ldet_terms;
-    
-      phit_D = (phi .* D_sparse)';
-      phit_C = rep_row_vector(0, n);
-      for (i in 1:C_n) {
-        phit_C[C_sparse[i, 1]] = phit_C[C_sparse[i, 1]] + phi[C_sparse[i, 2]];
-        phit_C[C_sparse[i, 2]] = phit_C[C_sparse[i, 2]] + phi[C_sparse[i, 1]];
-      }
-      for (i in 1:n) ldet_terms[i] = log1m(alpha * lambda[i]);
-      return 0.5 * (n * log(tau)
+/**
+ * Return the log probability of a conditional autoregressive (CAR) model,
+ * dropping additive constants.
+ *
+ *           y ~ N(mu, tau * (D - alph * W)^(-1))
+ *
+ * @param y Vector containing the parameters with a CAR prior
+ * @param mu Mean vector.
+ * @param tau Precision parameter for the CAR prior (real)
+ * @param alpha Dependence (usually spatial) parameter for the CAR prior (real)
+ * @param w sparse representation of W' (transpose!): contains all non-zero values of W.
+ * @param v column indices for values in w
+ * @param u row starting indices for values in w followed by size of w
+ * @param D_diag Diagonal of D matrix; e.g., number of neighbors for each location
+ * @param lambda Eigenvalues of D^{-1/2}*W*D^{-1/2} (vector)
+ * @param n Length of y 
+ *
+ * @return Log probability density of CAR model up to additive constant
+ */
+real car_normal_lpdf(vector y, vector mu,
+		     real tau, real alpha,
+		     vector w, int[] v, int[] u, 
+		     vector D_diag, vector lambda,
+		     int n) {
+  vector[n] yc = y - mu; 
+  row_vector[n] yct_D; // yc transpose * D
+  row_vector[n] yct_W; // yc transpose * W
+  vector[n] ldet_terms;    
+  yct_D = (yc .* D_diag)';
+  yct_W = csr_matrix_times_vector(n, n, w, v, u, yc)';    
+  for (i in 1:n) ldet_terms[i] = log1m(alpha * lambda[i]);
+  return 0.5 * (n * log(tau)
                     + sum(ldet_terms)
-                    - tau * (phit_D * phi - alpha * (phit_C * phi)));
-  }
+		- tau * (yct_D * yc - alpha * (yct_W * yc)));
+}

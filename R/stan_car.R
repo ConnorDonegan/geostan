@@ -1,13 +1,14 @@
-#' Conditional autoregressive models
+#' Conditional auto-regressive (CAR) models
 #'
 #' @export
-#' @description Fit a regression model with a conditional auto-regressive (CAR) spatial component. Only binary weighting schemes are currently supported.
+#' 
+#' @description Apply the CAR model as a prior on parameters.
 #' 
 #' @param formula A model formula, following the R \link[stats]{formula} syntax. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 #'  These will be pre-multiplied by a row-standardized version of the user-provided spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in \code{~ ID}. 
+#' @param re If the model includes a varying intercept term specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{re ~ N(0, tau)}, \code{tau ~ Student_t(d.f., location, scale)}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
 #' \describe{
@@ -19,12 +20,14 @@
 #' \item{prior_rhs}{Optional prior parameters for the regularized horseshoe (RHS) prior used for the ESF data model; only used if \code{ME$spatial = TRUE}. The RHS prior is used for the eigenvector spatial filter (ESF), as in \link[geostan]{stan_esf}. Must be a named list containing vectors \code{slab_df}, \code{slab_scale}, \code{scale_global}, and \code{varname}. The character vector \code{varname} indicates the order of the other parameters (by name).}
 #' }
 #' @param C Binary spatial connectivity matrix. This is used for the CAR prior and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms (it will be row-standardized before calculating \code{slx} terms).
-#' @param EV A matrix of eigenvectors from any (transformed) connectivity matrix (presumably spatial). See \link[geostan]{make_EV} and \link[geostan]{shape2mat}. 
+#' @param D_diagonal Diagonal elements of matrix D, which influence the prior precision of each observation relative to each other. The default specification sets this equal to the number of neighbors of each observation. A limitation of the default specification (for this software implementation) is that all observations must have at least one neighbor. 
+#' 
+#' @param EV A matrix of eigenvectors from any doubly-centered connectivity matrix (presumably spatial). See \link[geostan]{make_EV} and \link[geostan]{shape2mat}. 
 #' @param family The likelihood function for the outcome variable. Current options are \code{binomial(link = "logit")} and \code{poisson(link = "log")}. 
 #' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. 
 #' @param prior_tau Set hyperparameters for the scale parameter of varying intercepts \code{re}. The varying intercepts are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.
-#' @param prior_phi_precision Hyperprior parameters for the precision (inverse scale) of the CAR component \code{phi}, a numeric vector of length two. The precision parameter for \code{phi} is \code{phi_tau} which is assigned a Gamma prior distribution; defaults to \code{prior_phi_precision = c(2, 2)}.
+#' @param prior_car_scale Hyperprior parameters for the scale of the CAR model. The scale is assigned a Student's t prior model; to set a custom prior provide a length-three vector with the degrees of freedom, location, and scale parameters. E.g., \code{prior_car_scale = c(df = 15, location = 0, scale = 2)}.
 #' @param centerx Logical value indicating if the covariates should be centered prior to fitting the model.
 #' @param scalex Logical value indicating if the covariates be centered and scaled (divided by their standard deviation).
 #' @param prior_only Logical value; if \code{TRUE}, draw samples only from the prior distributions of parameters.
@@ -37,20 +40,25 @@
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' @details
 #'  
-#'  The CAR model is the prior distribution for the parameter vector \code{phi} and has two associated parameters: \code{phi_alpha} which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and \code{phi_tau} which is a precision (inverse scale) parameter. The Stan code for the CAR component of the model is from Joseph (2016).
-#'  
+#'  The CAR model has two parameters: \code{car_alpha} which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and \code{car_scale} which is a scale parameter (\code{car_scale = 1/sqrt(precision)}).
+#'
+#'                             \code{Y ~ MVGauss(Mu, scale * (D - alpha * C)^-1)}
+#'
+#' where \code{Y} may be data or parameters and \code{Mu} is the mean vector. When \code{Y} is a vector of parameters (as in Poisson models), \code{Mu} is a vector of zeroes. \code{C} is a connectivity matrix (often binary) and \code{D} is a matrix with diagonal entries that scale each observation. So an observation corresponding to a diagonal element of \code{D} that has larger values relative to other \code{D} elements will have smaller variance in the prior probability. 
+#' 
+#' These models are discussed in Haining and Li (2020, p. 249-51) and Cressie and Wikle (2011, p. 184-88). The Stan code for the model draws from Joseph (2016) to calculate the determinant of the precision matrix (see Jin et al. 2005, p. 955).
+#' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
-#' \item{summary}{Summaries of the main parameters of interest; a data frame, including \code{phi} the spatial term, \code{phi_tau} the scale of the CAR model, and \code{phi_alpha} the parameter that controls the degree of spatial autocorrelation in \code{phi} and has range \code{[0, 1]}.}
+#' \item{summary}{Summaries of the main parameters of interest; a data frame.}
 #' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (\code{eff_pars}) and 
 #'  mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' \item{data}{a data frame containing the model data}
-#' \item{edges}{The edge list representing all unique sets of neighbors (a sparse representation of C)}
 #' \item{family}{the user-provided or default \code{family} argument used to fit the model}
 #' \item{formula}{The model formula provided by the user (not including CAR component)}
 #' \item{slx}{The \code{slx} formula}
-#' \item{re}{A list containing \code{re}, the random effects (varying intercepts) formula if provided, and 
+#' \item{re}{A list containing \code{re}, the varying intercepts (\code{re}) formula if provided, and 
 #'  \code{Data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 #' \item{priors}{Prior specifications.}
 #' \item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
@@ -61,9 +69,14 @@
 #' 
 #' @source
 #'
+#' Cressie, Noel and Wikle, Christopher (2011). Statistics for Spatio-Temporal Data. Wiley.
+#'
+#' Haining, Robert and Li, Guangquan (2020). Modelling Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.
+#'
+#' Jin, Xiaoping and Carlin, Bradley P. and Banerjee, Sudipto (2005). Generalized Hierarchical Multivariate CAR Models for Areal Data. Biometrics: 61 (4): 950-961. \url{https://www.jstor.org/stable/3695906}
+#' 
 #' Joseph, Max (2016). Exact Sparse CAR Models in Stan. Stan Case Studies, Vol. 3. \url{https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html}
 #' 
-#' Lawson, Andrew B. (2013). Bayesian Disease Mapping: Hierarchical Modeling in Spatial Epidemiology. CRC Press.
 #'
 #' @examples
 #' \dontrun{
@@ -94,19 +107,24 @@
 #'   scale_fill_gradient2()
 #'  }
 #' 
-stan_car <- function(formula, slx, re, data, ME = NULL, C, EV,
+stan_car <- function(formula, slx, re, data, ME = NULL, C, D_diagonal,
+                     EV,
                      family = poisson(),
-                     prior = NULL, prior_intercept = NULL, prior_tau = NULL, prior_phi_precision = c(2, 2),
+                     prior = NULL, prior_intercept = NULL, prior_tau = NULL, prior_car_scale = NULL,
                      centerx = FALSE, scalex = FALSE, prior_only = FALSE,
                      chains = 4, iter = 10e3, refresh = 500, pars = NULL,
-                     control = list(adapt_delta = .9, max_treedepth = 15),
+                     control = list(adapt_delta = 0.9, max_treedepth = 15),
                      silent = FALSE,
                      ...) {
   if (class(family) != "family" | !family$family %in% c("binomial", "poisson")) stop ("Must provide a valid family object: binomial() or poisson().")
-  if (missing(formula) | class(formula) != "formula") stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
-  if (missing(data) | missing(C)) stop("Must provide data (a data.frame or object coercible to a data.frame) and binary connectivity matrix C.")
+  if (missing(formula) | !inherits(formula, "formula")) stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
+  if (missing(data) | missing(C)) stop("Must provide data (a data.frame or object coercible to a data.frame) and connectivity matrix C.")
+  if (any(dim(C) != n)) stop("Dimensions of matrix C must match the number of observations. See ?shape2mat for help creating C.")  
+  if (!inherits(C, "matrix")) stop("C must be a matrix.")
   if (scalex) centerx = TRUE
   if (silent) refresh = 0
+  ## CAR STUFF -------------
+  if (missing(D_diagonal)) D_diagonal <- apply(C, 1, function(r) sum(r > 0))  
   ## GLM STUFF -------------
   a.zero <- as.array(0, dim = 1)
   tmpdf <- as.data.frame(data)
@@ -115,11 +133,6 @@ stan_car <- function(formula, slx, re, data, ME = NULL, C, EV,
   n <- nrow(mod.mat)
   family_int <- family_2_int(family)
   intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0)
-  ## CAR STUFF -------------
-  if (any(dim(C) != n)) stop("Dimensions of matrix C must match the number of observations. See ?shape2mat for help creating C.")
-  if (!all(C %in% c(0, 1))) stop("C must be a binary connectivity matrix (0s and 1s only). See ?shape2mat for help creating C.")
-  nbs <- edges(C)
-  n_edges <- nrow(nbs)
   ## GLM STUFF -------------    
   if (intercept_only) { # x includes slx, if any, for prior specifictions; x.list$x is the processed model matrix without slx terms.
     x <- model.matrix(~ 0, data = tmpdf) 
@@ -180,8 +193,18 @@ stan_car <- function(formula, slx, re, data, ME = NULL, C, EV,
   user_priors <- list(intercept = prior_intercept, beta = prior, sigma = NULL, nu = NULL, alpha_tau = prior_tau)
   priors <- make_priors(user_priors = user_priors, y = y, x = x, xcentered = centerx,
                         link = family$link, offset = offset)
-  ## CAR STUFF -------------
-  priors$phi_scale_prior <- prior_phi_precision
+  ## CAR SCALE PRIOR -------------  
+  if (!is.null(prior_car_scale)) {
+      priors$sigma <- prior_car_scale
+  } else {
+      if (!silent) {
+          message("\n*Setting prior parameters for car_scale")
+          message("Student's t")
+          message("Degrees of freedom: ", priors$sigma[1])
+          message("Location: ", priors$sigma[2])
+          message("Scale: ", priors$sigma[3])
+      }      
+  }  
   ## MIXED STUFF -------------  
   standata <- list(
   ## glm data -------------
@@ -205,11 +228,9 @@ stan_car <- function(formula, slx, re, data, ME = NULL, C, EV,
     dwx = dwx,
     wx_idx = wx_idx,
   ## car data -------------
-    C_n = n_edges,
-    C_sparse = nbs[,c("node1", "node2")],
-    D_sparse = rowSums(C),
     C = C,
-    phi_tau_prior = priors$phi_scale_prior,
+    dc_nonzero = sum(C > 0),
+    D_diag = D_diagonal,
   ## draw samples from prior only, ignoring data and likelihood
     prior_only = prior_only
   )
@@ -226,7 +247,7 @@ stan_car <- function(formula, slx, re, data, ME = NULL, C, EV,
       standata$y <- standata$y_int <- y[,1]
       standata$trials <- y[,1] + y[,2]
   }
-  pars <- c(pars, 'intercept', "phi", "phi_alpha", "phi_tau", 'residual', 'log_lik', 'yrep', 'fitted')
+  pars <- c(pars, 'intercept', 'phi', 'car_scale', 'car_alpha', 'residual', 'log_lik', 'yrep', 'fitted')
   if (!intercept_only) pars <- c(pars, 'beta')
   if (dwx) pars <- c(pars, 'gamma')
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
@@ -243,7 +264,6 @@ stan_car <- function(formula, slx, re, data, ME = NULL, C, EV,
   out$family <- family
   out$formula <- formula
   out$slx <- slx
-  out$edges <- nbs  
   out$re <- re_list
   out$priors <- priors
   out$scale_params <- scale_params
