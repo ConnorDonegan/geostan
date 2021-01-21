@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Conditional autoregressive models — stan_car • geostan</title>
+<title>Conditional auto-regressive (CAR) models — stan_car • geostan</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,8 @@
 
 
 
-<meta property="og:title" content="Conditional autoregressive models — stan_car" />
-<meta property="og:description" content="Fit a regression model with a conditional auto-regressive (CAR) spatial component. Only binary weighting schemes are currently supported." />
+<meta property="og:title" content="Conditional auto-regressive (CAR) models — stan_car" />
+<meta property="og:description" content="Apply the CAR model as a prior on parameters." />
 <meta property="og:image" content="/logo.png" />
 
 
@@ -129,13 +129,13 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Conditional autoregressive models</h1>
+    <h1>Conditional auto-regressive (CAR) models</h1>
     
     <div class="hidden name"><code>stan_car.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Fit a regression model with a conditional auto-regressive (CAR) spatial component. Only binary weighting schemes are currently supported.</p>
+    <p>Apply the CAR model as a prior on parameters.</p>
     </div>
 
     <pre class="usage"><span class='fu'>stan_car</span><span class='op'>(</span>
@@ -145,12 +145,13 @@
   <span class='va'>data</span>,
   ME <span class='op'>=</span> <span class='cn'>NULL</span>,
   <span class='va'>C</span>,
+  D_diagonal <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/apply.html'>apply</a></span><span class='op'>(</span><span class='va'>C</span>, <span class='fl'>1</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>r</span><span class='op'>)</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>r</span> <span class='op'>&gt;</span> <span class='fl'>0</span><span class='op'>)</span><span class='op'>)</span>,
   <span class='va'>EV</span>,
   family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span>,
   prior <span class='op'>=</span> <span class='cn'>NULL</span>,
   prior_intercept <span class='op'>=</span> <span class='cn'>NULL</span>,
   prior_tau <span class='op'>=</span> <span class='cn'>NULL</span>,
-  prior_phi_precision <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>2</span>, <span class='fl'>2</span><span class='op'>)</span>,
+  prior_car_scale <span class='op'>=</span> <span class='cn'>NULL</span>,
   centerx <span class='op'>=</span> <span class='cn'>FALSE</span>,
   scalex <span class='op'>=</span> <span class='cn'>FALSE</span>,
   prior_only <span class='op'>=</span> <span class='cn'>FALSE</span>,
@@ -178,7 +179,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>re</th>
-      <td><p>If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in <code>~ ID</code>.</p></td>
+      <td><p>If the model includes a varying intercept term <code>alpha_re</code> specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re ~ N(0, alpha_tau)</code>, <code>alpha_tau ~ Student_t(d.f., location, scale)</code>.</p></td>
     </tr>
     <tr>
       <th>data</th>
@@ -201,8 +202,12 @@ If and when setting priors for <code>beta</code> manually, remember to include p
       <td><p>Binary spatial connectivity matrix. This is used for the CAR prior and to calculate residual spatial autocorrelation as well as any user specified <code>slx</code> terms (it will be row-standardized before calculating <code>slx</code> terms).</p></td>
     </tr>
     <tr>
+      <th>D_diagonal</th>
+      <td><p>Diagonal elements of matrix D, which influence the prior precision of each observation relative to each other. The default specification sets this equal to the number of neighbors of each observation. A limitation of the default specification (for this software implementation) is that all observations must have at least one neighbor.</p></td>
+    </tr>
+    <tr>
       <th>EV</th>
-      <td><p>A matrix of eigenvectors from any (transformed) connectivity matrix (presumably spatial). See <a href='make_EV.html'>make_EV</a> and <a href='shape2mat.html'>shape2mat</a>.</p></td>
+      <td><p>A matrix of eigenvectors from any doubly-centered connectivity matrix (presumably spatial). See <a href='make_EV.html'>make_EV</a> and <a href='shape2mat.html'>shape2mat</a>.</p></td>
     </tr>
     <tr>
       <th>family</th>
@@ -218,11 +223,11 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>prior_tau</th>
-      <td><p>Set hyperparameters for the scale parameter of varying intercepts <code>re</code>. The varying intercepts are given a normal prior with scale parameter <code>alpha_tau</code>. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., <code>prior_tau = c(df = 15, location = 0, scale = 5)</code>.</p></td>
+      <td><p>Set hyperparameters for the scale parameter of varying intercepts <code>alpha_re</code>. The varying intercepts are given a normal prior with scale parameter <code>alpha_tau</code>. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., <code>prior_tau = c(df = 15, location = 0, scale = 5)</code>.</p></td>
     </tr>
     <tr>
-      <th>prior_phi_precision</th>
-      <td><p>Hyperprior parameters for the precision (inverse scale) of the CAR component <code>phi</code>, a numeric vector of length two. The precision parameter for <code>phi</code> is <code>phi_tau</code> which is assigned a Gamma prior distribution; defaults to <code>prior_phi_precision = c(2, 2)</code>.</p></td>
+      <th>prior_car_scale</th>
+      <td><p>Hyperprior parameters for the scale of the CAR model. The scale is assigned a Student's t prior model; to set a custom prior provide a length-three vector with the degrees of freedom, location, and scale parameters. E.g., <code>prior_car_scale = c(df = 15, location = 0, scale = 2)</code>.</p></td>
     </tr>
     <tr>
       <th>centerx</th>
@@ -268,21 +273,22 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
 
-    <p>Joseph, Max (2016). Exact Sparse CAR Models in Stan. Stan Case Studies, Vol. 3. <a href='https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html'>https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html</a></p>
-<p>Lawson, Andrew B. (2013). Bayesian Disease Mapping: Hierarchical Modeling in Spatial Epidemiology. CRC Press.</p>
+    <p>Cressie, Noel and Wikle, Christopher (2011). Statistics for Spatio-Temporal Data. Wiley.</p>
+<p>Haining, Robert and Li, Guangquan (2020). Modelling Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.</p>
+<p>Jin, Xiaoping and Carlin, Bradley P. and Banerjee, Sudipto (2005). Generalized Hierarchical Multivariate CAR Models for Areal Data. Biometrics: 61 (4): 950-961. <a href='https://www.jstor.org/stable/3695906'>https://www.jstor.org/stable/3695906</a></p>
+<p>Joseph, Max (2016). Exact Sparse CAR Models in Stan. Stan Case Studies, Vol. 3. <a href='https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html'>https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html</a></p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl>
-<dt>summary</dt><dd><p>Summaries of the main parameters of interest; a data frame, including <code>phi</code> the spatial term, <code>phi_tau</code> the scale of the CAR model, and <code>phi_alpha</code> the parameter that controls the degree of spatial autocorrelation in <code>phi</code> and has range <code>[0, 1]</code>.</p></dd>
+<dt>summary</dt><dd><p>Summaries of the main parameters of interest; a data frame.</p></dd>
 <dt>diagnostic</dt><dd><p>Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (<code>eff_pars</code>) and 
  mean log pointwise predictive density (<code>lpd</code>), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.</p></dd>
 <dt>stanfit</dt><dd><p>an object of class <code>stanfit</code> returned by <code><a href='https://mc-stan.org/rstan/reference/stan.html'>rstan::stan</a></code></p></dd>
 <dt>data</dt><dd><p>a data frame containing the model data</p></dd>
-<dt>edges</dt><dd><p>The edge list representing all unique sets of neighbors (a sparse representation of C)</p></dd>
 <dt>family</dt><dd><p>the user-provided or default <code>family</code> argument used to fit the model</p></dd>
 <dt>formula</dt><dd><p>The model formula provided by the user (not including CAR component)</p></dd>
 <dt>slx</dt><dd><p>The <code>slx</code> formula</p></dd>
-<dt>re</dt><dd><p>A list containing <code>re</code>, the random effects (varying intercepts) formula if provided, and 
+<dt>re</dt><dd><p>A list containing <code>re</code>, the varying intercepts (<code>re</code>) formula if provided, and 
  <code>Data</code> a data frame with columns <code>id</code>, the grouping variable, and <code>idx</code>, the index values assigned to each group.</p></dd>
 <dt>priors</dt><dd><p>Prior specifications.</p></dd>
 <dt>scale_params</dt><dd><p>A list with the center and scale parameters returned from the call to <code><a href='https://rdrr.io/r/base/scale.html'>base::scale</a></code> on the model matrix. If <code>centerx = FALSE</code> and <code>scalex = FALSE</code> then it is an empty list.</p></dd>
@@ -292,7 +298,10 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The CAR model is the prior distribution for the parameter vector <code>phi</code> and has two associated parameters: <code>phi_alpha</code> which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and <code>phi_tau</code> which is a precision (inverse scale) parameter. The Stan code for the CAR component of the model is from Joseph (2016).</p>
+    <p>The CAR model has two parameters: <code>car_alpha</code> which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and <code>car_scale</code> which is a scale parameter (<code>car_scale = 1/sqrt(precision)</code>).</p>
+<p><code>Y ~ MVGauss(Mu, scale * (D - alpha * C)^-1)</code></p>
+<p>where <code>Y</code> may be data or parameters and <code>Mu</code> is the mean vector. When <code>Y</code> is a vector of parameters (as in Poisson models), <code>Mu</code> is a vector of zeroes. <code>C</code> is a connectivity matrix (often binary) and <code>D</code> is a matrix with diagonal entries that scale each observation. So an observation corresponding to a diagonal element of <code>D</code> that has larger values relative to other <code>D</code> elements will have smaller variance in the prior probability.</p>
+<p>These models are discussed in Haining and Li (2020, p. 249-51) and Cressie and Wikle (2011, p. 184-88). The Stan code for the model draws from Joseph (2016) to calculate the determinant of the precision matrix (see Jin et al. 2005, p. 955).</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>Connor Donegan, <a href='mailto:Connor.Donegan@UTDallas.edu'>Connor.Donegan@UTDallas.edu</a></p>

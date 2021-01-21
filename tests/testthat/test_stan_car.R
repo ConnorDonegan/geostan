@@ -2,36 +2,33 @@ iter=10
 silent = TRUE
 source("helpers.R")
 
+#devtools::load_all("~/dev/geostan")
+
 context("stan_car")
+
 test_that("Poisson CAR model works", {
     data(sentencing)
-    n <- nrow(sentencing)
-    C <- shape2mat(sentencing)
-    SW(
-        fit <- stan_car(sents ~ offset(log(expected_sents)),
+  SW(     fit <- stan_car(sents ~ offset(log(expected_sents)),
                     data = sentencing,
-                    C = C,
+                    C = shape2mat(sentencing),
                     chains = 1,
                     family = poisson(),
                     iter = iter,
                     silent = silent)
-    )
+  )
     expect_geostan(fit)    
 })
 
 test_that("CAR accepts covariate ME, mixed (un-) bounded", {
     data(ohio)
-    C <- shape2mat(ohio)        
-    n <- nrow(ohio)
-    ME <- list(ME = data.frame(unemployment = rep(0.75, n),
-                          historic_gop = rep(3, n)),
-               bounded = c(1, 0))
     SW(
         fit <- stan_car(cbind(trump_2016, total_2016 - trump_2016) ~ unemployment + historic_gop,
                         data = ohio,
-                        C = C,
+                        C = shape2mat(ohio),
                         family = binomial(),
-                        ME = ME,
+                        ME = list(ME = data.frame(unemployment = rep(0.75, nrow(ohio)),
+                                                  historic_gop = rep(3, nrow(ohio))),
+                                  bounded = c(1, 0)),
                         chains = 1,
                         iter = iter,
                         silent = silent)

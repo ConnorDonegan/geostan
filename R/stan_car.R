@@ -8,7 +8,7 @@
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 #'  These will be pre-multiplied by a row-standardized version of the user-provided spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param re If the model includes a varying intercept term specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{re ~ N(0, tau)}, \code{tau ~ Student_t(d.f., location, scale)}.
+#' @param re If the model includes a varying intercept term \code{alpha_re} specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
 #' \describe{
@@ -26,7 +26,7 @@
 #' @param family The likelihood function for the outcome variable. Current options are \code{binomial(link = "logit")} and \code{poisson(link = "log")}. 
 #' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. 
-#' @param prior_tau Set hyperparameters for the scale parameter of varying intercepts \code{re}. The varying intercepts are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.
+#' @param prior_tau Set hyperparameters for the scale parameter of varying intercepts \code{alpha_re}. The varying intercepts are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.
 #' @param prior_car_scale Hyperprior parameters for the scale of the CAR model. The scale is assigned a Student's t prior model; to set a custom prior provide a length-three vector with the degrees of freedom, location, and scale parameters. E.g., \code{prior_car_scale = c(df = 15, location = 0, scale = 2)}.
 #' @param centerx Logical value indicating if the covariates should be centered prior to fitting the model.
 #' @param scalex Logical value indicating if the covariates be centered and scaled (divided by their standard deviation).
@@ -107,33 +107,38 @@
 #'   scale_fill_gradient2()
 #'  }
 #' 
-stan_car <- function(formula, slx, re, data, ME = NULL, C, D_diagonal,
+stan_car <- function(formula,
+                     slx,
+                     re,
+                     data,
+                     ME = NULL,
+                     C,
+                     D_diagonal = apply(C, 1, function(r) sum(r > 0)),
                      EV,
                      family = poisson(),
                      prior = NULL, prior_intercept = NULL, prior_tau = NULL, prior_car_scale = NULL,
-                     centerx = FALSE, scalex = FALSE, prior_only = FALSE,
+                     centerx = FALSE, scalex = FALSE,
+                     prior_only = FALSE,
                      chains = 4, iter = 10e3, refresh = 500, pars = NULL,
                      control = list(adapt_delta = 0.9, max_treedepth = 15),
                      silent = FALSE,
-                     ...) {
+                     ...
+                     ) {
   if (class(family) != "family" | !family$family %in% c("binomial", "poisson")) stop ("Must provide a valid family object: binomial() or poisson().")
   if (missing(formula) | !inherits(formula, "formula")) stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
   if (missing(data) | missing(C)) stop("Must provide data (a data.frame or object coercible to a data.frame) and connectivity matrix C.")
-  if (any(dim(C) != n)) stop("Dimensions of matrix C must match the number of observations. See ?shape2mat for help creating C.")  
   if (!inherits(C, "matrix")) stop("C must be a matrix.")
   if (scalex) centerx = TRUE
   if (silent) refresh = 0
-  ## CAR STUFF -------------
-  if (missing(D_diagonal)) D_diagonal <- apply(C, 1, function(r) sum(r > 0))  
   ## GLM STUFF -------------
   a.zero <- as.array(0, dim = 1)
   tmpdf <- as.data.frame(data)
   mod.mat <- model.matrix(formula, tmpdf)
   if (nrow(mod.mat) < nrow(tmpdf)) stop("There are missing (NA) values in your data.")    
   n <- nrow(mod.mat)
+  if (any(dim(C) != n)) stop("Dimensions of matrix C must match the number of observations. See ?shape2mat for help creating C.")      
   family_int <- family_2_int(family)
   intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0)
-  ## GLM STUFF -------------    
   if (intercept_only) { # x includes slx, if any, for prior specifictions; x.list$x is the processed model matrix without slx terms.
     x <- model.matrix(~ 0, data = tmpdf) 
     dbeta_prior <- 0

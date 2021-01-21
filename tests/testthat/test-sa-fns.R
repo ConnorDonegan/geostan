@@ -1,9 +1,9 @@
-## produces warnings without spatialreg package; but spatialreg is not need for geostan.
-CRAN=FALSE
-if (!CRAN) {
-library(spdep)
+
 context("SA indices")
 test_that("SA indices produce the same results as spdep when expected", {
+    skip_if_not_installed("spatialreg")
+    library(spdep)
+    library(spatialreg)
     d=4
     t=0.0001
     data(sentencing)
@@ -29,4 +29,3 @@ test_that("SA indices produce the same results as spdep when expected", {
     expect_equal(aple.spdep, aple.geostan)    
 })
 
-}
