@@ -107,7 +107,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
 #' @import graphics
 #' @name geostan_fit
 #' @method plot geostan_fit
-plot.geostan_fit <- function(x, pars, plotfun = "dens", ...) {
+plot.geostan_fit <- function(x, pars, plotfun = "hist", ...) {
   if(missing(pars)) {
       pars <- "intercept"
       x.pars <- c("beta", "nu", "sigma")
