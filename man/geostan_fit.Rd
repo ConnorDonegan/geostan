@@ -14,7 +14,7 @@
 \usage{
 \method{print}{geostan_fit}(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digits = 3, ...)
 
-\method{plot}{geostan_fit}(x, pars, plotfun = "dens", ...)
+\method{plot}{geostan_fit}(x, pars, plotfun = "hist", fill = "steelblue4", ...)
 
 \method{as.matrix}{geostan_fit}(x, ...)
 
@@ -39,7 +39,9 @@
 
 \item{pars}{parameters to include; a character string or vector of parameter names.}
 
-\item{plotfun}{Argument passed to \code{rstan::plot}. Options include "hist", "trace", and "dens".}
+\item{plotfun}{Argument passed to \code{rstan::plot}. Options include histograms ("hist"), MCMC traceplots ("trace"), and density plots ("dens"). Diagnostic plots are also available such as Rhat statistics ("rhat"), effective sample size ("ess"), and MCMC autocorrelation ("ac").}
+
+\item{fill}{fill color for histograms and density plots.}
 
 \item{object}{A fitted model object of class \code{geostan_fit}.}
 

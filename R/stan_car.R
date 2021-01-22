@@ -121,7 +121,7 @@ stan_car <- function(formula,
                      prior = NULL, prior_intercept = NULL, prior_tau = NULL, prior_car_scale = NULL,
                      centerx = FALSE, scalex = FALSE,
                      prior_only = FALSE,
-                     chains = 4, iter = 10e3, refresh = 500, pars = NULL,
+                     chains = 5, iter = 10e3, refresh = 2500, pars = NULL,
                      control = list(adapt_delta = 0.9, max_treedepth = 15),
                      silent = FALSE,
                      ...

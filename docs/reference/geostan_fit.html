@@ -142,7 +142,7 @@
 <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>x</span>, probs <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0.025</span>, <span class='fl'>0.25</span>, <span class='fl'>0.5</span>, <span class='fl'>0.75</span>, <span class='fl'>0.975</span><span class='op'>)</span>, digits <span class='op'>=</span> <span class='fl'>3</span>, <span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for geostan_fit</span>
-<span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>pars</span>, plotfun <span class='op'>=</span> <span class='st'>"dens"</span>, <span class='va'>...</span><span class='op'>)</span>
+<span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>pars</span>, plotfun <span class='op'>=</span> <span class='st'>"hist"</span>, fill <span class='op'>=</span> <span class='st'>"steelblue4"</span>, <span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for geostan_fit</span>
 <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>as.matrix</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span>
@@ -187,7 +187,11 @@
     </tr>
     <tr>
       <th>plotfun</th>
-      <td><p>Argument passed to <code>rstan::plot</code>. Options include "hist", "trace", and "dens".</p></td>
+      <td><p>Argument passed to <code>rstan::plot</code>. Options include histograms ("hist"), MCMC traceplots ("trace"), and density plots ("dens"). Diagnostic plots are also available such as Rhat statistics ("rhat"), effective sample size ("ess"), and MCMC autocorrelation ("ac").</p></td>
+    </tr>
+    <tr>
+      <th>fill</th>
+      <td><p>fill color for histograms and density plots.</p></td>
     </tr>
     <tr>
       <th>object</th>

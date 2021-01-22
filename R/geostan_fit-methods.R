@@ -7,9 +7,10 @@
 #' @param x A fitted model object of class \code{geostan_fit}.
 #' @param summary Logical; should the values be summarized with the mean, standard deviation and quantiles (\code{probs = c(.025, .2, .5, .8, .975)}) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.
 #' @param pars parameters to include; a character string or vector of parameter names.
-#' @param plotfun Argument passed to \code{rstan::plot}. Options include "hist", "trace", and "dens".
+#' @param plotfun Argument passed to \code{rstan::plot}. Options include histograms ("hist"), MCMC traceplots ("trace"), and density plots ("dens"). Diagnostic plots are also available such as Rhat statistics ("rhat"), effective sample size ("ess"), and MCMC autocorrelation ("ac").
 #' @param digits number of digits to print
 #' @param probs Argument passed to \code{quantile}; which quantiles to calculate and print.
+#' @param fill fill color for histograms and density plots.
 #' @param ... additional arguments.
 #' @return
 #'
@@ -107,7 +108,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
 #' @import graphics
 #' @name geostan_fit
 #' @method plot geostan_fit
-plot.geostan_fit <- function(x, pars, plotfun = "hist", ...) {
+plot.geostan_fit <- function(x, pars, plotfun = "hist", fill = "steelblue4", ...) {
   if(missing(pars)) {
       pars <- "intercept"
       x.pars <- c("beta", "nu", "sigma")

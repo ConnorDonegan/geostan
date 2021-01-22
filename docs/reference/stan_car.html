@@ -155,9 +155,9 @@
   centerx <span class='op'>=</span> <span class='cn'>FALSE</span>,
   scalex <span class='op'>=</span> <span class='cn'>FALSE</span>,
   prior_only <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  chains <span class='op'>=</span> <span class='fl'>4</span>,
+  chains <span class='op'>=</span> <span class='fl'>5</span>,
   iter <span class='op'>=</span> <span class='fl'>10000</span>,
-  refresh <span class='op'>=</span> <span class='fl'>500</span>,
+  refresh <span class='op'>=</span> <span class='fl'>2500</span>,
   pars <span class='op'>=</span> <span class='cn'>NULL</span>,
   control <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>adapt_delta <span class='op'>=</span> <span class='fl'>0.9</span>, max_treedepth <span class='op'>=</span> <span class='fl'>15</span><span class='op'>)</span>,
   silent <span class='op'>=</span> <span class='cn'>FALSE</span>,
@@ -298,9 +298,9 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The CAR model has two parameters: <code>car_alpha</code> which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and <code>car_scale</code> which is a scale parameter (<code>car_scale = 1/sqrt(precision)</code>).</p>
+    <p>The CAR model is specified as follows:</p>
 <p><code>Y ~ MVGauss(Mu, scale * (D - alpha * C)^-1)</code></p>
-<p>where <code>Y</code> may be data or parameters and <code>Mu</code> is the mean vector. When <code>Y</code> is a vector of parameters (as in Poisson models), <code>Mu</code> is a vector of zeroes. <code>C</code> is a connectivity matrix (often binary) and <code>D</code> is a matrix with diagonal entries that scale each observation. So an observation corresponding to a diagonal element of <code>D</code> that has larger values relative to other <code>D</code> elements will have smaller variance in the prior probability.</p>
+<p>where <code>Y</code> may be data or parameters and <code>Mu</code> is the mean vector. When <code>Y</code> is a vector of parameters, <code>Mu</code> is a vector of zeroes. <code>C</code> is a connectivity matrix (often binary) and <code>D</code> is a matrix with diagonal entries that scale each observation. So an observation corresponding to a diagonal element of <code>D</code> that has larger values relative to other <code>D</code> elements will have smaller variance in the prior probability. There are two parameters to estimate: <code>alpha</code> which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and <code>scale</code> which is a scale parameter (<code>scale = 1/sqrt(precision)</code>).</p>
 <p>These models are discussed in Haining and Li (2020, p. 249-51) and Cressie and Wikle (2011, p. 184-88). The Stan code for the model draws from Joseph (2016) to calculate the determinant of the precision matrix (see Jin et al. 2005, p. 955).</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
@@ -327,6 +327,8 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span><span class='op'>(</span><span class='va'>fit.car</span>, samples <span class='op'>=</span> <span class='fl'>75</span><span class='op'>)</span>
 <span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span>
 <span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>yrep</span><span class='op'>)</span>
+
+<span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>fit.car</span>, pars <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"car_scale"</span>, <span class='st'>"car_alpha"</span><span class='op'>)</span><span class='op'>)</span>
 
 <span class='va'>sp.trend</span> <span class='op'>&lt;-</span> <span class='fu'><a href='spatial.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit.car</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
 <span class='fu'><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>st_as_sf</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
