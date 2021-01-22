@@ -42,9 +42,9 @@
 #'  
 #' The CAR model is specified as follows:
 #'
-#'                             \code{Y ~ MVGauss(Mu, scale * (D - alpha * C)^-1)}
+#'                             \code{Y ~ MVGauss(Mu, scale^2 * (D - alpha * C)^-1)}
 #'
-#' where \code{Y} may be data or parameters and \code{Mu} is the mean vector. When \code{Y} is a vector of parameters, \code{Mu} is a vector of zeroes. \code{C} is a connectivity matrix (often binary) and \code{D} is a matrix with diagonal entries that scale each observation. So an observation corresponding to a diagonal element of \code{D} that has larger values relative to other \code{D} elements will have smaller variance in the prior probability. There are two parameters to estimate: \code{alpha} which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and \code{scale} which is a scale parameter (\code{scale = 1/sqrt(precision)}). 
+#' where \code{Y} may be data or parameters and \code{Mu} is the mean vector. When \code{Y} is a vector of parameters, \code{Mu} is a vector of zeroes. \code{C} is a connectivity matrix (often binary) and \code{D} is a matrix with diagonal entries that scale each observation. So an observation corresponding to a diagonal element of \code{D} that has larger values relative to other \code{D} elements will have smaller variance in the prior probability. There are two parameters to estimate: \code{alpha} which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and the scale parameter \code{scale} (\code{scale = 1/sqrt(precision)}). 
 #' 
 #' These models are discussed in Haining and Li (2020, p. 249-51) and Cressie and Wikle (2011, p. 184-88). The Stan code for the model draws from Joseph (2016) to calculate the determinant of the precision matrix (see Jin et al. 2005, p. 955).
 #' 
