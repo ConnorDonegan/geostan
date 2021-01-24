@@ -30,3 +30,4 @@ Incorporate information on data quality into any **geostan** model. Purpose-buil
 ### The RStan ecosystem
 
 Compatible with a suite of high-quality R packages for Bayesian inference and model evaluation.
+

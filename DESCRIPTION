@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "Connor.Donegan@UTDallas.edu")
 Description: Bayesian spatial analysis powered by Stan. This package is still under development.
-License: AGPL (>= 3)
+License: CC BY-NC 4.0
 Encoding: UTF-8
 LazyData: true
 Biarch: true
