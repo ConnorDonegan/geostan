@@ -103,9 +103,6 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/building-models.html">building-models</a>
-    </li>
-    <li>
       <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
     </li>
     <li>
@@ -275,7 +272,6 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <p>Cressie, Noel and Wikle, Christopher (2011). Statistics for Spatio-Temporal Data. Wiley.</p>
 <p>Haining, Robert and Li, Guangquan (2020). Modelling Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.</p>
-<p>Jin, Xiaoping and Carlin, Bradley P. and Banerjee, Sudipto (2005). Generalized Hierarchical Multivariate CAR Models for Areal Data. Biometrics: 61 (4): 950-961. <a href='https://www.jstor.org/stable/3695906'>https://www.jstor.org/stable/3695906</a></p>
 <p>Joseph, Max (2016). Exact Sparse CAR Models in Stan. Stan Case Studies, Vol. 3. <a href='https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html'>https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html</a></p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
@@ -301,7 +297,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     <p>The CAR model is specified as follows:</p>
 <p><code>Y ~ MVGauss(Mu, scale^2 * (D - alpha * C)^-1)</code></p>
 <p>where <code>Y</code> may be data or parameters and <code>Mu</code> is the mean vector. When <code>Y</code> is a vector of parameters, <code>Mu</code> is a vector of zeroes. <code>C</code> is a connectivity matrix (often binary) and <code>D</code> is a matrix with diagonal entries that scale each observation. So an observation corresponding to a diagonal element of <code>D</code> that has larger values relative to other <code>D</code> elements will have smaller variance in the prior probability. There are two parameters to estimate: <code>alpha</code> which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and the scale parameter <code>scale</code> (<code>scale = 1/sqrt(precision)</code>).</p>
-<p>These models are discussed in Haining and Li (2020, p. 249-51) and Cressie and Wikle (2011, p. 184-88). The Stan code for the model draws from Joseph (2016) to calculate the determinant of the precision matrix (see Jin et al. 2005, p. 955).</p>
+<p>These models are discussed in Haining and Li (2020, p. 249-51) and Cressie and Wikle (2011, p. 184-88). The Stan code for the model draws from Joseph (2016) to calculate the determinant of the precision matrix (see Haining and Li, p. 250) up to a constant of proportionality.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>Connor Donegan, <a href='mailto:Connor.Donegan@UTDallas.edu'>Connor.Donegan@UTDallas.edu</a></p>

@@ -26,22 +26,20 @@ parameters {
   real<lower=0> spatial_scale;
   vector[type > 1 ? n : 0] theta_tilde;
   real<lower=0> theta_scale[type == 2];
-  real logit_rho[type == 3];
+  real<lower=0,upper=1> rho[type == 3];  
 #include parts/params.stan
 }
 
 transformed parameters {
   vector[type > 1 ? n : 0] convolution;
-  real<lower=0,upper=1> rho[type == 3];  
 #include parts/trans_params_declaration.stan
   if (type == 1) f += phi_tilde * spatial_scale;
   if (type == 2) {
-    convolution = phi_tilde * spatial_scale + theta_tilde * theta_scale[1];
+    convolution = convolve_bym(phi_tilde * spatial_scale, theta_tilde * theta_scale[1], n, k, group_size, group_idx);
     f += convolution;
   }  
   if (type == 3) {
-    rho[1] = inv_logit(logit_rho[1]);        
-    convolution = convolve_bym2(phi_tilde, theta_tilde, n, k, group_size, group_idx, rho[1], scale_factor);
+    convolution = convolve_bym2(phi_tilde, theta_tilde, spatial_scale, n, k, group_size, group_idx, rho[1], scale_factor);
     f += convolution;
   }  
 #include parts/trans_params_expression.stan
@@ -52,10 +50,10 @@ model {
   if (has_theta) {
    theta_tilde ~ std_normal();
    if (type == 2) theta_scale[1] ~ std_normal();
-   if (type == 3) logit_rho[1] ~ std_normal();
+   if (type == 3) rho[1] ~ beta(1, 1);
   }
-  spatial_scale ~ std_normal();  
-  phi_tilde ~ icar_normal(n, n_edges, node1, node2, weight, k, group_size, group_idx, has_theta);
+  spatial_scale ~ std_normal();
+  phi_tilde ~ icar_normal(node1, node2, k, group_size, group_idx, has_theta);  
  }
 
 generated quantities {

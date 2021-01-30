@@ -46,7 +46,7 @@
 #'
 #' where \code{Y} may be data or parameters and \code{Mu} is the mean vector. When \code{Y} is a vector of parameters, \code{Mu} is a vector of zeroes. \code{C} is a connectivity matrix (often binary) and \code{D} is a matrix with diagonal entries that scale each observation. So an observation corresponding to a diagonal element of \code{D} that has larger values relative to other \code{D} elements will have smaller variance in the prior probability. There are two parameters to estimate: \code{alpha} which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and the scale parameter \code{scale} (\code{scale = 1/sqrt(precision)}). 
 #' 
-#' These models are discussed in Haining and Li (2020, p. 249-51) and Cressie and Wikle (2011, p. 184-88). The Stan code for the model draws from Joseph (2016) to calculate the determinant of the precision matrix (see Jin et al. 2005, p. 955).
+#' These models are discussed in Haining and Li (2020, p. 249-51) and Cressie and Wikle (2011, p. 184-88). The Stan code for the model draws from Joseph (2016) to calculate the determinant of the precision matrix (see Haining and Li, p. 250) up to a constant of proportionality.
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
@@ -72,8 +72,6 @@
 #' Cressie, Noel and Wikle, Christopher (2011). Statistics for Spatio-Temporal Data. Wiley.
 #'
 #' Haining, Robert and Li, Guangquan (2020). Modelling Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.
-#'
-#' Jin, Xiaoping and Carlin, Bradley P. and Banerjee, Sudipto (2005). Generalized Hierarchical Multivariate CAR Models for Areal Data. Biometrics: 61 (4): 950-961. \url{https://www.jstor.org/stable/3695906}
 #' 
 #' Joseph, Max (2016). Exact Sparse CAR Models in Stan. Stan Case Studies, Vol. 3. \url{https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html}
 #' 
