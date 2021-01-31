@@ -9,17 +9,15 @@
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
 #' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in \code{~ ID}.  The resulting random effects parameter returned is named \code{alpha_re}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
-#' @param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
+#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$spatial = TRUE}, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
 #' \describe{
 #' 
 #' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
 #' \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
-#' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of the bounded variables. Defaults to \code{bounds = c(0, 100)}.}
-#' \item{spatial}{Logical value indicating if the models for covariates should include a spatially varying mean (using an eigenvector spatial filter). Defaults to \code{spatial = FALSE}. If \code{spatial = TRUE} and you do not provide both \code{ME$prior_rhs} and \code{EV} then you must provide a connectivity matrix \code{C}.}
-#' \item{prior_rhs}{Optional prior parameters for the regularized horseshoe (RHS) prior used for the ESF data model; only used if \code{ME$spatial = TRUE}. The RHS prior is used for the eigenvector spatial filter (ESF), as in \link[geostan]{stan_esf}. Must be a named list containing vectors \code{slab_df}, \code{slab_scale}, \code{scale_global}, and \code{varname}. The character vector \code{varname} indicates the order of the other parameters (by name).}
+#' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.}
+#' \item{spatial}{Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. Defaults to \code{spatial = FALSE}. If \code{spatial = TRUE} you must provide a connectivity matrix \code{C}. The specification of the auto Gaussian model is fixed such that all non-zero values in \code{C} will be converted to ones.}
 #' }
 #' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} or spatial \code{ME} terms; it will be row-standardized before calculating \code{slx} terms.
-#' @param EV A matrix of eigenvectors from any (transformed) connectivity matrix (presumably spatial). See \link[geostan]{make_EV} and \link[geostan]{shape2mat}. 
 #' @param family The likelihood function for the outcome variable. Current options are \code{poisson(link = "log")}, \code{binomial(link = "logit")}, \code{student_t()}, and the default \code{gaussian()}. 
 #' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. 
@@ -28,7 +26,7 @@
 #' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}. 
 #' @param scalex Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
-#' @param prior_only Draw samples from the prior distributions of parameters only.
+#' @param prior_only Draw samples from the prior distributions of parameters only. 
 #' @param chains Number of MCMC chains to estimate. 
 #' @param iter Number of samples per chain. 
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples; set \code{refresh=0} to silence this.
@@ -93,7 +91,7 @@
 #' y <- sentencing$sents
 #' ppc_dens_overlay(y, yrep)
 #' }
-stan_glm <- function(formula, slx, re, data, ME = NULL, C, EV,
+stan_glm <- function(formula, slx, re, data, ME = NULL, C, 
                      family = gaussian(),
                      prior = NULL, prior_intercept = NULL, prior_sigma = NULL, prior_nu = NULL,
                      prior_tau = NULL,
@@ -204,11 +202,9 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C, EV,
   me.list <- prep_me_data(ME, x.list$x)
   standata <- c(standata, me.list)
   if (missing(C)) C <- NA
-  if (missing(EV)) EV <- NA
-  sp.me <- prep_sp_me_data(ME, me.list, C, EV, x.list$x, silent = silent)
+  sp.me <- prep_sp_me_data(C, me.list$spatial_me)
   standata <- c(standata, sp.me)
   ## STAN STUFF -------------    
-  # handling multiple possible data types
   if (family$family == "binomial") {
       # standata$y will be ignored for binomial and poisson
       standata$y <- standata$y_int <- y[,1]

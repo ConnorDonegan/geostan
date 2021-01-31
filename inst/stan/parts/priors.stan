@@ -21,41 +21,38 @@
 }
 
 /**
- * Log probability of a conditional autoregressive (CAR) model,
- * dropping additive constants.
- *
- *           y ~ N(mu, tau * (D - alph * W)^(-1))
- *
- * @param y Vector containing the parameters with a CAR prior
- * @param mu Mean vector.
- * @param tau Precision parameter for the CAR prior (real)
- * @param alpha Dependence (usually spatial) parameter for the CAR prior (real)
- * @param w sparse representation of W' (transpose!): contains all non-zero values of W.
- * @param v column indices for values in w
- * @param u row starting indices for values in w followed by size of w
- * @param D_diag Diagonal of D matrix; e.g., number of neighbors for each location
- * @param lambda Eigenvalues of D^{-1/2}*W*D^{-1/2} (vector)
- * @param n Length of y 
- *
- * @return Log probability density of CAR model up to additive constant
- */
-real car_normal_lpdf(vector y, vector mu,
-		     real tau, real alpha,
-		     vector w, int[] v, int[] u, 
-		     vector D_diag, vector lambda,
-		     int n) {
+  * Return the log probability of the conditional autoregressive (CAR) prior,
+  *  excluding additive constants.
+  *
+  * @param y Vector containing the parameters with a CAR prior
+  * @param mu Mean vector.
+  * @param tau Precision parameter for the CAR prior (real)
+  * @param alpha Dependence (usually spatial) parameter for the CAR prior (real)
+  * @param w sparse representation of W' (transpose!): non-zero values
+  * @param v column indices for values in w
+  * @param u row starting indices for values in w followed by size of w
+  * @param D_diag Diagonal of D matrix; e.g., number of neighbors for each location
+  * @param lambda Eigenvalues of D^{-1/2}*W*D^{-1/2} (vector)
+  * @param n Length of y 
+  *
+  * @return Log probability density of CAR prior up to additive constant
+  */
+  real car_normal_lpdf(vector y, vector mu,
+                       real tau, real alpha,
+                       vector w, int[] v, int[] u, 
+                       vector D_diag, vector lambda,
+                       int n) {
   vector[n] yc = y - mu; 
-  row_vector[n] yct_D; // yc transpose * D
-  row_vector[n] yct_W; // yc transpose * W
-  vector[n] ldet_terms;    
-  yct_D = (yc .* D_diag)';
-  yct_W = csr_matrix_times_vector(n, n, w, v, u, yc)';    
-  for (i in 1:n) ldet_terms[i] = log1m(alpha * lambda[i]);
+  real ytDy; // yc transpose * D * yc
+  real ytWy; // yc transpose * W
+  vector[n] ldet_prec;    
+  ytDy = (yc .* D_diag)' * yc;
+  ytWy = csr_matrix_times_vector(n, n, w, v, u, yc)' * yc;    
+  for (i in 1:n) ldet_prec[i] = log1m(alpha * lambda[i]);
   return 0.5 * (n * log(tau)
-                    + sum(ldet_terms)
-		- tau * (yct_D * yc - alpha * (yct_W * yc)));
+		+ sum(ldet_prec)
+		- tau * (ytDy - alpha * ytWy));
 }
-
 
 /**
  * Log probability of the intrinsic conditional autoregressive (ICAR) prior,

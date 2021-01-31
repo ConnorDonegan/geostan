@@ -60,7 +60,7 @@ test_that("IAR accepts covariate ME, multiple bounded x vars", {
     data(ohio)
     C <- shape2mat(ohio)        
     n <- nrow(ohio)
-    ME <- list(ME = data.frame(unemployment = rep(0.75, n),
+    ME <- list(se = data.frame(unemployment = rep(0.75, n),
                           historic_gop = rep(3, n)),
                bounded = c(1, 1))
     SW(
@@ -80,7 +80,7 @@ test_that("IAR accepts covariate ME, mixed (un-) bounded", {
     data(ohio)
     C <- shape2mat(ohio)        
     n <- nrow(ohio)
-    ME <- list(ME = data.frame(unemployment = rep(0.75, n),
+    ME <- list(se = data.frame(unemployment = rep(0.75, n),
                           historic_gop = rep(3, n)),
                bounded = c(1, 0))
     SW(
@@ -101,7 +101,7 @@ test_that("IAR accepts covariate ME with WX, mixed ME-non-ME", {
     data(ohio)
     C <- shape2mat(ohio)        
     n <- nrow(ohio)
-    ME <- list(ME = data.frame(unemployment = rep(0.75, n),
+    ME <- list(se = data.frame(unemployment = rep(0.75, n),
                                historic_gop = rep(3, n),
                                college_educated = rep(3, n)),
                bounded = c(1, 0, 1))

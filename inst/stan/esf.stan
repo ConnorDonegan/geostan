@@ -4,8 +4,8 @@ functions {
 data {
 #include parts/data.stan
 // esf data
-//  int<lower=0> dev; // number of eigenvectors : now included in parts/data.stan
-//  matrix[n, dev] EV; // the eigenvectors : now included in parts/data.stan
+  int<lower=0> dev; // number of eigenvectors : now included in parts/data.stan
+  matrix[n, dev] EV; // the eigenvectors : now included in parts/data.stan
   real<lower=0> scale_global;  // horseshoe parameters
   real<lower=0> slab_scale;
   real<lower=0> slab_df;

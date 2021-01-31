@@ -10,19 +10,16 @@
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
 #' @param re If the model includes a varying intercept term \code{alpha_re} specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}. With the CAR model, any \code{alpha_re} term should be at a different level or scale than the observations (i.e., a different scale than the CAR model). In other words, do not try to replicate the BYM model using the CAR model because that would be redundant.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
-#' @param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list \code{ME} may include:
+#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$spatial = TRUE}, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
 #' \describe{
-#' 
 #' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
 #' \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
-#' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of the bounded variables. Defaults to \code{bounds = c(0, 100)}.}
-#' \item{spatial}{Logical value indicating if the models for covariates should include a spatially varying mean (using an eigenvector spatial filter). Defaults to \code{spatial = FALSE}. If \code{spatial = TRUE} and you do not provide both \code{ME$prior_rhs} and \code{EV} then you must provide a connectivity matrix \code{C}.}
-#' \item{prior_rhs}{Optional prior parameters for the regularized horseshoe (RHS) prior used for the ESF data model; only used if \code{ME$spatial = TRUE}. The RHS prior is used for the eigenvector spatial filter (ESF), as in \link[geostan]{stan_esf}. Must be a named list containing vectors \code{slab_df}, \code{slab_scale}, \code{scale_global}, and \code{varname}. The character vector \code{varname} indicates the order of the other parameters (by name).}
+#' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.}
+#' \item{spatial}{Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. Defaults to \code{spatial = FALSE}. If \code{spatial = TRUE} you must provide a connectivity matrix \code{C}. The specification of the auto Gaussian model is fixed such that all non-zero values in \code{C} will be converted to ones.}
 #' }
 #' @param C Binary spatial connectivity matrix. This is used for the CAR prior and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms (it will be row-standardized before calculating \code{slx} terms).
 #' @param D_diagonal Diagonal elements of matrix D, which influence the prior precision of each observation relative to each other. The default specification sets this equal to the number of neighbors of each observation. A limitation of the default specification (for this software implementation) is that all observations must have at least one neighbor. 
 #' 
-#' @param EV A matrix of eigenvectors from any doubly-centered connectivity matrix (presumably spatial). See \link[geostan]{make_EV} and \link[geostan]{shape2mat}. 
 #' @param family The likelihood function for the outcome variable. Current options are \code{binomial(link = "logit")} and \code{poisson(link = "log")}. 
 #' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. 
@@ -114,7 +111,6 @@ stan_car <- function(formula,
                      ME = NULL,
                      C,
                      D_diagonal = apply(C, 1, function(r) sum(r > 0)),
-                     EV,
                      family = poisson(),
                      prior = NULL, prior_intercept = NULL, prior_tau = NULL, prior_car_scale = NULL,
                      centerx = FALSE, scalex = FALSE,
@@ -243,8 +239,7 @@ stan_car <- function(formula,
   me.list <- prep_me_data(ME, x.list$x)
   standata <- c(standata, me.list)
   if (missing(C)) C <- NA
-  if (missing(EV)) EV <- NA
-  sp.me <- prep_sp_me_data(ME, me.list, C, EV, x.list$x, silent = silent)
+  sp.me <- prep_sp_me_data(C, me.list$spatial_me)
   standata <- c(standata, sp.me)
   ## STAN STUFF -------------    
   if (family$family == "binomial") {

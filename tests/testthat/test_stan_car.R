@@ -22,11 +22,11 @@ test_that("Poisson CAR model works", {
 test_that("CAR accepts covariate ME, mixed (un-) bounded", {
     data(ohio)
     SW(
-        fit <- stan_car(cbind(trump_2016, total_2016 - trump_2016) ~ unemployment + historic_gop,
+        fit <- stan_glm(cbind(trump_2016, total_2016 - trump_2016) ~ unemployment + historic_gop,
                         data = ohio,
                         C = shape2mat(ohio),
                         family = binomial(),
-                        ME = list(ME = data.frame(unemployment = rep(0.75, nrow(ohio)),
+                        ME = list(se = data.frame(unemployment = rep(0.75, nrow(ohio)),
                                                   historic_gop = rep(3, nrow(ohio))),
                                   bounded = c(1, 0)),
                         chains = 1,
@@ -42,7 +42,7 @@ test_that("CAR accepts covariate ME with WX, mixed ME-non-ME", {
     data(ohio)
     C <- shape2mat(ohio)        
     n <- nrow(ohio)
-    ME <- list(ME = data.frame(unemployment = rep(0.75, n),
+    ME <- list(se = data.frame(unemployment = rep(0.75, n),
                                historic_gop = rep(3, n),
                                college_educated = rep(3, n)),
                bounded = c(1, 0, 1))
