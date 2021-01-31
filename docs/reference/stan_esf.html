@@ -48,7 +48,7 @@
 
 <meta property="og:title" content="Spatial filtering — stan_esf" />
 <meta property="og:description" content="Fit a spatial regression model using eigenvector spatial filtering." />
-<meta property="og:image" content="/logo.png" />
+<meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
 
@@ -62,6 +62,16 @@
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-116873024-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-116873024-1');
+</script>
 
 
   </head>
@@ -112,7 +122,12 @@
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/ConnorDonegan/geostan/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -127,7 +142,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Spatial filtering</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/ConnorDonegan/geostan/blob/master/R/stan_esf.R'><code>R/stan_esf.R</code></a></small>
     <div class="hidden name"><code>stan_esf.Rd</code></div>
     </div>
 
@@ -196,13 +211,12 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>ME</th>
-      <td><p>To model observational error (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model with optional spatially varying mean. Elements of the list <code>ME</code> may include:</p><dl>
+      <td><p>To model observational error (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if <code>ME$spatial = TRUE</code>, an auto Gaussian (CAR) model. Elements of the list <code>ME</code> may include:</p><dl>
 
 <dt>se</dt><dd><p>a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
 <dt>bounded</dt><dd><p>If any variables in <code>se</code> are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.</p></dd>
-<dt>bounds</dt><dd><p>A numeric vector of length two providing the upper and lower bounds, respectively, of the bounded variables. Defaults to <code>bounds = c(0, 100)</code>.</p></dd>
-<dt>spatial</dt><dd><p>Logical value indicating if the models for covariates should include a spatially varying mean (using an eigenvector spatial filter). Defaults to <code>spatial = FALSE</code>. If <code>spatial = TRUE</code> and you do not provide both <code>ME$prior_rhs</code> and <code>EV</code> then you must provide a connectivity matrix <code>C</code>.</p></dd>
-<dt>prior_rhs</dt><dd><p>Optional prior parameters for the regularized horseshoe (RHS) prior used for the ESF data model; only used if <code>ME$spatial = TRUE</code>. The RHS prior is used for the eigenvector spatial filter (ESF), as in stan_esf. Must be a named list containing vectors <code>slab_df</code>, <code>slab_scale</code>, <code>scale_global</code>, and <code>varname</code>. The character vector <code>varname</code> indicates the order of the other parameters (by name).</p></dd>
+<dt>bounds</dt><dd><p>A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.</p></dd>
+<dt>spatial</dt><dd><p>Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. Defaults to <code>spatial = FALSE</code>. If <code>spatial = TRUE</code> you must provide a connectivity matrix <code>C</code>. The specification of the auto Gaussian model is fixed such that all non-zero values in <code>C</code> will be converted to ones.</p></dd>
 
 </dl></td>
     </tr>

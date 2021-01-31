@@ -47,7 +47,7 @@
 
 
 <meta property="og:title" content="Function reference" />
-<meta property="og:image" content="/logo.png" />
+<meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
 
@@ -61,6 +61,16 @@
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-116873024-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-116873024-1');
+</script>
 
 
   </head>
@@ -111,7 +121,12 @@
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/ConnorDonegan/geostan/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -159,7 +174,7 @@
       <tr>
         <th colspan="2">
           <h2 id="section-spatial-autocorrelation" class="hasAnchor"><a href="#section-spatial-autocorrelation" class="anchor"></a>Spatial autocorrelation</h2>
-          <p class="section-desc"><p>Functions for measuring and visualizing spatial autocorrelation, including regression and observational error model diagnostics</p></p>
+          <p class="section-desc"><p>Functions for measuring and visualizing spatial autocorrelation, including model diagnostics</p></p>
         </th>
       </tr>
       
@@ -275,7 +290,7 @@
       <tr>
         <th colspan="2">
           <h2 id="section-convenience-functions" class="hasAnchor"><a href="#section-convenience-functions" class="anchor"></a>Convenience functions</h2>
-          <p class="section-desc"><p>Functions for working with spatial data and <strong>geostan</strong> models</p></p>
+          <p class="section-desc"><p>Tools for working with spatial data and <strong>geostan</strong> models</p></p>
         </th>
       </tr>
       
