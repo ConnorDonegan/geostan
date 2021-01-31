@@ -24,7 +24,7 @@ test_that("ESF works with covariate ME", {
     data(ohio)
     C <- shape2mat(ohio)    
     n <- nrow(ohio)
-    ME <- list(ME = data.frame(unemployment = rep(0.75, n)))
+    ME <- list(se = data.frame(unemployment = rep(0.75, n)))
     SW(fit <- stan_glm(gop_growth ~ unemployment + historic_gop,
                        data = ohio,
                        C = C,
@@ -40,7 +40,7 @@ test_that("ESF accepts covariate ME, multiple x proportions", {
     data(ohio)
     C <- shape2mat(ohio)        
     n <- nrow(ohio)
-    ME <- list(ME = data.frame(unemployment = rep(0.75, n),
+    ME <- list(se = data.frame(unemployment = rep(0.75, n),
                           historic_gop = rep(3, n)),
                bounded = c(1, 1))
     SW(
@@ -59,7 +59,7 @@ test_that("ESF accepts covariate ME, mixed (un-) bounded", {
     data(ohio)
     C <- shape2mat(ohio)        
     n <- nrow(ohio)
-    ME <- list(ME = data.frame(unemployment = rep(0.75, n),
+    ME <- list(se = data.frame(unemployment = rep(0.75, n),
                           historic_gop = rep(3, n)),
                bounded = c(1, 0))
     SW(
@@ -78,7 +78,7 @@ test_that("ESF accepts covariate ME with WX, mixed ME-non-ME", {
     data(ohio)
     C <- shape2mat(ohio)        
     n <- nrow(ohio)
-    ME <- list(ME = data.frame(unemployment = rep(0.75, n),
+    ME <- list(se = data.frame(unemployment = rep(0.75, n),
                                historic_gop = rep(3, n),
                                college_educated = rep(3, n)),
                bounded = c(1, 0, 1))

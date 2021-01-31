@@ -1,7 +1,9 @@
 template:
   params:
     bootswatch: flatly
+    ganalytics: UA-116873024-1
 destination: docs
+url: https://connordonegan.github.io/geostan
 home:
   title: R package for Bayesian spatial modeling
   links:
@@ -13,7 +15,7 @@ reference:
   - geostan-package
 - title: "Spatial autocorrelation"
   desc: >
-    Functions for measuring and visualizing spatial autocorrelation, including regression and observational error model diagnostics
+    Functions for measuring and visualizing spatial autocorrelation, including model diagnostics
 - contents: 
   - aple
   - lisa
@@ -31,7 +33,7 @@ reference:
   - posterior_predict
   - spatial
 - title: "Convenience functions"
-  desc: Functions for working with spatial data and **geostan** models
+  desc: Tools for working with spatial data and **geostan** models
 - contents:
   - edges
   - exp_pars

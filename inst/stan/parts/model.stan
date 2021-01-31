@@ -1,79 +1,41 @@
-// spatial ME model parameter declaration
-  // unbounded
-  vector[dev] beta_ev_me_unbounded[spatial_me ? dx_me_unbounded : 0];
-  vector[n] fitted_me_unbounded[spatial_me ? dx_me_unbounded : 0];
-  // bounded
-  vector[dev] beta_ev_me_bounded[spatial_me ? dx_me_bounded : 0];
-  vector[n] fitted_me_bounded[spatial_me ? dx_me_bounded : 0];
 // parameter models 
   intercept ~ normal(alpha_prior[1], alpha_prior[2]);
   if (dx_all) append_row(gamma, beta) ~ normal(beta_prior[1], beta_prior[2]);
   if (has_sigma) sigma ~ student_t(sigma_prior[1], sigma_prior[2], sigma_prior[3]);
   if (is_student) nu[1] ~ gamma(t_nu_prior[1], t_nu_prior[2]);  
-// data models (observational error)
+// data models (observational uncertainty)
+  // unbounded variables
   if (dx_me_unbounded) {
     if (spatial_me) {
       for (j in 1:dx_me_unbounded) {
-        beta_ev_me_unbounded[j] = rhs_prior(dev, z_ev_me_unbounded[j],
-	                                    aux1_global_me_unbounded[j],
-					    aux2_global_me_unbounded[j],
-					    aux1_local_me_unbounded[j],
-					    aux2_local_me_unbounded[j],
-					    caux_me_unbounded[j],
-					    scale_global_me_unbounded[j],
-					    slab_scale_me_unbounded[j],
-					    sigma_x_true_unbounded[j]);
-        fitted_me_unbounded[j] = mu_x_true_unbounded[j] + EV * beta_ev_me_unbounded[j];
-        z_ev_me_unbounded[j] ~ std_normal();
-        aux1_local_me_unbounded[j] ~ std_normal();
-        aux2_local_me_unbounded[j] ~ inv_gamma(0.5, 0.5);
-        caux_me_unbounded ~ inv_gamma(0.5 * slab_df_me_unbounded[j], 0.5 * slab_df_me_unbounded[j]);		
-        x_me_unbounded[j] ~ normal(x_true_unbounded[j], sigma_me_unbounded[j]);	
-        x_true_unbounded[j] ~ student_t(nu_x_true_unbounded[j], fitted_me_unbounded[j], sigma_x_true_unbounded[j]);	
+        x_me_unbounded[j] ~ normal(x_true_unbounded[j], sigma_me_unbounded[j]);
+	x_true_unbounded[j] ~ car_normal(rep_vector(mu_x_true_unbounded[j], n), inv(square(sigma_x_true_unbounded[j])), car_alpha_x_true_unbounded[j], me_w, me_v, me_u, me_D_diag, me_lambda, n);
         }
-      aux1_global_me_unbounded ~ std_normal();
-      aux2_global_me_unbounded ~ inv_gamma(0.5, 0.5);
       } else {
       for (j in 1:dx_me_unbounded) {
       	  x_me_unbounded[j] ~ normal(x_true_unbounded[j], sigma_me_unbounded[j]);
-	  x_true_unbounded[j] ~ student_t(nu_x_true_unbounded[j], mu_x_true_unbounded[j], sigma_x_true_unbounded[j]);          
+	  x_true_unbounded[j] ~ student_t(nu_x_true_unbounded[j], mu_x_true_unbounded[j], sigma_x_true_unbounded[j]);
+	  nu_x_true_unbounded[j] ~ gamma(3, 0.2);
     }
   }
-   nu_x_true_unbounded ~ gamma(3, 0.2);
    mu_x_true_unbounded ~ normal(prior_mean_x_true_unbounded, 2 * prior_scale_x_true_unbounded);
    sigma_x_true_unbounded ~ student_t(10, 0, 2 * prior_scale_x_true_unbounded);
 }
+  // bounded variables
   if (dx_me_bounded) {
     if (spatial_me) {
       for (j in 1:dx_me_bounded) {
-        beta_ev_me_bounded[j] = rhs_prior(dev, z_ev_me_bounded[j],
-	                                    aux1_global_me_bounded[j],
-					    aux2_global_me_bounded[j],
-					    aux1_local_me_bounded[j],
-					    aux2_local_me_bounded[j],
-					    caux_me_bounded[j],
-					    scale_global_me_bounded[j],
-					    slab_scale_me_bounded[j],
-					    sigma_x_true_bounded[j]);
-        fitted_me_bounded[j] = mu_x_true_bounded[j] + EV * beta_ev_me_bounded[j];
-        z_ev_me_bounded[j] ~ std_normal();
-        aux1_local_me_bounded[j] ~ std_normal();
-        aux2_local_me_bounded[j] ~ inv_gamma(0.5, 0.5);
-        caux_me_bounded ~ inv_gamma(0.5 * slab_df_me_bounded[j], 0.5 * slab_df_me_bounded[j]);
-        x_me_bounded[j] ~ normal(x_true_bounded[j], sigma_me_bounded[j]);	
-        x_true_bounded[j] ~ student_t(nu_x_true_bounded[j], fitted_me_bounded[j], sigma_x_true_bounded[j]);
+	x_me_bounded[j] ~ normal(x_true_bounded[j], sigma_me_bounded[j]);	
+        x_true_bounded[j] ~ car_normal(rep_vector(mu_x_true_bounded[j], n), inv(square(sigma_x_true_bounded[j])), car_alpha_x_true_bounded[j], me_w, me_v, me_u, me_D_diag, me_lambda, n);
         }
-      aux1_global_me_bounded ~ std_normal();
-      aux2_global_me_bounded ~ inv_gamma(0.5, 0.5);
       } else {
       for (j in 1:dx_me_bounded) {
-      	  x_me_bounded[j] ~ normal(x_true_bounded[j], sigma_me_bounded[j]);
-	  x_true_bounded[j] ~ student_t(nu_x_true_bounded[j], mu_x_true_bounded[j], sigma_x_true_bounded[j]);
+	x_me_bounded[j] ~ normal(x_true_bounded[j], sigma_me_bounded[j]);		
+	x_true_bounded[j] ~ student_t(nu_x_true_bounded[j], mu_x_true_bounded[j], sigma_x_true_bounded[j]);
+	nu_x_true_bounded[j] ~ gamma(3, 0.2);
     }
-    
   }
-   nu_x_true_bounded ~ gamma(3, 0.2);
-   mu_x_true_bounded ~ normal(prior_mean_x_true_unbounded, 2 * prior_scale_x_true_bounded);
+   mu_x_true_bounded ~ normal(prior_mean_x_true_bounded, 2 * prior_scale_x_true_bounded);
    sigma_x_true_bounded ~ student_t(10, 0, 2 * prior_scale_x_true_bounded);
 }
 // partial pooling of observations across all groups/geographies (varying intercept)
