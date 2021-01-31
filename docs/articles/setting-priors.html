@@ -19,11 +19,17 @@
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
 <script src="../pkgdown.js"></script><meta property="og:title" content="Setting prior distributions">
 <meta property="og:description" content="geostan">
-<meta property="og:image" content="/logo.png">
+<meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<![endif]--><!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=UA-116873024-1"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-116873024-1');
+</script>
 </head>
 <body data-spy="scroll" data-target="#toc">
     <div class="container template-article">
@@ -61,9 +67,6 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/building-models.html">building-models</a>
-    </li>
-    <li>
       <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
     </li>
     <li>
@@ -72,7 +75,14 @@
   </ul>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/ConnorDonegan/geostan/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -89,7 +99,7 @@
                         <h4 class="author">Connor Donegan</h4>
             
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/ConnorDonegan/geostan/blob/master/vignettes/setting-priors.Rmd"><code>vignettes/setting-priors.Rmd</code></a></small>
       <div class="hidden name"><code>setting-priors.Rmd</code></div>
 
     </div>
@@ -112,17 +122,17 @@
 <span class="va">folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempdir</a></span><span class="op">(</span><span class="op">)</span>
 <span class="va">url</span> <span class="op">&lt;-</span> <span class="st">"https://geodacenter.github.io/data-and-lab//data/nepal.zip"</span>
 <span class="fu"><a href="../reference/get_shp.html">get_shp</a></span><span class="op">(</span><span class="va">url</span>, <span class="va">folder</span><span class="op">)</span>
-<span class="co">#&gt; [1] "/tmp/RtmpsUEDPs/callr-env-5f7b370c36e0"</span>
-<span class="co">#&gt; [2] "/tmp/RtmpsUEDPs/file5f7b1a7b6fab"      </span>
-<span class="co">#&gt; [3] "/tmp/RtmpsUEDPs/file5f7b426e8ba2"      </span>
-<span class="co">#&gt; [4] "/tmp/RtmpsUEDPs/file5f7ba076bd4.so"    </span>
-<span class="co">#&gt; [5] "/tmp/RtmpsUEDPs/file5f7bfebf8a1.zip"   </span>
-<span class="co">#&gt; [6] "/tmp/RtmpsUEDPs/nepal.dbf"             </span>
-<span class="co">#&gt; [7] "/tmp/RtmpsUEDPs/nepal.prj"             </span>
-<span class="co">#&gt; [8] "/tmp/RtmpsUEDPs/nepal.shp"             </span>
-<span class="co">#&gt; [9] "/tmp/RtmpsUEDPs/nepal.shx"</span>
+<span class="co">#&gt; [1] "/tmp/RtmpaDOIxM/callr-env-4235a80cf89"</span>
+<span class="co">#&gt; [2] "/tmp/RtmpaDOIxM/file42352360ddb1.so"  </span>
+<span class="co">#&gt; [3] "/tmp/RtmpaDOIxM/file423526d8ebbd"     </span>
+<span class="co">#&gt; [4] "/tmp/RtmpaDOIxM/file4235311bbe49.zip" </span>
+<span class="co">#&gt; [5] "/tmp/RtmpaDOIxM/file42353f7d32ec"     </span>
+<span class="co">#&gt; [6] "/tmp/RtmpaDOIxM/nepal.dbf"            </span>
+<span class="co">#&gt; [7] "/tmp/RtmpaDOIxM/nepal.prj"            </span>
+<span class="co">#&gt; [8] "/tmp/RtmpaDOIxM/nepal.shp"            </span>
+<span class="co">#&gt; [9] "/tmp/RtmpaDOIxM/nepal.shx"</span>
 <span class="va">nepal</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html">st_read</a></span><span class="op">(</span><span class="va">folder</span>, <span class="st">"nepal"</span><span class="op">)</span>
-<span class="co">#&gt; Reading layer `nepal' from data source `/tmp/RtmpsUEDPs' using driver `ESRI Shapefile'</span>
+<span class="co">#&gt; Reading layer `nepal' from data source `/tmp/RtmpaDOIxM' using driver `ESRI Shapefile'</span>
 <span class="co">#&gt; Simple feature collection with 75 features and 61 fields</span>
 <span class="co">#&gt; geometry type:  POLYGON</span>
 <span class="co">#&gt; dimension:      XY</span>
@@ -231,40 +241,36 @@
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># one at a time</span>
 <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">sf</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span>
-<span class="co">#&gt; [1] 0.01369049</span>
+<span class="co">#&gt; [1] 0.01584698</span>
 
 <span class="co"># summarize them all: mean of each column</span>
 <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span><span class="op">(</span><span class="va">sf</span>, <span class="fl">2</span>, <span class="va">mean</span><span class="op">)</span>
-<span class="co">#&gt;        esf[1]        esf[2]        esf[3]        esf[4]        esf[5] </span>
-<span class="co">#&gt;  1.369049e-02 -2.946105e-02 -2.654981e-02 -1.120755e-02  3.412523e-02 </span>
-<span class="co">#&gt;        esf[6]        esf[7]        esf[8]        esf[9]       esf[10] </span>
-<span class="co">#&gt; -5.591450e-02 -3.165407e-03  3.614153e-02  3.530955e-02 -5.593490e-02 </span>
-<span class="co">#&gt;       esf[11]       esf[12]       esf[13]       esf[14]       esf[15] </span>
-<span class="co">#&gt; -5.663467e-02 -2.868875e-02 -2.102255e-02 -3.146936e-03  2.641501e-03 </span>
-<span class="co">#&gt;       esf[16]       esf[17]       esf[18]       esf[19]       esf[20] </span>
-<span class="co">#&gt;  1.770263e-02  6.324541e-03  1.406317e-02 -1.321460e-02  8.043370e-04 </span>
-<span class="co">#&gt;       esf[21]       esf[22]       esf[23]       esf[24]       esf[25] </span>
-<span class="co">#&gt; -1.395638e-02 -9.061292e-04 -2.517678e-02  1.570757e-02  4.743779e-02 </span>
-<span class="co">#&gt;       esf[26]       esf[27]       esf[28]       esf[29]       esf[30] </span>
-<span class="co">#&gt;  6.108986e-02  4.230005e-02 -4.561956e-03  5.164797e-02  5.673363e-02 </span>
-<span class="co">#&gt;       esf[31]       esf[32]       esf[33]       esf[34]       esf[35] </span>
-<span class="co">#&gt;  3.958450e-02  7.354104e-02  4.301156e-02  2.723341e-03  1.026367e-02 </span>
-<span class="co">#&gt;       esf[36]       esf[37]       esf[38]       esf[39]       esf[40] </span>
-<span class="co">#&gt; -4.101472e-02 -4.206686e-02  2.182584e-02 -2.490616e-02  2.795450e-02 </span>
-<span class="co">#&gt;       esf[41]       esf[42]       esf[43]       esf[44]       esf[45] </span>
-<span class="co">#&gt; -5.063406e-03  2.348649e-02 -2.036707e-02  4.172513e-02  3.266782e-02 </span>
-<span class="co">#&gt;       esf[46]       esf[47]       esf[48]       esf[49]       esf[50] </span>
-<span class="co">#&gt;  3.336323e-02  2.568870e-02 -3.024537e-02 -5.572241e-02 -5.269249e-02 </span>
-<span class="co">#&gt;       esf[51]       esf[52]       esf[53]       esf[54]       esf[55] </span>
-<span class="co">#&gt;  4.110158e-02  3.374807e-02  3.094653e-03  2.863260e-03  7.331172e-03 </span>
-<span class="co">#&gt;       esf[56]       esf[57]       esf[58]       esf[59]       esf[60] </span>
-<span class="co">#&gt;  1.861005e-02  4.548046e-02  1.113207e-02 -4.778553e-02 -4.197656e-03 </span>
-<span class="co">#&gt;       esf[61]       esf[62]       esf[63]       esf[64]       esf[65] </span>
-<span class="co">#&gt; -1.163348e-03  1.477737e-02 -3.285428e-02 -4.794214e-02 -4.442013e-02 </span>
-<span class="co">#&gt;       esf[66]       esf[67]       esf[68]       esf[69]       esf[70] </span>
-<span class="co">#&gt; -4.281717e-02 -5.608478e-02 -1.100080e-02 -2.552955e-02 -2.901814e-02 </span>
-<span class="co">#&gt;       esf[71]       esf[72]       esf[73]       esf[74]       esf[75] </span>
-<span class="co">#&gt; -2.197233e-02  3.918252e-03  1.592941e-03 -7.461109e-05 -8.724610e-03</span></code></pre></div>
+<span class="co">#&gt;       esf[1]       esf[2]       esf[3]       esf[4]       esf[5]       esf[6] </span>
+<span class="co">#&gt;  0.015846978  0.032736700  0.027176950 -0.031004264 -0.032303451  0.001798214 </span>
+<span class="co">#&gt;       esf[7]       esf[8]       esf[9]      esf[10]      esf[11]      esf[12] </span>
+<span class="co">#&gt; -0.011429275  0.011165666 -0.023067399  0.007699013  0.018116558  0.042590310 </span>
+<span class="co">#&gt;      esf[13]      esf[14]      esf[15]      esf[16]      esf[17]      esf[18] </span>
+<span class="co">#&gt;  0.005322756  0.018499418  0.016052580  0.003085228  0.024252635  0.012015868 </span>
+<span class="co">#&gt;      esf[19]      esf[20]      esf[21]      esf[22]      esf[23]      esf[24] </span>
+<span class="co">#&gt;  0.059372946  0.045126263  0.053797403  0.049161517  0.011103338 -0.142624643 </span>
+<span class="co">#&gt;      esf[25]      esf[26]      esf[27]      esf[28]      esf[29]      esf[30] </span>
+<span class="co">#&gt;  0.016373185  0.109728125 -0.053964105  0.045647390  0.046485792  0.090415175 </span>
+<span class="co">#&gt;      esf[31]      esf[32]      esf[33]      esf[34]      esf[35]      esf[36] </span>
+<span class="co">#&gt;  0.062244374  0.108245693  0.042990624 -0.153858167 -0.094783357  0.024937570 </span>
+<span class="co">#&gt;      esf[37]      esf[38]      esf[39]      esf[40]      esf[41]      esf[42] </span>
+<span class="co">#&gt;  0.012532259 -0.124201485 -0.073640391 -0.014509610  0.017061410 -0.024326137 </span>
+<span class="co">#&gt;      esf[43]      esf[44]      esf[45]      esf[46]      esf[47]      esf[48] </span>
+<span class="co">#&gt;  0.019712582  0.048694525 -0.026255648  0.020579427  0.013370513  0.006279352 </span>
+<span class="co">#&gt;      esf[49]      esf[50]      esf[51]      esf[52]      esf[53]      esf[54] </span>
+<span class="co">#&gt; -0.063050822 -0.048581575  0.051819315  0.049902123  0.010109063  0.059919931 </span>
+<span class="co">#&gt;      esf[55]      esf[56]      esf[57]      esf[58]      esf[59]      esf[60] </span>
+<span class="co">#&gt; -0.009841617  0.049236371  0.065448331  0.035836022 -0.048247434 -0.008258472 </span>
+<span class="co">#&gt;      esf[61]      esf[62]      esf[63]      esf[64]      esf[65]      esf[66] </span>
+<span class="co">#&gt; -0.004106201  0.032247481 -0.045014837 -0.020078697 -0.052465908 -0.035264679 </span>
+<span class="co">#&gt;      esf[67]      esf[68]      esf[69]      esf[70]      esf[71]      esf[72] </span>
+<span class="co">#&gt; -0.003599268 -0.075971467 -0.067201224 -0.017959183 -0.036614594 -0.041187154 </span>
+<span class="co">#&gt;      esf[73]      esf[74]      esf[75] </span>
+<span class="co">#&gt; -0.024384697 -0.064091267 -0.022849948</span></code></pre></div>
 <p>By contrast, each row is a draw from the <em>joint</em> probability distribution of the spatial filter. Each of the coefficients has the same marginal probability as <code>beta_ev[1]</code>. But samples from the joint distribution show that the horseshoe prior assigns high probability to the presence of positive spatial autocorrelation (without favoring any particular pattern). Each of the samples exhibit a different pattern, arising from various linear combinations of eigenvectors:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">n.samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">sf</span><span class="op">)</span>
@@ -332,30 +338,23 @@
 <code class="sourceCode R"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="va">lif40</span> <span class="op">~</span> <span class="fl">1</span>, re <span class="op">=</span> <span class="op">~</span> <span class="va">name_2</span>, data <span class="op">=</span> <span class="va">nepal</span>, prior_tau <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 </div>
 </div>
-<div id="setting-priors-esf" class="section level2">
+<div id="setting-priors-car" class="section level2">
 <h2 class="hasAnchor">
-<a href="#setting-priors-esf" class="anchor"></a>Setting priors: ESF</h2>
-<p>As discussed above, <code><a href="../reference/stan_esf.html">geostan::stan_esf</a></code> models assign the regularized horseshoe (RHS) prior model to the coefficients of the spatial filter. The RHS model has three parameters that need to be set. First is a global scale parameter which should reflect our initial information on how sparse the model should be: setting <code>scale_global</code> near zero will impose more sparsity, and moving it towards 1 relaxes the sparsity of the model. If a model shows residual spatial autocorrelation, relaxing the degree of sparsity may help by allowing spatial filter to expand and absorb more of the autocorrelation pattern. Approximating the autocorrelation patterns in data with strong spatial autocorrelation typically requires greater numbers of eigenvectors, and this informs <strong>geostan</strong>’s default prior settings (based on equations from <span class="citation">Chun et al. (2016)</span>; see <span class="citation">Donegan, Chun, and Hughes (2020)</span>). The remaining parameters to set are the degrees of freedom and scale for a Student’s <span class="math inline">\(t\)</span> prior which is applied to any of the “large” parameter estimates that escape the shrinkage to zero. One can view the RHS model as a combination of a spike at zero and slabs extending outwards; the Student’s <span class="math inline">\(t\)</span> model determines the width of the slabs.</p>
-<p>The RHS prior parameters can be set by providing a named vector to the <code>prior_rhs</code> argument, with elements <code>scale_global</code> and <code>slab_df</code> and <code>slab_scale</code> (for the Student’s <span class="math inline">\(t\)</span> slab):</p>
+<a href="#setting-priors-car" class="anchor"></a>Setting priors: CAR</h2>
+<p>The only adjustable parameter specific to the CAR model is the prior on the scale parameter. The default is weakly informative. The CAR model is a multivariate Gaussian distribution specified as followings:</p>
+<p><span class="math display">\[ \phi \sim MVGauss(0, \sigma^2 * (D - \alpha * C)^{-1}) \]</span></p>
+<p>where <span class="math inline">\(\phi\)</span> is a vector of parameters to model and <span class="math inline">\(\sigma\)</span> is the scale parameter. C is a connectivity matrix while the diagonal elements of matrix D adjust the variance of each observation. For instance, the default specification sets the diagonal elements of D equal to the number of neighbors of each respective observation. <span class="math inline">\(\alpha\)</span> controls the degree of spatial autocorrelation. <span class="math inline">\(\alpha\)</span> will be less than zero when negative spatial autocorrelation patterns (similar values appear far from each other, like a checkerboard) predominate, and it is positive when the predominate pattern is positive spatial autocorrelation with a maximum value of 1. This parameter is not comparable to the spatial autocorrelation parameter from the SAR model or the APLE, despite some similarity.</p>
+<p>The scale is given a half-Student’s t prior (“half” meaning it is constrained to positive values only), requiring parameters for degrees of freedom, location, and scale. The following code sets the prior to 30 degrees of freedom, location 0, and unit scale:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_esf.html">stan_esf</a></span><span class="op">(</span><span class="va">lif40</span> <span class="op">~</span> <span class="va">pcinc</span>, data <span class="op">=</span> <span class="va">nepal</span>, C <span class="op">=</span> <span class="va">C</span>, prior_rhs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>scale_global <span class="op">=</span> <span class="fl">0.6</span>, slab_df <span class="op">=</span> <span class="fl">10</span>, slab_scale <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p>For some intuition on the scale of the slab, you have to know the scale of the eigenvectors and the outcome variable. All of the eigenvectors have the same scale, which in this case is:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">EV</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_EV.html">make_EV</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">EV</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span>
-<span class="co">#&gt; [1] 0.1162476</span>
-
-<span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">nepal</span><span class="op">$</span><span class="va">lif40</span><span class="op">)</span>
-<span class="co">#&gt; [1] 2.175016</span></code></pre></div>
-<p>The default prior for the slab is <code>slab_df = 15</code> and <code>slab_scale = 0.5 * sd(y) / sd(EV[,1])</code>. The default prior for the <code>scale_global</code> parameter is described in <span class="citation">Donegan, Chun, and Hughes (2020)</span>.</p>
+<code class="sourceCode R"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html">offset</a></span><span class="op">(</span><span class="va">log_population</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">data</span>, C <span class="op">=</span> <span class="va">C</span>, prior_car_scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">30</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="setting-priors-icar" class="section level2">
 <h2 class="hasAnchor">
 <a href="#setting-priors-icar" class="anchor"></a>Setting priors: ICAR</h2>
 <p>The Intrinsic Conditional Autoregressive (ICAR) models are based on the Stan code developed in <span class="citation">Morris et al. (2019)</span>. In each of the available model options (<code>type = c("icar", "bym", "bym2")</code>), a parameter vector <code>phi</code> is assigned the ICAR prior (which places high prior probability on smooth spatial trends). The model is fixed, with no priors available to set.</p>
 <p>To implement the BYM2 model introduced in <span class="citation">Riebler et al. (2016)</span> and implemented in Stan by <span class="citation">Morris et al. (2019)</span>, you must provide an additional <code>scale_factor</code> term using the <strong>INLA</strong> package (see <a href="https://www.r-inla.org/download-install">here</a> for installation instructions).</p>
-<p>The following code chunk demonstrates how to calculate the <code>scale_factor</code> argument given a spatial connectivity matrix C, the <code><a href="../reference/prep_icar_data.html">geostan::prep_icar_data</a></code> function, and a user-defined function <code>c_scale</code>:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<p>The following code chunk demonstrates how to calculate the <code>scale_factor</code> argument given a spatial connectivity matrix C, the <code><a href="../reference/prep_icar_data.html">geostan::prep_icar_data</a></code> function, and a user-defined function <code>c_scale</code> (from <span class="citation">Morris et al. (2019)</span>):</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">INLA</span><span class="op">)</span>
 
 <span class="co">#' create scale factor for BYM2 model</span>
@@ -365,7 +364,7 @@
     <span class="va">adj.matrix</span> <span class="op">&lt;-</span> <span class="fu">Matrix</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/Matrix.html">Matrix</a></span><span class="op">(</span><span class="va">C</span>, sparse <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
     <span class="va">Q</span> <span class="op">=</span>  <span class="fu">Diagonal</span><span class="op">(</span><span class="va">N</span>, <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">rowSums</a></span><span class="op">(</span><span class="va">adj.matrix</span><span class="op">)</span><span class="op">)</span> <span class="op">-</span> <span class="va">adj.matrix</span>
     <span class="va">Q_pert</span> <span class="op">=</span> <span class="va">Q</span> <span class="op">+</span> <span class="fu">Diagonal</span><span class="op">(</span><span class="va">N</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html">diag</a></span><span class="op">(</span><span class="va">Q</span><span class="op">)</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html">sqrt</a></span><span class="op">(</span><span class="va">.Machine</span><span class="op">$</span><span class="va">double.eps</span><span class="op">)</span>
-    <span class="va">Q_inv</span> <span class="op">=</span> <span class="fu">INLA</span><span class="fu">::</span><span class="fu">inla.qinv</span><span class="op">(</span><span class="va">Q_pert</span>, constr<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="va">N</span><span class="op">)</span>,e<span class="op">=</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span>
+    <span class="va">Q_inv</span> <span class="op">=</span> <span class="fu">INLA</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/INLA/man/qinv.html">inla.qinv</a></span><span class="op">(</span><span class="va">Q_pert</span>, constr<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="va">N</span><span class="op">)</span>,e<span class="op">=</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span>
     <span class="va">scale_factor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html">log</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html">diag</a></span><span class="op">(</span><span class="va">Q_inv</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
     <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span> <span class="op">(</span><span class="va">scale_factor</span><span class="op">)</span>
 <span class="op">}</span>
@@ -386,18 +385,25 @@
     <span class="va">scale_factor</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">scale.j</span>
 <span class="op">}</span></code></pre></div>
 <p>The <code>scale_factor</code> is then passed to <code>stan_icar</code> for the BYM2 model, as in:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_icar.html">stan_icar</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html">offset</a></span><span class="op">(</span><span class="va">log_population</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">data</span>, type <span class="op">=</span> <span class="st">"bym2"</span>, C <span class="op">=</span> <span class="va">C</span>, scale_factor <span class="op">=</span> <span class="va">scale_factor</span><span class="op">)</span></code></pre></div>
 </div>
-<div id="setting-priors-car" class="section level2">
+<div id="setting-priors-esf" class="section level2">
 <h2 class="hasAnchor">
-<a href="#setting-priors-car" class="anchor"></a>Setting priors: CAR</h2>
-<p>The only adjustable parameter specific to the CAR model is the prior on the scale parameter. The default is weakly informative. The CAR model is a multivariate Gaussian distribution specified as followings:</p>
-<p><span class="math display">\[ \phi \sim MVGauss(0, \sigma * (D - \alpha * C)^{-1}) \]</span></p>
-<p>where <span class="math inline">\(\phi\)</span> is a vector of parameters to model and <span class="math inline">\(\sigma\)</span> is the scale parameter. C is a connectivity matrix while the diagonal elements of matrix D adjust the variance of each observation. For instance, the default specification sets the diagonal elements of D equal to the number of neighbors of each respective observation. <span class="math inline">\(\alpha\)</span> controls the degree of spatial autocorrelation. <span class="math inline">\(\alpha\)</span> will be less than zero when negative spatial autocorrelation patterns (similar values appear far from each other, like a checkerboard) predominate, and it is positive when the predominate pattern is positive spatial autocorrelation with a maximum value of 1. This parameter is not comparable to the spatial autocorrelation parameter from the SAR model or the APLE, despite some similarity.</p>
-<p>The scale is given a half-Student’s t prior (“half” meaning it is constrained to positive values only), requiring parameters for degrees of freedom, location, and scale. The following code sets the prior to 30 degrees of freedom, location 0, and unit scale:</p>
+<a href="#setting-priors-esf" class="anchor"></a>Setting priors: ESF</h2>
+<p>As discussed above, <code><a href="../reference/stan_esf.html">geostan::stan_esf</a></code> models assign the regularized horseshoe (RHS) prior model to the coefficients of the spatial filter. The RHS model has three parameters that need to be set. First is a global scale parameter which should reflect our initial information on how sparse the model should be: setting <code>scale_global</code> near zero will impose more sparsity, and moving it towards 1 relaxes the sparsity of the model. If a model shows residual spatial autocorrelation, relaxing the degree of sparsity may help by allowing spatial filter to expand and absorb more of the autocorrelation pattern. Approximating the autocorrelation patterns in data with strong spatial autocorrelation typically requires greater numbers of eigenvectors, and this informs <strong>geostan</strong>’s default prior settings (based on equations from <span class="citation">Chun et al. (2016)</span>; see <span class="citation">Donegan, Chun, and Hughes (2020)</span>). The remaining parameters to set are the degrees of freedom and scale for a Student’s <span class="math inline">\(t\)</span> prior which is applied to any of the “large” parameter estimates that escape the shrinkage to zero. One can view the RHS model as a combination of a spike at zero and slabs extending outwards; the Student’s <span class="math inline">\(t\)</span> model determines the width of the slabs.</p>
+<p>The RHS prior parameters can be set by providing a named vector to the <code>prior_rhs</code> argument, with elements <code>scale_global</code> and <code>slab_df</code> and <code>slab_scale</code> (for the Student’s <span class="math inline">\(t\)</span> slab):</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_esf.html">stan_esf</a></span><span class="op">(</span><span class="va">lif40</span> <span class="op">~</span> <span class="va">pcinc</span>, data <span class="op">=</span> <span class="va">nepal</span>, C <span class="op">=</span> <span class="va">C</span>, prior_rhs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>scale_global <span class="op">=</span> <span class="fl">0.6</span>, slab_df <span class="op">=</span> <span class="fl">10</span>, slab_scale <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p>For some intuition on the scale of the slab, you have to know the scale of the eigenvectors and the outcome variable. All of the eigenvectors have the same scale, which in this case is:</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html">offset</a></span><span class="op">(</span><span class="va">log_population</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">data</span>, C <span class="op">=</span> <span class="va">C</span>, prior_car_scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">30</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="va">EV</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_EV.html">make_EV</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">EV</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span>
+<span class="co">#&gt; [1] 0.1162476</span>
+
+<span class="fu"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span><span class="op">(</span><span class="va">nepal</span><span class="op">$</span><span class="va">lif40</span><span class="op">)</span>
+<span class="co">#&gt; [1] 2.175016</span></code></pre></div>
+<p>The default prior for the slab is <code>slab_df = 15</code> and <code>slab_scale = 0.5 * sd(y) / sd(EV[,1])</code>. The default prior for the <code>scale_global</code> parameter is described in <span class="citation">Donegan, Chun, and Hughes (2020)</span>.</p>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2 class="hasAnchor">
@@ -410,7 +416,7 @@
 <p>Donegan, Connor, Yongwan Chun, and Amy E Hughes. 2020. “Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors.” <em>Spatial Statistics</em>, 100450.</p>
 </div>
 <div id="ref-morris_2019">
-<p>Morris, Mitzi, Katherine Wheeler-Martin, Dan Simpson, Stephen J Mooney, Andrew Gelman, and Charles DiMaggio. 2019. “Bayesian Hierarchical Spatial Models: Implementing the Besag York Mollié Model in Stan.” <em>Spatial and Spatio-Temporal Epidemiology</em> 31: 100301.</p>
+<p>Morris, Mitzi, Katherine Wheeler-Martin, Dan Simpson, Stephen J Mooney, Andrew Gelman, and Charles DiMaggio. 2019. “Bayesian Hierarchical Spatial Models: Implementing the Besag York Mollié Model in Stan.” <em>Spatial and Spatio-Temporal Epidemiology</em> 31: 100301. <a href="https://mc-stan.org/users/documentation/case-studies/icar_stan.html#bym2-improving-the-parameterization-of-the-besag-york-and-mollie-model">https://mc-stan.org/users/documentation/case-studies/icar_stan.html#bym2-improving-the-parameterization-of-the-besag-york-and-mollie-model</a>.</p>
 </div>
 <div id="ref-piironen_2017">
 <p>Piironen, Juho, and Aki Vehtari. 2017. “Sparsity Information and Regularization in the Horseshoe and Other Shrinkage Priors.” <em>Electronic Journal of Statistics</em> 11 (2): 5018–51.</p>

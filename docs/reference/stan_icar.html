@@ -202,8 +202,11 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>scale_factor</th>
-      <td><p>For the BYM2 model, optional. If missing, this will be set to a vector of ones.</p>
-<p>@param ME To model observational error (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if <code>ME$spatial = TRUE</code>, an auto Gaussian (CAR) model. Elements of the list <code>ME</code> may include:</p><dl>
+      <td><p>For the BYM2 model, optional. If missing, this will be set to a vector of ones.</p></td>
+    </tr>
+    <tr>
+      <th>ME</th>
+      <td><p>To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if <code>ME$spatial = TRUE</code>, an auto Gaussian (CAR) model. Elements of the list <code>ME</code> may include:</p><dl>
 
 <dt>se</dt><dd><p>a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
 <dt>bounded</dt><dd><p>If any variables in <code>se</code> are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.</p></dd>
