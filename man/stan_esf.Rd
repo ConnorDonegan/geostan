@@ -58,7 +58,7 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.}
 
-\item{C}{Spatial connectivity matrix which will be used to calculate eigenvectors, residual spatial autocorrelation as well as any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms.}
+\item{C}{Spatial connectivity matrix which will be used to calculate eigenvectors, residual spatial autocorrelation as well as any user specified \code{slx} terms or spatial measurement error (ME) models; it will be row-standardized before calculating \code{slx} terms.}
 
 \item{EV}{A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. If provided, still also provide a spatial weights matrix \code{C} for other purposes.  See \link[geostan]{make_EV} and \link[geostan]{shape2mat}.}
 

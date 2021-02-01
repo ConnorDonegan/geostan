@@ -1,5 +1,5 @@
 // likelihood function
-  int<lower=0,upper=4> family;
+  int<lower=0,upper=5> family;
 // number of observations
   int<lower=0> n; 
   

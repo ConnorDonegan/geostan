@@ -17,7 +17,7 @@
 #' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.}
 #' \item{spatial}{Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. Defaults to \code{spatial = FALSE}. If \code{spatial = TRUE} you must provide a connectivity matrix \code{C}. The specification of the auto Gaussian model is fixed such that all non-zero values in \code{C} will be converted to ones.}
 #' }
-#' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} or spatial \code{ME} terms; it will be row-standardized before calculating \code{slx} terms.
+#' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} or spatial measurement error (\code{ME}) terms; it will automatically be row-standardized before calculating \code{slx} terms.
 #' @param family The likelihood function for the outcome variable. Current options are \code{poisson(link = "log")}, \code{binomial(link = "logit")}, \code{student_t()}, and the default \code{gaussian()}. 
 #' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
 #' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. 

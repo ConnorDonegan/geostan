@@ -12,12 +12,12 @@
   vector<lower=bounds[1],upper=bounds[2]>[n] x_true_bounded[dx_me_bounded];
   vector<lower=bounds[1],upper=bounds[2]>[dx_me_bounded] mu_x_true_bounded;
   vector<lower=0>[dx_me_bounded] sigma_x_true_bounded;
-  vector<lower=min(me_lambda), upper=max(me_lambda)>[spatial_me ? dx_me_bounded : 0] car_alpha_x_true_bounded;
+  vector<lower=1/min(me_lambda), upper=1/max(me_lambda)>[spatial_me ? dx_me_bounded : 0] car_alpha_x_true_bounded;
   vector<lower=0>[spatial_me ? 0 : dx_me_bounded] nu_x_true_bounded;
 // covariates to model: unbounded
   vector[n] x_true_unbounded[dx_me_unbounded]; 
   vector[dx_me_unbounded] mu_x_true_unbounded;
   vector<lower=0>[dx_me_unbounded] sigma_x_true_unbounded;
-  vector<lower=min(me_lambda), upper=max(me_lambda)>[spatial_me ? dx_me_unbounded : 0] car_alpha_x_true_unbounded;
+  vector<lower=1/min(me_lambda), upper=1/max(me_lambda)>[spatial_me ? dx_me_unbounded : 0] car_alpha_x_true_unbounded;
   vector<lower=0>[spatial_me ? 0 : dx_me_unbounded] nu_x_true_unbounded;
 

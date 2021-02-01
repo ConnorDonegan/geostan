@@ -1,5 +1,5 @@
  // any other declarations in this block must be made *before* this included file
-  vector[n] log_lik;
+  vector[is_auto_gaussian ? 1 : n] log_lik;
   vector[n] yrep;
   vector[n] residual;
   vector[n] fitted;

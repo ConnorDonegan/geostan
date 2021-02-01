@@ -67,7 +67,7 @@
 #' 
 print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digits = 3, ...) {
   pars <- "intercept"
-  cat("Spatial Regression Results \n")
+  cat("Spatial Model Results \n")
   cat("Formula: ")
   print(x$formula)
   if (class(x$slx) == "formula") {
@@ -85,7 +85,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
   cat("Data models (ME): ")
   if (inherits(x$ME, "list")) {
       if ("se" %in% names(x$ME)) cat(paste(names(x$ME$se), sep = ", "))
-      if ("spatial" %in% names(x$ME)) cat("\nPrior data model: Student's t with spatially varying mean (ESF)") else cat("\nPrior data model: Studen's t")
+      if ("spatial" %in% names(x$ME)) cat("\nData model (prior): CAR (auto Gaussian)") else cat("\nData model (prior): Studen's t")
   } else cat("none")
   cat("\nSpatial method (outcome): ", as.character(x$spatial$method), "\n")
   if (x$spatial$method == "CAR") pars <- c(pars, "car_alpha", "car_scale")
@@ -94,10 +94,13 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
   if (x$spatial$method == "ICAR") pars <- c(pars, "spatial_scale")  
   cat("Likelihood function: ", x$family$family, "\n")
   cat("Link function: ", x$family$link, "\n")
-  cat("Residual Moran Coefficient: ", x$diagnostic[grep("Residual_MC", attributes(x$diagnostic)$names)], "\n")
-  cat("WAIC: ", x$diagnostic[grep("WAIC", attributes(x$diagnostic)$names)], "\n")
+  if (!(x$spatial$method == "CAR" & x$family$family == "gaussian") &
+      !is.na(x$diagnostic["Residual_MC"])
+      )
+      cat("Residual Moran Coefficient: ", x$diagnostic["Residual_MC"], "\n")
+  if (!is.na(x$diagnostic["WAIC"])) cat("WAIC: ", x$diagnostic["WAIC"], "\n")
   cat("Observations: ", nrow(x$data), "\n")
-  if (x$spatial[1] == "esf") {
+  if (x$spatial$method == "ESF") {
     cat("RHS global shrinkage prior: ", round(x$priors$rhs["scale_global"], 2), "\n")
   }
   print(x$stanfit, pars = pars, digits = digits, probs = probs, ...)
@@ -185,6 +188,7 @@ spatial <- function(object, summary = TRUE, ...) {
 #' @method spatial geostan_fit
 #' @name geostan_fit
 spatial.geostan_fit <- function(object, summary = TRUE, ...) {
+  if (is.na(object$spatial$par)) stop("This model does not have a spatial trend component to extract.")
   par <- as.character(object$spatial$par)
   if (summary) {
     post_summary(object, par)

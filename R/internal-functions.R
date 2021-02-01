@@ -183,8 +183,10 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
 
 #' Log sum of exponentials
 #' @noRd
+#'
+#' @details Code adapted from Richard McElreath's Rethinking package, and other sources.
+#' 
 log_sum_exp <- function(x) {
-  # learned/stolen from R. McElreath's Rethinking package
   xmax <- max(x)
   xsum <- sum( exp( x - xmax ) )
   xmax + log(xsum)
@@ -245,7 +247,7 @@ clean_results <- function(samples, pars, is_student, has_re, C, Wx, x, x_me_unbo
           Expected_MC <- expected_mc(X = x, C = C)
       }
      }
-    WAIC <- geostan::waic(samples)
+    if ("log_lik" %in% pars) WAIC <- geostan::waic(samples) else WAIC <- rep(NA, 3)
     diagnostic <- c(WAIC = as.numeric(WAIC[1]), Eff_pars = as.numeric(WAIC[2]), Lpd = as.numeric(WAIC[3]),
                     Residual_MC = Residual_MC, Expected_MC = Expected_MC)
     out <- list(summary = summary, diagnostic = diagnostic, stanfit = samples)
