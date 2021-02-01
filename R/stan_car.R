@@ -37,7 +37,7 @@
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} except that \code{adapt_delta} is raised to \code{.9} and \code{max_treedepth = 15}.
 #' @param silent If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.
-#' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
+#' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first. 
 #' @details
 #'  
 #' The CAR model is specified as follows:
@@ -106,14 +106,17 @@
 #'   geom_sf(aes(fill = sp.trend)) +
 #'   scale_fill_gradient2()
 #'
-#' ## auto Gaussian model
+#' ## auto Gaussian model: with spatially lagged covariates and a spatial measurement error model for the survey data
 #' data(ohio)
-#' fit.car = stan_car(gop_growth ~ historic_gop + college_educated + unemployment,
-#'                    slx = ~ historic_gop + college_educated + unemployment,
+#' fit.car = stan_car(gop_growth ~ historic_gop + college_educated,
+#'                    slx = ~ historic_gop + college_educated,
+#'                    ME = list(se = data.frame(college_educated = ohio$college_educated.se),
+#'                              spatial = TRUE),
 #'                    data = ohio,
+#'                    centerx = TRUE,
 #'                    C = shape2mat(ohio),
 #'                    family = gaussian()
-#' )
+#'                    )
 #' print(fit.car)
 #'  }
 #' 
@@ -129,7 +132,7 @@ stan_car <- function(formula,
                      prior = NULL, prior_intercept = NULL, prior_tau = NULL, prior_car_scale = NULL,
                      centerx = FALSE, scalex = FALSE,
                      prior_only = FALSE,
-                     chains = 5, iter = 10e3, refresh = 2500, pars = NULL,
+                     chains = 5, iter = 4e3, refresh = 1e3, pars = NULL,
                      control = list(adapt_delta = 0.9, max_treedepth = 15),
                      silent = FALSE,
                      ...

@@ -47,7 +47,7 @@
 
 
 <meta property="og:title" content="Conditional auto-regressive (CAR) models — stan_car" />
-<meta property="og:description" content="Apply the CAR model as a prior on parameters." />
+<meta property="og:description" content="Apply the CAR model as a prior on parameters, or fit an auto Gaussian model." />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
@@ -147,7 +147,7 @@
     </div>
 
     <div class="ref-description">
-    <p>Apply the CAR model as a prior on parameters.</p>
+    <p>Apply the CAR model as a prior on parameters, or fit an auto Gaussian model.</p>
     </div>
 
     <pre class="usage"><span class='fu'>stan_car</span><span class='op'>(</span>
@@ -158,7 +158,8 @@
   ME <span class='op'>=</span> <span class='cn'>NULL</span>,
   <span class='va'>C</span>,
   D_diagonal <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/apply.html'>apply</a></span><span class='op'>(</span><span class='va'>C</span>, <span class='fl'>1</span>, <span class='kw'>function</span><span class='op'>(</span><span class='va'>r</span><span class='op'>)</span> <span class='fu'><a href='https://rdrr.io/r/base/sum.html'>sum</a></span><span class='op'>(</span><span class='va'>r</span> <span class='op'>&gt;</span> <span class='fl'>0</span><span class='op'>)</span><span class='op'>)</span>,
-  family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span>,
+  family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>gaussian</a></span><span class='op'>(</span><span class='op'>)</span>,
+  invert <span class='op'>=</span> <span class='cn'>TRUE</span>,
   prior <span class='op'>=</span> <span class='cn'>NULL</span>,
   prior_intercept <span class='op'>=</span> <span class='cn'>NULL</span>,
   prior_tau <span class='op'>=</span> <span class='cn'>NULL</span>,
@@ -167,8 +168,8 @@
   scalex <span class='op'>=</span> <span class='cn'>FALSE</span>,
   prior_only <span class='op'>=</span> <span class='cn'>FALSE</span>,
   chains <span class='op'>=</span> <span class='fl'>5</span>,
-  iter <span class='op'>=</span> <span class='fl'>10000</span>,
-  refresh <span class='op'>=</span> <span class='fl'>2500</span>,
+  iter <span class='op'>=</span> <span class='fl'>4000</span>,
+  refresh <span class='op'>=</span> <span class='fl'>1000</span>,
   pars <span class='op'>=</span> <span class='cn'>NULL</span>,
   control <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>adapt_delta <span class='op'>=</span> <span class='fl'>0.9</span>, max_treedepth <span class='op'>=</span> <span class='fl'>15</span><span class='op'>)</span>,
   silent <span class='op'>=</span> <span class='cn'>FALSE</span>,
@@ -202,13 +203,13 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <dt>se</dt><dd><p>a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
 <dt>bounded</dt><dd><p>If any variables in <code>se</code> are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.</p></dd>
 <dt>bounds</dt><dd><p>A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.</p></dd>
-<dt>spatial</dt><dd><p>Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. Defaults to <code>spatial = FALSE</code>. If <code>spatial = TRUE</code> you must provide a connectivity matrix <code>C</code>. The specification of the auto Gaussian model is fixed such that all non-zero values in <code>C</code> will be converted to ones.</p></dd>
+<dt>spatial</dt><dd><p>Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. Defaults to <code>spatial = FALSE</code>. The specification of the auto Gaussian model is fixed such that any non-zero values in <code>C</code> will be converted to ones.</p></dd>
 
 </dl></td>
     </tr>
     <tr>
       <th>C</th>
-      <td><p>Binary spatial connectivity matrix. This is used for the CAR prior and to calculate residual spatial autocorrelation as well as any user specified <code>slx</code> terms (it will be row-standardized before calculating <code>slx</code> terms).</p></td>
+      <td><p>Spatial connectivity matrix. This is used for the CAR model and to calculate residual spatial autocorrelation as well as any user specified <code>slx</code> terms or spatial measurement error (ME) models. It will automatically be row-standardized before calculating <code>slx</code> terms.</p></td>
     </tr>
     <tr>
       <th>D_diagonal</th>
@@ -216,11 +217,15 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>family</th>
-      <td><p>The likelihood function for the outcome variable. Current options are <code><a href='https://rdrr.io/r/stats/family.html'>binomial(link = "logit")</a></code> and <code><a href='https://rdrr.io/r/stats/family.html'>poisson(link = "log")</a></code>.</p></td>
+      <td><p>The likelihood function for the outcome variable. Current options are <code><a href='https://rdrr.io/r/stats/family.html'>gaussian()</a></code>, <code><a href='https://rdrr.io/r/stats/family.html'>binomial(link = "logit")</a></code>, and <code><a href='https://rdrr.io/r/stats/family.html'>poisson(link = "log")</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>invert</th>
+      <td><p>To calculate the log likelihood of the data <code>log_lik</code> and the posterior predictive distribution <code>yrep</code>, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set <code>invert = FALSE</code>.</p></td>
     </tr>
     <tr>
       <th>prior</th>
-      <td><p>A <code>data.frame</code> or <code>matrix</code> with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.</p></td>
+      <td><p>A <code>data.frame</code> or <code>matrix</code> with location and scale parameters for Gaussian prior distributions on the regression coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.</p></td>
     </tr>
     <tr>
       <th>prior_intercept</th>
@@ -228,11 +233,11 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>prior_tau</th>
-      <td><p>Set hyperparameters for the scale parameter of varying intercepts <code>alpha_re</code>. The varying intercepts are given a normal prior with scale parameter <code>alpha_tau</code>. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., <code>prior_tau = c(df = 15, location = 0, scale = 5)</code>.</p></td>
+      <td><p>Set hyperparameters for the scale parameter of varying intercepts <code>alpha_re</code>. The varying intercepts are given a normal prior with scale parameter <code>alpha_tau</code>. <code>alpha_tau</code> is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., <code>prior_tau = c(df = 15, location = 0, scale = 5)</code>.</p></td>
     </tr>
     <tr>
       <th>prior_car_scale</th>
-      <td><p>Hyperprior parameters for the scale of the CAR model. The scale is assigned a Student's t prior model; to set a custom prior provide a length-three vector with the degrees of freedom, location, and scale parameters. E.g., <code>prior_car_scale = c(df = 15, location = 0, scale = 2)</code>.</p></td>
+      <td><p>Hyperprior parameters for the scale of the CAR model <code>car_scale</code>. The scale is assigned a Student's t prior model; to set its parameter values provide a length-three vector with the degrees of freedom, location, and scale parameters. E.g., <code>prior_car_scale = c(df = 15, location = 0, scale = 2)</code>.</p></td>
     </tr>
     <tr>
       <th>centerx</th>
@@ -248,7 +253,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>chains</th>
-      <td><p>Number of MCMC chains to estimate.</p></td>
+      <td><p>Number of MCMC chains to use.</p></td>
     </tr>
     <tr>
       <th>iter</th>
@@ -304,7 +309,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <p>The CAR model is specified as follows:</p>
 <p><code>Y ~ MVGauss(Mu, scale^2 * (D - alpha * C)^-1)</code></p>
-<p>where <code>Y</code> may be data or parameters and <code>Mu</code> is the mean vector. When <code>Y</code> is a vector of parameters, <code>Mu</code> is a vector of zeroes. <code>C</code> is a connectivity matrix (often binary) and <code>D</code> is a matrix with diagonal entries that scale each observation. So an observation corresponding to a diagonal element of <code>D</code> that has larger values relative to other <code>D</code> elements will have smaller variance in the prior probability. There are two parameters to estimate: <code>alpha</code> which controls the degree of spatial autocorrelation (and thus the amount of spatial smoothing) and the scale parameter <code>scale</code> (<code>scale = 1/sqrt(precision)</code>).</p>
+<p>where <code>Y</code> may be data or parameters and <code>Mu</code> is the mean vector. When <code>Y</code> is a vector of parameters, <code>Mu</code> will be set to a vector of zeroes. <code>C</code> is a spatial connectivity matrix and <code>D</code> is a diagonal matrix with diagonal entries that scale each observation. So an observation corresponding to a diagonal element of <code>D</code> that has larger values relative to other <code>D</code> elements will have smaller variance in the prior probability. There are two parameters to estimate: <code>alpha</code> which controls the degree of spatial autocorrelation and the scale parameter <code>scale</code> (<code>scale = 1/sqrt(precision)</code>).</p>
 <p>These models are discussed in Haining and Li (2020, p. 249-51) and Cressie and Wikle (2011, p. 184-88). The Stan code for the model draws from Joseph (2016) to calculate the determinant of the precision matrix (see Haining and Li, p. 250) up to a constant of proportionality.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
@@ -339,6 +344,19 @@ If and when setting priors for <code>beta</code> manually, remember to include p
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>sp.trend</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span><span class='op'>)</span>
+
+<span class='co'>## auto Gaussian model: with spatially lagged covariates and a spatial measurement error model for the survey data</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>
+<span class='va'>fit.car</span> <span class='op'>=</span> <span class='fu'>stan_car</span><span class='op'>(</span><span class='va'>gop_growth</span> <span class='op'>~</span> <span class='va'>historic_gop</span> <span class='op'>+</span> <span class='va'>college_educated</span>,
+                   slx <span class='op'>=</span> <span class='op'>~</span> <span class='va'>historic_gop</span> <span class='op'>+</span> <span class='va'>college_educated</span>,
+                   ME <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>se <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>college_educated <span class='op'>=</span> <span class='va'>ohio</span><span class='op'>$</span><span class='va'>college_educated.se</span><span class='op'>)</span>,
+                             spatial <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>,
+                   data <span class='op'>=</span> <span class='va'>ohio</span>,
+                   centerx <span class='op'>=</span> <span class='cn'>TRUE</span>,
+                   C <span class='op'>=</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>,
+                   family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>gaussian</a></span><span class='op'>(</span><span class='op'>)</span>
+                   <span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>fit.car</span><span class='op'>)</span>
  <span class='op'>}</span>
 
 </div></pre>

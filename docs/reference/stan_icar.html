@@ -211,13 +211,13 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <dt>se</dt><dd><p>a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
 <dt>bounded</dt><dd><p>If any variables in <code>se</code> are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.</p></dd>
 <dt>bounds</dt><dd><p>A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.</p></dd>
-<dt>spatial</dt><dd><p>Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. Defaults to <code>spatial = FALSE</code>. If <code>spatial = TRUE</code> you must provide a connectivity matrix <code>C</code>. The specification of the auto Gaussian model is fixed such that all non-zero values in <code>C</code> will be converted to ones.</p></dd>
+<dt>spatial</dt><dd><p>Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. Defaults to <code>spatial = FALSE</code>. The specification of the auto Gaussian model is fixed such that any non-zero values in <code>C</code> will be converted to ones.</p></dd>
 
 </dl></td>
     </tr>
     <tr>
       <th>C</th>
-      <td><p>Spatial connectivity matrix which will be used to construct an edge list, and to calculate residual spatial autocorrelation as well as any user specified <code>slx</code> terms; it will be row-standardized before calculating <code>slx</code> terms. <code>C</code> must be a symmetric <code>n x n</code> matrix with entries between 0 and 1. The binary coding scheme is generally a good default and can be obtained using <code><a href='shape2mat.html'>shape2mat(shape, style = "B")</a></code>.</p></td>
+      <td><p>Spatial connectivity matrix which will be used to construct an edge list for the ICAR model, and to calculate residual spatial autocorrelation as well as any user specified <code>slx</code> terms or spatial measurement error (ME) models. It will automatically be row-standardized before calculating <code>slx</code> terms. <code>C</code> must be a binary symmetric <code>n x n</code> matrix.</p></td>
     </tr>
     <tr>
       <th>family</th>
