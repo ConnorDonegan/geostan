@@ -40,7 +40,7 @@ model {
 #include parts/model.stan
   car_scale ~ student_t(sigma_prior[1], sigma_prior[2], sigma_prior[3]);
   if (is_auto_gaussian * !prior_only) y ~ car_normal(f, car_precision, car_alpha, car_w, car_v, car_u, D_diag, lambda, n);
-  if (!is_auto_gaussian) phi ~ car_normal(mean_zero, car_precision, car_alpha, car_w, car_v, car_u, D_diag, lambda, n);
+  if (!is_auto_gaussian * !prior_only) phi ~ car_normal(mean_zero, car_precision, car_alpha, car_w, car_v, car_u, D_diag, lambda, n);
 }
 
 generated quantities {

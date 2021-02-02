@@ -2081,7 +2081,7 @@ public:
                 lp_accum__.add(car_normal_lpdf<propto__>(y, f, car_precision, car_alpha, car_w, car_v, car_u, D_diag, lambda, n, pstream__));
             }
             current_statement_begin__ = 435;
-            if (as_bool(logical_negation(is_auto_gaussian))) {
+            if (as_bool((logical_negation(is_auto_gaussian) * logical_negation(prior_only)))) {
                 current_statement_begin__ = 435;
                 lp_accum__.add(car_normal_lpdf<propto__>(phi, mean_zero, car_precision, car_alpha, car_w, car_v, car_u, D_diag, lambda, n, pstream__));
             }
