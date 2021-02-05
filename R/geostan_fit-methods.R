@@ -94,10 +94,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
   if (x$spatial$method == "ICAR") pars <- c(pars, "spatial_scale")  
   cat("Likelihood function: ", x$family$family, "\n")
   cat("Link function: ", x$family$link, "\n")
-  if (!(x$spatial$method == "CAR" & x$family$family == "gaussian") &
-      !is.na(x$diagnostic["Residual_MC"])
-      )
-      cat("Residual Moran Coefficient: ", x$diagnostic["Residual_MC"], "\n")
+  cat("Residual Moran Coefficient: ", x$diagnostic["Residual_MC"], "\n")
   if (!is.na(x$diagnostic["WAIC"])) cat("WAIC: ", x$diagnostic["WAIC"], "\n")
   cat("Observations: ", nrow(x$data), "\n")
   if (x$spatial$method == "ESF") {

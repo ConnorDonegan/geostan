@@ -61,15 +61,15 @@ stan::io::program_reader prog_reader__() {
     reader.add_event(377, 0, "start", "parts/model.stan");
     reader.add_event(432, 55, "end", "parts/model.stan");
     reader.add_event(432, 40, "restart", "model_car");
-    reader.add_event(439, 47, "include", "parts/gen_quants_declaration.stan");
-    reader.add_event(439, 0, "start", "parts/gen_quants_declaration.stan");
-    reader.add_event(454, 15, "end", "parts/gen_quants_declaration.stan");
-    reader.add_event(454, 48, "restart", "model_car");
-    reader.add_event(455, 49, "include", "parts/gen_quants_expression_in_loop.stan");
-    reader.add_event(455, 0, "start", "parts/gen_quants_expression_in_loop.stan");
-    reader.add_event(487, 32, "end", "parts/gen_quants_expression_in_loop.stan");
-    reader.add_event(487, 50, "restart", "model_car");
-    reader.add_event(500, 61, "end", "model_car");
+    reader.add_event(440, 48, "include", "parts/gen_quants_declaration.stan");
+    reader.add_event(440, 0, "start", "parts/gen_quants_declaration.stan");
+    reader.add_event(455, 15, "end", "parts/gen_quants_declaration.stan");
+    reader.add_event(455, 49, "restart", "model_car");
+    reader.add_event(456, 50, "include", "parts/gen_quants_expression_in_loop.stan");
+    reader.add_event(456, 0, "start", "parts/gen_quants_expression_in_loop.stan");
+    reader.add_event(488, 32, "end", "parts/gen_quants_expression_in_loop.stan");
+    reader.add_event(488, 51, "restart", "model_car");
+    reader.add_event(503, 64, "end", "model_car");
     return reader;
 }
 template <typename T1__, typename T2__, typename T3__, typename T4__, typename T5__, typename T6__, typename T7__, typename T8__, typename T9__>
@@ -2129,6 +2129,7 @@ public:
         names__.push_back("x_all");
         names__.push_back("f");
         names__.push_back("S");
+        names__.push_back("trend");
         names__.push_back("log_lik");
         names__.push_back("yrep");
         names__.push_back("residual");
@@ -2208,6 +2209,9 @@ public:
         dimss__.push_back(dims__);
         dims__.resize(0);
         dims__.push_back(n);
+        dims__.push_back(n);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
         dims__.push_back(n);
         dimss__.push_back(dims__);
         dims__.resize(0);
@@ -2489,172 +2493,173 @@ public:
             Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> S(n, n);
             stan::math::initialize(S, DUMMY_VAR__);
             stan::math::fill(S, DUMMY_VAR__);
-            current_statement_begin__ = 441;
+            current_statement_begin__ = 440;
+            validate_non_negative_index("trend", "n", n);
+            Eigen::Matrix<double, Eigen::Dynamic, 1> trend(n);
+            stan::math::initialize(trend, DUMMY_VAR__);
+            stan::math::fill(trend, DUMMY_VAR__);
+            current_statement_begin__ = 442;
             validate_non_negative_index("log_lik", "(is_auto_gaussian ? 1 : n )", (is_auto_gaussian ? 1 : n ));
             Eigen::Matrix<double, Eigen::Dynamic, 1> log_lik((is_auto_gaussian ? 1 : n ));
             stan::math::initialize(log_lik, DUMMY_VAR__);
             stan::math::fill(log_lik, DUMMY_VAR__);
-            current_statement_begin__ = 442;
+            current_statement_begin__ = 443;
             validate_non_negative_index("yrep", "n", n);
             Eigen::Matrix<double, Eigen::Dynamic, 1> yrep(n);
             stan::math::initialize(yrep, DUMMY_VAR__);
             stan::math::fill(yrep, DUMMY_VAR__);
-            current_statement_begin__ = 443;
+            current_statement_begin__ = 444;
             validate_non_negative_index("residual", "n", n);
             Eigen::Matrix<double, Eigen::Dynamic, 1> residual(n);
             stan::math::initialize(residual, DUMMY_VAR__);
             stan::math::fill(residual, DUMMY_VAR__);
-            current_statement_begin__ = 444;
+            current_statement_begin__ = 445;
             validate_non_negative_index("fitted", "n", n);
             Eigen::Matrix<double, Eigen::Dynamic, 1> fitted(n);
             stan::math::initialize(fitted, DUMMY_VAR__);
             stan::math::fill(fitted, DUMMY_VAR__);
-            current_statement_begin__ = 445;
+            current_statement_begin__ = 446;
             validate_non_negative_index("alpha_re", "n_ids", n_ids);
             Eigen::Matrix<double, Eigen::Dynamic, 1> alpha_re(n_ids);
             stan::math::initialize(alpha_re, DUMMY_VAR__);
             stan::math::fill(alpha_re, DUMMY_VAR__);
             // generated quantities statements
-            current_statement_begin__ = 446;
+            current_statement_begin__ = 447;
             if (as_bool(has_re)) {
-                current_statement_begin__ = 447;
+                current_statement_begin__ = 448;
                 for (int i = 1; i <= n_ids; ++i) {
-                    current_statement_begin__ = 448;
+                    current_statement_begin__ = 449;
                     stan::model::assign(alpha_re, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 (get_base1(alpha_tau, has_re, "alpha_tau", 1) * get_base1(alpha_re_tilde, i, "alpha_re_tilde", 1)), 
                                 "assigning variable alpha_re");
                 }
             }
-            current_statement_begin__ = 455;
+            current_statement_begin__ = 456;
             for (int i = 1; i <= n; ++i) {
-                current_statement_begin__ = 456;
+                current_statement_begin__ = 457;
                 if (as_bool(is_student)) {
-                    current_statement_begin__ = 457;
+                    current_statement_begin__ = 458;
                     stan::model::assign(fitted, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 get_base1(f, i, "f", 1), 
                                 "assigning variable fitted");
-                    current_statement_begin__ = 458;
+                    current_statement_begin__ = 459;
                     stan::model::assign(residual, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 (get_base1(y, i, "y", 1) - get_base1(fitted, i, "fitted", 1)), 
                                 "assigning variable residual");
-                    current_statement_begin__ = 459;
+                    current_statement_begin__ = 460;
                     stan::model::assign(log_lik, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 student_t_log(get_base1(y, i, "y", 1), get_base1(nu, 1, "nu", 1), get_base1(fitted, i, "fitted", 1), get_base1(sigma, has_sigma, "sigma", 1)), 
                                 "assigning variable log_lik");
-                    current_statement_begin__ = 460;
+                    current_statement_begin__ = 461;
                     stan::model::assign(yrep, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 student_t_rng(get_base1(nu, 1, "nu", 1), get_base1(fitted, i, "fitted", 1), get_base1(sigma, has_sigma, "sigma", 1), base_rng__), 
                                 "assigning variable yrep");
                 }
-                current_statement_begin__ = 462;
+                current_statement_begin__ = 463;
                 if (as_bool(is_gaussian)) {
-                    current_statement_begin__ = 463;
+                    current_statement_begin__ = 464;
                     stan::model::assign(fitted, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 get_base1(f, i, "f", 1), 
                                 "assigning variable fitted");
-                    current_statement_begin__ = 464;
+                    current_statement_begin__ = 465;
                     stan::model::assign(residual, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 (get_base1(y, i, "y", 1) - get_base1(fitted, i, "fitted", 1)), 
                                 "assigning variable residual");
-                    current_statement_begin__ = 465;
+                    current_statement_begin__ = 466;
                     stan::model::assign(log_lik, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 normal_log(get_base1(y, i, "y", 1), get_base1(fitted, i, "fitted", 1), get_base1(sigma, has_sigma, "sigma", 1)), 
                                 "assigning variable log_lik");
-                    current_statement_begin__ = 466;
+                    current_statement_begin__ = 467;
                     stan::model::assign(yrep, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 normal_rng(get_base1(fitted, i, "fitted", 1), get_base1(sigma, has_sigma, "sigma", 1), base_rng__), 
                                 "assigning variable yrep");
                 }
-                current_statement_begin__ = 468;
+                current_statement_begin__ = 469;
                 if (as_bool(is_poisson)) {
-                    current_statement_begin__ = 469;
+                    current_statement_begin__ = 470;
                     stan::model::assign(fitted, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 stan::math::exp(get_base1(f, i, "f", 1)), 
                                 "assigning variable fitted");
-                    current_statement_begin__ = 470;
+                    current_statement_begin__ = 471;
                     stan::model::assign(residual, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 (get_base1(fitted, i, "fitted", 1) - get_base1(y_int, i, "y_int", 1)), 
                                 "assigning variable residual");
-                    current_statement_begin__ = 471;
+                    current_statement_begin__ = 472;
                     stan::model::assign(log_lik, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 poisson_log_log(get_base1(y_int, i, "y_int", 1), get_base1(f, i, "f", 1)), 
                                 "assigning variable log_lik");
-                    current_statement_begin__ = 472;
+                    current_statement_begin__ = 473;
                     if (as_bool(logical_gt(get_base1(f, i, "f", 1), 20))) {
-                        current_statement_begin__ = 473;
+                        current_statement_begin__ = 474;
                         if (pstream__) {
                             stan_print(pstream__,"f[i] too large (>20) for poisson_log_rng");
                             *pstream__ << std::endl;
                         }
-                        current_statement_begin__ = 474;
+                        current_statement_begin__ = 475;
                         stan::model::assign(yrep, 
                                     stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                     -(1), 
                                     "assigning variable yrep");
                     } else {
-                        current_statement_begin__ = 476;
+                        current_statement_begin__ = 477;
                         stan::model::assign(yrep, 
                                     stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                     poisson_log_rng(get_base1(f, i, "f", 1), base_rng__), 
                                     "assigning variable yrep");
                     }
                 }
-                current_statement_begin__ = 479;
+                current_statement_begin__ = 480;
                 if (as_bool(is_binomial)) {
-                    current_statement_begin__ = 480;
+                    current_statement_begin__ = 481;
                     stan::model::assign(fitted, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 get_base1(f, i, "f", 1), 
                                 "assigning variable fitted");
-                    current_statement_begin__ = 481;
+                    current_statement_begin__ = 482;
                     stan::model::assign(residual, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 (((get_base1(f, i, "f", 1) * get_base1(trials, i, "trials", 1)) - get_base1(y_int, i, "y_int", 1)) / get_base1(trials, i, "trials", 1)), 
                                 "assigning variable residual");
-                    current_statement_begin__ = 482;
+                    current_statement_begin__ = 483;
                     stan::model::assign(yrep, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 binomial_rng(get_base1(trials, i, "trials", 1), get_base1(f, i, "f", 1), base_rng__), 
                                 "assigning variable yrep");
-                    current_statement_begin__ = 483;
+                    current_statement_begin__ = 484;
                     stan::model::assign(log_lik, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                                 binomial_log(get_base1(y_int, i, "y_int", 1), get_base1(trials, i, "trials", 1), get_base1(f, i, "f", 1)), 
                                 "assigning variable log_lik");
                 }
-                current_statement_begin__ = 488;
-                if (as_bool(is_auto_gaussian)) {
-                    current_statement_begin__ = 489;
-                    stan::model::assign(fitted, 
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                get_base1(f, i, "f", 1), 
-                                "assigning variable fitted");
-                    current_statement_begin__ = 490;
-                    stan::model::assign(residual, 
-                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                (get_base1(y, i, "y", 1) - get_base1(fitted, i, "fitted", 1)), 
-                                "assigning variable residual");
-                }
             }
-            current_statement_begin__ = 493;
+            current_statement_begin__ = 490;
+            if (as_bool(is_auto_gaussian)) {
+                current_statement_begin__ = 491;
+                stan::math::assign(trend, elt_divide(multiply(multiply(car_alpha, C), subtract(y, f)), D_diag));
+                current_statement_begin__ = 492;
+                stan::math::assign(fitted, f);
+                current_statement_begin__ = 493;
+                stan::math::assign(residual, subtract(subtract(y, f), trend));
+            }
+            current_statement_begin__ = 496;
             if (as_bool((invert * is_auto_gaussian))) {
-                current_statement_begin__ = 494;
+                current_statement_begin__ = 497;
                 stan::math::assign(S, multiply(pow(car_scale, 2), inverse(subtract(diag_matrix(D_diag), multiply(car_alpha, C)))));
-                current_statement_begin__ = 495;
+                current_statement_begin__ = 498;
                 stan::math::assign(yrep, multi_normal_rng(f, S, base_rng__));
-                current_statement_begin__ = 496;
+                current_statement_begin__ = 499;
                 stan::model::assign(log_lik, 
                             stan::model::cons_list(stan::model::index_uni(1), stan::model::nil_index_list()), 
                             multi_normal_log(y, f, S), 
@@ -2669,27 +2674,32 @@ public:
                     vars__.push_back(S(j_1__, j_2__));
                 }
             }
-            current_statement_begin__ = 441;
+            current_statement_begin__ = 440;
+            size_t trend_j_1_max__ = n;
+            for (size_t j_1__ = 0; j_1__ < trend_j_1_max__; ++j_1__) {
+                vars__.push_back(trend(j_1__));
+            }
+            current_statement_begin__ = 442;
             size_t log_lik_j_1_max__ = (is_auto_gaussian ? 1 : n );
             for (size_t j_1__ = 0; j_1__ < log_lik_j_1_max__; ++j_1__) {
                 vars__.push_back(log_lik(j_1__));
             }
-            current_statement_begin__ = 442;
+            current_statement_begin__ = 443;
             size_t yrep_j_1_max__ = n;
             for (size_t j_1__ = 0; j_1__ < yrep_j_1_max__; ++j_1__) {
                 vars__.push_back(yrep(j_1__));
             }
-            current_statement_begin__ = 443;
+            current_statement_begin__ = 444;
             size_t residual_j_1_max__ = n;
             for (size_t j_1__ = 0; j_1__ < residual_j_1_max__; ++j_1__) {
                 vars__.push_back(residual(j_1__));
             }
-            current_statement_begin__ = 444;
+            current_statement_begin__ = 445;
             size_t fitted_j_1_max__ = n;
             for (size_t j_1__ = 0; j_1__ < fitted_j_1_max__; ++j_1__) {
                 vars__.push_back(fitted(j_1__));
             }
-            current_statement_begin__ = 445;
+            current_statement_begin__ = 446;
             size_t alpha_re_j_1_max__ = n_ids;
             for (size_t j_1__ = 0; j_1__ < alpha_re_j_1_max__; ++j_1__) {
                 vars__.push_back(alpha_re(j_1__));
@@ -2871,6 +2881,12 @@ public:
                 param_name_stream__ << "S" << '.' << j_1__ + 1 << '.' << j_2__ + 1;
                 param_names__.push_back(param_name_stream__.str());
             }
+        }
+        size_t trend_j_1_max__ = n;
+        for (size_t j_1__ = 0; j_1__ < trend_j_1_max__; ++j_1__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "trend" << '.' << j_1__ + 1;
+            param_names__.push_back(param_name_stream__.str());
         }
         size_t log_lik_j_1_max__ = (is_auto_gaussian ? 1 : n );
         for (size_t j_1__ = 0; j_1__ < log_lik_j_1_max__; ++j_1__) {
@@ -3054,6 +3070,12 @@ public:
                 param_name_stream__ << "S" << '.' << j_1__ + 1 << '.' << j_2__ + 1;
                 param_names__.push_back(param_name_stream__.str());
             }
+        }
+        size_t trend_j_1_max__ = n;
+        for (size_t j_1__ = 0; j_1__ < trend_j_1_max__; ++j_1__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "trend" << '.' << j_1__ + 1;
+            param_names__.push_back(param_name_stream__.str());
         }
         size_t log_lik_j_1_max__ = (is_auto_gaussian ? 1 : n );
         for (size_t j_1__ = 0; j_1__ < log_lik_j_1_max__; ++j_1__) {

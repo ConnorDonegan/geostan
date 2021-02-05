@@ -1,4 +1,4 @@
-#' Conditional auto-regressive (CAR) models
+#' Conditional autoregressive (CAR) models
 #'
 #' @export
 #' 
@@ -42,12 +42,29 @@
 #'  
 #' The CAR model is specified as follows:
 #'
-#'                             \code{Y ~ MVGauss(Mu, scale^2 * (D - alpha * C)^-1)}
+#'                             \code{Y ~ MVGauss(Mu, car_scale^2 * (D - car_alpha * C)^-1)}
 #'
-#' where \code{Y} may be data or parameters and \code{Mu} is the mean vector. When \code{Y} is a vector of parameters, \code{Mu} will be set to a vector of zeroes. \code{C} is a spatial connectivity matrix and \code{D} is a diagonal matrix with diagonal entries that scale each observation. So an observation corresponding to a diagonal element of \code{D} that has larger values relative to other \code{D} elements will have smaller variance in the prior probability. There are two parameters to estimate: \code{alpha} which controls the degree of spatial autocorrelation and the scale parameter \code{scale} (\code{scale = 1/sqrt(precision)}). 
+#' where \code{Y} may be data or parameters and \code{Mu} is the mean vector. When \code{Y} is a vector of parameters, \code{Mu} will be set to a vector of zeroes. \code{C} is the spatial connectivity matrix and \code{D} is a diagonal matrix with diagonal entries that scale the prior variance of each observation (see the \code{D_diag} argument). So an observation corresponding to a diagonal element of \code{D} of relatively large value will have smaller variance in the prior probability model. There are two parameters to estimate: \code{car_alpha} which controls the degree of spatial autocorrelation and the scale parameter \code{car_scale} (\code{scale = 1/sqrt(precision)}). 
 #' 
-#' These models are discussed in Haining and Li (2020, p. 249-51) and Cressie and Wikle (2011, p. 184-88). The Stan code for the model draws from Joseph (2016) to calculate the determinant of the precision matrix (see Haining and Li, p. 250) up to a constant of proportionality.
+#' These models are discussed in Haining and Li (2020, p. 249-51), Cressie and Wikle (2011, p. 184-88), and Cressie (2015 [1993], Ch. 6-7). The Stan code for the model draws from Joseph (2016) to calculate the determinant of the precision matrix (see Haining and Li, p. 250) up to a constant of proportionality.
 #'
+#' The auto Gaussian models (obtained by using \code{family = gaussian()}) are *highly* efficient computationally. They return a spatial \code{trend} component which is calculated as follows (cf. Cressie 2015, p. 564):
+#'
+#' \code{trend = D^-1 * [car_precision * car_alpha * C (Y - Mu)]}
+#'
+#' where \code{Mu} includes the intercept plus any covariates \code{X * beta} and any other terms that may be added to the linear predictor. This vector is calculated once per MCMC sample. With \code{M} posterior samples, that results in an \code{M x N} matrix with each row being a function of a draw from the joint distribution of parameters \code{Mu}, {car_alpha}, and \code{car_precision}. The auto Gaussian models also return the follow generated quantities (each an \code{M x N} matrix of samples):
+#'
+#' \code{fitted = Mu}
+#'
+#' \code{residual = Y - Mu - trend}
+#'
+#' The trend, fitted values, and residuals may be obtained using the \link[geostan]{spatial}, \link[geostan]{fitted}, and \link[geostan]{resid} methods, as usual.
+#'
+#' The posterior predictive distribution (ppd) is returned in the parameter vector \code{yrep}. Each sample from the ppd is a draw from the multivariate Gaussian density function parameterized as:
+#'
+#' \code{yrep \~ MVGauss(Mu, S) },   \code{S = car_scale^2 * (D - car_alpha * C)^-1) }
+#'
+#' and is accessible using the \link[geostan]{posterior_predict} method, as usual. The log likelihood of the data conditional on the model (\code{log_lik}, required for calculating \link[geostan]{waic}) is calculated analogously using the above parameterization of the multivariate normal density. 
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
@@ -63,13 +80,15 @@
 #'  \code{Data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 #' \item{priors}{Prior specifications.}
 #' \item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
-#' \item{spatial}{A data frame with the name of the spatial component parameter ("phi") and method ("CAR")}
+#' \item{spatial}{A data frame with the name of the spatial component parameter (either "phi" or, for auto Gaussian models, "trend") and method ("CAR")}
 #' }
 #' 
 #' @author Connor Donegan, \email{Connor.Donegan@UTDallas.edu}
 #' 
 #' @source
 #'
+#' Cressie, Noel (2015 [1993]). Statistics for Spatial Data. Wiley Classics, Revised Edition.
+#' 
 #' Cressie, Noel and Wikle, Christopher (2011). Statistics for Spatio-Temporal Data. Wiley.
 #'
 #' Haining, Robert and Li, Guangquan (2020). Modelling Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.
@@ -277,6 +296,7 @@ stan_car <- function(formula,
   pars <- c(pars, 'intercept', 'car_scale', 'car_alpha', 'residual', 'fitted')
   if (invert) pars <- c(pars, 'log_lik', 'yrep')
   if (family_int < 5) pars <- c(pars, 'phi') #!#
+  if (family_int == 5) pars <- c(pars, "trend")
   if (!intercept_only) pars <- c(pars, 'beta')
   if (dwx) pars <- c(pars, 'gamma')
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
@@ -299,7 +319,7 @@ stan_car <- function(formula,
   out$priors <- priors
   out$scale_params <- scale_params
   if (!missing(ME)) out$ME <- ME
-  if (family_int != 5) out$spatial <- data.frame(par = "phi", method = "CAR") else out$spatial <- data.frame(par = NA, method = "CAR") #!#
+  if (family_int != 5) out$spatial <- data.frame(par = "phi", method = "CAR") else out$spatial <- data.frame(par = "trend", method = "CAR") #!#
   class(out) <- append("geostan_fit", class(out))
   return (out)
 }

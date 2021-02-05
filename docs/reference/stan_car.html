@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Conditional auto-regressive (CAR) models — stan_car • geostan</title>
+<title>Conditional autoregressive (CAR) models — stan_car • geostan</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,7 +46,7 @@
 
 
 
-<meta property="og:title" content="Conditional auto-regressive (CAR) models — stan_car" />
+<meta property="og:title" content="Conditional autoregressive (CAR) models — stan_car" />
 <meta property="og:description" content="Apply the CAR model as a prior on parameters, or fit an auto Gaussian model." />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
@@ -141,7 +141,7 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Conditional auto-regressive (CAR) models</h1>
+    <h1>Conditional autoregressive (CAR) models</h1>
     <small class="dont-index">Source: <a href='https://github.com/ConnorDonegan/geostan/blob/master/R/stan_car.R'><code>R/stan_car.R</code></a></small>
     <div class="hidden name"><code>stan_car.Rd</code></div>
     </div>
@@ -283,7 +283,8 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
 
-    <p>Cressie, Noel and Wikle, Christopher (2011). Statistics for Spatio-Temporal Data. Wiley.</p>
+    <p>Cressie, Noel (2015 [1993]). Statistics for Spatial Data. Wiley Classics, Revised Edition.</p>
+<p>Cressie, Noel and Wikle, Christopher (2011). Statistics for Spatio-Temporal Data. Wiley.</p>
 <p>Haining, Robert and Li, Guangquan (2020). Modelling Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.</p>
 <p>Joseph, Max (2016). Exact Sparse CAR Models in Stan. Stan Case Studies, Vol. 3. <a href='https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html'>https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html</a></p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
@@ -301,16 +302,25 @@ If and when setting priors for <code>beta</code> manually, remember to include p
  <code>Data</code> a data frame with columns <code>id</code>, the grouping variable, and <code>idx</code>, the index values assigned to each group.</p></dd>
 <dt>priors</dt><dd><p>Prior specifications.</p></dd>
 <dt>scale_params</dt><dd><p>A list with the center and scale parameters returned from the call to <code><a href='https://rdrr.io/r/base/scale.html'>base::scale</a></code> on the model matrix. If <code>centerx = FALSE</code> and <code>scalex = FALSE</code> then it is an empty list.</p></dd>
-<dt>spatial</dt><dd><p>A data frame with the name of the spatial component parameter ("phi") and method ("CAR")</p></dd>
+<dt>spatial</dt><dd><p>A data frame with the name of the spatial component parameter (either "phi" or, for auto Gaussian models, "trend") and method ("CAR")</p></dd>
 
 </dl>
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>The CAR model is specified as follows:</p>
-<p><code>Y ~ MVGauss(Mu, scale^2 * (D - alpha * C)^-1)</code></p>
-<p>where <code>Y</code> may be data or parameters and <code>Mu</code> is the mean vector. When <code>Y</code> is a vector of parameters, <code>Mu</code> will be set to a vector of zeroes. <code>C</code> is a spatial connectivity matrix and <code>D</code> is a diagonal matrix with diagonal entries that scale each observation. So an observation corresponding to a diagonal element of <code>D</code> that has larger values relative to other <code>D</code> elements will have smaller variance in the prior probability. There are two parameters to estimate: <code>alpha</code> which controls the degree of spatial autocorrelation and the scale parameter <code>scale</code> (<code>scale = 1/sqrt(precision)</code>).</p>
-<p>These models are discussed in Haining and Li (2020, p. 249-51) and Cressie and Wikle (2011, p. 184-88). The Stan code for the model draws from Joseph (2016) to calculate the determinant of the precision matrix (see Haining and Li, p. 250) up to a constant of proportionality.</p>
+<p><code>Y ~ MVGauss(Mu, car_scale^2 * (D - car_alpha * C)^-1)</code></p>
+<p>where <code>Y</code> may be data or parameters and <code>Mu</code> is the mean vector. When <code>Y</code> is a vector of parameters, <code>Mu</code> will be set to a vector of zeroes. <code>C</code> is the spatial connectivity matrix and <code>D</code> is a diagonal matrix with diagonal entries that scale the prior variance of each observation (see the <code>D_diag</code> argument). So an observation corresponding to a diagonal element of <code>D</code> of relatively large value will have smaller variance in the prior probability model. There are two parameters to estimate: <code>car_alpha</code> which controls the degree of spatial autocorrelation and the scale parameter <code>car_scale</code> (<code>scale = 1/sqrt(precision)</code>).</p>
+<p>These models are discussed in Haining and Li (2020, p. 249-51), Cressie and Wikle (2011, p. 184-88), and Cressie (2015 [1993], Ch. 6-7). The Stan code for the model draws from Joseph (2016) to calculate the determinant of the precision matrix (see Haining and Li, p. 250) up to a constant of proportionality.</p>
+<p>The auto Gaussian models (obtained by using <code>family = gaussian()</code>) are *highly* efficient computationally. They return a spatial <code>trend</code> component which is calculated as follows (cf. Cressie 2015, p. 564):</p>
+<p><code>trend = D^-1 * [car_precision * car_alpha * C (Y - Mu)]</code></p>
+<p>where <code>Mu</code> includes the intercept plus any covariates <code>X * beta</code> and any other terms that may be added to the linear predictor. This vector is calculated once per MCMC sample. With <code>M</code> posterior samples, that results in an <code>M x N</code> matrix with each row being a function of a draw from the joint distribution of parameters <code>Mu</code>, car_alpha, and <code>car_precision</code>. The auto Gaussian models also return the follow generated quantities (each an <code>M x N</code> matrix of samples):</p>
+<p><code>fitted = Mu</code></p>
+<p><code>residual = Y - Mu - trend</code></p>
+<p>The trend, fitted values, and residuals may be obtained using the <a href='spatial.html'>spatial</a>, <a href='https://rdrr.io/r/stats/fitted.values.html'>fitted</a>, and <a href='https://rdrr.io/r/stats/residuals.html'>resid</a> methods, as usual.</p>
+<p>The posterior predictive distribution (ppd) is returned in the parameter vector <code>yrep</code>. Each sample from the ppd is a draw from the multivariate Gaussian density function parameterized as:</p>
+<p><code>yrep \~ MVGauss(Mu, S) </code>,   <code>S = car_scale^2 * (D - car_alpha * C)^-1) </code></p>
+<p>and is accessible using the <a href='posterior_predict.html'>posterior_predict</a> method, as usual. The log likelihood of the data conditional on the model (<code>log_lik</code>, required for calculating <a href='waic.html'>waic</a>) is calculated analogously using the above parameterization of the multivariate normal density.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>Connor Donegan, <a href='mailto:Connor.Donegan@UTDallas.edu'>Connor.Donegan@UTDallas.edu</a></p>

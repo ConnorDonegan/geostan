@@ -9,8 +9,6 @@ The package and website are still under development.
 
 -------------------------
 
-## Features
-
 ### Spatial analysis tools
 
 Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics.

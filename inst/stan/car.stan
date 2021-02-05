@@ -45,14 +45,17 @@ model {
 
 generated quantities {
   matrix[n, n] S;
+  vector[n] trend;
 #include parts/gen_quants_declaration.stan
   for (i in 1:n) {
 #include parts/gen_quants_expression_in_loop.stan
-    if (is_auto_gaussian) {
-      fitted[i] = f[i];
-      residual[i] = y[i] - fitted[i];
-    }    
   }
+  if (is_auto_gaussian) {
+  trend = car_alpha * C * (y - f) ./ D_diag;
+  fitted = f;
+  residual = y - f - trend;
+ }
+  
   if (invert * is_auto_gaussian) {
     S = car_scale^2 * inverse(diag_matrix(D_diag) - car_alpha * C);      
     yrep = multi_normal_rng(f, S);    

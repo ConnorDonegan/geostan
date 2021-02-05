@@ -4,15 +4,17 @@
 \alias{stan_esf}
 \title{Spatial filtering}
 \source{
-Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems, 18(1), 67-85. \url{10.1007/s10109-015-0225-3}
+Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters. Journal of Geographical Systems, 18(1), 67-85. \url{10.1007/s10109-015-0225-3}
 
 Dray, S., P. Legendre & P. R. Peres-Neto (2006). Spatial modelling: a comprehensive framework for principal coordinate analysis of neighbour matrices (PCNM). Ecological Modeling, 196(3-4), 483-493.
 
-Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. <doi.org/10.1016/j.spasta.2020.100450>
+Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics 38. <doi.org/10.1016/j.spasta.2020.100450>
 
-Griffith, Daniel A., and P. R. Peres-Neto (2006). "Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses." Ecology 87(10), 2603-2613.
+Griffith, Daniel A., and P. R. Peres-Neto (2006). Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses. Ecology 87(10), 2603-2613.
 
 Griffith, D., and Y. Chun (2014). Spatial autocorrelation and spatial filtering, Handbook of Regional Science. Fischer, MM and Nijkamp, P. eds.
+
+Griffith, D., Chun, Y. and Li, B. (2019). Spatial Regression Analysis Using Eigenvector Spatial Filtering. Elsevier.
 
 Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In Electronic Journal of Statistics, 11(2):5018-5051. \url{https://projecteuclid.org/euclid.ejs/1513306866}
 }
@@ -137,7 +139,19 @@ An object of class class \code{geostan_fit} (a list) containing:
 Fit a spatial regression model using eigenvector spatial filtering.
 }
 \details{
-This function implements the spatial regression models introduced in Donegan et al. (2020).
+Eigenvector spatial filtering is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), drawing on the Piironen and Vehtari's (2017) regularized horseshoe prior. ESF models take the spectral decomposition of the doubly-centered spatial connectivity matrix \code{C}, which appears in the numerator of the Moran coefficient (MC),a measure of spatial autocorrelation. The resulting eigenvectors \code{EV} are mutually orthogonal and uncorrelated map patterns. ESF methodology is premised on our ability to decompose spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). SA in the outcome variable is then absorbed by the spatial filter \code{EV * beta_ev}, where \code{beta_ev} is a vector of coefficients.
+
+ESF decomposes the data into a global mean \code{alpha}, global patterns contributed by covariates \code{X * beta}, spatial trends \code{EV * beta_ev}, and residual variation. Thus
+
+\code{ Mu = intercept + X * beta + EV * beta_ev }
+
+and for the Gaussian model,
+
+\code{Y \~ Gauss(Mu, sigma) }
+
+The model can easily be extended to the space-time domain; see \link[geostan]{shape2mat} to specify a space-time connectivity matrix. 
+
+The coefficients \code{beta_ev} are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the \code{threshold} argument). By default, \code{stan_esf} will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the \code{nsa} argument.
 }
 \examples{
 \dontrun{
@@ -149,12 +163,10 @@ options(mc.cores = parallel::detectCores())
 
 data(ohio)
 C <- shape2mat(ohio, "B")
+
 fit <- stan_esf(gop_growth ~ historic_gop + college_educated,
-                slx = ~ historic_gop + college_educated,
                 data = ohio,
-                scalex = TRUE,
-                C = C,
-                family = student_t())
+                C = C)
 
 # use rstan for sampler diagnostics
 stan_rhat(fit$stanfit)
@@ -170,6 +182,17 @@ ggplot(ohio) +
       geom_sf(aes(fill = esf)) +
       scale_fill_gradient2() +
       theme_void()
+
+## make use of some additional features
+ fit <- stan_esf(gop_growth ~ historic_gop + college_educated,
+                slx = ~ historic_gop + college_educated,
+                ME = list(se = data.frame(college_educated = ohio$college_educated.se),
+                          spatial = TRUE),
+                data = ohio,
+                centerx = TRUE,
+                C = C,
+                family = student_t())
+
 } 
 
 }
