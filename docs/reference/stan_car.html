@@ -221,7 +221,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>invert</th>
-      <td><p>To calculate the log likelihood of the data <code>log_lik</code> and the posterior predictive distribution <code>yrep</code>, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set <code>invert = FALSE</code>.</p></td>
+      <td><p>To calculate the log likelihood of the data <code>log_lik</code> and the posterior predictive distribution <code>yrep</code> with the auto Gaussian model, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set <code>invert = FALSE</code>. This is only used if <code>family = gaussian()</code>.</p></td>
     </tr>
     <tr>
       <th>prior</th>
