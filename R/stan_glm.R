@@ -1,7 +1,7 @@
 #' Generalized linear models
 #'
 #' @export
-#' @description Fit a generalized linear model with (optional) exchangeable random effects. 
+#' @description Fit a generalized linear model.
 #' 
 #' @param formula A model formula, following the R \link[stats]{formula} syntax. Binomial models are specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally); you must also provide \code{C} when including \code{slx}.
