@@ -814,7 +814,7 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, 
 #' @description Given a symmetric n x n connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan.
 #' 
 #' @param C connectivity matrix
-#' @param scale_factor n-length vector with the scale factor for each observation's respective group. If not provided by the user it will be fixed to \code{rep(1, n)}
+#' @param inv_sqrt_scale_factor optional vector of scale factors for each connected portion of the graph structure. If not provided by the user it will be fixed to a vector of ones. 
 #' 
 #' @importFrom spdep poly2nb n.comp.nb
 #' 
@@ -827,14 +827,16 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, 
 #' \item{node1}{first node}
 #' \item{node2}{second node. (node1[i] and node2[i] form a connected pair)}
 #' \item{weight}{The element \code{C[node1, node2]}.}
-#' \item{group_idx}{indices for each observation belonging each group, ordered by group}
-#' \item{scale_factor}{k-length vector of ones. Placeholder for user-specified information.}
+#' \item{group_idx}{indices for each observation belonging each group, ordered by group.}
+#' \item{m}{number of disconnected regions requiring their own intercept.}
+#' \item{A}{n-by-m matrix of dummy variables for the component-specific intercepts.}
+#' \item{inv_sqrt_scale_factor}{k-length vector of ones. Placeholder for user-specified information.}
 #' \item{comp_id}{n-length vector indicating the group membership of each observation.}
 #' }
 #'
 #' @details
 #'
-#' This is used internally to prepare data for \link[geostan]{stan_icar} models. It can also be helpful for fitting custom ICAR models outside of \code{geostan}. Makes use of \link[spdep]{graph2nb} and \link[spdep]{n.comp.nb}.
+#' This is used internally to prepare data for \link[geostan]{stan_icar} models. It can also be helpful for fitting custom ICAR models outside of \code{geostan}. It relies on \link[spdep]{graph2nb} and \link[spdep]{n.comp.nb}.
 #' 
 #' @seealso \link[geostan]{stan_icar}, \link[geostan]{edges}, \link[geostan]{shape2mat}
 #'
@@ -846,34 +848,42 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, 
 #' 
 #' @export
 #' @importFrom spdep n.comp.nb graph2nb
-prep_icar_data <- function(C, scale_factor = NULL) {
-    n <- nrow(C)
-    E <- edges(C)
-    G <- list(np = nrow(C), # conform to spdep graph structure
-              from = E$node1,
-              to = E$node2,
-              nedges = nrow(E)
-              )
-    class(G) <- "Graph"
-    nb2 <- spdep::n.comp.nb(spdep::graph2nb(G))
-    k = nb2$nc
-    if (inherits(scale_factor, "NULL")) scale_factor <- array(rep(1, k), dim = k)
-    group_idx = NULL
-    for (j in 1:k) group_idx <- c(group_idx, which(nb2$comp.id == j))
-    group_size <- NULL
-    for (j in 1:k) group_size <- c(group_size, sum(nb2$comp.id == j))
-    l <- list(
-        k = k,
-        group_size = array(group_size, dim = k),
-        n_edges = nrow(E),
-        node1 = E$node1,
-        node2 = E$node2,
-        weight = E$weight,
-        group_idx = array(group_idx, dim = n),
-        scale_factor = scale_factor,
-        comp_id = nb2$comp.id
-    )
-    return (l)
+prep_icar_data <- function (C, inv_sqrt_scale_factor = NULL) {
+  n <- nrow(C)
+  E <- edges(C)
+  G <- list(np = nrow(C), from = E$node1, to = E$node2, nedges = nrow(E))
+  class(G) <- "Graph"
+  nb2 <- spdep::n.comp.nb(spdep::graph2nb(G))
+  k = nb2$nc
+  if (inherits(inv_sqrt_scale_factor, "NULL")) inv_sqrt_scale_factor <- array(rep(1, k), dim = k)
+  group_idx = NULL
+  for (j in 1:k) group_idx <- c(group_idx, which(nb2$comp.id == j))
+  group_size <- NULL
+  for (j in 1:k) group_size <- c(group_size, sum(nb2$comp.id == j))
+  # intercept per connected component of size > 1, if multiple.
+  m <- sum(group_size > 1) - 1
+  if (m) {
+    GS <- group_size
+    ID <- nb2$comp.id
+    change.to.one <- which(GS == 1)
+    ID[which(ID == change.to.one)] <- 1
+    A = model.matrix(~ factor(ID))
+    A <- as.matrix(A[,-1])
+  } else {
+    A <- model.matrix(~ 0, data.frame(C))
+  }
+  l <- list(k = k, 
+            group_size = array(group_size, dim = k), 
+            n_edges = nrow(E), 
+            node1 = E$node1, 
+            node2 = E$node2,
+            weight = E$weight,
+            group_idx = array(group_idx, dim = n), 
+            m = m,
+            A = A,
+            inv_sqrt_scale_factor = inv_sqrt_scale_factor, 
+            comp_id = nb2$comp.id)
+  return(l)
 }
 
 #' Download shapefiles

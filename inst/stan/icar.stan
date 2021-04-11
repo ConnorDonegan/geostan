@@ -8,12 +8,14 @@ data {
   int<lower=1> k; // no. of groups
   int group_size[k]; // observational units per group
   int group_idx[n]; // index of observations, ordered by group
+  int<lower=0> m; // no of components requiring additional intercepts
+  matrix[n, m] A; // dummy variables for any extra graph component intercepts  
   int<lower=1> n_edges; 
   int<lower=1, upper=n> node1[n_edges];
   int<lower=1, upper=n> node2[n_edges];
   vector[n_edges] weight;
   int<lower=1, upper=k> comp_id[n]; 
-  vector<lower=1>[k] scale_factor;
+  vector[k] inv_sqrt_scale_factor; // can be a vector of ones, as a placeholder
 }
 
 transformed data {
@@ -22,6 +24,7 @@ transformed data {
 }
 
 parameters {
+  vector[m] alpha_phi;  
   vector[n] phi_tilde;
   real<lower=0> spatial_scale;
   vector[type > 1 ? n : 0] theta_tilde;
@@ -31,16 +34,23 @@ parameters {
 }
 
 transformed parameters {
-  vector[type > 1 ? n : 0] convolution;
+  vector[n] phi;
+  vector[type > 1 ? n : 0] theta;
 #include parts/trans_params_declaration.stan
-  if (type == 1) f += phi_tilde * spatial_scale;
+  if (m) f += A * alpha_phi;
+  if (type == 1) {
+    phi = make_phi(phi_tilde, spatial_scale, 1, inv_sqrt_scale_factor, n, k, group_size, group_idx);
+    f += phi;
+  }
   if (type == 2) {
-    convolution = convolve_bym(phi_tilde * spatial_scale, theta_tilde * theta_scale[1], n, k, group_size, group_idx);
-    f += convolution;
+    theta = theta_tilde * theta_scale[1];
+    phi = make_phi(phi_tilde, spatial_scale, 1, inv_sqrt_scale_factor, n, k, group_size, group_idx);    
+    f += convolve_bym(phi, theta, n, k, group_size, group_idx);
   }  
   if (type == 3) {
-    convolution = convolve_bym2(phi_tilde, theta_tilde, spatial_scale, n, k, group_size, group_idx, rho[1], scale_factor);
-    f += convolution;
+    theta = spatial_scale * sqrt(1 - rho[1]) * theta_tilde;
+    phi = make_phi(phi_tilde, spatial_scale, rho[1], inv_sqrt_scale_factor, n, k, group_size, group_idx);        
+    f += convolve_bym2(phi_tilde, theta_tilde, spatial_scale, n, k, group_size, group_idx, rho[1], inv_sqrt_scale_factor);
   }  
 #include parts/trans_params_expression.stan
 }
@@ -50,23 +60,16 @@ model {
   if (has_theta) {
    theta_tilde ~ std_normal();
    if (type == 2) theta_scale[1] ~ std_normal();
-   if (type == 3) rho[1] ~ beta(1, 1);
+   // implicit uniform prior on rho:   if (type == 3) rho[1] ~ beta(1, 1);
   }
   spatial_scale ~ std_normal();
-  phi_tilde ~ icar_normal(node1, node2, k, group_size, group_idx, has_theta);  
+  phi_tilde ~ icar_normal(spatial_scale, node1, node2, k, group_size, group_idx, has_theta);
+  if (m) alpha_phi ~ normal(0, alpha_prior[2]);  
  }
 
 generated quantities {
-  vector[n] phi; 
-  vector[type > 1 ? n : 0] theta; 
 #include parts/gen_quants_declaration.stan
   for (i in 1:n) {
-    if (type < 3) phi[i] = phi_tilde[i] * spatial_scale;
-    if (type == 2) theta[i] = theta_tilde[i] * theta_scale[1];    
-    if (type == 3) {
-      phi[i] = spatial_scale * sqrt( rho[1] * inv(scale_factor[comp_id[i]]) ) * phi_tilde[i];
-      theta[i] = spatial_scale * sqrt(1 - rho[1]) * theta_tilde[i];
-    }   
 #include parts/gen_quants_expression_in_loop.stan      
   }
 }
