@@ -165,26 +165,22 @@ vector convolve_bym(vector phi, vector theta,
  * @param phi_tilde local (spatially autocorrelated) component
  * @param theta_tilde global component
  * @param spatial_scale scale parameter for the convolution term
-* @param inv_sqrt_scale_factor The scaling factor for the ICAR variance (see scale_c R function, using R-INLA); 
- *                              transformed from 1/scale^2 --> scale. Or, a vector of ones.
  * @param n number of spatial units
  * @param k number of connected groups
  * @param group_size number of observational units in each group
  * @param group_idx index of observations in order of their group membership
- * @param logit_rho proportion of convolution that is spatially autocorrelated, logit transformed
+ * @param rho proportion of convolution that is spatially autocorrelated
+ * @param inv_sqrt_scale_factor The scaling factor for the ICAR variance (see scale_c R function, using R-INLA); 
+ *                              transformed from 1/scale^2 --> scale. Or, a vector of ones.
  *
  * @return BYM2 convolution vector
  */
-vector convolve_bym2(vector phi_tilde, 
-          vector theta_tilde,
+vector convolve_bym2(vector phi_tilde, vector theta_tilde,
           real spatial_scale,
-          vector inv_sqrt_scale_factor,
-              int n, 
-              int k,
-              int[] group_size, 
-              int[] group_idx,
-              real rho, 
-              ) {
+		      int n, int k,
+		      int[] group_size, int[] group_idx,
+		      real rho, vector inv_sqrt_scale_factor
+		      ) {
   vector[n] convolution;
   int pos=1;
   for (j in 1:k) {
@@ -200,4 +196,5 @@ vector convolve_bym2(vector phi_tilde,
   }
   return convolution;
 }
+
 

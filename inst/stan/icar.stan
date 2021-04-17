@@ -37,20 +37,22 @@ transformed parameters {
   vector[n] phi;
   vector[type > 1 ? n : 0] theta;
 #include parts/trans_params_declaration.stan
-  if (m) f += A * alpha_phi;
   if (type == 1) {
     phi = make_phi(phi_tilde, spatial_scale, 1, inv_sqrt_scale_factor, n, k, group_size, group_idx);
+    if (m) phi += A * alpha_phi;    
     f += phi;
   }
   if (type == 2) {
     theta = theta_tilde * theta_scale[1];
-    phi = make_phi(phi_tilde, spatial_scale, 1, inv_sqrt_scale_factor, n, k, group_size, group_idx);    
+    phi = make_phi(phi_tilde, spatial_scale, 1, inv_sqrt_scale_factor, n, k, group_size, group_idx);
+    if (m) phi += A * alpha_phi;    
     f += convolve_bym(phi, theta, n, k, group_size, group_idx);
   }  
   if (type == 3) {
     theta = spatial_scale * sqrt(1 - rho[1]) * theta_tilde;
-    phi = make_phi(phi_tilde, spatial_scale, rho[1], inv_sqrt_scale_factor, n, k, group_size, group_idx);        
-    f += convolve_bym2(phi_tilde, theta_tilde, spatial_scale, n, k, group_size, group_idx, rho[1], inv_sqrt_scale_factor);
+    phi = make_phi(phi_tilde, spatial_scale, rho[1], inv_sqrt_scale_factor, n, k, group_size, group_idx);
+    if (m) phi += A * alpha_phi;    
+    f += convolve_bym2(phi_tilde, theta_tilde, spatial_scale, n, k, group_size, group_idx, rho[1], inv_sqrt_scale_factor);    
   }  
 #include parts/trans_params_expression.stan
 }

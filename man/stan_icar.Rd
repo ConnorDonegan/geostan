@@ -8,6 +8,10 @@ Besag, J. (1974). Spatial interaction and the statistical analysis of lattice sy
 
 Besag, J., York, J., & Mollié, A. (1991). Bayesian image restoration, with two applications in spatial statistics. Annals of the institute of statistical mathematics, 43(1), 1-20.
 
+Donegan, Connor. 2021. Flexible functions for ICAR, BYM, and BYM2 models in Stan. Code repository. <https://github.com/ConnorDonegan/Stan-IAR>
+
+Freni-Sterrantino, Anna, Massimo Ventrucci, and Håvard Rue. 2018. A Note on Intrinsic Conditional Autoregressive Models for Disconnected Graphs. Spatial and Spatio-Temporal Epidemiology 26: 25–34.
+
 Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A., & DiMaggio, C. (2019). Bayesian hierarchical spatial models: Implementing the Besag York Mollié model in stan. Spatial and spatio-temporal epidemiology, 31, 100301.
 
 Riebler, A., Sorbye, S. H., Simpson, D., & Rue, H. (2016). An intuitive Bayesian spatial model for disease mapping that accounts for scaling. Statistical Methods in Medical Research, 25(4), 1145-1165.
@@ -114,21 +118,24 @@ An object of class class \code{geostan_fit} (a list) containing:
 Assign the intrinsic conditional auto-regressive (ICAR) prior model to parameters. Options include the BYM model, the BYM2 model, and a solo ICAR term.
 }
 \details{
-The Stan code for the ICAR component of the model and the BYM2 option draws from Morris et al. (2019) with adjustments to enable non-binary weights and disconnected graph structures. The ICAR parameters are returned in the parameter vector named \code{phi}. The ICAR prior model is equivalent to a CAR model with the spatial autocorrelation parameter \code{car_alpha} equal to 1 (see \link[geostan]{stan_car}). Thus the ICAR prior places high probability on a smooth spatially varying mean. Often, an observational-level random effect term \code{theta} is added to model deviations from the local mean. The combination \code{phi + theta} is known as the BYM model (Besag et al. 1991). 
+The Stan code for the ICAR component of the model and the BYM2 option follows Morris et al. (2019) with adjustments to enable non-binary weights and disconnected graph structures (see Freni-Sterrantino (2018) and Donegan (2021)). The ICAR parameters are returned in the parameter vector named \code{phi}. The ICAR prior model is equivalent to a CAR model with the spatial autocorrelation parameter \code{car_alpha} equal to 1 (see \link[geostan]{stan_car}). Thus the ICAR prior places high probability on a smooth spatially varying mean. Often, an observational-level random effect term \code{theta} is added to model deviations from the local mean. Use of the combination \code{phi + theta} is known as the BYM model (Besag et al. 1991). 
 
 The ICAR prior is placed on the parameter vector \code{phi_tilde} (which is approximately on the standard normal scale); it is scaled by the scalar parameter \code{spatial_scale}. The models are specified as follows:
 
 If \code{type = "icar"}, the spatial structure is simply \code{phi[i] = phi_tilde[i] * spatial_scale}.
 
-If \code{type = "bym"}, the spatial structure \code{phi} is the same as \code{"icar"} but an additional parameter vector \code{theta} is added to perform partial pooling across all observations.  \code{theta[i] = theta_tilde[i] * theta_scale}. The sum \code{phi_tilde * spatial_scale + theta_tilde * theta_scale = phi + theta = convolution} is often referred to as the ``convolved random effect.'' It is returned in the parameter vector named \code{convolution}.
+If \code{type = "bym"}, the spatial structure \code{phi} is the same as \code{"icar"} but an additional parameter vector \code{theta} is added to perform partial pooling across all observations.  \code{theta[i] = theta_tilde[i] * theta_scale}. The sum \code{phi_tilde * spatial_scale + theta_tilde * theta_scale = phi + theta = convolution} is often referred to as the ``convolved random effect.'' 
 
-For \code{type = "bym2"}, \code{phi_tilde} and \code{theta_tilde} share a single scale parameter (\code{spatial_scale}) but they are combined using a mixing parameter \code{rho}. The convolution is then \code{convolution = [sqrt(rho / scale_factor) * phi_tilde + sqrt((1 - rho)) * theta_tilde] * spatial_scale}. For convenience, the model will return the convolution term and also factor it into parameters \code{phi} and \code{theta}. The actual calculation of the convolution term is specified to ensure that observations with zero neighbors are handled properly.
+For \code{type = "bym2"}, \code{phi_tilde} and \code{theta_tilde} share a single scale parameter (\code{spatial_scale}) but they are combined using a mixing parameter \code{rho}. The convolution is then \code{convolution = [sqrt(rho / scale_factor) * phi_tilde + sqrt((1 - rho)) * theta_tilde] * spatial_scale}. For convenience, the model will factor the convolution term into parameters \code{phi} and \code{theta}.
+
+The actual calculation of the convolution term is specified to ensure that observations with zero neighbors, and disconnected graph structures, are handled properly. Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to phi automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term. The additional intercepts, when there are any, are returned in a parameter vector named `alpha_phi`.
+
+For calculating the `scale_factor` introduced by Riebler et al. (2016), see Donegan (2021). The code in that repository shows how to (painlessly) calculate the scale factor for each connected component of the graph structure (and, again, follows Freni-Sterrantino (2018) and Morris et al. (2019)).
 }
 \examples{
 \dontrun{
-library(ggplot2)
-library(sf)
 library(rstan)
+library(bayesplot)
 options(mc.cores = parallel::detectCores())
 data(sentencing)
 
@@ -143,7 +150,6 @@ fit.bym <- stan_icar(sents ~ offset(log_e),
  )
 
 # diagnostics plot: Rhat values should all by very near 1
-library(rstan)
 rstan::stan_rhat(fit.bym$stanfit)
  # see effective sample size for all parameters and generated quantities
  # (including residuals, predicted values, etc.)
@@ -151,9 +157,9 @@ rstan::stan_ess(fit.bym$stanfit)
 # or for a particular parameter
 rstan::stan_ess(fit.bym$stanfit, "phi")
 library(bayesplot)
-yrep <- posterior_predict(fit.bym, samples = 95)
+yrep <- posterior_predict(fit.bym, samples = 100)
 y <- sentencing$sents
-ppc_dens_overlay(y, yrep)
+bayesplot::ppc_dens_overlay(y, yrep)
 }
 
 }
