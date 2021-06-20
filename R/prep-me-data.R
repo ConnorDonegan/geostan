@@ -17,7 +17,18 @@ prep_me_data <- function(ME, x) { # for x pass in x.list$x
   x_me_bounded_idx = a.zero
   x_me_unbounded_idx = a.zero
   bounds <- c(0, 100)
-  if (is.null(ME)) { # return items in data list ready for Stan: no ME model at all. 
+  empty_car_parts <- list(
+      M_diag = rep(1, n),
+      nC = 1,
+      dim_C = 1,
+      nImC = 1,
+      C = array(1, dim = c(1, 1)),          
+      ImC = a.zero,
+      ImC_v = a.zero,
+      ImC_u = rep(0, n+1),
+      Cidx = a.zero
+  )
+    if (is.null(ME)) { # return items in data list ready for Stan: no ME model at all. 
       x_obs <- x
       dx_obs <- ncol(x_obs)
       if (dx_obs) {
@@ -42,9 +53,10 @@ prep_me_data <- function(ME, x) { # for x pass in x.list$x
           model_offset = 0,
           spatial_me = FALSE
       )
-   return(me.list)
+      me.list <- c(me.list, empty_car_parts)
+      return(me.list)
   }
-  if (!inherits(ME, "list")) stop("ME must be a list .")
+    if (!inherits(ME, "list")) stop("ME must be a list .")
     if (!is.null(ME$spatial)) {
         if (length(ME$spatial) != 1 | !ME$spatial %in% c(0, 1, TRUE, FALSE)) stop("ME$spatial must be logical (0, 1, TRUE, or FALSE) and of length 1.")
         spatial_me = ME$spatial
@@ -90,10 +102,10 @@ prep_me_data <- function(ME, x) { # for x pass in x.list$x
  ##      )
  ##          me.list <- c(me.list, me.x.list)
  ## } else {
-    if (!inherits(ME$se, "data.frame")) stop("ME must be a list in which the element named ME is of class data.frame, containing standard errors for the observations.")
+    if (!inherits(ME$se, "data.frame")) stop("ME$se must be a list in which the element named ME is of class data.frame, containing standard errors for the observations.")
     if  (!all(names(ME$se) %in% names(x.df))) stop("All column names in ME$se must be found in the model matrix (from model.matrix(formula, data)). This error may occur if you've included some kind of data transformation in your model formula, such as a logarithm or polynomial, which is not supported for variables with sampling/measurement error.")
     if (length(ME$bounded)) {
-        if (length(ME$bounded) != ncol(ME$se)) stop("ME mis-specified: bounded must be a vector with one element per column in the ME dataframe.")
+        if (length(ME$bounded) != ncol(ME$se)) stop("ME$bounded mis-specified: bounded must be a vector with one element per column in the ME dataframe.")
         bounded <- which(ME$bounded == 1)
         not.bounded <- which(ME$bounded == 0)
         if (length(ME$bounds)) {
@@ -159,32 +171,14 @@ prep_me_data <- function(ME, x) { # for x pass in x.list$x
         sigma_me_unbounded = array(t(sigma_me_unbounded), dim = c(dx_me_unbounded, n)),
         spatial_me = spatial_me
     )
-####    me.list <- c(me.list, me.x.list)
+    if (spatial_me) {
+        if(!inherits(ME$car_parts, "list")) stop("If ME$spatial = TRUE, you must provide car_parts---a list of data for the CAR model. See ?prep_car_data.")
+        if(!all(c("nC", "nImC", "ImC", "ImC_v", "ImC_u", "Cidx", "M_diag", "C") %in% names(ME$car_parts))) stop("car_parts is missing at least one required part. See ?prep_car_data. Did you use cmat = TRUE?")
+        me.list <- c(me.list, ME$car_parts)
+    } else {
+        me.list <- c(me.list, empty_car_parts)
+    }       
     return(me.list)
 }
 
-#' prep_sp_me_data
-#'
-#' @param C Connectivity matrix
-#' @param spatial_me If FALSE, will return placeholder values only
-#'
-#' @return A list containing elements has_car = TRUE, number of non-zero elements of C, and numbers of neighbors per observation D_diag, and binary connectivity matrix C_me
-#'
-#' @noRd
-prep_sp_me_data <- function(C, spatial_me) {
-    prep_C <- spatial_me & inherits(C, "matrix")
-    if (prep_C) {
-        me_C <- C
-        me_C[which(C > 0)] <- 1
-        me_dc_nonzero <- sum(C > 0)
-        me_D_diag <- apply(C, 1, function(r) sum(r > 0))
-    } else {
-        if (spatial_me) stop("Must provide connectivity matrix C if ME$spatial = TRUE")
-        me_C <- matrix(0)
-        me_dc_nonzero <- 0
-        me_D_diag <- array(0)
-    }
-    dl <- list(me_C = me_C, me_dc_nonzero = me_dc_nonzero, me_D_diag = me_D_diag, spatial_me = spatial_me)
-    return (dl)
-}
 

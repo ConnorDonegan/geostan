@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 #> run with:  sudo Rscript -e "rmarkdown::render('measuring-sa.Rmd')"
 ```
 
-This vignette covers basic usage of the **geostan** package for measuring, visualizing, and simulating spatial autocorrelation (SA) or systematic spatial patterns in the level of a variable. Positive SA is the tendency for nearby values to be more similar than distant values (i.e. clustering) while negative SA is the tendency for values to be located some distance away from others like them (i.e. repulsion).
+This vignette covers basic usage of the **geostan** package for measuring, visualizing, and simulating spatial autocorrelation (SA) or systematic spatial patterns in the level of a variable. Positive SA is the tendency for nearby values to be more similar than distant values (i.e. clustering), while negative SA is the tendency for values to be located some distance away from others like them (i.e. repulsion).
 
 ## Getting started
 
@@ -82,7 +82,7 @@ The Moran plot is divided into quadrants, which lends points in each quadrant th
 - Points in the bottom-left (3rd) quadrant are below-average values surrounded by below-average values (positive SA);
 - Points in the bottom-right (4th) quadrant are above-average values surrounded by below-average values (negative (SA).
 
-Each point is thus a local indicator of spatial autocorrelation (LISA) which are often mapped to identify areas of high or low SA. Following Anselin (1995, Equation 7), the LISA values are simply the product of the value on the x-axis with their corresponding y-axis value; and the mean of all LISAs is proportionate to the Moran coefficient.
+Each point is thus a local indicator of spatial autocorrelation (LISA), which are often mapped to identify areas of high or low SA. Following Anselin (1995, Equation 7), the LISA values are simply the product of the value on the x-axis with their corresponding y-axis value; and the mean of all LISAs is proportionate to the Moran coefficient.
 
 ```{r}
 Lisa <- lisa(y, W)
@@ -101,7 +101,7 @@ ggplot(ohio) +
 ```{r}
 aple(y, W)
 ```
-Again, for large number of observations the APLE approximation will break down.
+Again, for large number of observations, the APLE approximation will break down.
 
 ## Simulating spatially autocorrelated data
 
@@ -117,7 +117,7 @@ ggplot(ohio) +
   scale_fill_gradient2() +
   theme_void()
 ```
-By default `geostan::sim_sar` will return a single n-length draw from the multivariate normal model (with covariance matrix specified following the SAR model). By setting the argument $m$ to an integer value greater than one `sim_sar` will return an $m \times n$ matrix, with each row holding an n-length draw from the SAR model:
+By default `geostan::sim_sar` will return a single n-length draw from the multivariate normal model (with covariance matrix specified following the SAR model). However, you can also use this function to generate multiple data sets at once. By setting the argument $m$ to an integer value greater than one, `sim_sar` will return an $m \times n$ matrix, with each row holding an n-length draw from the SAR model:
 
 ```{r}
 X <- sim_sar(m = 5, w = W, rho = 0.7) 
@@ -162,7 +162,7 @@ To examine the residuals, $y - \hat{\mu}$, pass the model to `geostan::sp_diag`:
 sp_diag(fit, ohio)
 ```
 
-The **geostan** model returns samples drawn from the posterior probability distribution of $\mu$ (fitted values), which can be accessed using `fitted(fit)`. Here $\hat{\mu}$ represents the mean of the posterior distribution of the parameter $\mu$. Thus the following code reproduces the above results, but more transparently:
+The **geostan** model returns samples drawn from the posterior probability distribution of $\mu$ (fitted values), which can be accessed using `fitted(fit)`. Here, $\hat{\mu}$ represents the mean of the posterior distribution of the parameter $\mu$, and is accessed using `fitted(fit)$mean`. Thus the following code reproduces the above results, but somewhat more transparently:
 
 ```{r fig.width = 6.5}
 mu <- fitted(fit)
@@ -198,6 +198,7 @@ ggplot(ohio) +
   scale_fill_gradient2() +
   theme_void()
 ```
+Another option for modeling continuous spatial outcomes is the conditional autoregressive (CAR) model (`geostan::stan_car`). Each of the spatial models in `geostan`---`stan_esf`, `stan_car`, and `stan_icar`---is returned with a spatial trend component that can be accessed using the `spatial` method.
 
 ## References
 

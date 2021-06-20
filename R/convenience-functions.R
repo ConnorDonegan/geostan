@@ -34,8 +34,6 @@ n_eff <- function(n, rho) {
     return (n_eff)
 }
 
-
-
 #' Spatial autocorrelation estimator
 #'
 #' @description The approximate-profile likelihood estimator for the spatial autocorrelation parameter from a simultaneous autoregressive (SAR) model. The \code{APLE} approximation is unreliable, and may be severely wrong, when the number of observations is large.
@@ -885,6 +883,96 @@ prep_icar_data <- function (C, inv_sqrt_scale_factor = NULL) {
             comp_id = nb2$comp.id)
   return(l)
 }
+
+
+#' Prepare data for Stan CAR model
+#'
+#' @export
+#' @param A binary adjacency matrix
+#' @param style specification for the connectivity matrix (C) and conditional variances (M)
+#' @param lambda If TRUE, return eigenvalues required for calculating the log determinant of the precision matrix and for determining the range of permissible values of rho. These will also be printed with a message if lambda = TRUE.
+#' @param cmat Return the full matrix C if TRUE.
+#' @param d distance matrix. Non-neighboring values (as indicated by A) will be set to zero internally.
+#' @param k inverse distances will be raised to the -k power (d^-k).
+#' 
+#' @details The CAR model is N(Mu, Sigma), Sigma = (I - rho C)^-1 M.
+#'
+#' The DCAR specification is distance-based, and requires the user provide a distance matrix \code{d} in addition to adjacency matrix \code{A}. The WCAR specification uses row-standardized connectivity matrix and sets conditional variances proportional to the number of neighbors. The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188).
+#'
+#' For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 [1993]) and Haining and Li (2020).
+#'
+#' \code{stan_car} requires the user to provide the full C matrix (which is returned when cmat = TRUE).
+#'
+#' @source
+#'
+#' Cliff A, Ord J (1981). Spatial Processes: Models and Applications. Pion.
+#'
+#' Cressie N (2015 [1993]). Statistics for Spatial Data. Revised edition. John Wiley & Sons.
+#' 
+#' Cressie N, Perrin O, Thomas-Agnan C (2005). “Likelihood-based estimation for Gaussian MRFs.” Statistical Methodology, 2(1), 1–16.
+#'
+#' Cressie N, Wikle CK (2011). Statistics for Spatio-Temporal Data. John Wiley & Sons.
+#'
+#' Haining RP, Li G (2020). Modelling Spatial and Spatio-Temporal Data: A Bayesian Approach. CRC Press.
+#'
+#' @return A list containing all of the data elements required by the Stan CAR model.
+#'
+#' @importFrom rstan extract_sparse_parts
+#' 
+prep_car_data <- function(A, style = c("ACAR", "WCAR", "DCAR"), lambda = FALSE, cmat = TRUE, d, k = 1) {
+    style = match.arg(style)
+    n <- nrow(A)    
+    if (style == "WCAR") {
+        Ni <- rowSums(A)
+        C <- A / Ni
+        M_diag <- 1 / Ni
+    }
+    if (style == "ACAR") {
+        Ni <- rowSums(A)
+        C <- matrix(0, nrow = n, ncol = n)
+        for (i in 1:n) for (j in 1:n) C[i,j] <- A[i,j ] * sqrt( Ni[j] ) / sqrt( Ni[i] )
+        M_diag <- 1 / Ni
+    }
+    if (style == "DCAR") {
+        if (missing(d)) stop("d matrix is required for the DCAR specification.")
+        class(d) <- "matrix"    
+        stopifnot(all( dim(d) == n ))        
+        # d -> d^-k; neighbors only
+        dinv <- A * d
+        dinv[dinv>0] <- dinv[dinv>0]^(-k)
+        # scale by max d^-k
+        max.dinv <- max(dinv)
+        dinv <- dinv / max.dinv
+        # conditional variance proportional to total d^-k
+        dinv.sums <- rowSums(dinv)
+        M_diag <- 1 / dinv.sums
+        # C scaled by ratio of conditional standard deviations
+        C <- matrix(0, nrow = n, ncol = n)
+        for (i in 1:n) for (j in 1:n) C[i,j] <- dinv[i,j] * sqrt( dinv.sums[j] / dinv.sums[i]  )
+    }
+    stopifnot( isSymmetric.matrix(C %*% diag(M_diag), check.attributes = FALSE) )
+    car.dl <- rstan::extract_sparse_parts(diag(n) - C)
+    car.dl$Cidx <- which( car.dl$w != 1 )
+    names(car.dl)[1] <- "ImC"
+    names(car.dl)[2] <- "ImC_v"
+    names(car.dl)[3] <- "ImC_u"
+    car.dl$nImC <- length(car.dl$ImC)
+    car.dl$nC <- length(car.dl$Cidx)
+    car.dl$M_diag <- M_diag
+    car.dl$dim_C <- n
+    car.dl$style <- style
+    if (lambda) {
+        MCM <- diag( 1 / sqrt(M_diag) ) %*% C %*% diag( sqrt(M_diag) )
+        stopifnot(isSymmetric.matrix(MCM, check.attributes = FALSE))
+        lambda <- eigen(MCM)$values
+        cat ("Range of permissible rho values: ", 1 / range(lambda), "\n")
+        car.dl$lambda <- lambda
+    }
+    if (cmat) car.dl$C <- C
+    return (car.dl)
+}
+
+
 
 #' Download shapefiles
 #'

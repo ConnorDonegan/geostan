@@ -9,7 +9,7 @@
     if (spatial_me) {
       for (j in 1:dx_me_unbounded) {
         x_me_unbounded[j] ~ normal(x_true_unbounded[j], sigma_me_unbounded[j]);
-	x_true_unbounded[j] ~ car_normal(rep_vector(mu_x_true_unbounded[j], n), inv(square(sigma_x_true_unbounded[j])), car_alpha_x_true_unbounded[j], me_w, me_v, me_u, me_D_diag, me_lambda, n);
+	x_true_unbounded[j] ~ car_normal(rep_vector(mu_x_true_unbounded[j], n), sigma_x_true_unbounded[j], car_rho_x_true_unbounded[j], ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n);
         }
       } else {
       for (j in 1:dx_me_unbounded) {
@@ -26,7 +26,7 @@
     if (spatial_me) {
       for (j in 1:dx_me_bounded) {
 	x_me_bounded[j] ~ normal(x_true_bounded[j], sigma_me_bounded[j]);	
-        x_true_bounded[j] ~ car_normal(rep_vector(mu_x_true_bounded[j], n), inv(square(sigma_x_true_bounded[j])), car_alpha_x_true_bounded[j], me_w, me_v, me_u, me_D_diag, me_lambda, n);
+        x_true_bounded[j] ~ car_normal(rep_vector(mu_x_true_bounded[j], n), sigma_x_true_bounded[j], car_rho_x_true_bounded[j], ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n);
         }
       } else {
       for (j in 1:dx_me_bounded) {

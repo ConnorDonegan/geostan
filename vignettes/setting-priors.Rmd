@@ -82,6 +82,121 @@ fit.c <- stan_glm(lif40 ~ pcinc, data = nepal, centerx = TRUE, refresh = 0, core
 ```
 Centering or scaling data often improves Stan's sampling speed, sometimes dramatically! 
 
+## Setting priors: GLM
+
+This section shows how to set priors on the intercept, coefficients, scale term $\sigma$, and other parameters that apply to some or all of the `stan_*` model fitting functions. The prior models are fixed (i.e. you currently cannot change the prior on the intercept from a Gaussian to Student's $t$) but you can and generally should provide your own values for the parameters.
+
+### Intercept
+
+To set the prior parameters for the intercept provide the values for the location $\mu$ and scale $\sigma$ of the Gaussian distribution to the `prior_intercept` argument. The following code sets the prior for the intercept to a Gaussian distribution with mean 0 and scale 5:
+
+```{r eval = FALSE}
+fit <- stan_glm(lif40 ~ pcinc, data = nepal, prior_intercept = c(0, 5))
+```
+
+### Coefficients
+
+Priors for coefficients need to be provided in a matrix or data frame and passed to the `prior` argument. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. In this case there is one variable, so if we wish to set its prior to a Gaussian with mean 2 and scale 2 we would use:
+
+```{r eval = FALSE}
+fit <- stan_glm(lif40 ~ pcinc, data = nepal, prior = data.frame(location = 2, scale = 2))
+```
+If we had two covariates and wished to assigned the same prior to all of them the `prior` argument would then look like `prior = data.frame(location = c(2, 2), scale = c(2, 2))`.
+
+### Outcome scale
+
+The scale parameter $\sigma$ is assigned a half-Student's $t$ prior, which is truncated at zero (i.e. only positive values will be assigned non-zero probability). The Student's $t$ distribution has three parameters: degrees of freedom, location, and scale. So if we wish to set the prior to Student's $t$ with 10 degrees of freedom, location 0, and scale 2, we would provide the following:
+```{r eval = FALSE}
+fit <- stan_glm(lif40 ~ pcinc, data = nepal, prior_sigma = c(10, 0, 2))
+```
+### Student's $t$ likelihood
+
+Often times the Gaussian model is unsatisfactory because there appear to be 'outliers' that may be exerting undue influence on the results. Since the Student's $t$ likelihood has heavier tails, such outliers will exert less influence when `family = student_t()`. The prior for the degrees of freedom for the likelihood is a Gamma distribution and it can be set using the `prior_nu` argument in `stan_glm`. The default, for instance, could be set manually like this:
+```{r eval = FALSE}
+fit <- stan_glm(lif40 ~ pcinc, data = nepal, family = student_t(), prior_nu = c(3, 0.2))
+```
+which for reference looks like this:
+```{r}
+g <- rgamma(n = 30e3, 3, 0.2)
+hist(g, main = "Gamma(3, 0.2)")
+```
+
+### Varying intercepts
+
+All of the models have the option to include a varying intercept term. These are similar to adding an indicator or dummy variable for each region, for instance, or any other geographic scale. However, they use hierarchical modeling to partially pool information across observations (often called 'random effects' terms, which is misleading). For count data especially, this offers a way to evaluate rates of occurrence while remaining attentive to the instability of rates when denominators are small. Generically, these models assign low probability to 'extreme' values, but what is considered 'extreme' or implausible is defined by a Gaussian distribution with parameters that are inferred from the data. The varying intercepts $\alpha_{[j]}$ are deviations from the global intercept, and their prior model is equivalent to:
+$$
+\alpha_{[j]} \sim Gauss(0, \tau_\alpha) \\
+\tau_\alpha \sim Student^{+}(\text{degrees of freedom, location, scale})
+$$
+with positively-constrained Student's $t$ prior for the scale. If we were to estimate the mean `lif40` for each of the 14 regions in the `nepal` data (found in the `name_2` variable), we would use the `re` argument to specify the regional grouping variable and override the default prior parameters for $\alpha_\tau$, if desired, using the `prior_tau` argument:
+
+```{r eval = FALSE}
+fit <- stan_glm(lif40 ~ 1, re = ~ name_2, data = nepal, prior_tau = c(15, 0, 5))
+```
+
+
+## Setting priors: CAR
+
+The only adjustable parameter specific to the CAR model is the prior on the scale parameter. The default is weakly informative. The CAR model is a multivariate Gaussian distribution specified as followings:
+
+$$ Y \sim MVGauss(\mu, (I - \rho C) M \tau^2) $$
+
+where $Y$ is a vector of parameters or data to model, $M$ is a diagonal matrix with known positive values on the diagonal that are proportional to the conditional variances of each respective observation (`conditional' meaning, 'conditional on knowing the values of the neighboring observations'), and $sigma^2$ is a scale parameter. C is a known connectivity matrix and $\rho$ is a spatial dependence parameter, capturing the nature and degree of autocorrelation. The `geostan::prep_car_data` function provides a convenient method to produce $M$ and $C$ in the format required by the model.
+
+The scale parameter $\sigma$ is given a half-Student's t prior ("half" meaning it is constrained to positive values only), requiring parameters for degrees of freedom, location, and scale. The following code sets the prior to 30 degrees of freedom, location 0, and unit scale:
+
+```{r eval = FALSE}
+fit <- stan_car(y ~ offset(log_population), data = data, C = C, prior_car_scale = c(30, 0, 1))
+```
+
+## Setting priors: ICAR
+
+The Intrinsic Conditional Autoregressive (ICAR) models are based on the Stan code developed in @morris_2019. In each of the available model options (`type = c("icar", "bym", "bym2")`), a parameter vector `phi` is assigned the ICAR prior (which places high prior probability on smooth spatial trends). The model is fixed, with no priors available to set.
+
+To implement the BYM2 model introduced in @riebler_2016 and implemented in Stan by @morris_2019, you must provide an additional `scale_factor` term using the **INLA** package (see [here](https://www.r-inla.org/download-install) for installation instructions). 
+
+The following code chunk demonstrates how to calculate the `scale_factor` argument given a spatial connectivity matrix C, the `geostan::prep_icar_data` function, and a user-defined function `c_scale` (from @morris_2019):
+
+```{r eval = FALSE}
+library(INLA)
+
+#' create scale factor for BYM2 model
+#' C must be an N by N connectivity matrix
+c_scale <- function(C) {
+    N <- nrow(C)
+    adj.matrix <- Matrix::Matrix(C, sparse = TRUE)
+    Q =  Diagonal(N, rowSums(adj.matrix)) - adj.matrix
+    Q_pert = Q + Diagonal(N) * max(diag(Q)) * sqrt(.Machine$double.eps)
+    Q_inv = INLA::inla.qinv(Q_pert, constr=list(A = matrix(1,1,N),e=0))
+    scale_factor <- exp(mean(log(diag(Q_inv))))
+    return (scale_factor)
+}
+
+C <- shape2mat(nepal)
+icar.data <- prep_icar_data(C)
+
+k <- icar.data$k
+scale_factor <- vector(mode = "numeric", length = k)
+for (j in 1:k) {
+    g.idx <- which(icar.data$comp.id == j) 
+    if (length(g.idx) == 1) {
+        scale_factor[j] <- 1 
+        next
+    }    
+    Cg <- C[g.idx, g.idx] 
+    scale.j <- c_scale(Cg)
+    scale_factor[j] <- scale.j
+}
+```
+
+The `scale_factor` is then passed to `stan_icar` for the BYM2 model, as in:
+
+```{r eval = FALSE}
+fit <- stan_icar(y ~ offset(log_population), data = data, type = "bym2", C = C, scale_factor = scale_factor)
+```
+
+## Setting priors: ESF
+
 The eigenvector spatial filter (ESF) models (see `geostan::stan_esf`) will also set priors automatically for the additional parameters needed to fit the spatial filter, specifically the coefficients `beta_ev` on the spatial eigenvectors. ESF models attempt to use a linear combination of the eigenvectors from a transformed spatial connectivity matrix to estimate latent spatial autocorrelation patterns. The Nepal model could be updated with a spatial filter as such:
 \begin{equation}
   \text{early_mortality}_i = \alpha + EV_i * \beta_{EV} + \text{PCI}_i * \beta_{inc} + e_i
@@ -136,122 +251,7 @@ ggplot(nepal) +
 ```
 The default priors for `geostan::stan_esf` are designed to work well for the data provided, but they are not perfect. The best evaluation of the ESF models is to examine the residuals for spatial autocorrelation using `geostan::moran_plot` or `geostan::sp_diag`.
 
-## Setting priors: GLM
-
-This section shows how to set priors on the intercept, coefficients, scale term $\sigma$, and other parameters that apply to some or all of the `stan_*` model fitting functions. The prior models are fixed (i.e. you currently cannot change the prior on the intercept from a Gaussian to Student's $t$) but you can and generally should provide your own values for the parameters.
-
-### Intercept
-
-To set the prior parameters for the intercept provide the values for the location $\mu$ and scale $\sigma$ of the Gaussian distribution to the `prior_intercept` argument. The following code sets the prior for the intercept to a Gaussian distribution with mean 0 and scale 5:
-
-```{r eval = FALSE}
-fit <- stan_glm(lif40 ~ pcinc, data = nepal, prior_intercept = c(0, 5))
-```
-
-### Coefficients
-
-Priors for coefficients need to be provided in a matrix or data frame and passed to the `prior` argument. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. In this case there is one variable, so if we wish to set its prior to a Gaussian with mean 2 and scale 2 we would use:
-
-```{r eval = FALSE}
-fit <- stan_glm(lif40 ~ pcinc, data = nepal, prior = data.frame(location = 2, scale = 2))
-```
-If we had three covariates and wished to assigned the same prior to all of them the `prior` argument would then look like `prior = data.frame(location = c(2, 2), scale = c(2, 2))`.
-
-### Outcome scale
-
-The scale parameter $\sigma$ is assigned a half-Student's $t$ prior, which is truncated at zero (i.e. only positive values will be assigned non-zero probability). The Student's $t$ distribution has three parameters: degrees of freedom, location, and scale. So if we wish to set the prior to Student's $t$ with 10 degrees of freedom, location 0, and scale 2, we would provide the following:
-```{r eval = FALSE}
-fit <- stan_glm(lif40 ~ pcinc, data = nepal, prior_sigma = c(10, 0, 2))
-```
-### Student's $t$ likelihood
-
-Often times the Gaussian model is unsatisfactory because there appear to be 'outliers' that may be exerting undue influence on the results. Since the Student's $t$ likelihood has heavier tails, such outliers will exert less influence when `family = student_t()`. The prior for the degrees of freedom for the likelihood is a Gamma distribution and it can be set using the `prior_nu` argument in `stan_glm`. The default, for instance, could be set manually like this:
-```{r eval = FALSE}
-fit <- stan_glm(lif40 ~ pcinc, data = nepal, family = student_t(), prior_nu = c(3, 0.2))
-```
-which for reference looks like this:
-```{r}
-g <- rgamma(n = 30e3, 3, 0.2)
-hist(g, main = "Gamma(3, 0.2)")
-```
-
-### Varying intercepts
-
-All of the models have the option to include a varying intercept term. These are similar to adding an indicator or dummy variable for each region, for instance, or any other geographic scale. However, they use hierarchical modeling to partially pool information across observations (often called 'random effects' terms, which is misleading). For count data especially, this offers a way to evaluate rates of occurrence while remaining attentive to the instability of rates when denominators are small. Generically, these models assign low probability to 'extreme' values, but what is considered 'extreme' or implausible is defined by a Gaussian distribution with parameters that are inferred from the data. The varying intercepts $\alpha_{[j]}$ are deviations from the global intercept, and their prior model is equivalent to:
-$$
-\alpha_{[j]} \sim Gauss(0, \tau_\alpha) \\
-\tau_\alpha \sim Student^{+}(\text{degrees of freedom, location, scale})
-$$
-with positively-constrained Student's $t$ prior for the scale. If we were to estimate the mean `lif40` for each of the 14 regions in the `nepal` data (found in the `name_2` variable), we would use the `re` argument to specify the regional grouping variable and override the default prior parameters for $\alpha_\tau$, if desired, using the `prior_tau` argument:
-
-```{r eval = FALSE}
-fit <- stan_glm(lif40 ~ 1, re = ~ name_2, data = nepal, prior_tau = c(15, 0, 5))
-```
-
-
-## Setting priors: CAR
-
-The only adjustable parameter specific to the CAR model is the prior on the scale parameter. The default is weakly informative. The CAR model is a multivariate Gaussian distribution specified as followings:
-
-$$ \phi \sim MVGauss(0, \sigma^2 * (D - \alpha * C)^{-1}) $$
-
-where $\phi$ is a vector of parameters to model and $\sigma$ is the scale parameter. C is a connectivity matrix while the diagonal elements of matrix D adjust the variance of each observation. For instance, the default specification sets the diagonal elements of D equal to the number of neighbors of each respective observation. $\alpha$ controls the degree of spatial autocorrelation. $\alpha$ will be less than zero when negative spatial autocorrelation patterns (similar values appear far from each other, like a checkerboard) predominate, and it is positive when the predominate pattern is positive spatial autocorrelation with a maximum value of 1. This parameter is not comparable to the spatial autocorrelation parameter from the SAR model or the APLE, despite some similarity.
-
-The scale is given a half-Student's t prior ("half" meaning it is constrained to positive values only), requiring parameters for degrees of freedom, location, and scale. The following code sets the prior to 30 degrees of freedom, location 0, and unit scale:
-
-```{r eval = FALSE}
-fit <- stan_car(y ~ offset(log_population), data = data, C = C, prior_car_scale = c(30, 0, 1))
-```
-
-## Setting priors: ICAR
-
-The Intrinsic Conditional Autoregressive (ICAR) models are based on the Stan code developed in @morris_2019. In each of the available model options (`type = c("icar", "bym", "bym2")`), a parameter vector `phi` is assigned the ICAR prior (which places high prior probability on smooth spatial trends). The model is fixed, with no priors available to set.
-
-To implement the BYM2 model introduced in @riebler_2016 and implemented in Stan by @morris_2019, you must provide an additional `scale_factor` term using the **INLA** package (see [here](https://www.r-inla.org/download-install) for installation instructions). 
-
-The following code chunk demonstrates how to calculate the `scale_factor` argument given a spatial connectivity matrix C, the `geostan::prep_icar_data` function, and a user-defined function `c_scale` (from @morris_2019):
-
-```{r eval = FALSE}
-library(INLA)
-
-#' create scale factor for BYM2 model
-#' C must be an N by N connectivity matrix
-c_scale <- function(C) {
-    N <- nrow(C)
-    adj.matrix <- Matrix::Matrix(C, sparse = TRUE)
-    Q =  Diagonal(N, rowSums(adj.matrix)) - adj.matrix
-    Q_pert = Q + Diagonal(N) * max(diag(Q)) * sqrt(.Machine$double.eps)
-    Q_inv = INLA::inla.qinv(Q_pert, constr=list(A = matrix(1,1,N),e=0))
-    scale_factor <- exp(mean(log(diag(Q_inv))))
-    return (scale_factor)
-}
-
-C <- shape2mat(nepal)
-icar.data <- prep_icar_data(C)
-
-k <- icar.data$k
-scale_factor <- vector(mode = "numeric", length = k)
-for (j in 1:k) {
-    g.idx <- which(icar.data$comp.id == j) 
-    if (length(g.idx) == 1) {
-        scale_factor[j] <- 1 
-        next
-    }    
-    Cg <- C[g.idx, g.idx] 
-    scale.j <- c_scale(Cg)
-    scale_factor[j] <- scale.j
-}
-```
-
-The `scale_factor` is then passed to `stan_icar` for the BYM2 model, as in:
-
-```{r eval = FALSE}
-fit <- stan_icar(y ~ offset(log_population), data = data, type = "bym2", C = C, scale_factor = scale_factor)
-```
-
-## Setting priors: ESF
-
-As discussed above, `geostan::stan_esf` models assign the regularized horseshoe (RHS) prior model to the coefficients of the spatial filter. The RHS model has three parameters that need to be set. First is a global scale parameter which should reflect our initial information on how sparse the model should be: setting `scale_global` near zero will impose more sparsity, and moving it towards 1 relaxes the sparsity of the model. If a model shows residual spatial autocorrelation, relaxing the degree of sparsity may help by allowing spatial filter to expand and absorb more of the autocorrelation pattern. Approximating the autocorrelation patterns in data with strong spatial autocorrelation typically requires greater numbers of eigenvectors, and this informs **geostan**'s default prior settings (based on equations from @chun_2016; see @donegan_2020). The remaining parameters to set are the degrees of freedom and scale for a Student's $t$ prior which is applied to any of the "large" parameter estimates that escape the shrinkage to zero. One can view the RHS model as a combination of a spike at zero and slabs extending outwards; the Student's $t$ model determines the width of the slabs.
+The RHS model has three parameters that need to be set. First is a global scale parameter which should reflect our initial information on how sparse the model should be: setting `scale_global` near zero will impose more sparsity, and moving it towards 1 relaxes the sparsity of the model. If a model shows residual spatial autocorrelation, relaxing the degree of sparsity may help by allowing spatial filter to expand and absorb more of the autocorrelation pattern. Approximating the autocorrelation patterns in data with strong spatial autocorrelation typically requires greater numbers of eigenvectors, and this informs **geostan**'s default prior settings (based on equations from @chun_2016; see @donegan_2020). The remaining parameters to set are the degrees of freedom and scale for a Student's $t$ prior which is applied to any of the "large" parameter estimates that escape the shrinkage to zero. One can view the RHS model as a combination of a spike at zero and slabs extending outwards; the Student's $t$ model determines the width of the slabs.
 
 The RHS prior parameters can be set by providing a named vector to the `prior_rhs` argument, with elements `scale_global` and `slab_df` and `slab_scale` (for the Student's $t$ slab):
 

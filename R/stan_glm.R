@@ -15,7 +15,8 @@
 #' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
 #' \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
 #' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.}
-#' \item{spatial}{Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. Defaults to \code{spatial = FALSE}. If \code{spatial = TRUE} you must provide a connectivity matrix \code{C}. The specification of the auto Gaussian model is fixed such that all non-zero values in \code{C} will be converted to ones.}
+#' \item{spatial}{Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. For \code{stan_glm}, this defaults to \code{spatial = FALSE}. If \code{spatial = TRUE} you must provide \code{car_parts} (see below).}
+#' \item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data} (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}). Only required if \code{spatial=TRUE}.}
 #' }
 #' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} or spatial measurement error (\code{ME}) terms; it will automatically be row-standardized before calculating \code{slx} terms.
 #' @param family The likelihood function for the outcome variable. Current options are \code{poisson(link = "log")}, \code{binomial(link = "logit")}, \code{student_t()}, and the default \code{gaussian()}. 
@@ -200,10 +201,7 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
     )
   ## DATA MODEL STUFF -------------  
   me.list <- prep_me_data(ME, x.list$x)
-  standata <- c(standata, me.list)
-  if (missing(C)) C <- NA
-  sp.me <- prep_sp_me_data(C, me.list$spatial_me)
-  standata <- c(standata, sp.me)
+  standata <- c(standata, me.list)  
   ## STAN STUFF -------------    
   if (family$family == "binomial") {
       # standata$y will be ignored for binomial and poisson
@@ -222,7 +220,8 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
   ## PRINT STUFF -------------    
   if (!silent) print_priors(user_priors, priors)
   ## CALL STAN -------------    
-   samples <- rstan::sampling(stanmodels$glm, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+  samples <- rstan::sampling(stanmodels$glm, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+  if (missing(C)) C <- NA
   out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
   out$data <- ModData
   out$family <- family
