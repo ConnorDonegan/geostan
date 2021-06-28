@@ -18,7 +18,7 @@
 #' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
 #' \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
 #' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.}
-#' \item{spatial}{Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. For \code{stan_esf}, this defaults to \code{spatial = TRUE}. If \code{spatial = TRUE} you must provide \code{car_parts} (see below).}
+#' \item{spatial}{Logical value indicating whether an auto Gaussian (conditional autoregressive (CAR)) model should be used for the covariates (see \link[geostan]{stan_car} for CAR model details). For \code{stan_esf}, this defaults to \code{spatial = TRUE}. If \code{spatial = TRUE} you must provide \code{car_parts} (see below).}
 #' \item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data} (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}). Only required if \code{spatial=TRUE}.}
 #' }
 #' 
@@ -45,7 +45,7 @@
 #' @param ... Other arguments passed to \link[rstan]{sampling}. 
 #' @details
 #'
-#' Eigenvector spatial filtering is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), drawing on the Piironen and Vehtari's (2017) regularized horseshoe prior. ESF models take the spectral decomposition of the doubly-centered spatial connectivity matrix \code{C}, which appears in the numerator of the Moran coefficient (MC),a measure of spatial autocorrelation. The resulting eigenvectors \code{EV} are mutually orthogonal and uncorrelated map patterns. ESF methodology is premised on our ability to decompose spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). SA in the outcome variable is then absorbed by the spatial filter \code{EV * beta_ev}, where \code{beta_ev} is a vector of coefficients.
+#' Eigenvector spatial filtering is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), drawing on the Piironen and Vehtari's (2017) regularized horseshoe prior. ESF models take the spectral decomposition of a transformed spatial connectivity matrix \code{C}, which appears in the numerator of the Moran coefficient (MC),a measure of spatial autocorrelation. The resulting eigenvectors \code{EV} are mutually orthogonal and uncorrelated map patterns. ESF methodology is premised on the ability to decompose spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). SA in the outcome variable is then absorbed by the spatial filter \code{EV * beta_ev}, where \code{beta_ev} is a vector of coefficients.
 #'
 #' ESF decomposes the data into a global mean \code{alpha}, global patterns contributed by covariates \code{X * beta}, spatial trends \code{EV * beta_ev}, and residual variation. Thus
 #'
@@ -55,7 +55,7 @@
 #' 
 #' \code{Y \~ Gauss(Mu, sigma) }
 #'
-#' The model can easily be extended to the space-time domain; see \link[geostan]{shape2mat} to specify a space-time connectivity matrix. 
+#' The model can be extended to the space-time domain; see \link[geostan]{shape2mat} to specify a space-time connectivity matrix. 
 #' 
 #' The coefficients \code{beta_ev} are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the \code{threshold} argument). By default, \code{stan_esf} will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the \code{nsa} argument.
 #' 

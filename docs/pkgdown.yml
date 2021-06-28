@@ -1,10 +1,8 @@
 pandoc: '2.5'
 pkgdown: 1.6.1
 pkgdown_sha: ~
-articles:
-  measuring-sa: measuring-sa.html
-  setting-priors: setting-priors.html
-last_built: 2021-02-15T17:18Z
+articles: {}
+last_built: 2021-06-28T11:29Z
 urls:
   reference: https://connordonegan.github.io/geostan/reference
   article: https://connordonegan.github.io/geostan/articles
