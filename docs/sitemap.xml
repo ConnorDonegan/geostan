@@ -49,9 +49,6 @@
     <loc>https://connordonegan.github.io/geostan/reference/posterior_predict.html</loc>
   </url>
   <url>
-    <loc>https://connordonegan.github.io/geostan/reference/prep_car_data.html</loc>
-  </url>
-  <url>
     <loc>https://connordonegan.github.io/geostan/reference/prep_icar_data.html</loc>
   </url>
   <url>
@@ -89,5 +86,11 @@
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/waic.html</loc>
+  </url>
+  <url>
+    <loc>https://connordonegan.github.io/geostan/articles/measuring-sa.html</loc>
+  </url>
+  <url>
+    <loc>https://connordonegan.github.io/geostan/articles/setting-priors.html</loc>
   </url>
 </urlset>
