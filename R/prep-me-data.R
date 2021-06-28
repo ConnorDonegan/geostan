@@ -172,7 +172,7 @@ prep_me_data <- function(ME, x) { # for x pass in x.list$x
         spatial_me = spatial_me
     )
     if (spatial_me) {
-        if(!inherits(ME$car_parts, "list")) stop("If ME$spatial = TRUE, you must provide car_parts---a list of data for the CAR model. See ?prep_car_data.")
+       if(!inherits(ME$car_parts, "list")) stop("If ME$spatial = TRUE, you must provide car_parts---a list of data for the CAR model. See ?prep_car_data.")
         if(!all(c("nC", "nImC", "ImC", "ImC_v", "ImC_u", "Cidx", "M_diag", "C") %in% names(ME$car_parts))) stop("car_parts is missing at least one required part. See ?prep_car_data. Did you use cmat = TRUE?")
         me.list <- c(me.list, ME$car_parts)
     } else {

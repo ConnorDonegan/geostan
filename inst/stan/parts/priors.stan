@@ -44,11 +44,11 @@ real car_normal_lpdf(vector y, vector mu,
 		     vector M_inv, vector lambda,
 		     int n) {
   vector[n] z = y - mu;  
-  vector[num_elements(ImC)] ImrhoC = ImC; // (I - rho C)
+  vector[num_elements(ImC)] ImrhoC = ImC; // (I - C)
   vector[n] zMinv = z .* M_inv;           // z' * M^-1
   vector[n] ImrhoCz;                      // (I - rho * C) * z
   vector[n] ldet_prec;
-  ImrhoC[Cidx] = rho * ImC[Cidx];
+  ImrhoC[Cidx] = rho * ImC[Cidx];        // (I - rho C) 
   ImrhoCz = csr_matrix_times_vector(n, n, ImrhoC, v, u, z);
   for (i in 1:n) ldet_prec[i] = log1m(rho * lambda[i]);
   return 0.5 * (
