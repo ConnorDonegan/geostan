@@ -8,7 +8,7 @@
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 #'  These will be pre-multiplied by a row-standardized version of the user-provided spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param re If the model includes a varying intercept term \code{alpha_re} specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}. With the CAR model, any \code{alpha_re} term should be at a different level or scale than the observations (i.e., a different scale than the CAR model). In other words, do not try to replicate the BYM model using the CAR model because that would be redundant.
+#' @param re If the model includes a varying intercept term \code{alpha_re} specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}. With the CAR model, any \code{alpha_re} term should be at a different level or scale than the observations (i.e., a different scale than the autocorrelation structure of the CAR model itself). 
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned an auto-Gaussian (CAR) model unless \code{spatial = FALSE}, in which case they are assinged the Student's t model. Elements of the list \code{ME} may include:
 #' \describe{
@@ -39,33 +39,47 @@
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first. 
 #' @details
 #'  
-#' The CAR model is specified as follows:
+#' When \code{family = gaussian()}, the CAR model is specified as follows:
 #'
 #'                             \code{Y ~ MVGauss(Mu, (I - rho C)^-1 * M * tau^2}
 #'
-#' where \code{Y} may be data or parameters and \code{Mu} is the mean vector. When \code{Y} is a vector of parameters, \code{Mu} will be set to a vector of zeroes. \code{C} is the spatial connectivity matrix and \code{M} is a known diagonal matrix with diagonal entries proportional to the conditional variances (see the \code{M_diagonal} argument). There are two parameters to estimate: \code{car_rho} (rho), which controls the degree of spatial autocorrelation, and the scale parameter, \code{car_scale} (tau). 
+#' where \code{Mu} is the mean vector (with covariates, etc.), \code{C} is the spatial connectivity matrix, and \code{M} is a known diagonal matrix with diagonal entries proportional to the conditional variances (see the \code{M_diagonal} argument).
+#'
+#' For Poisson and Binomial models, the CAR model is specified as follows:
+#'
+#'                             \code{Y ~ Poisson(exp(offset + phi))}
+#'
+#'                             \code{phi ~ MVGauss(Mu, (I - rho C)^-1 * M * tau^2}
+#'
+#' where \code{Mu}, again, contains the intercept, covariates, etc. 
+#'
+#' The covariance matrix of the CAR model contains two parameters to estimate: \code{car_rho} (rho), which controls the degree of spatial autocorrelation, and the scale parameter, \code{car_scale} (tau). 
 #' 
-#' These models are discussed in Cressie and Wikle (2011, p. 184-88), Cressie (2015 [1993], Ch. 6-7), and Haining and Li (2020, p. 249-51). The Stan code for the model draws from Joseph (2016) to calculate the log-determinant of the precision matrix (also see Haining and Li, p. 250) up to a constant of proportionality.
+#' CAR models are discussed in Cressie and Wikle (2011, p. 184-88), Cressie (2015 [1993], Ch. 6-7), and Haining and Li (2020, p. 249-51).
+#'
+#' The Stan code was developed by Donegan et al. (2021).
 #'
 #' The auto-Gaussian model returns a spatial \code{trend} component which is calculated as follows (Cressie 2015, p. 564):
 #'
-#' \code{trend = rho * C * (Y - Mu)}
+#' \code{trend = rho * C * (Y - Mu)}.
 #'
-#' where \code{Mu} includes the intercept plus any covariates \code{X * beta} and any other terms that may be added to the linear predictor. For the Poisson and Binomial models, the spatial trend is simply equal to the parameter vector \code{phi} (however, note that a spatial trend could be extracted from \code{phi} in this same manner). All models return:
+#' This term can be extracted from a fitted model using the \link[geostan]{spatial} method. For the Poisson and Binomial models, this (smoothed) \code{trend} term is not calculated; instead, using the \link[geostan]{spatial} method with a fitted Poisson or Binomial model will return the parameter vector \code{phi}.  
+#'
+#' All models return:
 #'
 #' \code{fitted = Mu}.
 #'
-#' The residuals returned by the auto-Gaussian model are `de-trended', as follows:
+#' When \code{family = gaussian()}, the residuals returned are `de-trended', as follows:
 #' 
 #' \code{residual = Y - Mu - trend}
 #'
-#' The trend, fitted values, and residuals may be obtained using the \link[geostan]{spatial}, \link[geostan]{fitted.geostan_fit}, and \link[geostan]{resid.geostan_fit} methods, as usual. For Poisson and Binomial models, the fitted values and residuals are calculated in the usual manner.
+#' The trend, fitted values, and residuals may be obtained using the \link[geostan]{spatial}, \link[geostan]{fitted.geostan_fit}, and \link[geostan]{resid.geostan_fit} methods, as usual. (For Poisson and Binomial models, the fitted values and residuals are calculated in the usual manner, since the \code{trend} term is not calculated.)
 #'
 #' The posterior predictive distribution (ppd) is returned in the parameter vector \code{yrep}. For the auto-Gaussian model, each sample from the ppd is a draw from the multivariate Gaussian density function parameterized as:
 #'
 #' \code{yrep \~ MVGauss(Mu, S) },   \code{S = (I - rho C)^-1 * M * tau^2}
 #'
-#' and is accessible using the \link[geostan]{posterior_predict} method, as usual. The log likelihood of the data conditional on the model (\code{log_lik}, required for calculating \link[geostan]{waic}) is calculated analogously, using the above parameterization of the multivariate normal density. 
+#' and is accessible using the \link[geostan]{posterior_predict} method. The log likelihood of the data conditional on the model (\code{log_lik}, required for calculating \link[geostan]{waic}) is calculated analogously, using the above parameterization of the multivariate normal density. 
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
@@ -92,9 +106,10 @@
 #' 
 #' Cressie, Noel and Wikle, Christopher (2011). Statistics for Spatio-Temporal Data. Wiley.
 #'
+#' Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. Int. J. Env. Res. and Public Health 18 (13): 6856.
+#' 
 #' Haining, Robert and Li, Guangquan (2020). Modelling Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.
 #' 
-#' Joseph, Max (2016). Exact Sparse CAR Models in Stan. Stan Case Studies, Vol. 3. \url{https://mc-stan.org/users/documentation/case-studies/mbjoseph-CARStan.html}
 #'
 #' @examples
 #' \dontrun{

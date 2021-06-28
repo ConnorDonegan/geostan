@@ -21,42 +21,41 @@ parameters {
 transformed parameters {
   // declaration
   matrix[n, dx_all] x_all;
-  vector[n] f;
+  vector[n] phi_mu;
+  vector[n] f;  
   if (dx_obs) x_all[,x_obs_idx] = x_obs;
   if (dx_me_unbounded) for (j in 1:dx_me_unbounded) x_all[ ,x_me_unbounded_idx[j]] = x_true_unbounded[j];
   if (dx_me_bounded) for (j in 1:dx_me_bounded) x_all[,x_me_bounded_idx[j]] = x_true_bounded[j];
-  f = offset; // add intercept below.
   // car
-  if (is_auto_gaussian) f += intercept;
-  if (!is_auto_gaussian) f += phi; // phi ~ Gau(intercpet, (I - rho C)^-1 M)
-  // expression
-    if (has_re) {
+  phi_mu = rep_vector(intercept, n);
+  if (has_re) {
     for (i in 1:n) {
-      f[i] += alpha_tau[has_re] * alpha_re_tilde[id[i]];
-   }
+      phi_mu[i] += alpha_tau[has_re] * alpha_re_tilde[id[i]];
+    }
   }  
   if (dwx) {
-   if (has_me) {
+    if (has_me) {
       for (i in 1:dwx) {
-     f += csr_matrix_times_vector(n, n, w, v, u, x_all[,wx_idx[i]]) * gamma[i];
-     }
-   } else {
-      f += WX * gamma;
+	phi_mu += csr_matrix_times_vector(n, n, w, v, u, x_all[,wx_idx[i]]) * gamma[i];
       }
+    } else {
+      phi_mu += WX * gamma;
+    }
   } 
-  if (dx_all) f += x_all * beta;
+  if (dx_all) phi_mu += x_all * beta;
+  if (is_auto_gaussian) {
+    f = offset + phi_mu;
+      } else {
+    f = offset + phi;
+  }
   if (is_binomial) f = inv_logit(f);
-
-  //#include parts/trans_params_declaration.stan
-  //  if (!is_auto_gaussian) f += phi;
-  //#include parts/trans_params_expression.stan
 }
 
 model {
 #include parts/model.stan
   car_scale ~ student_t(sigma_prior[1], sigma_prior[2], sigma_prior[3]);
   if (is_auto_gaussian * !prior_only) y ~ car_normal(f, car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n);
-  if (!is_auto_gaussian) phi ~ car_normal(rep_vector(intercept, n), car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n);
+  if (!is_auto_gaussian) phi ~ car_normal(phi_mu, car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n);
 }
 
 generated quantities {
@@ -71,7 +70,6 @@ generated quantities {
   fitted = f;
   residual = y - f - trend;
  }
-  
   if (invert * is_auto_gaussian) {
     S = car_scale^2 * diag_post_multiply(inverse(diag_matrix(rep_vector(1, n)) - car_rho * C), M_diag);      
     yrep = multi_normal_rng(f, S);    

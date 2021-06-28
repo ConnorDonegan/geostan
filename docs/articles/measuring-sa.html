@@ -187,7 +187,7 @@
 <code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>w <span class="op">=</span> <span class="va">W</span>, rho <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span>
 
 <span class="fu"><a href="../reference/aple.html">aple</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">W</span><span class="op">)</span>
-<span class="co">#&gt; [1] 0.492</span>
+<span class="co">#&gt; [1] 0.59</span>
 
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">ohio</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
@@ -199,7 +199,7 @@
 <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>
 <span class="co">#&gt; [1]  5 88</span>
 <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span><span class="op">(</span><span class="va">X</span>, <span class="fl">1</span>, <span class="va">aple</span>, w <span class="op">=</span> <span class="va">W</span><span class="op">)</span>
-<span class="co">#&gt; [1] 0.679 0.617 0.680 0.713 0.395</span></code></pre></div>
+<span class="co">#&gt; [1] 0.550 0.500 0.765 0.413 0.679</span></code></pre></div>
 </div>
 <div id="spatial-diagnostics-with-sp_diag" class="section level2">
 <h2 class="hasAnchor">
@@ -227,7 +227,7 @@
 <span class="co">#&gt; </span>
 <span class="co">#&gt; *Setting prior parameters for intercept</span>
 <span class="co">#&gt; Gaussian</span>
-<span class="co">#&gt; Location: 0</span>
+<span class="co">#&gt; Location: 10.7142419611244</span>
 <span class="co">#&gt; Scale: 12.488757925385</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; *Setting prior parameters for sigma</span>
@@ -269,7 +269,7 @@
 <span class="co">#&gt; </span>
 <span class="co">#&gt; *Setting prior parameters for intercept</span>
 <span class="co">#&gt; Gaussian</span>
-<span class="co">#&gt; Location: 0</span>
+<span class="co">#&gt; Location: 10.7142419611244</span>
 <span class="co">#&gt; Scale: 12.488757925385</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; *Setting prior parameters for sigma</span>

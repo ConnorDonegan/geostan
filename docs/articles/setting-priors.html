@@ -122,16 +122,15 @@
 <span class="va">folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html">tempdir</a></span><span class="op">(</span><span class="op">)</span>
 <span class="va">url</span> <span class="op">&lt;-</span> <span class="st">"https://geodacenter.github.io/data-and-lab//data/nepal.zip"</span>
 <span class="fu"><a href="../reference/get_shp.html">get_shp</a></span><span class="op">(</span><span class="va">url</span>, <span class="va">folder</span><span class="op">)</span>
-<span class="co">#&gt; [1] "/tmp/RtmpXB3nIN/file5c4416652df65"    </span>
-<span class="co">#&gt; [2] "/tmp/RtmpXB3nIN/file5c44168a00bef"    </span>
-<span class="co">#&gt; [3] "/tmp/RtmpXB3nIN/file5c441790014b6.zip"</span>
-<span class="co">#&gt; [4] "/tmp/RtmpXB3nIN/file5c441afecd34.so"  </span>
-<span class="co">#&gt; [5] "/tmp/RtmpXB3nIN/nepal.dbf"            </span>
-<span class="co">#&gt; [6] "/tmp/RtmpXB3nIN/nepal.prj"            </span>
-<span class="co">#&gt; [7] "/tmp/RtmpXB3nIN/nepal.shp"            </span>
-<span class="co">#&gt; [8] "/tmp/RtmpXB3nIN/nepal.shx"</span>
+<span class="co">#&gt; [1] "/tmp/Rtmp0AVcvr/file361a3e30c802"    </span>
+<span class="co">#&gt; [2] "/tmp/Rtmp0AVcvr/file361a631dfba6.zip"</span>
+<span class="co">#&gt; [3] "/tmp/Rtmp0AVcvr/file361a999df21"     </span>
+<span class="co">#&gt; [4] "/tmp/Rtmp0AVcvr/nepal.dbf"           </span>
+<span class="co">#&gt; [5] "/tmp/Rtmp0AVcvr/nepal.prj"           </span>
+<span class="co">#&gt; [6] "/tmp/Rtmp0AVcvr/nepal.shp"           </span>
+<span class="co">#&gt; [7] "/tmp/Rtmp0AVcvr/nepal.shx"</span>
 <span class="va">nepal</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_read.html">st_read</a></span><span class="op">(</span><span class="va">folder</span>, <span class="st">"nepal"</span><span class="op">)</span>
-<span class="co">#&gt; Reading layer `nepal' from data source `/tmp/RtmpXB3nIN' using driver `ESRI Shapefile'</span>
+<span class="co">#&gt; Reading layer `nepal' from data source `/tmp/Rtmp0AVcvr' using driver `ESRI Shapefile'</span>
 <span class="co">#&gt; Simple feature collection with 75 features and 61 fields</span>
 <span class="co">#&gt; Geometry type: POLYGON</span>
 <span class="co">#&gt; Dimension:     XY</span>
@@ -251,8 +250,8 @@
 <h2 class="hasAnchor">
 <a href="#setting-priors-car" class="anchor"></a>Setting priors: CAR</h2>
 <p>The only adjustable parameter specific to the CAR model is the prior on the scale parameter. The default is weakly informative. The CAR model is a multivariate Gaussian distribution specified as followings:</p>
-<p><span class="math display">\[ Y \sim MVGauss(\mu, (I - \rho C) M) \]</span></p>
-<p>where <span class="math inline">\(Y\)</span> is a vector of parameters or data to model. With <span class="math inline">\(M = \Delta \sigma^2\)</span>, <span class="math inline">\(\Delta\)</span> is a diagonal matrix with known positive values on the diagonal that are proportional to the conditional variances of each respective observation (<code>conditional' meaning, 'conditional on knowing the values of the neighboring observations'), and $sigma^2$ is a scale parameter. C is a connectivity matrix and $\rho$ is a spatial dependence parameter, capturing the nature and degree of autocorrelation. The</code>geostan::prep_car_data` function provides a convenient method of producing <span class="math inline">\(M\)</span> and <span class="math inline">\(C\)</span>.</p>
+<p><span class="math display">\[ Y \sim MVGauss(\mu, (I - \rho C) M \tau^2) \]</span></p>
+<p>where <span class="math inline">\(Y\)</span> is a vector of parameters or data to model, <span class="math inline">\(M\)</span> is a diagonal matrix with known positive values on the diagonal that are proportional to the conditional variances of each respective observation (<code>conditional' meaning, 'conditional on knowing the values of the neighboring observations'), and $sigma^2$ is a scale parameter. C is a known connectivity matrix and $\rho$ is a spatial dependence parameter, capturing the nature and degree of autocorrelation. The</code>geostan::prep_car_data` function provides a convenient method to produce <span class="math inline">\(M\)</span> and <span class="math inline">\(C\)</span> in the format required by the model.</p>
 <p>The scale parameter <span class="math inline">\(\sigma\)</span> is given a half-Student’s t prior (“half” meaning it is constrained to positive values only), requiring parameters for degrees of freedom, location, and scale. The following code sets the prior to 30 degrees of freedom, location 0, and unit scale:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html">offset</a></span><span class="op">(</span><span class="va">log_population</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">data</span>, C <span class="op">=</span> <span class="va">C</span>, prior_car_scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">30</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></code></pre></div>
@@ -343,40 +342,40 @@
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="co"># one at a time</span>
 <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">sf</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span>
-<span class="co">#&gt; [1] 0.01060625</span>
+<span class="co">#&gt; [1] -0.05575472</span>
 
 <span class="co"># summarize them all: mean of each column</span>
 <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span><span class="op">(</span><span class="va">sf</span>, <span class="fl">2</span>, <span class="va">mean</span><span class="op">)</span>
 <span class="co">#&gt;        esf[1]        esf[2]        esf[3]        esf[4]        esf[5] </span>
-<span class="co">#&gt;  0.0106062468 -0.0585676143 -0.0471154913  0.0341042249 -0.0001138872 </span>
+<span class="co">#&gt; -0.0557547245 -0.0206602150 -0.0268268425 -0.0153186422  0.0237283450 </span>
 <span class="co">#&gt;        esf[6]        esf[7]        esf[8]        esf[9]       esf[10] </span>
-<span class="co">#&gt;  0.0074838183  0.0136648868  0.0112120613 -0.0130083233  0.0369825776 </span>
+<span class="co">#&gt; -0.0664228252 -0.0106889281  0.0036550306  0.0178600885 -0.0410806776 </span>
 <span class="co">#&gt;       esf[11]       esf[12]       esf[13]       esf[14]       esf[15] </span>
-<span class="co">#&gt;  0.0347514235  0.0586690935  0.0030275274  0.0294317561  0.0124068741 </span>
+<span class="co">#&gt; -0.0393459414  0.0025767984 -0.0610242508  0.0067833646 -0.0786578142 </span>
 <span class="co">#&gt;       esf[16]       esf[17]       esf[18]       esf[19]       esf[20] </span>
-<span class="co">#&gt;  0.0204314887 -0.0022452081 -0.0203291066 -0.0456008880 -0.0449021459 </span>
+<span class="co">#&gt; -0.0288878754 -0.0794885944 -0.1171165747 -0.0098458114 -0.0416910258 </span>
 <span class="co">#&gt;       esf[21]       esf[22]       esf[23]       esf[24]       esf[25] </span>
-<span class="co">#&gt; -0.0367901412 -0.0348694077  0.0046571911 -0.0213042466  0.0085936656 </span>
+<span class="co">#&gt;  0.0045331486 -0.0617836463 -0.0013466595 -0.0563843678  0.0333785591 </span>
 <span class="co">#&gt;       esf[26]       esf[27]       esf[28]       esf[29]       esf[30] </span>
-<span class="co">#&gt; -0.0542070453  0.0602005711 -0.0386176732  0.0807027470 -0.0481919478 </span>
+<span class="co">#&gt;  0.0536696043 -0.0018893874  0.0419714082  0.0426229601  0.0291190695 </span>
 <span class="co">#&gt;       esf[31]       esf[32]       esf[33]       esf[34]       esf[35] </span>
-<span class="co">#&gt; -0.0563206950  0.0266081555  0.0771189689 -0.0555904624 -0.0411343268 </span>
+<span class="co">#&gt;  0.0160166253  0.0581821780  0.0336361836 -0.0844176110 -0.0892961678 </span>
 <span class="co">#&gt;       esf[36]       esf[37]       esf[38]       esf[39]       esf[40] </span>
-<span class="co">#&gt; -0.0205442670 -0.0048773351 -0.0087310271 -0.0510823668 -0.0571385721 </span>
+<span class="co">#&gt;  0.0278998103 -0.0003778349 -0.0634746769 -0.0615616165  0.0621889858 </span>
 <span class="co">#&gt;       esf[41]       esf[42]       esf[43]       esf[44]       esf[45] </span>
-<span class="co">#&gt; -0.0596298415 -0.0288670501 -0.0305788856 -0.0100228353 -0.0265228798 </span>
+<span class="co">#&gt;  0.0577631458  0.0404070072  0.0306487747  0.0119550258  0.0546632423 </span>
 <span class="co">#&gt;       esf[46]       esf[47]       esf[48]       esf[49]       esf[50] </span>
-<span class="co">#&gt;  0.0143079881 -0.0598509187 -0.0459938188  0.0190447158  0.0025956864 </span>
+<span class="co">#&gt;  0.0037665598  0.0829112231  0.0955061286  0.0742307919  0.1183301478 </span>
 <span class="co">#&gt;       esf[51]       esf[52]       esf[53]       esf[54]       esf[55] </span>
-<span class="co">#&gt; -0.0025378317  0.0002073692 -0.0239733401 -0.0299466870  0.0229373875 </span>
+<span class="co">#&gt;  0.0077682439  0.0359269250  0.1093641944 -0.0132672820  0.0084685214 </span>
 <span class="co">#&gt;       esf[56]       esf[57]       esf[58]       esf[59]       esf[60] </span>
-<span class="co">#&gt;  0.0177386896  0.0283222947  0.0340410549  0.0135682540  0.0234039449 </span>
+<span class="co">#&gt; -0.0219950510 -0.0312479135 -0.0280709249 -0.0088688161 -0.0750431733 </span>
 <span class="co">#&gt;       esf[61]       esf[62]       esf[63]       esf[64]       esf[65] </span>
-<span class="co">#&gt;  0.0135856877 -0.0166121909  0.0144068298  0.0085483454  0.0274162715 </span>
+<span class="co">#&gt; -0.0144239678  0.0140409915  0.1031747685 -0.0310328634  0.0135780623 </span>
 <span class="co">#&gt;       esf[66]       esf[67]       esf[68]       esf[69]       esf[70] </span>
-<span class="co">#&gt;  0.0145365369 -0.0398222152  0.0832979764  0.0744993657 -0.0124238265 </span>
+<span class="co">#&gt; -0.0038234829 -0.0291245965  0.0313350102  0.0469577582 -0.0246370001 </span>
 <span class="co">#&gt;       esf[71]       esf[72]       esf[73]       esf[74]       esf[75] </span>
-<span class="co">#&gt;  0.0206096790  0.0621141609  0.0393855196  0.0731473995  0.0096960642</span></code></pre></div>
+<span class="co">#&gt; -0.0490694079 -0.0437896427  0.0488042497  0.0318017442  0.0085121573</span></code></pre></div>
 <p>By contrast, each row is a draw from the <em>joint</em> probability distribution of the spatial filter. Each of the coefficients has the same marginal probability as <code>beta_ev[1]</code>. But samples from the joint distribution show that the horseshoe prior assigns high probability to the presence of positive spatial autocorrelation (without favoring any particular pattern). Each of the samples exhibit a different pattern, arising from various linear combinations of eigenvectors:</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">n.samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">sf</span><span class="op">)</span>
