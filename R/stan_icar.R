@@ -17,7 +17,8 @@
 #' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
 #' \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
 #' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.}
-#' \item{spatial}{Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. Defaults to \code{spatial = FALSE}. The specification of the auto Gaussian model is fixed such that any non-zero values in \code{C} will be converted to ones.}
+#' \item{spatial}{Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. For \code{stan_icar}, this defaults to \code{spatial = TRUE}; if \code{spatial = TRUE} you must provide \code{car_parts} (see below).}
+#' \item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data} (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}). Only required if \code{spatial=TRUE}.}
 #' }
 #' @param C Spatial connectivity matrix which will be used to construct an edge list for the ICAR model, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms or spatial measurement error (ME) models. It will automatically be row-standardized before calculating \code{slx} terms. \code{C} must be a binary symmetric \code{n x n} matrix.
 #' 
@@ -125,7 +126,7 @@ stan_icar <- function(formula, slx, re, data,
                       family = poisson(),
                       prior = NULL, prior_intercept = NULL, prior_tau = NULL,
                       centerx = FALSE, scalex = FALSE, prior_only = FALSE,
-                      chains = 4, iter = 4e3, refresh = 1e3, pars = NULL,
+                      chains = 4, iter = 4e3, refresh = 500, pars = NULL,
                       control = list(adapt_delta = .9, max_treedepth = 15),
                       silent = FALSE,
                       ...) {
@@ -234,13 +235,10 @@ stan_icar <- function(formula, slx, re, data,
   if (inherits(scale_factor, "NULL")) inv_sqrt_scale_factor = NULL else inv_sqrt_scale_factor = 1 / sqrt(scale_factor)
   iar.list <- prep_icar_data(C, inv_sqrt_scale_factor = inv_sqrt_scale_factor)
   standata <- c(standata, iar.list)
-  standata$type <- match(type, c("icar", "bym", "bym2"))
+  standata$type <- match(type, c("icar", "bym", "bym2"))  
   ## DATA MODEL STUFF -------------  
   me.list <- prep_me_data(ME, x.list$x)
   standata <- c(standata, me.list)
-  if (missing(C)) C <- NA
-  sp.me <- prep_sp_me_data(C, me.list$spatial_me)
-  standata <- c(standata, sp.me)
   ## STAN STUFF -------------    
   if (family$family == "binomial") {
       # standata$y will be ignored for binomial and poisson models

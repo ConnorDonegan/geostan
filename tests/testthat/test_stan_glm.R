@@ -38,7 +38,8 @@ test_that("GLM works with covariate ME: spatial data model", {
     C <- shape2mat(ohio, "B")
     n <- nrow(ohio)
     ME <- list(se = data.frame(unemployment = rep(0.75, n)),
-               spatial = TRUE
+               spatial = TRUE,
+               car_parts = prep_car_data(C)
                )
     SW(
         fit <- stan_glm(gop_growth ~ unemployment + historic_gop,

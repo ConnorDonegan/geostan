@@ -88,7 +88,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
       if ("spatial" %in% names(x$ME)) cat("\nData model (prior): CAR (auto Gaussian)") else cat("\nData model (prior): Studen's t")
   } else cat("none")
   cat("\nSpatial method (outcome): ", as.character(x$spatial$method), "\n")
-  if (x$spatial$method == "CAR") pars <- c(pars, "car_alpha", "car_scale")
+  if (x$spatial$method == "CAR") pars <- c(pars, "car_rho", "car_scale")
   if (x$spatial$method == "BYM2") pars <- c(pars, "rho", "spatial_scale")
   if (x$spatial$method == "BYM") pars <- c(pars, "spatial_scale", "theta_scale")
   if (x$spatial$method == "ICAR") pars <- c(pars, "spatial_scale")  
@@ -113,7 +113,7 @@ plot.geostan_fit <- function(x, pars, plotfun = "hist", fill = "steelblue4", ...
       pars <- "intercept"
       x.pars <- c("beta", "nu", "sigma")
       if (any(x.pars %in% names(x$priors))) pars <- c(pars, names(x$priors)[grep(paste0(x.pars, collapse="|"), names(x$priors))])
-      if (x$spatial$method == "CAR") pars <- c(pars, "car_alpha", "car_scale")
+      if (x$spatial$method == "CAR") pars <- c(pars, "car_rho", "car_scale")
       if (x$spatial$method == "BYM2") pars <- c(pars, "rho", "spatial_scale")
       if (x$spatial$method == "BYM") pars <- c(pars, "spatial_scale", "theta_scale")
       if (x$spatial$method == "ICAR") pars <- c(pars, "spatial_scale")

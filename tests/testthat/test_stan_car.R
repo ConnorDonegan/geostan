@@ -10,7 +10,7 @@ test_that("Poisson CAR model works", {
     data(sentencing)
   SW(     fit <- stan_car(sents ~ offset(log(expected_sents)),
                     data = sentencing,
-                    C = shape2mat(sentencing),
+                    car_parts = prep_car_data(shape2mat(sentencing)),
                     chains = 1,
                     family = poisson(),
                     iter = iter,
@@ -51,7 +51,7 @@ test_that("CAR accepts covariate ME with WX, mixed ME-non-ME", {
                     slx = ~ college_educated + unemployment + log(population),
                     data = ohio,
                     family = binomial(),
-                    C = C,
+                    car_parts = prep_car_data(C),
                     ME = ME,
                     chains = 1,
                     iter = iter,

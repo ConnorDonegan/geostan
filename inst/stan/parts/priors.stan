@@ -21,38 +21,63 @@
 }
 
 /**
-  * Return the log probability of the conditional autoregressive (CAR) prior,
-  *  excluding additive constants.
-  *
-  * @param y Vector containing the parameters with a CAR prior
-  * @param mu Mean vector.
-  * @param tau Precision parameter for the CAR prior (real)
-  * @param alpha Dependence (usually spatial) parameter for the CAR prior (real)
-  * @param w sparse representation of W' (transpose!): non-zero values
-  * @param v column indices for values in w
-  * @param u row starting indices for values in w followed by size of w
-  * @param D_diag Diagonal of D matrix; e.g., number of neighbors for each location
-  * @param lambda Eigenvalues of D^{-1/2}*W*D^{-1/2} (vector)
-  * @param n Length of y 
-  *
-  * @return Log probability density of CAR prior up to additive constant
-  */
-  real car_normal_lpdf(vector y, vector mu,
-                       real tau, real alpha,
-                       vector w, int[] v, int[] u, 
-                       vector D_diag, vector lambda,
-                       int n) {
-  vector[n] yc = y - mu; 
-  real ytDy; // yc transpose * D * yc
-  real ytWy; // yc transpose * W
-  vector[n] ldet_prec;    
-  ytDy = (yc .* D_diag)' * yc;
-  ytWy = csr_matrix_times_vector(n, n, w, v, u, yc)' * yc;    
-  for (i in 1:n) ldet_prec[i] = log1m(alpha * lambda[i]);
-  return 0.5 * (n * log(tau)
+ * Log probability of the conditional autoregressive (CAR) model,
+ * excluding additive constants.
+ *
+ * @param y Process to model
+ * @param mu Mean vector
+ * @param tau Scale parameter
+ * @param rho Spatial dependence parameter
+ * @param ImC Sparse representation of (I - C): non-zero values only
+ * @param v Column indices for values in ImC
+ * @param u Row starting indices for values in ImC
+ * @param Cidx Indices for the off-diagonal elements in ImC
+ * @param M_inv Diagonal elements from the inverse of the conditional  variances (M^-1)
+ * @param lambda Eigenvalues of M^{-1/2}*C*M^{1/2}
+ * @param n Length of y
+ *
+ * @return Log probability density of CAR prior up to additive constant
+*/
+real car_normal_lpdf(vector y, vector mu,
+		     real tau, real rho,
+		     vector ImC, int[] v, int[] u, int[] Cidx,
+		     vector M_inv, vector lambda,
+		     int n) {
+  vector[n] z = y - mu;  
+  vector[num_elements(ImC)] ImrhoC = ImC; // (I - C)
+  vector[n] zMinv = z .* M_inv;           // z' * M^-1
+  vector[n] ImrhoCz;                      // (I - rho * C) * z
+  vector[n] ldet_prec;
+  ImrhoC[Cidx] = rho * ImC[Cidx];        // (I - rho C) 
+  ImrhoCz = csr_matrix_times_vector(n, n, ImrhoC, v, u, z);
+  for (i in 1:n) ldet_prec[i] = log1m(rho * lambda[i]);
+  return 0.5 * (
+		-2 * n * log(tau)
 		+ sum(ldet_prec)
-		- tau * (ytDy - alpha * ytWy));
+		- (1 / tau^2) * dot_product(zMinv, ImrhoCz)
+		);
 }
+
+/**
+  * Calculate eigenvalues of M^{-1/2}*C*M^{1/2} for CAR model
+  *
+  * @param C n by n connectivity matrix
+  * @param M_inv Inverse of conditional variances, from M in Sigma = (I - rho C)^-1 M.
+  *
+  * @return A n-length vector of eigenvalues
+  **/
+vector eMCM(matrix C, vector M_inv) {
+    int n = num_elements(M_inv);
+    vector[n] lambda;       
+    vector[n] invsqrtM;
+    vector[n] sqrtM;
+    for (i in 1:n) invsqrtM[i] = sqrt(M_inv[i]);
+    for (i in 1:n) sqrtM[i] = 1/sqrt(M_inv[i]);
+    lambda = eigenvalues_sym(diag_matrix(invsqrtM) * C * diag_matrix(sqrtM));
+    return (lambda);
+}
+
+
 
 /**
  * Log probability of the intrinsic conditional autoregressive (ICAR) prior,

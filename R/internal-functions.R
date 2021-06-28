@@ -143,7 +143,7 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
       scale.y <- sd(y)
       }
   alpha_scale <- scaling_factor * scale.y
-  if (xcentered) alpha_mean <- mean(y) else alpha_mean <- 0
+  if (xcentered | !ncol(x)) alpha_mean <- mean(y) else alpha_mean <- 0 
   alpha <- c(location = alpha_mean, scale = alpha_scale)
   priors <- list(intercept = alpha)
   if (ncol(x)) {
@@ -230,11 +230,11 @@ clean_results <- function(samples, pars, is_student, has_re, C, Wx, x, x_me_unbo
     if ("theta_scale" %in% pars) samples <- par_alias(samples, "^theta_scale\\[1\\]", "theta_scale")       
     if (is_student) samples <- par_alias(samples, "^nu\\[1\\]", "nu")
     if (has_re) samples <- par_alias(samples, "^alpha_tau\\[1\\]", "alpha_tau")
-    main_pars <- pars[which(pars %in% c("nu", "intercept", "alpha_tau", "gamma", "beta", "sigma", "rho", "spatial_scale", "theta_scale"))]
+    main_pars <- pars[which(pars %in% c("nu", "intercept", "alpha_tau", "gamma", "beta", "sigma", "rho", "spatial_scale", "theta_scale", "car_scale", "car_rho"))]
     summary_list <- lapply(main_pars, post_summary, stanfit = samples)
     summary <- do.call("rbind", summary_list)
     summary <- apply(summary, 2, round, 3)
-  residuals <- as.matrix(samples, pars = "residual")
+    residuals <- as.matrix(samples, pars = "residual")
     residuals <- apply(residuals, 2, mean)
   if (is.logical(C)) {
       Residual_MC <- C <- Expected_MC <- NA

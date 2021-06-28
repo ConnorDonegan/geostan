@@ -32,12 +32,17 @@
   vector<lower=bounds[1],upper=bounds[2]>[n] x_me_bounded[dx_me_bounded];
   vector<lower=0>[n] sigma_me_bounded[dx_me_bounded];
 
-// data for auto Guassian data models
-   // CAR precision matrix = tau * (D - alpha * C) 
+// data for auto-Guassian [data] models
   int<lower=0,upper=1> spatial_me;
-  matrix<lower=0>[spatial_me ? n : 1, spatial_me ? n : 1] me_C; // adjacency matrix
-  int<lower=0> me_dc_nonzero; // number of non-zero elements in C
-  vector[spatial_me ? n : 1] me_D_diag; // diagonal of D: e.g., number of neighbors 
+  int dim_C;
+  matrix<lower=0>[dim_C, dim_C] C; // connectivity matrix
+  int nImC;
+  int nC;
+  vector[nImC] ImC;
+  int ImC_v[nImC];
+  int ImC_u[n + 1];
+  int Cidx[nC];
+  vector[n] M_diag;
 
 // non-spatial partial pooling 
   int<lower=0,upper=1> has_re; // has varying intercept?

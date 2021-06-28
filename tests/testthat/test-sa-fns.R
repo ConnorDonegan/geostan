@@ -1,6 +1,9 @@
 
 context("SA indices")
 test_that("SA indices produce the same results as spdep when expected", {
+                                        # skip_if_not_installed("spatialreg")
+    skip_on_cran()
+    skip_if_not_installed("spdep")
     skip_if_not_installed("spatialreg")
     library(spdep)
     library(spatialreg)

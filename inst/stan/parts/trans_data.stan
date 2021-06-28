@@ -18,12 +18,11 @@
   int v[dw_nonzero];
   int u[n + 1];
   matrix[n, dwx] WX;
-// for spatial observational error models (auto Gaussian)
-  vector[me_dc_nonzero] me_w;
-  int me_v[me_dc_nonzero];
-  int me_u[spatial_me ? (n + 1) : 0];
-  vector[spatial_me ? n : 2] me_lambda;
-  vector[spatial_me ? n : 0] me_invsqrtD;
+// for auto-Gaussian models
+  vector[n] mean_zero = rep_vector(0, n);
+  vector[n] M_inv = 1 ./ M_diag;
+  vector[n] lambda;
+
   is_gaussian = family == 1;
   is_student =  family == 2;
   is_poisson =  family == 3;
@@ -53,15 +52,8 @@
        prior_mean_x_true_bounded[j] = mean(x_me_bounded[j]);
     }
   }
-  if (spatial_me) {
-    me_w = csr_extract_w(me_C');
-    me_v = csr_extract_v(me_C');
-    me_u = csr_extract_u(me_C');
-    for (i in 1:n) me_invsqrtD[i] = 1 / sqrt(me_D_diag[i]);
-    me_lambda = eigenvalues_sym(quad_form_diag(me_C, me_invsqrtD));
+  if (nC > 1) {
+    lambda = eMCM(C, M_inv);
   } else {
-    // placeholder
-    me_lambda = rep_vector(0, 2);
-    me_lambda[2] = 1;
+    lambda = rep_vector(1, n);
   }
-
