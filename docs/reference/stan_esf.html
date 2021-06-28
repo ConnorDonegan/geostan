@@ -105,21 +105,6 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Articles
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
-    </li>
-    <li>
-      <a href="../articles/setting-priors.html">Setting prior distributions</a>
-    </li>
-  </ul>
-</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -216,7 +201,8 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <dt>se</dt><dd><p>a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
 <dt>bounded</dt><dd><p>If any variables in <code>se</code> are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.</p></dd>
 <dt>bounds</dt><dd><p>A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.</p></dd>
-<dt>spatial</dt><dd><p>Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. Defaults to <code>spatial = FALSE</code>. If <code>spatial = TRUE</code> you must provide a connectivity matrix <code>C</code>. The specification of the auto Gaussian model is fixed such that all non-zero values in <code>C</code> will be converted to ones.</p></dd>
+<dt>spatial</dt><dd><p>Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. For <code>stan_esf</code>, this defaults to <code>spatial = TRUE</code>. If <code>spatial = TRUE</code> you must provide <code>car_parts</code> (see below).</p></dd>
+<dt>car_parts</dt><dd><p>A list of data for the CAR model, as returned by <a href='prep_car_data.html'>prep_car_data</a> (be sure to return the matrix <code>C</code>, by using the argument <code>cmat = TRUE</code>). Only required if <code>spatial=TRUE</code>.</p></dd>
 
 </dl></td>
     </tr>

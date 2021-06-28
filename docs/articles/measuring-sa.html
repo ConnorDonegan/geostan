@@ -106,7 +106,7 @@
 
     
     
-<p>This vignette covers basic usage of the <strong>geostan</strong> package for measuring, visualizing, and simulating spatial autocorrelation (SA) or systematic spatial patterns in the level of a variable. Positive SA is the tendency for nearby values to be more similar than distant values (i.e. clustering) while negative SA is the tendency for values to be located some distance away from others like them (i.e. repulsion).</p>
+<p>This vignette covers basic usage of the <strong>geostan</strong> package for measuring, visualizing, and simulating spatial autocorrelation (SA) or systematic spatial patterns in the level of a variable. Positive SA is the tendency for nearby values to be more similar than distant values (i.e. clustering), while negative SA is the tendency for values to be located some distance away from others like them (i.e. repulsion).</p>
 <div id="getting-started" class="section level2">
 <h2 class="hasAnchor">
 <a href="#getting-started" class="anchor"></a>Getting started</h2>
@@ -159,7 +159,7 @@
 <li>Points in the bottom-left (3rd) quadrant are below-average values surrounded by below-average values (positive SA);</li>
 <li>Points in the bottom-right (4th) quadrant are above-average values surrounded by below-average values (negative (SA).</li>
 </ul>
-<p>Each point is thus a local indicator of spatial autocorrelation (LISA) which are often mapped to identify areas of high or low SA. Following Anselin (1995, Equation 7), the LISA values are simply the product of the value on the x-axis with their corresponding y-axis value; and the mean of all LISAs is proportionate to the Moran coefficient.</p>
+<p>Each point is thus a local indicator of spatial autocorrelation (LISA), which are often mapped to identify areas of high or low SA. Following Anselin (1995, Equation 7), the LISA values are simply the product of the value on the x-axis with their corresponding y-axis value; and the mean of all LISAs is proportionate to the Moran coefficient.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">Lisa</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lisa.html">lisa</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">W</span><span class="op">)</span>
 
@@ -177,7 +177,7 @@
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/aple.html">aple</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">W</span><span class="op">)</span>
 <span class="co">#&gt; [1] 0.796</span></code></pre></div>
-<p>Again, for large number of observations the APLE approximation will break down.</p>
+<p>Again, for large number of observations, the APLE approximation will break down.</p>
 </div>
 <div id="simulating-spatially-autocorrelated-data" class="section level2">
 <h2 class="hasAnchor">
@@ -187,19 +187,19 @@
 <code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>w <span class="op">=</span> <span class="va">W</span>, rho <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span>
 
 <span class="fu"><a href="../reference/aple.html">aple</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">W</span><span class="op">)</span>
-<span class="co">#&gt; [1] 0.622</span>
+<span class="co">#&gt; [1] 0.59</span>
 
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="va">ohio</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html">scale_fill_gradient2</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_void</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<p><img src="measuring-sa_files/figure-html/unnamed-chunk-8-1.png" width="336" style="display: block; margin: auto;"> By default <code><a href="../reference/sim_sar.html">geostan::sim_sar</a></code> will return a single n-length draw from the multivariate normal model (with covariance matrix specified following the SAR model). By setting the argument <span class="math inline">\(m\)</span> to an integer value greater than one <code>sim_sar</code> will return an <span class="math inline">\(m \times n\)</span> matrix, with each row holding an n-length draw from the SAR model:</p>
+<p><img src="measuring-sa_files/figure-html/unnamed-chunk-8-1.png" width="336" style="display: block; margin: auto;"> By default <code><a href="../reference/sim_sar.html">geostan::sim_sar</a></code> will return a single n-length draw from the multivariate normal model (with covariance matrix specified following the SAR model). However, you can also use this function to generate multiple data sets at once. By setting the argument <span class="math inline">\(m\)</span> to an integer value greater than one, <code>sim_sar</code> will return an <span class="math inline">\(m \times n\)</span> matrix, with each row holding an n-length draw from the SAR model:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>m <span class="op">=</span> <span class="fl">5</span>, w <span class="op">=</span> <span class="va">W</span>, rho <span class="op">=</span> <span class="fl">0.7</span><span class="op">)</span> 
 <span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>
 <span class="co">#&gt; [1]  5 88</span>
 <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span><span class="op">(</span><span class="va">X</span>, <span class="fl">1</span>, <span class="va">aple</span>, w <span class="op">=</span> <span class="va">W</span><span class="op">)</span>
-<span class="co">#&gt; [1] 0.769 0.757 0.720 0.722 0.668</span></code></pre></div>
+<span class="co">#&gt; [1] 0.550 0.500 0.765 0.413 0.679</span></code></pre></div>
 </div>
 <div id="spatial-diagnostics-with-sp_diag" class="section level2">
 <h2 class="hasAnchor">
@@ -227,7 +227,7 @@
 <span class="co">#&gt; </span>
 <span class="co">#&gt; *Setting prior parameters for intercept</span>
 <span class="co">#&gt; Gaussian</span>
-<span class="co">#&gt; Location: 0</span>
+<span class="co">#&gt; Location: 10.7142419611244</span>
 <span class="co">#&gt; Scale: 12.488757925385</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; *Setting prior parameters for sigma</span>
@@ -241,7 +241,7 @@
 <span class="co">#&gt; `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
 <span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-12-1.png" width="624" style="display: block; margin: auto;"></p>
-<p>The <strong>geostan</strong> model returns samples drawn from the posterior probability distribution of <span class="math inline">\(\mu\)</span> (fitted values), which can be accessed using <code><a href="https://rdrr.io/r/stats/fitted.values.html">fitted(fit)</a></code>. Here <span class="math inline">\(\hat{\mu}\)</span> represents the mean of the posterior distribution of the parameter <span class="math inline">\(\mu\)</span>. Thus the following code reproduces the above results, but more transparently:</p>
+<p>The <strong>geostan</strong> model returns samples drawn from the posterior probability distribution of <span class="math inline">\(\mu\)</span> (fitted values), which can be accessed using <code><a href="https://rdrr.io/r/stats/fitted.values.html">fitted(fit)</a></code>. Here, <span class="math inline">\(\hat{\mu}\)</span> represents the mean of the posterior distribution of the parameter <span class="math inline">\(\mu\)</span>, and is accessed using <code>fitted(fit)$mean</code>. Thus the following code reproduces the above results, but somewhat more transparently:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
 <span class="va">deviations</span> <span class="op">&lt;-</span> <span class="va">y</span> <span class="op">-</span> <span class="va">mu</span><span class="op">$</span><span class="va">mean</span>
@@ -269,7 +269,7 @@
 <span class="co">#&gt; </span>
 <span class="co">#&gt; *Setting prior parameters for intercept</span>
 <span class="co">#&gt; Gaussian</span>
-<span class="co">#&gt; Location: 0</span>
+<span class="co">#&gt; Location: 10.7142419611244</span>
 <span class="co">#&gt; Scale: 12.488757925385</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; *Setting prior parameters for sigma</span>
@@ -293,7 +293,7 @@
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">mu.esf</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html">scale_fill_gradient2</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_void</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
-<p><img src="measuring-sa_files/figure-html/unnamed-chunk-15-1.png" width="336" style="display: block; margin: auto;"></p>
+<p><img src="measuring-sa_files/figure-html/unnamed-chunk-15-1.png" width="336" style="display: block; margin: auto;"> Another option for modeling continuous spatial outcomes is the conditional autoregressive (CAR) model (<code><a href="../reference/stan_car.html">geostan::stan_car</a></code>). Each of the spatial models in <code>geostan</code>—<code>stan_esf</code>, <code>stan_car</code>, and <code>stan_icar</code>—is returned with a spatial trend component that can be accessed using the <code>spatial</code> method.</p>
 </div>
 <div id="references" class="section level2">
 <h2 class="hasAnchor">

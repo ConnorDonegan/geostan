@@ -105,21 +105,6 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Articles
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
-    </li>
-    <li>
-      <a href="../articles/setting-priors.html">Setting prior distributions</a>
-    </li>
-  </ul>
-</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -168,7 +153,7 @@
   prior_only <span class='op'>=</span> <span class='cn'>FALSE</span>,
   chains <span class='op'>=</span> <span class='fl'>4</span>,
   iter <span class='op'>=</span> <span class='fl'>4000</span>,
-  refresh <span class='op'>=</span> <span class='fl'>1000</span>,
+  refresh <span class='op'>=</span> <span class='fl'>500</span>,
   pars <span class='op'>=</span> <span class='cn'>NULL</span>,
   control <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>adapt_delta <span class='op'>=</span> <span class='fl'>0.9</span>, max_treedepth <span class='op'>=</span> <span class='fl'>15</span><span class='op'>)</span>,
   silent <span class='op'>=</span> <span class='cn'>FALSE</span>,
@@ -211,7 +196,8 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <dt>se</dt><dd><p>a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
 <dt>bounded</dt><dd><p>If any variables in <code>se</code> are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.</p></dd>
 <dt>bounds</dt><dd><p>A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.</p></dd>
-<dt>spatial</dt><dd><p>Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. Defaults to <code>spatial = FALSE</code>. The specification of the auto Gaussian model is fixed such that any non-zero values in <code>C</code> will be converted to ones.</p></dd>
+<dt>spatial</dt><dd><p>Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. For <code>stan_icar</code>, this defaults to <code>spatial = TRUE</code>; if <code>spatial = TRUE</code> you must provide <code>car_parts</code> (see below).</p></dd>
+<dt>car_parts</dt><dd><p>A list of data for the CAR model, as returned by <a href='prep_car_data.html'>prep_car_data</a> (be sure to return the matrix <code>C</code>, by using the argument <code>cmat = TRUE</code>). Only required if <code>spatial=TRUE</code>.</p></dd>
 
 </dl></td>
     </tr>
@@ -281,6 +267,8 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <p>Besag, J. (1974). Spatial interaction and the statistical analysis of lattice systems. Journal of the Royal Statistical Society: Series B (Methodological), 36(2), 192-225.</p>
 <p>Besag, J., York, J., &amp; Mollié, A. (1991). Bayesian image restoration, with two applications in spatial statistics. Annals of the institute of statistical mathematics, 43(1), 1-20.</p>
+<p>Donegan, Connor. 2021. Flexible functions for ICAR, BYM, and BYM2 models in Stan. Code repository. &lt;https://github.com/ConnorDonegan/Stan-IAR&gt;</p>
+<p>Freni-Sterrantino, Anna, Massimo Ventrucci, and Håvard Rue. 2018. A Note on Intrinsic Conditional Autoregressive Models for Disconnected Graphs. Spatial and Spatio-Temporal Epidemiology 26: 25–34.</p>
 <p>Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A., &amp; DiMaggio, C. (2019). Bayesian hierarchical spatial models: Implementing the Besag York Mollié model in stan. Spatial and spatio-temporal epidemiology, 31, 100301.</p>
 <p>Riebler, A., Sorbye, S. H., Simpson, D., &amp; Rue, H. (2016). An intuitive Bayesian spatial model for disease mapping that accounts for scaling. Statistical Methods in Medical Research, 25(4), 1145-1165.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
@@ -304,11 +292,13 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The Stan code for the ICAR component of the model and the BYM2 option draws from Morris et al. (2019) with adjustments to enable non-binary weights and disconnected graph structures. The ICAR parameters are returned in the parameter vector named <code>phi</code>. The ICAR prior model is equivalent to a CAR model with the spatial autocorrelation parameter <code>car_alpha</code> equal to 1 (see <a href='stan_car.html'>stan_car</a>). Thus the ICAR prior places high probability on a smooth spatially varying mean. Often, an observational-level random effect term <code>theta</code> is added to model deviations from the local mean. The combination <code>phi + theta</code> is known as the BYM model (Besag et al. 1991).</p>
+    <p>The Stan code for the ICAR component of the model and the BYM2 option follows Morris et al. (2019) with adjustments to enable non-binary weights and disconnected graph structures (see Freni-Sterrantino (2018) and Donegan (2021)). The ICAR parameters are returned in the parameter vector named <code>phi</code>. The ICAR prior model is equivalent to a CAR model with the spatial autocorrelation parameter <code>car_alpha</code> equal to 1 (see <a href='stan_car.html'>stan_car</a>). Thus the ICAR prior places high probability on a smooth spatially varying mean. Often, an observational-level random effect term <code>theta</code> is added to model deviations from the local mean. Use of the combination <code>phi + theta</code> is known as the BYM model (Besag et al. 1991).</p>
 <p>The ICAR prior is placed on the parameter vector <code>phi_tilde</code> (which is approximately on the standard normal scale); it is scaled by the scalar parameter <code>spatial_scale</code>. The models are specified as follows:</p>
 <p>If <code>type = "icar"</code>, the spatial structure is simply <code>phi[i] = phi_tilde[i] * spatial_scale</code>.</p>
-<p>If <code>type = "bym"</code>, the spatial structure <code>phi</code> is the same as <code>"icar"</code> but an additional parameter vector <code>theta</code> is added to perform partial pooling across all observations.  <code>theta[i] = theta_tilde[i] * theta_scale</code>. The sum <code>phi_tilde * spatial_scale + theta_tilde * theta_scale = phi + theta = convolution</code> is often referred to as the ``convolved random effect.'' It is returned in the parameter vector named <code>convolution</code>.</p>
-<p>For <code>type = "bym2"</code>, <code>phi_tilde</code> and <code>theta_tilde</code> share a single scale parameter (<code>spatial_scale</code>) but they are combined using a mixing parameter <code>rho</code>. The convolution is then <code>convolution = [sqrt(rho / scale_factor) * phi_tilde + sqrt((1 - rho)) * theta_tilde] * spatial_scale</code>. For convenience, the model will return the convolution term and also factor it into parameters <code>phi</code> and <code>theta</code>. The actual calculation of the convolution term is specified to ensure that observations with zero neighbors are handled properly.</p>
+<p>If <code>type = "bym"</code>, the spatial structure <code>phi</code> is the same as <code>"icar"</code> but an additional parameter vector <code>theta</code> is added to perform partial pooling across all observations.  <code>theta[i] = theta_tilde[i] * theta_scale</code>. The sum <code>phi_tilde * spatial_scale + theta_tilde * theta_scale = phi + theta = convolution</code> is often referred to as the ``convolved random effect.''</p>
+<p>For <code>type = "bym2"</code>, <code>phi_tilde</code> and <code>theta_tilde</code> share a single scale parameter (<code>spatial_scale</code>) but they are combined using a mixing parameter <code>rho</code>. The convolution is then <code>convolution = [sqrt(rho / scale_factor) * phi_tilde + sqrt((1 - rho)) * theta_tilde] * spatial_scale</code>. For convenience, the model will factor the convolution term into parameters <code>phi</code> and <code>theta</code>.</p>
+<p>The actual calculation of the convolution term is specified to ensure that observations with zero neighbors, and disconnected graph structures, are handled properly. Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to phi automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term. The additional intercepts, when there are any, are returned in a parameter vector named `alpha_phi`.</p>
+<p>For calculating the `scale_factor` introduced by Riebler et al. (2016), see Donegan (2021). The code in that repository shows how to (painlessly) calculate the scale factor for each connected component of the graph structure (and, again, follows Freni-Sterrantino (2018) and Morris et al. (2019)).</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><a href='prep_icar_data.html'>prep_icar_data</a>, <a href='shape2mat.html'>shape2mat</a>, <a href='stan_car.html'>stan_car</a>, <a href='stan_esf.html'>stan_esf</a>, <a href='stan_glm.html'>stan_glm</a></p></div>
@@ -318,9 +308,8 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/rstan'>rstan</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/bayesplot/'>bayesplot</a></span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span><span class='op'>(</span>mc.cores <span class='op'>=</span> <span class='fu'>parallel</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span>
 
@@ -335,7 +324,6 @@ If and when setting priors for <code>beta</code> manually, remember to include p
  <span class='op'>)</span>
 
 <span class='co'># diagnostics plot: Rhat values should all by very near 1</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/rstan'>rstan</a></span><span class='op'>)</span>
 <span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span><span class='op'>(</span><span class='va'>fit.bym</span><span class='op'>$</span><span class='va'>stanfit</span><span class='op'>)</span>
  <span class='co'># see effective sample size for all parameters and generated quantities</span>
  <span class='co'># (including residuals, predicted values, etc.)</span>
@@ -343,9 +331,9 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <span class='co'># or for a particular parameter</span>
 <span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_ess</a></span><span class='op'>(</span><span class='va'>fit.bym</span><span class='op'>$</span><span class='va'>stanfit</span>, <span class='st'>"phi"</span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/bayesplot/'>bayesplot</a></span><span class='op'>)</span>
-<span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span><span class='op'>(</span><span class='va'>fit.bym</span>, samples <span class='op'>=</span> <span class='fl'>95</span><span class='op'>)</span>
+<span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span><span class='op'>(</span><span class='va'>fit.bym</span>, samples <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>
 <span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span>
-<span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>yrep</span><span class='op'>)</span>
+<span class='fu'>bayesplot</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>yrep</span><span class='op'>)</span>
 <span class='op'>}</span>
 
 </div></pre>

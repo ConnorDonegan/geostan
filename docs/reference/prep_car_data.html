@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Effective sample size — n_eff • geostan</title>
+<title>Prepare data for Stan CAR model — prep_car_data • geostan</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,8 @@
 
 
 
-<meta property="og:title" content="Effective sample size — n_eff" />
-<meta property="og:description" content="An approximate calculation for the effective sample size for spatially autocorrelated data. Only valid for approximately normally distributed data." />
+<meta property="og:title" content="Prepare data for Stan CAR model — prep_car_data" />
+<meta property="og:description" content="Prepare data for Stan CAR model" />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
@@ -126,51 +126,70 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Effective sample size</h1>
+    <h1>Prepare data for Stan CAR model</h1>
     <small class="dont-index">Source: <a href='https://github.com/ConnorDonegan/geostan/blob/master/R/convenience-functions.R'><code>R/convenience-functions.R</code></a></small>
-    <div class="hidden name"><code>n_eff.Rd</code></div>
+    <div class="hidden name"><code>prep_car_data.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>An approximate calculation for the effective sample size for spatially autocorrelated data. Only valid for approximately normally distributed data.</p>
+    <p>Prepare data for Stan CAR model</p>
     </div>
 
-    <pre class="usage"><span class='fu'>n_eff</span><span class='op'>(</span><span class='va'>n</span>, <span class='va'>rho</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>prep_car_data</span><span class='op'>(</span>
+  <span class='va'>A</span>,
+  style <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"ACAR"</span>, <span class='st'>"WCAR"</span>, <span class='st'>"DCAR"</span><span class='op'>)</span>,
+  lambda <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  cmat <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  <span class='va'>d</span>,
+  k <span class='op'>=</span> <span class='fl'>1</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>n</th>
-      <td><p>Number of observations.</p></td>
+      <th>A</th>
+      <td><p>binary adjacency matrix</p></td>
     </tr>
     <tr>
-      <th>rho</th>
-      <td><p>Spatial autocorrelation parameter from a simultaneous autoregressive model.</p></td>
+      <th>style</th>
+      <td><p>specification for the connectivity matrix (C) and conditional variances (M)</p></td>
+    </tr>
+    <tr>
+      <th>lambda</th>
+      <td><p>If TRUE, return eigenvalues required for calculating the log determinant of the precision matrix and for determining the range of permissible values of rho. These will also be printed with a message if lambda = TRUE.</p></td>
+    </tr>
+    <tr>
+      <th>cmat</th>
+      <td><p>Return the full matrix C if TRUE.</p></td>
+    </tr>
+    <tr>
+      <th>d</th>
+      <td><p>distance matrix. Non-neighboring values (as indicated by A) will be set to zero internally.</p></td>
+    </tr>
+    <tr>
+      <th>k</th>
+      <td><p>inverse distances will be raised to the -k power (d^-k).</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
 
-    <p>Griffith, Daniel A. (2005). Effective geographic sample size in the presence of spatial autocorrelation. Annals of the Association of American Geographers. Vol. 95(4): 740-760.</p>
+    <p>Cliff A, Ord J (1981). Spatial Processes: Models and Applications. Pion.</p>
+<p>Cressie N (2015 [1993]). Statistics for Spatial Data. Revised edition. John Wiley &amp; Sons.</p>
+<p>Cressie N, Perrin O, Thomas-Agnan C (2005). “Likelihood-based estimation for Gaussian MRFs.” Statistical Methodology, 2(1), 1–16.</p>
+<p>Cressie N, Wikle CK (2011). Statistics for Spatio-Temporal Data. John Wiley &amp; Sons.</p>
+<p>Haining RP, Li G (2020). Modelling Spatial and Spatio-Temporal Data: A Bayesian Approach. CRC Press.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns effective sample size n*, a numeric value.</p>
+    <p>A list containing all of the data elements required by the Stan CAR model.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Implements Equation 3 from Griffith (2005).</p>
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+    <p>The CAR model is N(Mu, Sigma), Sigma = (I - rho C)^-1 M.</p>
+<p>The DCAR specification is distance-based, and requires the user provide a distance matrix <code>d</code> in addition to adjacency matrix <code>A</code>. The WCAR specification uses row-standardized connectivity matrix and sets conditional variances proportional to the number of neighbors. The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188).</p>
+<p>For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 [1993]) and Haining and Li (2020).</p>
+<p><code>stan_car</code> requires the user to provide the full C matrix (which is returned when cmat = TRUE).</p>
 
-    <div class='dont-index'><p><a href='sim_sar.html'>sim_sar</a>, <a href='aple.html'>aple</a></p></div>
-
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>
-<span class='fu'>n_eff</span><span class='op'>(</span><span class='fl'>100</span>, <span class='fl'>0</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] 100</div><div class='input'><span class='fu'>n_eff</span><span class='op'>(</span><span class='fl'>100</span>, <span class='fl'>0.5</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] 30.25516</div><div class='input'><span class='fu'>n_eff</span><span class='op'>(</span><span class='fl'>100</span>, <span class='fl'>0.9</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] 4.796839</div><div class='input'><span class='fu'>n_eff</span><span class='op'>(</span><span class='fl'>100</span>, <span class='fl'>1</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] 1.003387</div><div class='input'>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

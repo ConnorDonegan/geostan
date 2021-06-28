@@ -105,21 +105,6 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Articles
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-    <li>
-      <a href="../articles/measuring-sa.html">Measuring, visualizing, and simulating spatial autocorrelation</a>
-    </li>
-    <li>
-      <a href="../articles/setting-priors.html">Setting prior distributions</a>
-    </li>
-  </ul>
-</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -150,7 +135,7 @@
     <p>Given a symmetric n x n connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>prep_icar_data</span><span class='op'>(</span><span class='va'>C</span>, scale_factor <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>prep_icar_data</span><span class='op'>(</span><span class='va'>C</span>, inv_sqrt_scale_factor <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -160,8 +145,8 @@
       <td><p>connectivity matrix</p></td>
     </tr>
     <tr>
-      <th>scale_factor</th>
-      <td><p>n-length vector with the scale factor for each observation's respective group. If not provided by the user it will be fixed to <code><a href='https://rdrr.io/r/base/rep.html'>rep(1, n)</a></code></p></td>
+      <th>inv_sqrt_scale_factor</th>
+      <td><p>optional vector of scale factors for each connected portion of the graph structure. If not provided by the user it will be fixed to a vector of ones.</p></td>
     </tr>
     </table>
 
@@ -175,15 +160,17 @@
 <dt>node1</dt><dd><p>first node</p></dd>
 <dt>node2</dt><dd><p>second node. (node1[i] and node2[i] form a connected pair)</p></dd>
 <dt>weight</dt><dd><p>The element <code>C[node1, node2]</code>.</p></dd>
-<dt>group_idx</dt><dd><p>indices for each observation belonging each group, ordered by group</p></dd>
-<dt>scale_factor</dt><dd><p>k-length vector of ones. Placeholder for user-specified information.</p></dd>
+<dt>group_idx</dt><dd><p>indices for each observation belonging each group, ordered by group.</p></dd>
+<dt>m</dt><dd><p>number of disconnected regions requiring their own intercept.</p></dd>
+<dt>A</dt><dd><p>n-by-m matrix of dummy variables for the component-specific intercepts.</p></dd>
+<dt>inv_sqrt_scale_factor</dt><dd><p>k-length vector of ones. Placeholder for user-specified information.</p></dd>
 <dt>comp_id</dt><dd><p>n-length vector indicating the group membership of each observation.</p></dd>
 
 </dl>
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>This is used internally to prepare data for <a href='stan_icar.html'>stan_icar</a> models. It can also be helpful for fitting custom ICAR models outside of <code>geostan</code>. Makes use of <a href='https://rdrr.io/pkg/spdep/man/graphneigh.html'>graph2nb</a> and <a href='https://rdrr.io/pkg/spdep/man/compon.html'>n.comp.nb</a>.</p>
+    <p>This is used internally to prepare data for <a href='stan_icar.html'>stan_icar</a> models. It can also be helpful for fitting custom ICAR models outside of <code>geostan</code>. It relies on <a href='https://rdrr.io/pkg/spdep/man/graphneigh.html'>graph2nb</a> and <a href='https://rdrr.io/pkg/spdep/man/compon.html'>n.comp.nb</a>.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><a href='stan_icar.html'>stan_icar</a>, <a href='edges.html'>edges</a>, <a href='shape2mat.html'>shape2mat</a></p></div>
