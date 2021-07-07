@@ -114,27 +114,26 @@
 #' 
 #' For `family = binomial()`, the model is specified as:
 #'``` 
-#'                             Y ~ Binomial(inv_logit(eta))
+#'                             Y ~ Binomial(N, theta)
 #' 
-#'                             eta ~ MVGauss(Mu, Sigma)
+#'                             logit(theta) ~ MVGauss(Mu, Sigma)
 #' 
 #'                             Sigma = (I - rho C)^-1 * M * tau^2
-#'``` 
-#' For fitted Binomial models, as for Poisson models, the \code{\link[geostan]{spatial}} method will return the parameter vector \code{phi}, equivalent to:
 #'```
-#'                            phi = eta - Mu.
-#'```
-#' The \code{\link[geostan]{fitted}} method returns \code{inv_logit(eta)}, and the \code{\link[geostan]{residuals.geostan_fit}} method returns
+#' where outcome data `Y` are counts, `N` is the number of trials, and `theta` is the 'success' rate.
 #' 
-#'
-#' For Poisson and Binomial models, the CAR model is specified as follows:
+#' For fitted Binomial models, the \code{\link[geostan]{spatial}} method will return the parameter vector \code{phi}, equivalent to:
 #'```
-#'                             Y ~ Poisson(exp(offset + phi))
-#'
-#'                             phi ~ MVGauss(Mu, (I - rho C)^-1 * M * tau^2
+#'                             phi = logit(theta) - Mu.
 #'```
-#' where `Mu` (here, as throughout this documentation) contains the intercept, covariates, etc. 
-#'
+#' The \code{\link[geostan]{fitted}} method applied to the Binomial model returns:
+#' ```
+#'                            fitted = (theta * N)/N,
+#' ```
+#' and the \code{\link[geostan]{residuals.geostan_fit}} method returns:
+#' ```
+#'                            residual = (Y/N) - fitted.
+#' ```
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
@@ -373,7 +372,6 @@ stan_car <- function(formula,
   standata <- c(standata, me.list)
   ## STAN STUFF -------------    
   if (family$family == "binomial") {
-      # standata$y will be ignored for binomial and poisson models
       standata$y <- standata$y_int <- y[,1]
       standata$trials <- y[,1] + y[,2]
   }

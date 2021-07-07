@@ -12,7 +12,7 @@
    }
    if (is_poisson) {
        fitted[i] = exp(f[i]);
-       residual[i] = fitted[i] - y_int[i];
+       residual[i] = y_int[i] - fitted[i];
        log_lik[i] = poisson_log_lpmf(y_int[i] | f[i]);
        if (f[i] > 20) {
        	  print("f[i] too large (>20) for poisson_log_rng");
@@ -22,8 +22,8 @@
    }
   }
   if (is_binomial) {
-    fitted[i] = f[i];
-    residual[i] = (f[i] * trials[i] - y_int[i]) / trials[i]; 
+    fitted[i] = (f[i] * trials[i]) / trials[i];
+    residual[i] = (y[i] / trials[i]) - fitted[i]; 
     yrep[i] = binomial_rng(trials[i], f[i]);
     log_lik[i] = binomial_lpmf(y_int[i] | trials[i], f[i]);
   }  

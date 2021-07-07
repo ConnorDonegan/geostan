@@ -204,7 +204,6 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
   standata <- c(standata, me.list)  
   ## STAN STUFF -------------    
   if (family$family == "binomial") {
-      # standata$y will be ignored for binomial and poisson
       standata$y <- standata$y_int <- y[,1]
       standata$trials <- y[,1] + y[,2]
   }
