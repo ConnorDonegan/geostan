@@ -396,14 +396,13 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>sp.trend</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span><span class='op'>)</span>
- <span class='op'>}</span>
-
+ 
 <span class='co'># calculate log-standardized sentencing ratios (log-SSRs)</span>
 <span class='co'># (like Standardized Incidence Ratios: observed/exected case counts)</span>
 <span class='va'>f</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/fitted.values.html'>fitted</a></span><span class='op'>(</span><span class='va'>fit.car</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in fitted(fit.car): object 'fit.car' not found</span></div><div class='input'><span class='va'>SSR</span> <span class='op'>&lt;-</span>  <span class='va'>f</span> <span class='op'>/</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>expected_sents</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'f' not found</span></div><div class='input'><span class='va'>log.SSR</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span> <span class='va'>SSR</span>, base <span class='op'>=</span> <span class='fl'>2</span> <span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in eval(expr, envir, enclos): object 'SSR' not found</span></div><div class='input'>
+<span class='va'>SSR</span> <span class='op'>&lt;-</span>  <span class='va'>f</span> <span class='op'>/</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>expected_sents</span>
+<span class='va'>log.SSR</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span> <span class='va'>SSR</span>, base <span class='op'>=</span> <span class='fl'>2</span> <span class='op'>)</span>
+
 <span class='fu'><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>st_as_sf</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>log.SSR</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
@@ -421,7 +420,8 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
    legend.key.height <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/unit.html'>unit</a></span><span class='op'>(</span><span class='fl'>0.35</span>, <span class='st'>"cm"</span><span class='op'>)</span>,
    legend.key.width <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/unit.html'>unit</a></span><span class='op'>(</span><span class='fl'>1.5</span>, <span class='st'>"cm"</span><span class='op'>)</span>
  <span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in FUN(X[[i]], ...): object 'log.SSR' not found</span></div><div class='img'><img src='stan_car-1.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='op'>}</span>
+
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

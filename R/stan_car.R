@@ -197,8 +197,7 @@
 #'   ggplot() +
 #'   geom_sf(aes(fill = sp.trend)) +
 #'   scale_fill_gradient2()
-#'  }
-#'
+#'  
 #' # calculate log-standardized sentencing ratios (log-SSRs)
 #' # (like Standardized Incidence Ratios: observed/exected case counts)
 #' f <- fitted(fit.car)$mean
@@ -222,6 +221,7 @@
 #'    legend.key.height = unit(0.35, "cm"),
 #'    legend.key.width = unit(1.5, "cm")
 #'  )
+#' }
 #' 
 stan_car <- function(formula,
                      slx,
