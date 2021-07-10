@@ -52,7 +52,6 @@
 #' With \code{family = gaussian()} (referred to here as the auto-Gaussian model), the CAR model is specified as follows:
 #' ```
 #'                             Y ~ MVGauss(Mu, Sigma)
-#' 
 #'                             Sigma = (I - rho C)^-1 * M * tau^2
 #' ```
 #' where \code{Mu} is the mean vector (with intercept, covariates, etc.), \code{C} is the spatial connectivity matrix, and \code{M} is a known diagonal matrix with diagonal entries proportional to the conditional variances (see the \code{M_diagonal} argument). 
@@ -80,9 +79,7 @@
 #'
 #' ```
 #'                             Y ~ Poisson(exp(offset + lambda))
-#' 
 #'                             lambda ~ MVGauss(Mu, Sigma)
-#' 
 #'                             Sigma = (I - rho C)^-1 * M * tau^2
 #' ```
 #' Applying the \code{\link[geostan]{fitted.geostan_fit}} method to this Poisson model will return \code{exp(offset + lambda)}, fitted values on the scale of the outcome variable.
@@ -94,14 +91,12 @@
 #' This is equivalent to re-writing the model as:
 #' ```
 #'                             Y ~ Poisson(exp(offset + Mu + phi))
-#' 
 #'                             phi ~ MVGauss(0, Sigma)
-#' 
 #'                             Sigma = (I - rho C)^-1 * M * tau^2.
 #' ``` 
 #' Note that the behavior of the \code{\link[geostan]{spatial}} method is slightly different for the CAR model than for the BYM model in \code{\link[geostan]{stan_icar}}. The BYM model returns a spatial trend parameter that does not contain any uncorrelated/unstructured variation; \code{phi}, in the CAR model, contains a latent spatial trend and additional variation around it. If you would like to extract the latent/implicit spatial trend from \code{phi}, you can do so by calculating:
 #' ```
-#'                             trend = rho * C * (phi - Mu).
+#'                             trend = rho * C * phi.
 #' ```
 #' This is not done automatically primarily because it is uncommon to do so.
 #'
@@ -115,9 +110,7 @@
 #' For `family = binomial()`, the model is specified as:
 #'``` 
 #'                             Y ~ Binomial(N, theta)
-#' 
 #'                             logit(theta) ~ MVGauss(Mu, Sigma)
-#' 
 #'                             Sigma = (I - rho C)^-1 * M * tau^2
 #'```
 #' where outcome data `Y` are counts, `N` is the number of trials, and `theta` is the 'success' rate.

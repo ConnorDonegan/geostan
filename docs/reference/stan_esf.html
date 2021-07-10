@@ -47,7 +47,7 @@
 
 
 <meta property="og:title" content="Spatial filtering — stan_esf" />
-<meta property="og:description" content="Fit a spatial regression model using eigenvector spatial filtering." />
+<meta property="og:description" content="Fit a spatial regression model using eigenvector spatial filtering (ESF)." />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
@@ -132,7 +132,7 @@
     </div>
 
     <div class="ref-description">
-    <p>Fit a spatial regression model using eigenvector spatial filtering.</p>
+    <p>Fit a spatial regression model using eigenvector spatial filtering (ESF).</p>
     </div>
 
     <pre class="usage"><span class='fu'>stan_esf</span><span class='op'>(</span>
@@ -302,15 +302,15 @@ The value of <code>p0</code> is used to control the prior degree of sparsity in 
 
     <p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl>
 <dt>summary</dt><dd><p>Summaries of the main parameters of interest; a data frame</p></dd>
-<dt>diagnostic</dt><dd><p>Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (<code>eff_pars</code>) and 
- mean log pointwise predictive density (<code>lpd</code>), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.</p></dd>
+<dt>diagnostic</dt><dd><p>Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (<code>eff_pars</code>) and
+mean log pointwise predictive density (<code>lpd</code>), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.</p></dd>
 <dt>data</dt><dd><p>a data frame containing the model data</p></dd>
 <dt>EV</dt><dd><p>A matrix of eigenvectors created with <code>w</code> and <code><a href='make_EV.html'>geostan::make_EV</a></code></p></dd>
 <dt>C</dt><dd><p>The spatial weights matrix used to construct EV</p></dd>
 <dt>family</dt><dd><p>the user-provided or default <code>family</code> argument used to fit the model</p></dd>
 <dt>formula</dt><dd><p>The model formula provided by the user (not including ESF component)</p></dd>
 <dt>slx</dt><dd><p>The <code>slx</code> formula</p></dd>
-<dt>re</dt><dd><p>A list containing <code>re</code>,  the random effects (varying intercepts) formula if provided, and 
+<dt>re</dt><dd><p>A list containing <code>re</code>,  the random effects (varying intercepts) formula if provided, and
 <code>data</code> a data frame with columns <code>id</code>, the grouping variable, and <code>idx</code>, the index values assigned to each group.</p></dd>
 <dt>priors</dt><dd><p>Prior specifications.</p></dd>
 <dt>scale_params</dt><dd><p>A list with the center and scale parameters returned from the call to <code><a href='https://rdrr.io/r/base/scale.html'>base::scale</a></code> on the model matrix. If <code>centerx = FALSE</code> and <code>scalex = FALSE</code> then it is an empty list.</p></dd>
@@ -322,12 +322,14 @@ The value of <code>p0</code> is used to control the prior degree of sparsity in 
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Eigenvector spatial filtering is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), drawing on the Piironen and Vehtari's (2017) regularized horseshoe prior. ESF models take the spectral decomposition of a transformed spatial connectivity matrix <code>C</code>, which appears in the numerator of the Moran coefficient (MC),a measure of spatial autocorrelation. The resulting eigenvectors <code>EV</code> are mutually orthogonal and uncorrelated map patterns. ESF methodology is premised on the ability to decompose spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). SA in the outcome variable is then absorbed by the spatial filter <code>EV * beta_ev</code>, where <code>beta_ev</code> is a vector of coefficients.</p>
-<p>ESF decomposes the data into a global mean <code>alpha</code>, global patterns contributed by covariates <code>X * beta</code>, spatial trends <code>EV * beta_ev</code>, and residual variation. Thus</p>
-<p><code> Mu = intercept + X * beta + EV * beta_ev </code></p>
-<p>and for the Gaussian model,</p>
-<p><code>Y \~ Gauss(Mu, sigma) </code></p>
-<p>The model can be extended to the space-time domain; see <a href='shape2mat.html'>shape2mat</a> to specify a space-time connectivity matrix.</p>
+    <p>Eigenvector spatial filtering (ESF) is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), drawing on the Piironen and Vehtari's (2017) regularized horseshoe prior.</p>
+<p>ESF models take the spectral decomposition of a transformed spatial connectivity matrix, <code>C</code>. The resulting eigenvectors, <code>EV</code>, are mutually orthogonal and uncorrelated map patterns. ESF methodology is premised on the ability to decompose spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). SA in the outcome variable is then absorbed by the spatial filter, EV * beta_ev<code>, where </code>beta_ev` is a vector of coefficients.</p>
+<p>ESF decomposes the data into a global mean <code>alpha</code>, global patterns contributed by covariates <code>X * beta</code>, spatial trends, <code>EV * beta_ev</code>, and residual variation/ Thus, for <code>family=gaussian()</code>,</p><pre>Y \~ Gauss(intercept + X * beta + EV * beta_ev, sigma).
+</pre>
+
+<p>An ESF component can be incorporated into the linear predictor of any generalized linear model.</p>
+<p>The <a href='spatial.html'>spatial</a> method will return <code>EV * beta</code>.</p>
+<p>The model can also be extended to the space-time domain; see <a href='shape2mat.html'>shape2mat</a> to specify a space-time connectivity matrix.</p>
 <p>The coefficients <code>beta_ev</code> are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the <code>threshold</code> argument). By default, <code>stan_esf</code> will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the <code>nsa</code> argument.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
@@ -335,43 +337,70 @@ The value of <code>p0</code> is used to control the prior degree of sparsity in 
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/rstan'>rstan</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/bayesplot/'>bayesplot</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span><span class='op'>(</span>mc.cores <span class='op'>=</span> <span class='fu'>parallel</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span> 
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/bayesplot/'>bayesplot</a></span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span>
 
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>
-<span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>ohio</span>, <span class='st'>"B"</span><span class='op'>)</span>
+<span class='co'># spatial weights matrix with binary coding scheme</span>
+<span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>sentencing</span>, style <span class='op'>=</span> <span class='st'>"B"</span><span class='op'>)</span>
 
-<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'>stan_esf</span><span class='op'>(</span><span class='va'>gop_growth</span> <span class='op'>~</span> <span class='va'>historic_gop</span> <span class='op'>+</span> <span class='va'>college_educated</span>,
-                data <span class='op'>=</span> <span class='va'>ohio</span>,
-                C <span class='op'>=</span> <span class='va'>C</span><span class='op'>)</span>
+<span class='co'># log-expected number of sentences</span>
+<span class='co'>## expected counts are based on county racial composition and mean sentencing rates</span>
+<span class='va'>log_e</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>$</span><span class='va'>expected_sents</span><span class='op'>)</span>
 
-<span class='co'># use rstan for sampler diagnostics</span>
-<span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>$</span><span class='va'>stanfit</span><span class='op'>)</span>
-<span class='co'># see spatial autocorrelation diagnostics</span>
-<span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>ohio</span><span class='op'>)</span>
+<span class='co'># fit spatial Poisson model with ESF + unstructured 'random effects'</span>
+<span class='va'>fit.esf</span> <span class='op'>&lt;-</span> <span class='fu'>stan_esf</span><span class='op'>(</span><span class='va'>sents</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/offset.html'>offset</a></span><span class='op'>(</span><span class='va'>log_e</span><span class='op'>)</span>,
+                   re <span class='op'>=</span> <span class='op'>~</span> <span class='va'>name</span>,
+                   family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span>,
+                   data <span class='op'>=</span> <span class='va'>sentencing</span>,
+                   C <span class='op'>=</span> <span class='va'>C</span>,
+                   refresh <span class='op'>=</span> <span class='fl'>0</span>
+<span class='op'>)</span>
+<span class='co'># spatial diagnostics </span>
+<span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit.esf</span>, <span class='va'>sentencing</span><span class='op'>)</span>
 
-<span class='co'>## summary of estimates</span>
-<span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>fit</span>, pars <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"beta"</span>, <span class='st'>"intercept"</span>, <span class='st'>"sigma"</span><span class='op'>)</span><span class='op'>)</span>
+<span class='co'># plot marginal posterior distributions of beta_ev (eigenvector coefficients)</span>
+<span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>fit.esf</span>, pars <span class='op'>=</span> <span class='st'>"beta_ev"</span><span class='op'>)</span>
 
-<span class='co'>## map the spatial filter</span>
-<span class='va'>ohio</span><span class='op'>$</span><span class='va'>esf</span> <span class='op'>&lt;-</span> <span class='fu'><a href='spatial.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span> <span class='op'>+</span>
-      <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>esf</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-      <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-      <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_void</a></span><span class='op'>(</span><span class='op'>)</span>
+<span class='co'># plot the marginal posterior distributions of the spatial filter (ESF * beta_ev)</span>
+<span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>fit.esf</span>, pars <span class='op'>=</span> <span class='st'>"beta_ev"</span><span class='op'>)</span>
 
-<span class='co'>## make use of some additional features</span>
- <span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'>stan_esf</span><span class='op'>(</span><span class='va'>gop_growth</span> <span class='op'>~</span> <span class='va'>historic_gop</span> <span class='op'>+</span> <span class='va'>college_educated</span>,
-                slx <span class='op'>=</span> <span class='op'>~</span> <span class='va'>historic_gop</span> <span class='op'>+</span> <span class='va'>college_educated</span>,
-                ME <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>se <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>college_educated <span class='op'>=</span> <span class='va'>ohio</span><span class='op'>$</span><span class='va'>college_educated.se</span><span class='op'>)</span>,
-                          spatial <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>,
-                data <span class='op'>=</span> <span class='va'>ohio</span>,
-                centerx <span class='op'>=</span> <span class='cn'>TRUE</span>,
-                C <span class='op'>=</span> <span class='va'>C</span>,
-                family <span class='op'>=</span> <span class='fu'><a href='student_t.html'>student_t</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
+<span class='co'># posterior predictive distribution</span>
+<span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span><span class='op'>(</span><span class='va'>fit.esf</span>, samples <span class='op'>=</span> <span class='fl'>75</span><span class='op'>)</span>
+<span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span>
+<span class='fu'>bayesplot</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>yrep</span><span class='op'>)</span> 
+
+<span class='co'># map the spatial filter</span>
+<span class='va'>sp.filter</span> <span class='op'>&lt;-</span> <span class='fu'><a href='spatial.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit.esf</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
+<span class='fu'><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>st_as_sf</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+ <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+ <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>sp.filter</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+ <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span><span class='op'>)</span>
+
+<span class='co'># calculate log-standardized sentencing ratios (log-SSRs)</span>
+<span class='va'>f</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/fitted.values.html'>fitted</a></span><span class='op'>(</span><span class='va'>fit.esf</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
+<span class='va'>SSR</span> <span class='op'>&lt;-</span>  <span class='va'>f</span> <span class='op'>/</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>expected_sents</span>
+<span class='va'>log.SSR</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span> <span class='va'>SSR</span>, base <span class='op'>=</span> <span class='fl'>2</span> <span class='op'>)</span>
+
+<span class='co'># map the log-SSRs</span>
+<span class='fu'><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>st_as_sf</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
+ <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+ <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>log.SSR</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+ <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span>
+   midpoint <span class='op'>=</span> <span class='fl'>0</span>,
+   name <span class='op'>=</span> <span class='cn'>NULL</span>,
+   breaks <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>3</span>, <span class='fl'>3</span>, by <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>
+ <span class='op'>)</span> <span class='op'>+</span>
+ <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Log-Standardized Sentencing Ratios"</span>,
+      subtitle <span class='op'>=</span> <span class='st'>"log( Fitted/Expected ), base 2"</span>
+ <span class='op'>)</span> <span class='op'>+</span>
+ <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_void</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+ <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>
+   legend.position <span class='op'>=</span> <span class='st'>"bottom"</span>,
+   legend.key.height <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/unit.html'>unit</a></span><span class='op'>(</span><span class='fl'>0.35</span>, <span class='st'>"cm"</span><span class='op'>)</span>,
+   legend.key.width <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/unit.html'>unit</a></span><span class='op'>(</span><span class='fl'>1.5</span>, <span class='st'>"cm"</span><span class='op'>)</span>
+ <span class='op'>)</span>
 
 <span class='op'>}</span> 
 

@@ -1,11 +1,9 @@
 # geostan <img src="man/figures/logo.png" align="right" width="160" />
 
 The **geostan** R package provides a user-friendly interface to
-hierarchical Bayesian models (HBMs) for areal data. It is designed for
-relative ease of use and developed with a particular emphasis on spatial epidemiology and survey data for public health.
-All of the models are built with the Stan programming language, but users only need to be familiar with the R language.
+hierarchical Bayesian models (HBMs) for areal data. It is designed for relative ease of use and developed with a particular emphasis on spatial epidemiology and survey data for public health. All of the models are built with the Stan programming language, but users only need to be familiar with the R language.
 
-The package and website are still under development.
+**The package and website are still under development.**
 
 -------------------------
 
@@ -19,7 +17,7 @@ Model small-area incidence rates with mortality or disease data recorded across 
 
 ### Observational error models 
 
-Incorporate information on data quality into any **geostan** model. Built for social, economic, and health survey data such as the American Community Survey (ACS).
+Incorporate information on data quality into any **geostan** model. Built specifically for American Community Survey (ACS) data.
 
 ### The RStan ecosystem
 

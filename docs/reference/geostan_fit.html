@@ -213,38 +213,46 @@
     <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>
-<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_esf.html'>stan_esf</a></span><span class='op'>(</span><span class='va'>gop_growth</span> <span class='op'>~</span> <span class='va'>historic_gop</span> <span class='op'>+</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>pop_density</span><span class='op'>)</span>,
-               data <span class='op'>=</span> <span class='va'>ohio</span>,
-               scalex <span class='op'>=</span> <span class='cn'>TRUE</span>,
-               C <span class='op'>=</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>,
-               refresh <span class='op'>=</span> <span class='fl'>0</span> <span class='co'># less printing</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span>
+
+<span class='co'># spatial weights matrix with binary coding scheme</span>
+<span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>sentencing</span>, style <span class='op'>=</span> <span class='st'>"B"</span><span class='op'>)</span>
+
+<span class='co'># log-expected number of sentences</span>
+<span class='co'>## expected counts are based on county racial composition and mean sentencing rates</span>
+<span class='va'>log_e</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>$</span><span class='va'>expected_sents</span><span class='op'>)</span>
+
+<span class='co'># fit spatial Poisson model with unstructured 'random effects'</span>
+<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_glm.html'>stan_glm</a></span><span class='op'>(</span><span class='va'>sents</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/offset.html'>offset</a></span><span class='op'>(</span><span class='va'>log_e</span><span class='op'>)</span>,
+                   re <span class='op'>=</span> <span class='op'>~</span> <span class='va'>name</span>,
+                   family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span>,
+                   data <span class='op'>=</span> <span class='va'>sentencing</span>,
+                   C <span class='op'>=</span> <span class='va'>C</span>,
+                   refresh <span class='op'>=</span> <span class='fl'>0</span>
 <span class='op'>)</span>
 
 <span class='co'># print and plot results</span>
 <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
 <span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
 
-<span class='va'>beta.samples</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>as.matrix</a></span><span class='op'>(</span><span class='va'>fit</span>, pars <span class='op'>=</span> <span class='st'>"beta"</span><span class='op'>)</span>
-<span class='va'>beta.mean</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/apply.html'>apply</a></span><span class='op'>(</span><span class='va'>beta.samples</span>, <span class='fl'>2</span>, <span class='va'>mean</span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>beta.mean</span><span class='op'>)</span>
+<span class='co'># residuals</span>
+<span class='va'>r</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>resid</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
 
-<span class='co'># extract residuals and fitted values</span>
-<span class='va'>res</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>residuals</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
-<span class='va'>res</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>resid</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span> 
-<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>res</span><span class='op'>)</span>
-<span class='va'>f</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/fitted.values.html'>fitted</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
-<span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>f</span><span class='op'>$</span><span class='va'>mean</span>, <span class='va'>res</span><span class='op'>$</span><span class='va'>mean</span>, xlab <span class='op'>=</span> <span class='st'>"fitted values"</span>, ylab <span class='op'>=</span> <span class='st'>"residuals"</span><span class='op'>)</span>
-<span class='va'>mat</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>resid</a></span><span class='op'>(</span><span class='va'>fit</span>, summary <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span><span class='op'>(</span><span class='va'>mat</span><span class='op'>)</span>
+<span class='co'># fitted values</span>
+<span class='va'>f</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/fitted.values.html'>fitted</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
 
-<span class='co'># extract and plot the posterior mean of the spatial filter</span>
-<span class='va'>sf</span> <span class='op'>&lt;-</span> <span class='fu'><a href='spatial.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit</span>, summary <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>sf</span><span class='op'>)</span>
-<span class='va'>ohio</span><span class='op'>$</span><span class='va'>sf</span> <span class='op'>&lt;-</span> <span class='va'>sf</span><span class='op'>$</span><span class='va'>mean</span>
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>sf</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span><span class='op'>)</span>  
+<span class='co'># spatial diagnostics</span>
+<span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>sentencing</span><span class='op'>)</span>
+
+<span class='co'># county `random effects' </span>
+<span class='va'>sp</span> <span class='op'>=</span> <span class='fu'><a href='spatial.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
+
+<span class='co'># extract matrix of samples from posterior distribution of parameters</span>
+<span class='co'>## alpha_re are the unstructured area random effects</span>
+<span class='va'>S</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>as.matrix</a></span><span class='op'>(</span><span class='va'>fit</span>, pars <span class='op'>=</span> <span class='st'>"alpha_re"</span><span class='op'>)</span>
+
+<span class='co'># extract data.frame of posterior samples</span>
+<span class='va'>S</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='va'>fit</span>, pars <span class='op'>=</span> <span class='st'>"alpha_re"</span><span class='op'>)</span>
 <span class='op'>}</span>
 
 </div></pre>

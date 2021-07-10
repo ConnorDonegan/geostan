@@ -1,6 +1,9 @@
 #' Intrinsic autoregressive models
 #'
 #' @export
+#'
+#' @md
+#' 
 #' @description Assign the intrinsic conditional auto-regressive (ICAR) prior model to parameters. Options include the BYM model, the BYM2 model, and a solo ICAR term. 
 #' 
 #' @param formula A model formula, following the R \link[stats]{formula} syntax. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
@@ -38,19 +41,109 @@
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' @details
 #' 
-#'  The Stan code for the ICAR component of the model and the BYM2 option follows Morris et al. (2019) with adjustments to enable non-binary weights and disconnected graph structures (see Freni-Sterrantino (2018) and Donegan (2021)). The ICAR parameters are returned in the parameter vector named \code{phi}. The ICAR prior model is equivalent to a CAR model with the spatial autocorrelation parameter \code{car_alpha} equal to 1 (see \link[geostan]{stan_car}). Thus the ICAR prior places high probability on a smooth spatially varying mean. Often, an observational-level random effect term \code{theta} is added to model deviations from the local mean. Use of the combination \code{phi + theta} is known as the BYM model (Besag et al. 1991). 
+#'  The Stan code for the ICAR component of the model and the BYM2 option is from Morris et al. (2019) with adjustments to enable non-binary weights and disconnected graph structures (see Freni-Sterrantino (2018) and Donegan (2021)).
 #'
-#' The ICAR prior is placed on the parameter vector \code{phi_tilde} (which is approximately on the standard normal scale); it is scaled by the scalar parameter \code{spatial_scale}. The models are specified as follows:
+#' The exact specification depends on the `type` argument.
 #'
-#' If \code{type = "icar"}, the spatial structure is simply \code{phi[i] = phi_tilde[i] * spatial_scale}.
+#' ### `type = 'icar'`
 #'
-#' If \code{type = "bym"}, the spatial structure \code{phi} is the same as \code{"icar"} but an additional parameter vector \code{theta} is added to perform partial pooling across all observations.  \code{theta[i] = theta_tilde[i] * theta_scale}. The sum \code{phi_tilde * spatial_scale + theta_tilde * theta_scale = phi + theta = convolution} is often referred to as the ``convolved random effect.'' 
+#' For Poisson models for count data, y, the basic model specification (`type = "icar"`) is:
+#' ```
+#'              y ~ Poisson(exp(offset + mu + phi))
+#'              phi ~ ICAR(spatial_scale)
+#'              spatial_scale ~ Gaussian(0, 1)
+#' ```
+#'  where `mu` contains an intercept and potentially covariates. The spatial trend, `phi`, has a mean of zero and a single scale parameter, `spatial_scale`.
+#' 
+#' The ICAR prior model is a CAR model that has a spatial autocorrelation parameter \code{car_alpha} equal to 1 (see \link[geostan]{stan_car}). Thus the ICAR prior places high probability on a smooth spatially (or temporally) varying mean.
 #'
-#' For \code{type = "bym2"}, \code{phi_tilde} and \code{theta_tilde} share a single scale parameter (\code{spatial_scale}) but they are combined using a mixing parameter \code{rho}. The convolution is then \code{convolution = [sqrt(rho / scale_factor) * phi_tilde + sqrt((1 - rho)) * theta_tilde] * spatial_scale}. For convenience, the model will factor the convolution term into parameters \code{phi} and \code{theta}.
+#' ### `type = 'bym'`
 #'
-#' The actual calculation of the convolution term is specified to ensure that observations with zero neighbors, and disconnected graph structures, are handled properly. Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to phi automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term. The additional intercepts, when there are any, are returned in a parameter vector named `alpha_phi`.
+#' Often, an observational-level random effect term, `theta`, is added to capture (heterogeneous or unstructured) deviations from `mu + phi`. The combined term is referred to as a convolution term:
+#' ```
+#'              convolution = phi + theta.
+#' ```
+#' It is known as the BYM model (Besag et al. 1991), and can be specified using `type = "bym"`:
+#' ```
+#'              y ~ Poisson(exp(offset + mu + phi + theta))
+#'              phi ~ ICAR(spatial_scale)
+#'              theta ~ Gaussian(0, theta_scale)
+#'              spatial_scale ~ Gaussian(0, 1)
+#'              theta_scale ~ Gaussian(0, 1)
+#' ```
 #'
-#' For calculating the `scale_factor` introduced by Riebler et al. (2016), see Donegan (2021). The code in that repository shows how to (painlessly) calculate the scale factor for each connected component of the graph structure (and, again, follows Freni-Sterrantino (2018) and Morris et al. (2019)).
+#' ### `type = 'bym2'`
+#' 
+#' Riebler et al. (2016) introduce a variation on the BYM model (`type = "bym2"`). This specification combines `phi` and `theta` using a mixing parameter, `rho`, that controls the proportion of the variation that is attributable to the spatially autocorrelated term, `phi`, rather than the spatially unstructured term, `theta`. The terms share a single scale parameter:
+#' ```
+#'              convolution = [sqrt(rho/scale_factor) * phi_tilde + sqrt(1 - rho) * theta_tilde] * spatial_scale.
+#'              phi_tilde ~ Gaussian(0, 1)
+#'              theta_tilde ~ Gaussian(0, 1)
+#' ```
+#' The two `_tilde` terms are equivalent to standard normal deviates, `rho` is restricted to values between zero and one, and `scale_factor` is a constant term provided by the user. By default `scale_factor` is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure, `C`. This implies that the same prior distribution assigned to the `spatial_scale` will differ in its implications if `C` is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to `spatial_scale`.
+#'
+#' Borrowing `R` code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following `R` code can be used to create the `scale_factor` for the BYM2 model (note, this required the INLA R package):
+#' ```
+#'               ## create a list of data for stan_icar
+#'               icar.data <- prep_icar_data(C)
+#'               ## calculate scale_factor for each of k connected group of nodes, using the scale_c function (Morris et al. 2019)
+#'               k <- icar.data$k
+#'               scale_factor <- vector(mode = "numeric", length = k)
+#'               for (j in 1:k) {
+#'                 g.idx <- which(icar.data$comp_id == j) 
+#'                 if (length(g.idx) == 1) {
+#'                   scale_factor[j] <- 1
+#'                   next
+#'                  }    
+#'               Cg <- C[g.idx, g.idx] 
+#'               scale_factor[j] <- scale_c(Cg) 
+#'}
+#'                ## update the data list for stan_icar: exactly like this
+#'               icar.data$inv_sqrt_scale_factor <- 1 / sqrt( scale_factor )
+#' ```
+#' This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to `phi` automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term.
+#' 
+#' The code above requires the `scale_c` function, which has package dependencies that are not included in `geostan`:
+#' ```
+#' #' compute scaling factor for adjacency matrix, accounting for differences in spatial connectivity 
+#' #'
+#' #' @param C connectivity matrix
+#' #'
+#' #' @details
+#' #'
+#' #' Requires the following packages: 
+#' #'
+#' #' library(Matrix)
+#' #' library(INLA);
+#' #' library(spdep)
+#' #' library(igraph)
+#' #'  
+#' #' @source
+#' 
+#' #'   Morris, Mitzi (2017). Spatial Models in Stan: Intrinsic Auto-Regressive Models for Areal Data. <https://mc-stan.org/users/documentation/case-studies/icar_stan.html>
+#' #'
+#' scale_c <- function(C) {
+#'  #' compute geometric mean of a vector
+#'  geometric_mean <- function(x) exp(mean(log(x))) 
+#'  
+#'  N = dim(C)[1]
+#'  
+#'  # Create ICAR precision matrix  (diag - C): this is singular
+#'  # function Diagonal creates a square matrix with given diagonal
+#'  Q =  Diagonal(N, rowSums(C)) - C
+#'  
+#'  # Add a small jitter to the diagonal for numerical stability (optional but recommended)
+#'  Q_pert = Q + Diagonal(N) * max(diag(Q)) * sqrt(.Machine$double.eps)
+#'  
+#'  # Function inla.qinv provides efficient way to calculate the elements of the
+#'  # the inverse corresponding to the non-zero elements of Q
+#'  Q_inv = inla.qinv(Q_pert, constr=list(A = matrix(1,1,N),e=0))
+#'  
+#'  # Compute the geometric mean of the variances, which are on the diagonal of Q.inv
+#'  scaling_factor <- geometric_mean(Matrix::diag(Q_inv)) 
+#'  return(scaling_factor) 
+#'}
+#' ```
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
@@ -90,11 +183,11 @@
 #' @examples
 #' \dontrun{
 #' library(rstan)
-#' library(bayesplot)
+#' library(sf)
 #' options(mc.cores = parallel::detectCores())
 #' data(sentencing)
 #'
-#' C <- shape2mat(sentencing)
+#' C <- shape2mat(sentencing, "B")
 #' log_e <- log(sentencing$expected_sents)
 #' fit.bym <- stan_icar(sents ~ offset(log_e),
 #'                      family = poisson(),
@@ -104,19 +197,37 @@
 #'                      refresh = 0
 #'  )
 #'
-#'# diagnostics plot: Rhat values should all by very near 1
-#' rstan::stan_rhat(fit.bym$stanfit)
-#'  # see effective sample size for all parameters and generated quantities
-#'  # (including residuals, predicted values, etc.)
+#' # check effective sample size and convergence
 #' rstan::stan_ess(fit.bym$stanfit)
-#' # or for a particular parameter
-#' rstan::stan_ess(fit.bym$stanfit, "phi")
-
-# posterior predictive check: predicted distribution should resemble observed distribution
-#' library(bayesplot)
-#' yrep <- posterior_predict(fit.bym, samples = 100)
-#' y <- sentencing$sents
-#' bayesplot::ppc_dens_overlay(y, yrep)
+#' rstan::stan_rhat(fit.bym$stanfit)
+#'
+#' # see some spatial diagnostics
+#' sp_diag(fit.bym, sentencing)
+#'
+#' # map the smooth spatial term
+#' sp.trend <- spatial(fit.bym)$mean
+#' ggplot( st_as_sf(sentencing) ) +
+#'   geom_sf(aes(fill = sp.trend)) +
+#'   scale_fill_gradient2() +
+#'   theme_void()
+#'
+#' # calculate log-standardized sentencing ratios (log-SSRs)
+#' ## (like Standardized Incidence Ratios: observed/exected case counts)
+#' f <- fitted(fit.bym)$mean
+#' SSR <- f / sentencing$expected_sents
+#' log.SSR <- log( SSR, base = 2)
+#'
+#' ggplot( st_as_sf(sentencing) ) +
+#'   geom_sf(aes(fill = log.SSR)) +
+#'   scale_fill_gradient2() +
+#'   labs(title = "Log-standardized sentencing ratios",
+#'        subtitle = "log( Fitted/Expected), base 2") +
+#'   theme_void() +
+#'   theme(
+#'    legend.position = "bottom",
+#'    legend.key.height = unit(0.35, "cm"),
+#'    legend.key.width = unit(1.5, "cm")
+#'   )
 #' }
 #' 
 stan_icar <- function(formula, slx, re, data,

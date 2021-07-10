@@ -295,7 +295,6 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
 
 
 <p>With <code>family = gaussian()</code> (referred to here as the auto-Gaussian model), the CAR model is specified as follows:</p><pre>                            Y ~ MVGauss(Mu, Sigma)
-
                             Sigma = (I - rho C)^-1 * M * tau^2
 </pre>
 
@@ -314,9 +313,7 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
 
 
 <p>For <code>family = poisson()</code>, the model is specified as:</p><pre>                            Y ~ Poisson(exp(offset + lambda))
-
                             lambda ~ MVGauss(Mu, Sigma)
-
                             Sigma = (I - rho C)^-1 * M * tau^2
 </pre>
 
@@ -325,13 +322,11 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
 </pre>
 
 <p>This is equivalent to re-writing the model as:</p><pre>                            Y ~ Poisson(exp(offset + Mu + phi))
-
                             phi ~ MVGauss(0, Sigma)
-
                             Sigma = (I - rho C)^-1 * M * tau^2.
 </pre>
 
-<p>Note that the behavior of the <code><a href='spatial.html'>spatial</a></code> method is slightly different for the CAR model than for the BYM model in <code><a href='stan_icar.html'>stan_icar</a></code>. The BYM model returns a spatial trend parameter that does not contain any uncorrelated/unstructured variation; <code>phi</code>, in the CAR model, contains a latent spatial trend and additional variation around it. If you would like to extract the latent/implicit spatial trend from <code>phi</code>, you can do so by calculating:</p><pre>                            trend = rho * C * (phi - Mu).
+<p>Note that the behavior of the <code><a href='spatial.html'>spatial</a></code> method is slightly different for the CAR model than for the BYM model in <code><a href='stan_icar.html'>stan_icar</a></code>. The BYM model returns a spatial trend parameter that does not contain any uncorrelated/unstructured variation; <code>phi</code>, in the CAR model, contains a latent spatial trend and additional variation around it. If you would like to extract the latent/implicit spatial trend from <code>phi</code>, you can do so by calculating:</p><pre>                            <span class='va'>trend</span> <span class='op'>=</span> <span class='va'>rho</span> <span class='op'>*</span> <span class='va'>C</span> <span class='op'>*</span> <span class='va'>phi.</span>
 </pre>
 
 <p>This is not done automatically primarily because it is uncommon to do so.</p>
@@ -343,9 +338,7 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
 
 
 <p>For <code>family = binomial()</code>, the model is specified as:</p><pre>                            Y ~ Binomial(N, theta)
-
                             logit(theta) ~ MVGauss(Mu, Sigma)
-
                             Sigma = (I - rho C)^-1 * M * tau^2
 </pre>
 

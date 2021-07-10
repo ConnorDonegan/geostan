@@ -116,18 +116,18 @@ The value of \code{p0} is used to control the prior degree of sparsity in the mo
 \item{...}{Other arguments passed to \link[rstan]{sampling}.}
 }
 \value{
-An object of class class \code{geostan_fit} (a list) containing: 
+An object of class class \code{geostan_fit} (a list) containing:
 \describe{
 \item{summary}{Summaries of the main parameters of interest; a data frame}
-\item{diagnostic}{Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (\code{eff_pars}) and 
- mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
+\item{diagnostic}{Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (\code{eff_pars}) and
+mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
 \item{data}{a data frame containing the model data}
 \item{EV}{A matrix of eigenvectors created with \code{w} and \code{geostan::make_EV}}
 \item{C}{The spatial weights matrix used to construct EV}
 \item{family}{the user-provided or default \code{family} argument used to fit the model}
 \item{formula}{The model formula provided by the user (not including ESF component)}
 \item{slx}{The \code{slx} formula}
-\item{re}{A list containing \code{re},  the random effects (varying intercepts) formula if provided, and 
+\item{re}{A list containing \code{re},  the random effects (varying intercepts) formula if provided, and
 \code{data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 \item{priors}{Prior specifications.}
 \item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
@@ -137,62 +137,90 @@ An object of class class \code{geostan_fit} (a list) containing:
 }
 }
 \description{
-Fit a spatial regression model using eigenvector spatial filtering.
+Fit a spatial regression model using eigenvector spatial filtering (ESF).
 }
 \details{
-Eigenvector spatial filtering is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), drawing on the Piironen and Vehtari's (2017) regularized horseshoe prior. ESF models take the spectral decomposition of a transformed spatial connectivity matrix \code{C}, which appears in the numerator of the Moran coefficient (MC),a measure of spatial autocorrelation. The resulting eigenvectors \code{EV} are mutually orthogonal and uncorrelated map patterns. ESF methodology is premised on the ability to decompose spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). SA in the outcome variable is then absorbed by the spatial filter \code{EV * beta_ev}, where \code{beta_ev} is a vector of coefficients.
+Eigenvector spatial filtering (ESF) is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), drawing on the Piironen and Vehtari's (2017) regularized horseshoe prior.
 
-ESF decomposes the data into a global mean \code{alpha}, global patterns contributed by covariates \code{X * beta}, spatial trends \code{EV * beta_ev}, and residual variation. Thus
+ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \code{C}. The resulting eigenvectors, \code{EV}, are mutually orthogonal and uncorrelated map patterns. ESF methodology is premised on the ability to decompose spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). SA in the outcome variable is then absorbed by the spatial filter, EV * beta_ev\verb{, where }beta_ev` is a vector of coefficients.
 
-\code{ Mu = intercept + X * beta + EV * beta_ev }
+ESF decomposes the data into a global mean \code{alpha}, global patterns contributed by covariates \code{X * beta}, spatial trends, \code{EV * beta_ev}, and residual variation/ Thus, for \code{family=gaussian()},\preformatted{Y \\~ Gauss(intercept + X * beta + EV * beta_ev, sigma).
+}
 
-and for the Gaussian model,
+An ESF component can be incorporated into the linear predictor of any generalized linear model.
 
-\code{Y \~ Gauss(Mu, sigma) }
+The \link[geostan]{spatial} method will return \code{EV * beta}.
 
-The model can be extended to the space-time domain; see \link[geostan]{shape2mat} to specify a space-time connectivity matrix. 
+The model can also be extended to the space-time domain; see \link[geostan]{shape2mat} to specify a space-time connectivity matrix.
 
 The coefficients \code{beta_ev} are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the \code{threshold} argument). By default, \code{stan_esf} will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the \code{nsa} argument.
 }
 \examples{
 \dontrun{
-library(rstan)
-library(bayesplot)
 library(ggplot2)
 library(sf)
-options(mc.cores = parallel::detectCores()) 
+library(bayesplot)
+data(sentencing)
 
-data(ohio)
-C <- shape2mat(ohio, "B")
+# spatial weights matrix with binary coding scheme
+C <- shape2mat(sentencing, style = "B")
 
-fit <- stan_esf(gop_growth ~ historic_gop + college_educated,
-                data = ohio,
-                C = C)
+# log-expected number of sentences
+## expected counts are based on county racial composition and mean sentencing rates
+log_e <- log(sentencing$expected_sents)
 
-# use rstan for sampler diagnostics
-stan_rhat(fit$stanfit)
-# see spatial autocorrelation diagnostics
-sp_diag(fit, ohio)
+# fit spatial Poisson model with ESF + unstructured 'random effects'
+fit.esf <- stan_esf(sents ~ offset(log_e),
+                   re = ~ name,
+                   family = poisson(),
+                   data = sentencing,
+                   C = C,
+                   refresh = 0
+)
+# spatial diagnostics 
+sp_diag(fit.esf, sentencing)
 
-## summary of estimates
-plot(fit, pars = c("beta", "intercept", "sigma"))
+# plot marginal posterior distributions of beta_ev (eigenvector coefficients)
+plot(fit.esf, pars = "beta_ev")
 
-## map the spatial filter
-ohio$esf <- spatial(fit)$mean
-ggplot(ohio) +
-      geom_sf(aes(fill = esf)) +
-      scale_fill_gradient2() +
-      theme_void()
+# plot the marginal posterior distributions of the spatial filter (ESF * beta_ev)
+plot(fit.esf, pars = "beta_ev")
 
-## make use of some additional features
- fit <- stan_esf(gop_growth ~ historic_gop + college_educated,
-                slx = ~ historic_gop + college_educated,
-                ME = list(se = data.frame(college_educated = ohio$college_educated.se),
-                          spatial = TRUE),
-                data = ohio,
-                centerx = TRUE,
-                C = C,
-                family = student_t())
+# posterior predictive distribution
+yrep <- posterior_predict(fit.esf, samples = 75)
+y <- sentencing$sents
+bayesplot::ppc_dens_overlay(y, yrep) 
+
+# map the spatial filter
+sp.filter <- spatial(fit.esf)$mean
+st_as_sf(sentencing) \%>\%
+ ggplot() +
+ geom_sf(aes(fill = sp.filter)) +
+ scale_fill_gradient2()
+
+# calculate log-standardized sentencing ratios (log-SSRs)
+f <- fitted(fit.esf)$mean
+SSR <-  f / sentencing$expected_sents
+log.SSR <- log( SSR, base = 2 )
+
+# map the log-SSRs
+st_as_sf(sentencing) \%>\%
+ ggplot() +
+ geom_sf(aes(fill = log.SSR)) +
+ scale_fill_gradient2(
+   midpoint = 0,
+   name = NULL,
+   breaks = seq(-3, 3, by = 0.5)
+ ) +
+ labs(title = "Log-Standardized Sentencing Ratios",
+      subtitle = "log( Fitted/Expected ), base 2"
+ ) +
+ theme_void() +
+ theme(
+   legend.position = "bottom",
+   legend.key.height = unit(0.35, "cm"),
+   legend.key.width = unit(1.5, "cm")
+ )
 
 } 
 

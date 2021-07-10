@@ -789,7 +789,7 @@ edges <- function(w) {
 #' se_log(x, se, method = "mc")
 #' se_log(x, se, method = "delta")
 #' 
-se_log <- function(x, se, method = c("mc", "delta"), nsim = 30e3, bounds = c(0, Inf)) {
+se_log <- function(x, se, method = c("mc", "delta"), nsim = 5e3, bounds = c(0, Inf)) {
     stopifnot(length(x) == length(se))
     method <- match.arg(method)
     if (method == "mc") {
@@ -888,6 +888,8 @@ prep_icar_data <- function (C, inv_sqrt_scale_factor = NULL) {
 #' Prepare data for Stan CAR model
 #'
 #' @export
+#' @importFrom rstan extract_sparse_parts
+#' 
 #' @param A binary adjacency matrix
 #' @param style specification for the connectivity matrix (C) and conditional variances (M)
 #' @param lambda If TRUE, return eigenvalues required for calculating the log determinant of the precision matrix and for determining the range of permissible values of rho. These will also be printed with a message if lambda = TRUE.
@@ -917,7 +919,6 @@ prep_icar_data <- function (C, inv_sqrt_scale_factor = NULL) {
 #'
 #' @return A list containing all of the data elements required by the Stan CAR model.
 #'
-#' @importFrom rstan extract_sparse_parts
 #' 
 prep_car_data <- function(A, style = c("ACAR", "WCAR", "DCAR"), lambda = FALSE, cmat = TRUE, d, k = 1) {
     style = match.arg(style)

@@ -1,7 +1,10 @@
 #' Spatial filtering
 #'
 #' @export
-#' @description Fit a spatial regression model using eigenvector spatial filtering.
+#'
+#' @md
+#' 
+#' @description Fit a spatial regression model using eigenvector spatial filtering (ESF).
 #' 
 #' @param formula A model formula, following the R \link[stats]{formula} syntax. Binomial models are specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
@@ -45,17 +48,19 @@
 #' @param ... Other arguments passed to \link[rstan]{sampling}. 
 #' @details
 #'
-#' Eigenvector spatial filtering is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), drawing on the Piironen and Vehtari's (2017) regularized horseshoe prior. ESF models take the spectral decomposition of a transformed spatial connectivity matrix \code{C}, which appears in the numerator of the Moran coefficient (MC),a measure of spatial autocorrelation. The resulting eigenvectors \code{EV} are mutually orthogonal and uncorrelated map patterns. ESF methodology is premised on the ability to decompose spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). SA in the outcome variable is then absorbed by the spatial filter \code{EV * beta_ev}, where \code{beta_ev} is a vector of coefficients.
+#' Eigenvector spatial filtering (ESF) is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), drawing on the Piironen and Vehtari's (2017) regularized horseshoe prior.
 #'
-#' ESF decomposes the data into a global mean \code{alpha}, global patterns contributed by covariates \code{X * beta}, spatial trends \code{EV * beta_ev}, and residual variation. Thus
+#' ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \code{C}. The resulting eigenvectors, `EV`, are mutually orthogonal and uncorrelated map patterns. ESF methodology is premised on the ability to decompose spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). SA in the outcome variable is then absorbed by the spatial filter, EV * beta_ev`, where `beta_ev` is a vector of coefficients.
 #'
-#' \code{ Mu = intercept + X * beta + EV * beta_ev }
+#' ESF decomposes the data into a global mean `alpha`, global patterns contributed by covariates `X * beta`, spatial trends, `EV * beta_ev`, and residual variation/ Thus, for `family=gaussian()`,
+#' ```
+#' Y \~ Gauss(intercept + X * beta + EV * beta_ev, sigma).
+#'```
+#' An ESF component can be incorporated into the linear predictor of any generalized linear model.
 #'
-#' and for the Gaussian model,
-#' 
-#' \code{Y \~ Gauss(Mu, sigma) }
+#' The \link[geostan]{spatial} method will return `EV * beta`.
 #'
-#' The model can be extended to the space-time domain; see \link[geostan]{shape2mat} to specify a space-time connectivity matrix. 
+#' The model can also be extended to the space-time domain; see \link[geostan]{shape2mat} to specify a space-time connectivity matrix. 
 #' 
 #' The coefficients \code{beta_ev} are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the \code{threshold} argument). By default, \code{stan_esf} will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the \code{nsa} argument.
 #' 
@@ -99,43 +104,71 @@
 #' 
 #' @examples
 #' \dontrun{
-#' library(rstan)
-#' library(bayesplot)
 #' library(ggplot2)
 #' library(sf)
-#' options(mc.cores = parallel::detectCores()) 
-#' 
-#' data(ohio)
-#' C <- shape2mat(ohio, "B")
+#' library(bayesplot)
+#' data(sentencing)
 #'
-#' fit <- stan_esf(gop_growth ~ historic_gop + college_educated,
-#'                 data = ohio,
-#'                 C = C)
-#' 
-#' # use rstan for sampler diagnostics
-#' stan_rhat(fit$stanfit)
-#' # see spatial autocorrelation diagnostics
-#' sp_diag(fit, ohio)
-#' 
-#' ## summary of estimates
-#' plot(fit, pars = c("beta", "intercept", "sigma"))
-#' 
-#' ## map the spatial filter
-#' ohio$esf <- spatial(fit)$mean
-#' ggplot(ohio) +
-#'       geom_sf(aes(fill = esf)) +
-#'       scale_fill_gradient2() +
-#'       theme_void()
+#' # spatial weights matrix with binary coding scheme
+#' C <- shape2mat(sentencing, style = "B")
 #'
-#' ## make use of some additional features
-#'  fit <- stan_esf(gop_growth ~ historic_gop + college_educated,
-#'                 slx = ~ historic_gop + college_educated,
-#'                 ME = list(se = data.frame(college_educated = ohio$college_educated.se),
-#'                           spatial = TRUE),
-#'                 data = ohio,
-#'                 centerx = TRUE,
-#'                 C = C,
-#'                 family = student_t())
+#' # log-expected number of sentences
+#' ## expected counts are based on county racial composition and mean sentencing rates
+#' log_e <- log(sentencing$expected_sents)
+#'
+#' # fit spatial Poisson model with ESF + unstructured 'random effects'
+#' fit.esf <- stan_esf(sents ~ offset(log_e),
+#'                    re = ~ name,
+#'                    family = poisson(),
+#'                    data = sentencing,
+#'                    C = C,
+#'                    refresh = 0
+#' )
+#' # spatial diagnostics 
+#' sp_diag(fit.esf, sentencing)
+#'
+#' # plot marginal posterior distributions of beta_ev (eigenvector coefficients)
+#' plot(fit.esf, pars = "beta_ev")
+#'
+#' # plot the marginal posterior distributions of the spatial filter (ESF * beta_ev)
+#' plot(fit.esf, pars = "beta_ev")
+#'
+#' # posterior predictive distribution
+#' yrep <- posterior_predict(fit.esf, samples = 75)
+#' y <- sentencing$sents
+#' bayesplot::ppc_dens_overlay(y, yrep) 
+#'
+#' # map the spatial filter
+#' sp.filter <- spatial(fit.esf)$mean
+#' st_as_sf(sentencing) %>%
+#'  ggplot() +
+#'  geom_sf(aes(fill = sp.filter)) +
+#'  scale_fill_gradient2()
+#'
+#' # calculate log-standardized sentencing ratios (log-SSRs)
+# (like Standardized Incidence Ratios: observed/exected case counts)
+#' f <- fitted(fit.esf)$mean
+#' SSR <-  f / sentencing$expected_sents
+#' log.SSR <- log( SSR, base = 2 )
+#'
+#' # map the log-SSRs
+#' st_as_sf(sentencing) %>%
+#'  ggplot() +
+#'  geom_sf(aes(fill = log.SSR)) +
+#'  scale_fill_gradient2(
+#'    midpoint = 0,
+#'    name = NULL,
+#'    breaks = seq(-3, 3, by = 0.5)
+#'  ) +
+#'  labs(title = "Log-Standardized Sentencing Ratios",
+#'       subtitle = "log( Fitted/Expected ), base 2"
+#'  ) +
+#'  theme_void() +
+#'  theme(
+#'    legend.position = "bottom",
+#'    legend.key.height = unit(0.35, "cm"),
+#'    legend.key.width = unit(1.5, "cm")
+#'  )
 #'
 #' } 
 #'

@@ -267,7 +267,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <p>Besag, J. (1974). Spatial interaction and the statistical analysis of lattice systems. Journal of the Royal Statistical Society: Series B (Methodological), 36(2), 192-225.</p>
 <p>Besag, J., York, J., &amp; Mollié, A. (1991). Bayesian image restoration, with two applications in spatial statistics. Annals of the institute of statistical mathematics, 43(1), 1-20.</p>
-<p>Donegan, Connor. 2021. Flexible functions for ICAR, BYM, and BYM2 models in Stan. Code repository. &lt;https://github.com/ConnorDonegan/Stan-IAR&gt;</p>
+<p>Donegan, Connor. 2021. Flexible functions for ICAR, BYM, and BYM2 models in Stan. Code repository. <a href='https://github.com/ConnorDonegan/Stan-IAR'>https://github.com/ConnorDonegan/Stan-IAR</a></p>
 <p>Freni-Sterrantino, Anna, Massimo Ventrucci, and Håvard Rue. 2018. A Note on Intrinsic Conditional Autoregressive Models for Disconnected Graphs. Spatial and Spatio-Temporal Epidemiology 26: 25–34.</p>
 <p>Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A., &amp; DiMaggio, C. (2019). Bayesian hierarchical spatial models: Implementing the Besag York Mollié model in stan. Spatial and spatio-temporal epidemiology, 31, 100301.</p>
 <p>Riebler, A., Sorbye, S. H., Simpson, D., &amp; Rue, H. (2016). An intuitive Bayesian spatial model for disease mapping that accounts for scaling. Statistical Methods in Medical Research, 25(4), 1145-1165.</p>
@@ -275,8 +275,8 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl>
 <dt>summary</dt><dd><p>Summaries of the main parameters of interest; a data frame</p></dd>
-<dt>diagnostic</dt><dd><p>Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (<code>eff_pars</code>) and 
- mean log pointwise predictive density (<code>lpd</code>), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.</p></dd>
+<dt>diagnostic</dt><dd><p>Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (<code>eff_pars</code>) and
+mean log pointwise predictive density (<code>lpd</code>), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.</p></dd>
 <dt>stanfit</dt><dd><p>an object of class <code>stanfit</code> returned by <code><a href='https://mc-stan.org/rstan/reference/stan.html'>rstan::stan</a></code></p></dd>
 <dt>data</dt><dd><p>a data frame containing the model data</p></dd>
 <dt>edges</dt><dd><p>The edge list representing all unique sets of neighbors and the weight attached to each pair (i.e., their corresponding element in the connectivity matrix  C</p></dd>
@@ -292,13 +292,101 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The Stan code for the ICAR component of the model and the BYM2 option follows Morris et al. (2019) with adjustments to enable non-binary weights and disconnected graph structures (see Freni-Sterrantino (2018) and Donegan (2021)). The ICAR parameters are returned in the parameter vector named <code>phi</code>. The ICAR prior model is equivalent to a CAR model with the spatial autocorrelation parameter <code>car_alpha</code> equal to 1 (see <a href='stan_car.html'>stan_car</a>). Thus the ICAR prior places high probability on a smooth spatially varying mean. Often, an observational-level random effect term <code>theta</code> is added to model deviations from the local mean. Use of the combination <code>phi + theta</code> is known as the BYM model (Besag et al. 1991).</p>
-<p>The ICAR prior is placed on the parameter vector <code>phi_tilde</code> (which is approximately on the standard normal scale); it is scaled by the scalar parameter <code>spatial_scale</code>. The models are specified as follows:</p>
-<p>If <code>type = "icar"</code>, the spatial structure is simply <code>phi[i] = phi_tilde[i] * spatial_scale</code>.</p>
-<p>If <code>type = "bym"</code>, the spatial structure <code>phi</code> is the same as <code>"icar"</code> but an additional parameter vector <code>theta</code> is added to perform partial pooling across all observations.  <code>theta[i] = theta_tilde[i] * theta_scale</code>. The sum <code>phi_tilde * spatial_scale + theta_tilde * theta_scale = phi + theta = convolution</code> is often referred to as the ``convolved random effect.''</p>
-<p>For <code>type = "bym2"</code>, <code>phi_tilde</code> and <code>theta_tilde</code> share a single scale parameter (<code>spatial_scale</code>) but they are combined using a mixing parameter <code>rho</code>. The convolution is then <code>convolution = [sqrt(rho / scale_factor) * phi_tilde + sqrt((1 - rho)) * theta_tilde] * spatial_scale</code>. For convenience, the model will factor the convolution term into parameters <code>phi</code> and <code>theta</code>.</p>
-<p>The actual calculation of the convolution term is specified to ensure that observations with zero neighbors, and disconnected graph structures, are handled properly. Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to phi automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term. The additional intercepts, when there are any, are returned in a parameter vector named `alpha_phi`.</p>
-<p>For calculating the `scale_factor` introduced by Riebler et al. (2016), see Donegan (2021). The code in that repository shows how to (painlessly) calculate the scale factor for each connected component of the graph structure (and, again, follows Freni-Sterrantino (2018) and Morris et al. (2019)).</p>
+    <p>The Stan code for the ICAR component of the model and the BYM2 option is from Morris et al. (2019) with adjustments to enable non-binary weights and disconnected graph structures (see Freni-Sterrantino (2018) and Donegan (2021)).</p>
+<p>The exact specification depends on the <code>type</code> argument.</p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a><code>type = 'icar'</code></h3>
+
+
+<p>For Poisson models for count data, y, the basic model specification (<code>type = "icar"</code>) is:</p><pre>             <span class='va'>y</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>Poisson</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='va'>offset</span> <span class='op'>+</span> <span class='va'>mu</span> <span class='op'>+</span> <span class='va'>phi</span><span class='op'>)</span><span class='op'>)</span>
+             <span class='va'>phi</span> <span class='op'>~</span> <span class='fu'>ICAR</span><span class='op'>(</span><span class='va'>spatial_scale</span><span class='op'>)</span>
+             <span class='va'>spatial_scale</span> <span class='op'>~</span> <span class='fu'>Gaussian</span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>1</span><span class='op'>)</span>
+</pre>
+
+<p>where <code>mu</code> contains an intercept and potentially covariates. The spatial trend, <code>phi</code>, has a mean of zero and a single scale parameter, <code>spatial_scale</code>.</p>
+<p>The ICAR prior model is a CAR model that has a spatial autocorrelation parameter <code>car_alpha</code> equal to 1 (see <a href='stan_car.html'>stan_car</a>). Thus the ICAR prior places high probability on a smooth spatially (or temporally) varying mean.</p>
+
+<h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a><code>type = 'bym'</code></h3>
+
+
+<p>Often, an observational-level random effect term, <code>theta</code>, is added to capture (heterogeneous or unstructured) deviations from <code>mu + phi</code>. The combined term is referred to as a convolution term:</p><pre>             <span class='va'>convolution</span> <span class='op'>=</span> <span class='va'>phi</span> <span class='op'>+</span> <span class='va'>theta.</span>
+</pre>
+
+<p>It is known as the BYM model (Besag et al. 1991), and can be specified using <code>type = "bym"</code>:</p><pre>             <span class='va'>y</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>Poisson</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='va'>offset</span> <span class='op'>+</span> <span class='va'>mu</span> <span class='op'>+</span> <span class='va'>phi</span> <span class='op'>+</span> <span class='va'>theta</span><span class='op'>)</span><span class='op'>)</span>
+             <span class='va'>phi</span> <span class='op'>~</span> <span class='fu'>ICAR</span><span class='op'>(</span><span class='va'>spatial_scale</span><span class='op'>)</span>
+             <span class='va'>theta</span> <span class='op'>~</span> <span class='fu'>Gaussian</span><span class='op'>(</span><span class='fl'>0</span>, <span class='va'>theta_scale</span><span class='op'>)</span>
+             <span class='va'>spatial_scale</span> <span class='op'>~</span> <span class='fu'>Gaussian</span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>1</span><span class='op'>)</span>
+             <span class='va'>theta_scale</span> <span class='op'>~</span> <span class='fu'>Gaussian</span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>1</span><span class='op'>)</span>
+</pre>
+
+
+<h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a><code>type = 'bym2'</code></h3>
+
+
+<p>Riebler et al. (2016) introduce a variation on the BYM model (<code>type = "bym2"</code>). This specification combines <code>phi</code> and <code>theta</code> using a mixing parameter, <code>rho</code>, that controls the proportion of the variation that is attributable to the spatially autocorrelated term, <code>phi</code>, rather than the spatially unstructured term, <code>theta</code>. The terms share a single scale parameter:</p><pre>             convolution = [sqrt(rho/scale_factor) * phi_tilde + sqrt(1 - rho) * theta_tilde] * spatial_scale.
+             phi_tilde ~ Gaussian(0, 1)
+             theta_tilde ~ Gaussian(0, 1)
+</pre>
+
+<p>The two <code>_tilde</code> terms are equivalent to standard normal deviates, <code>rho</code> is restricted to values between zero and one, and <code>scale_factor</code> is a constant term provided by the user. By default <code>scale_factor</code> is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure, <code>C</code>. This implies that the same prior distribution assigned to the <code>spatial_scale</code> will differ in its implications if <code>C</code> is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to <code>spatial_scale</code>.</p>
+<p>Borrowing <code>R</code> code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following <code>R</code> code can be used to create the <code>scale_factor</code> for the BYM2 model (note, this required the INLA R package):</p><pre>              <span class='co'>## create a list of data for stan_icar</span>
+              <span class='va'>icar.data</span> <span class='op'>&lt;-</span> <span class='fu'><a href='prep_icar_data.html'>prep_icar_data</a></span><span class='op'>(</span><span class='va'>C</span><span class='op'>)</span>
+              <span class='co'>## calculate scale_factor for each of k connected group of nodes, using the scale_c function (Morris et al. 2019)</span>
+              <span class='va'>k</span> <span class='op'>&lt;-</span> <span class='va'>icar.data</span><span class='op'>$</span><span class='va'>k</span>
+              <span class='va'>scale_factor</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/vector.html'>vector</a></span><span class='op'>(</span>mode <span class='op'>=</span> <span class='st'>"numeric"</span>, length <span class='op'>=</span> <span class='va'>k</span><span class='op'>)</span>
+              <span class='kw'>for</span> <span class='op'>(</span><span class='va'>j</span> <span class='kw'>in</span> <span class='fl'>1</span><span class='op'>:</span><span class='va'>k</span><span class='op'>)</span> <span class='op'>{</span>
+                <span class='va'>g.idx</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/which.html'>which</a></span><span class='op'>(</span><span class='va'>icar.data</span><span class='op'>$</span><span class='va'>comp_id</span> <span class='op'>==</span> <span class='va'>j</span><span class='op'>)</span> 
+                <span class='kw'>if</span> <span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span><span class='op'>(</span><span class='va'>g.idx</span><span class='op'>)</span> <span class='op'>==</span> <span class='fl'>1</span><span class='op'>)</span> <span class='op'>{</span>
+                  <span class='va'>scale_factor</span><span class='op'>[</span><span class='va'>j</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='fl'>1</span>
+                  <span class='kw'>next</span>
+                 <span class='op'>}</span>    
+              <span class='va'>Cg</span> <span class='op'>&lt;-</span> <span class='va'>C</span><span class='op'>[</span><span class='va'>g.idx</span>, <span class='va'>g.idx</span><span class='op'>]</span> 
+              <span class='va'>scale_factor</span><span class='op'>[</span><span class='va'>j</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='fu'>scale_c</span><span class='op'>(</span><span class='va'>Cg</span><span class='op'>)</span> 
+<span class='op'>}</span>
+               <span class='co'>## update the data list for stan_icar: exactly like this</span>
+              <span class='va'>icar.data</span><span class='op'>$</span><span class='va'>inv_sqrt_scale_factor</span> <span class='op'>&lt;-</span> <span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span><span class='op'>(</span> <span class='va'>scale_factor</span> <span class='op'>)</span>
+</pre>
+
+<p>This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to <code>phi</code> automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term.</p>
+<p>The code above requires the <code>scale_c</code> function, which has package dependencies that are not included in <code>geostan</code>:</p><pre><span class='co'>#' compute scaling factor for adjacency matrix, accounting for differences in spatial connectivity </span>
+<span class='co'>#'</span>
+<span class='co'>#' @param C connectivity matrix</span>
+<span class='co'>#'</span>
+<span class='co'>#' @details</span>
+<span class='co'>#'</span>
+<span class='co'>#' Requires the following packages: </span>
+<span class='co'>#'</span>
+<span class='co'>#' library(Matrix)</span>
+<span class='co'>#' library(INLA);</span>
+<span class='co'>#' library(spdep)</span>
+<span class='co'>#' library(igraph)</span>
+<span class='co'>#'  </span>
+<span class='co'>#' @source</span>
+
+<span class='co'>#'   Morris, Mitzi (2017). Spatial Models in Stan: Intrinsic Auto-Regressive Models for Areal Data. &lt;https://mc-stan.org/users/documentation/case-studies/icar_stan.html&gt;</span>
+<span class='co'>#'</span>
+<span class='va'>scale_c</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>C</span><span class='op'>)</span> <span class='op'>{</span>
+ <span class='co'>#' compute geometric mean of a vector</span>
+ <span class='va'>geometric_mean</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>x</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span> 
+ 
+ <span class='va'>N</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span><span class='op'>(</span><span class='va'>C</span><span class='op'>)</span><span class='op'>[</span><span class='fl'>1</span><span class='op'>]</span>
+ 
+ <span class='co'># Create ICAR precision matrix  (diag - C): this is singular</span>
+ <span class='co'># function Diagonal creates a square matrix with given diagonal</span>
+ <span class='va'>Q</span> <span class='op'>=</span>  <span class='fu'>Diagonal</span><span class='op'>(</span><span class='va'>N</span>, <span class='fu'><a href='https://rdrr.io/r/base/colSums.html'>rowSums</a></span><span class='op'>(</span><span class='va'>C</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>-</span> <span class='va'>C</span>
+ 
+ <span class='co'># Add a small jitter to the diagonal for numerical stability (optional but recommended)</span>
+ <span class='va'>Q_pert</span> <span class='op'>=</span> <span class='va'>Q</span> <span class='op'>+</span> <span class='fu'>Diagonal</span><span class='op'>(</span><span class='va'>N</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='https://rdrr.io/r/base/Extremes.html'>max</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/diag.html'>diag</a></span><span class='op'>(</span><span class='va'>Q</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>*</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span><span class='op'>(</span><span class='va'>.Machine</span><span class='op'>$</span><span class='va'>double.eps</span><span class='op'>)</span>
+ 
+ <span class='co'># Function inla.qinv provides efficient way to calculate the elements of the</span>
+ <span class='co'># the inverse corresponding to the non-zero elements of Q</span>
+ <span class='va'>Q_inv</span> <span class='op'>=</span> <span class='fu'>inla.qinv</span><span class='op'>(</span><span class='va'>Q_pert</span>, constr<span class='op'>=</span><span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>A <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>matrix</a></span><span class='op'>(</span><span class='fl'>1</span>,<span class='fl'>1</span>,<span class='va'>N</span><span class='op'>)</span>,e<span class='op'>=</span><span class='fl'>0</span><span class='op'>)</span><span class='op'>)</span>
+ 
+ <span class='co'># Compute the geometric mean of the variances, which are on the diagonal of Q.inv</span>
+ <span class='va'>scaling_factor</span> <span class='op'>&lt;-</span> <span class='fu'>geometric_mean</span><span class='op'>(</span><span class='fu'>Matrix</span><span class='fu'>::</span><span class='fu'>diag</span><span class='op'>(</span><span class='va'>Q_inv</span><span class='op'>)</span><span class='op'>)</span> 
+ <span class='kw'><a href='https://rdrr.io/r/base/function.html'>return</a></span><span class='op'>(</span><span class='va'>scaling_factor</span><span class='op'>)</span> 
+<span class='op'>}</span>
+</pre>
+
+
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><a href='prep_icar_data.html'>prep_icar_data</a>, <a href='shape2mat.html'>shape2mat</a>, <a href='stan_car.html'>stan_car</a>, <a href='stan_esf.html'>stan_esf</a>, <a href='stan_glm.html'>stan_glm</a></p></div>
@@ -309,11 +397,11 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/rstan'>rstan</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/bayesplot/'>bayesplot</a></span><span class='op'>)</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span><span class='op'>(</span>mc.cores <span class='op'>=</span> <span class='fu'>parallel</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span>
 
-<span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span>
+<span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>sentencing</span>, <span class='st'>"B"</span><span class='op'>)</span>
 <span class='va'>log_e</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>$</span><span class='va'>expected_sents</span><span class='op'>)</span>
 <span class='va'>fit.bym</span> <span class='op'>&lt;-</span> <span class='fu'>stan_icar</span><span class='op'>(</span><span class='va'>sents</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/offset.html'>offset</a></span><span class='op'>(</span><span class='va'>log_e</span><span class='op'>)</span>,
                      family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span>,
@@ -323,17 +411,37 @@ If and when setting priors for <code>beta</code> manually, remember to include p
                      refresh <span class='op'>=</span> <span class='fl'>0</span>
  <span class='op'>)</span>
 
-<span class='co'># diagnostics plot: Rhat values should all by very near 1</span>
-<span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span><span class='op'>(</span><span class='va'>fit.bym</span><span class='op'>$</span><span class='va'>stanfit</span><span class='op'>)</span>
- <span class='co'># see effective sample size for all parameters and generated quantities</span>
- <span class='co'># (including residuals, predicted values, etc.)</span>
+<span class='co'># check effective sample size and convergence</span>
 <span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_ess</a></span><span class='op'>(</span><span class='va'>fit.bym</span><span class='op'>$</span><span class='va'>stanfit</span><span class='op'>)</span>
-<span class='co'># or for a particular parameter</span>
-<span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_ess</a></span><span class='op'>(</span><span class='va'>fit.bym</span><span class='op'>$</span><span class='va'>stanfit</span>, <span class='st'>"phi"</span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/bayesplot/'>bayesplot</a></span><span class='op'>)</span>
-<span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span><span class='op'>(</span><span class='va'>fit.bym</span>, samples <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>
-<span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span>
-<span class='fu'>bayesplot</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>yrep</span><span class='op'>)</span>
+<span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span><span class='op'>(</span><span class='va'>fit.bym</span><span class='op'>$</span><span class='va'>stanfit</span><span class='op'>)</span>
+
+<span class='co'># see some spatial diagnostics</span>
+<span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit.bym</span>, <span class='va'>sentencing</span><span class='op'>)</span>
+
+<span class='co'># map the smooth spatial term</span>
+<span class='va'>sp.trend</span> <span class='op'>&lt;-</span> <span class='fu'><a href='spatial.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit.bym</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
+<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span> <span class='fu'><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>st_as_sf</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span> <span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>sp.trend</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_void</a></span><span class='op'>(</span><span class='op'>)</span>
+
+<span class='co'># calculate log-standardized sentencing ratios (log-SSRs)</span>
+<span class='co'>## (like Standardized Incidence Ratios: observed/exected case counts)</span>
+<span class='va'>f</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/fitted.values.html'>fitted</a></span><span class='op'>(</span><span class='va'>fit.bym</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
+<span class='va'>SSR</span> <span class='op'>&lt;-</span> <span class='va'>f</span> <span class='op'>/</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>expected_sents</span>
+<span class='va'>log.SSR</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span> <span class='va'>SSR</span>, base <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span>
+
+<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span> <span class='fu'><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>st_as_sf</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span> <span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>log.SSR</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Log-standardized sentencing ratios"</span>,
+       subtitle <span class='op'>=</span> <span class='st'>"log( Fitted/Expected), base 2"</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_void</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
+  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>
+   legend.position <span class='op'>=</span> <span class='st'>"bottom"</span>,
+   legend.key.height <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/unit.html'>unit</a></span><span class='op'>(</span><span class='fl'>0.35</span>, <span class='st'>"cm"</span><span class='op'>)</span>,
+   legend.key.width <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/unit.html'>unit</a></span><span class='op'>(</span><span class='fl'>1.5</span>, <span class='st'>"cm"</span><span class='op'>)</span>
+  <span class='op'>)</span>
 <span class='op'>}</span>
 
 </div></pre>

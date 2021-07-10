@@ -61,38 +61,46 @@ Methods for fitted geostan models: extract residuals, fitted values, posterior p
 \dontrun{
 library(ggplot2)
 library(sf)
-data(ohio)
-fit <- stan_esf(gop_growth ~ historic_gop + log(pop_density),
-               data = ohio,
-               scalex = TRUE,
-               C = shape2mat(ohio),
-               refresh = 0 # less printing
+data(sentencing)
+
+# spatial weights matrix with binary coding scheme
+C <- shape2mat(sentencing, style = "B")
+
+# log-expected number of sentences
+## expected counts are based on county racial composition and mean sentencing rates
+log_e <- log(sentencing$expected_sents)
+
+# fit spatial Poisson model with unstructured 'random effects'
+fit <- stan_glm(sents ~ offset(log_e),
+                   re = ~ name,
+                   family = poisson(),
+                   data = sentencing,
+                   C = C,
+                   refresh = 0
 )
 
 # print and plot results
 print(fit)
 plot(fit)
 
-beta.samples <- as.matrix(fit, pars = "beta")
-beta.mean <- apply(beta.samples, 2, mean)
-print(beta.mean)
+# residuals
+r = resid(fit)
 
-# extract residuals and fitted values
-res <- residuals(fit)
-res <- resid(fit) 
-head(res)
-f <- fitted(fit)
-plot(f$mean, res$mean, xlab = "fitted values", ylab = "residuals")
-mat <- resid(fit, summary = FALSE)
-dim(mat)
+# fitted values
+f = fitted(fit)
 
-# extract and plot the posterior mean of the spatial filter
-sf <- spatial(fit, summary = TRUE)
-head(sf)
-ohio$sf <- sf$mean
-ggplot(ohio) +
-  geom_sf(aes(fill = sf)) +
-  scale_fill_gradient2()  
+# spatial diagnostics
+sp_diag(fit, sentencing)
+
+# county `random effects' 
+sp = spatial(fit)
+
+# extract matrix of samples from posterior distribution of parameters
+## alpha_re are the unstructured area random effects
+S <- as.matrix(fit, pars = "alpha_re")
+
+# extract data.frame of posterior samples
+S <- as.data.frame(fit, pars = "alpha_re")
 }
 
 }
