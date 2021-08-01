@@ -1445,7 +1445,7 @@ public:
         double car_rho(0);
         car_rho = vals_r__[pos__++];
         try {
-            writer__.scalar_lub_unconstrain((1 / min(log_lambda)), (1 / max(log_lambda)), car_rho);
+            writer__.scalar_lub_unconstrain((1 / min(lambda)), (1 / max(lambda)), car_rho);
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(std::runtime_error(std::string("Error transforming variable car_rho: ") + e.what()), current_statement_begin__, prog_reader__());
         }
@@ -1800,9 +1800,9 @@ public:
             local_scalar_t__ car_rho;
             (void) car_rho;  // dummy to suppress unused var warning
             if (jacobian__)
-                car_rho = in__.scalar_lub_constrain((1 / min(log_lambda)), (1 / max(log_lambda)), lp__);
+                car_rho = in__.scalar_lub_constrain((1 / min(lambda)), (1 / max(lambda)), lp__);
             else
-                car_rho = in__.scalar_lub_constrain((1 / min(log_lambda)), (1 / max(log_lambda)));
+                car_rho = in__.scalar_lub_constrain((1 / min(lambda)), (1 / max(lambda)));
             current_statement_begin__ = 363;
             local_scalar_t__ intercept;
             (void) intercept;  // dummy to suppress unused var warning
@@ -2170,12 +2170,12 @@ public:
             current_statement_begin__ = 477;
             if (as_bool((is_auto_gaussian * logical_negation(prior_only)))) {
                 current_statement_begin__ = 477;
-                lp_accum__.add(car_normal_lpdf<propto__>(y, f, car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, log_lambda, n, pstream__));
+                lp_accum__.add(car_normal_lpdf<propto__>(y, f, car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n, pstream__));
             }
             current_statement_begin__ = 478;
             if (as_bool(logical_negation(is_auto_gaussian))) {
                 current_statement_begin__ = 478;
-                lp_accum__.add(car_normal_lpdf<propto__>(log_lambda, log_lambda_mu, car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, log_lambda, n, pstream__));
+                lp_accum__.add(car_normal_lpdf<propto__>(log_lambda, log_lambda_mu, car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n, pstream__));
             }
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -2348,7 +2348,7 @@ public:
         }
         double car_scale = in__.scalar_lb_constrain(0);
         vars__.push_back(car_scale);
-        double car_rho = in__.scalar_lub_constrain((1 / min(log_lambda)), (1 / max(log_lambda)));
+        double car_rho = in__.scalar_lub_constrain((1 / min(lambda)), (1 / max(lambda)));
         vars__.push_back(car_rho);
         double intercept = in__.scalar_constrain();
         vars__.push_back(intercept);
@@ -2698,12 +2698,12 @@ public:
                     current_statement_begin__ = 515;
                     stan::model::assign(fitted, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                stan::math::exp(get_base1(f, i, "f", 1)), 
+                                stan::math::exp((get_base1(f, i, "f", 1) - get_base1(offset, i, "offset", 1))), 
                                 "assigning variable fitted");
                     current_statement_begin__ = 516;
                     stan::model::assign(residual, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                (get_base1(y_int, i, "y_int", 1) - get_base1(fitted, i, "fitted", 1)), 
+                                ((get_base1(y, i, "y", 1) / stan::math::exp(get_base1(offset, i, "offset", 1))) - get_base1(fitted, i, "fitted", 1)), 
                                 "assigning variable residual");
                     current_statement_begin__ = 517;
                     stan::model::assign(log_lik, 

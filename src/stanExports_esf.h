@@ -2851,12 +2851,12 @@ public:
                     current_statement_begin__ = 532;
                     stan::model::assign(fitted, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                stan::math::exp(get_base1(f, i, "f", 1)), 
+                                stan::math::exp((get_base1(f, i, "f", 1) - get_base1(offset, i, "offset", 1))), 
                                 "assigning variable fitted");
                     current_statement_begin__ = 533;
                     stan::model::assign(residual, 
                                 stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                                (get_base1(y_int, i, "y_int", 1) - get_base1(fitted, i, "fitted", 1)), 
+                                ((get_base1(y, i, "y", 1) / stan::math::exp(get_base1(offset, i, "offset", 1))) - get_base1(fitted, i, "fitted", 1)), 
                                 "assigning variable residual");
                     current_statement_begin__ = 534;
                     stan::model::assign(log_lik, 

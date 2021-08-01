@@ -14,7 +14,7 @@ transformed data {
 parameters {
   vector[is_auto_gaussian ? 0 : n] log_lambda;
   real<lower=0> car_scale;
-  real<lower=1/min(log_lambda), upper=1/max(log_lambda)> car_rho;   
+  real<lower=1/min(lambda), upper=1/max(lambda)> car_rho;   
 #include parts/params.stan
 }
 
@@ -54,8 +54,8 @@ transformed parameters {
 model {
 #include parts/model.stan
   car_scale ~ student_t(sigma_prior[1], sigma_prior[2], sigma_prior[3]);
-  if (is_auto_gaussian * !prior_only) y ~ car_normal(f, car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, log_lambda, n);
-  if (!is_auto_gaussian) log_lambda ~ car_normal(log_lambda_mu, car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, log_lambda, n);
+  if (is_auto_gaussian * !prior_only) y ~ car_normal(f, car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n);
+  if (!is_auto_gaussian) log_lambda ~ car_normal(log_lambda_mu, car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n);
 }
 
 generated quantities {

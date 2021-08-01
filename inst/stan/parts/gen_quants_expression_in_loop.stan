@@ -11,8 +11,8 @@
       yrep[i] = normal_rng(fitted[i], sigma[has_sigma]);     
    }
    if (is_poisson) {
-       fitted[i] = exp(f[i]);
-       residual[i] = y_int[i] - fitted[i];
+       fitted[i] = exp(f[i] - offset[i]);
+       residual[i] = ( y[i] / exp(offset[i]) ) - fitted[i];
        log_lik[i] = poisson_log_lpmf(y_int[i] | f[i]);
        if (f[i] > 20) {
        	  print("f[i] too large (>20) for poisson_log_rng");
