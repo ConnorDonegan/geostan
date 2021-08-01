@@ -1009,3 +1009,53 @@ get_shp <- function(url, folder = "shape") {
 	list.files(folder, full.names = TRUE)
 }
 
+#' Theil's inequality index
+#'
+#' @export
+#' 
+#' @md
+#' 
+#' @description Calculates Theil's entropy-based measure of inequality for a given set of disease incidence rates and populations at risk. 
+#'
+#' @param rate Incidence rates. If provided, case counts will be calculated automatically as `cases = rates * pops`
+#' @param cases Number of cases (e.g., disease incidence). 
+#' @param pops Populations at risk.
+#' @param total If `TRUE`, the values will all be summed; if `FALSE`, then each area's contribution to total inequality will be returned.
+#' @return if `total = TRUE`, a scalar value; if `total = FALSE`, a vector of numeric values, where each value represents that area's contribution to total inequality.
+#' 
+#' @details
+#'
+#' Theil's index is a good index of inequality in disease and mortality burdens when multiple groups are being considered, as is typical of geospatial analysis. It provides a summary measure of inequality across a set of areal units, such as counties, that may be tracked over time. Also, it is interesting because it is additive, and thus admits of simple decompositions. 
+#'
+#' The index measures discrepancies between a population's share of the disease burden, `omega`, and their share of the population, `eta`. A situation of zero inequality would imply that each population's share of cases is equal to its population share, or, `omega=eta`. Each population's contribution to total inequality is calculated as:
+#' ```
+#'              T_i = omega_i * [log(omega_i/eta_i)],
+#' ```
+#' the log-ratio of case-share to population-share, weighted by their share of cases. Theil's index for all areas is the sum of each area's T_i:
+#' ```
+#'              T = sum_(i=1)^n T_i.
+#' ```
+#' Theil's T is thus a weighted mean of log-ratios of case shares to population shares, where each log-ratio (which we may describe as a raw inequality score) is weighted by its share of total cases. The index has a minimum of zero and a maximum of `log(N)`, where `N` is the number of units (e.g., number of counties).
+
+#' Theil's index is based on Shannon's information theory, he used it to study a variety of topics, including income inequality and racial segregation. Theil's index is often of great interest because it is additive across multiple scales, such as when the data has a nested structure to it (e.g., counties within states). The Texas Inequality Project provides introductions to, and examples of using, the Theil index (Conceicao and Ferreira, 2000). However, this `R` function is just a simple implementation for `flat' or non-nested data structures (e.g., a set of counties). 
+#'
+#' @source
+#'
+#' Conceicao, P. and P. Ferreira (2000). The young person's guide to the Theil Index: Suggesting intuitive interpretations and exploring analytical applications. University of Texas Inequality Project. UTIP Working Paper Number 14. Accessed May 1, 2021 from \url{https://utip.gov.utexas.edu/papers.html}
+#'
+#' Theil, Henri (1972). *Statistical Decomposition Analysis.* Amsterdan, The Netherlands and London, UK: North-Holland Publishing Company.
+#'
+#' Shannon, Claude E. and Weaver, Warren (1963). *The Mathematical Theory of Communication*. Urbana and Chicago, USA: University if Illinois Press.
+#'
+#' @examples
+#' 
+theil <- function(rates, pops, cases = rates * pops, total = TRUE) {
+    stopifnot(length(cases) == length(pops))
+    stopifnot(!any(is.na(cases)), !any(is.na(rates)))
+    omega = cases / sum(cases)
+    eta = pops / sum(pops)
+    T = omega * log (omega / eta)
+    T[is.na(T)] <- 0
+    if (total) T = sum( T )
+    return (T)
+}
