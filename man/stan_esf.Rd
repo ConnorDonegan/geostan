@@ -142,12 +142,17 @@ Fit a spatial regression model using eigenvector spatial filtering (ESF).
 \details{
 Eigenvector spatial filtering (ESF) is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), drawing on the Piironen and Vehtari's (2017) regularized horseshoe prior.
 
-ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \code{C}. The resulting eigenvectors, \code{EV}, are mutually orthogonal and uncorrelated map patterns. ESF methodology is premised on the ability to decompose spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). SA in the outcome variable is then absorbed by the spatial filter, EV * beta_ev\verb{, where }beta_ev` is a vector of coefficients.
+ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \code{C}. The resulting eigenvectors, \code{EV}, are mutually orthogonal and uncorrelated map patterns. ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. The spatail filter is \code{EV * beta_ev}, where \code{beta_ev} is a vector of coefficients.
 
-ESF decomposes the data into a global mean \code{alpha}, global patterns contributed by covariates \code{X * beta}, spatial trends, \code{EV * beta_ev}, and residual variation/ Thus, for \code{family=gaussian()},\preformatted{Y \\~ Gauss(intercept + X * beta + EV * beta_ev, sigma).
+ESF decomposes the data into a global mean \code{alpha}, global patterns contributed by covariates \code{X * beta}, spatial trends, \code{EV * beta_ev}, and residual variation/ Thus, for \code{family=gaussian()},\preformatted{   Y ~ Gauss(intercept + X * beta + EV * beta_ev, sigma).
 }
 
-An ESF component can be incorporated into the linear predictor of any generalized linear model.
+An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:\preformatted{                          Y ~ Poisson(exp(offset + Mu))
+                          Mu = alpha + A + EV * beta_ev
+                          A ~ Guass(0, tau)
+                          tau ~ student(20, 0, 2)
+                          beta_ev ~ horseshoe(.)
+}
 
 The \link[geostan]{spatial} method will return \code{EV * beta}.
 
@@ -177,6 +182,7 @@ fit.esf <- stan_esf(sents ~ offset(log_e),
                    C = C,
                    refresh = 0
 )
+
 # spatial diagnostics 
 sp_diag(fit.esf, sentencing)
 

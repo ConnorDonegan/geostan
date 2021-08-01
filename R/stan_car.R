@@ -70,8 +70,6 @@
 #' ```
 #' The posterior predictive distribution (PPD) is returned in the parameter vector \code{yrep}. For the auto-Gaussian model, each sample from the PPD is a draw of n values from the multivariate Gaussian density function, with parameters \code{Mu} and \code{Sigma}. Draws from the PPD can be extracted from a fitted modeling using the \link[geostan]{posterior_predict} method. The log likelihood of the data conditional on the model (\code{log_lik}, required for calculating \code{\link[geostan]{waic}}) is calculated analogously, using the above parameterization of the multivariate normal density. Note, these quantities are *only* returned `invert = TRUE`, and may be costly to compute for large models.
 #' 
-#'
-#' 
 #' 
 #' ## `family = poisson()`
 #'
@@ -82,9 +80,21 @@
 #'                             lambda ~ MVGauss(Mu, Sigma)
 #'                             Sigma = (I - rho C)^-1 * M * tau^2
 #' ```
-#' Applying the \code{\link[geostan]{fitted.geostan_fit}} method to this Poisson model will return \code{exp(offset + lambda)}, fitted values on the scale of the outcome variable.
+#' These models are most often used to calculate incidence rates (mortality rates, or disease incidence rates); the user provided offset should be, then, the natural logarithm of the denominator in the rates, e.g., log-population at risk. If `Y` are counts of cases, and `P` are populations at risk, then `offset = log(P)` and the crude rate is `Y/P`. Thus, `lambda` are log-risk (log-rates) and fitted values (as returned by the \code{\link[geostan]{fitted.geostan_fit}} method method) are:
 #' 
-#' For Poisson models, the \code{\link[geostan]{spatial}} method returns the parameter vector \code{phi}, which is:
+#' ```
+#'                             fitted = (e^lambda * P)/P,
+#' ```
+#'
+#' and residuals are, similarly, the difference between fitted and observed rates:
+#'
+#' ```
+#'                             residual = (Y/P) - fitted.
+#' ```
+#'
+#' If no offset term is provided, a vector of zeros will be used automatically (so the denominator is `exp(0)=1`).
+#' 
+#' For Poisson models, the \code{\link[geostan]{spatial}} method returns the parameter vector \code{phi}, which is the log-risk minus the intercept and any covariates:
 #'  ```
 #'                             phi = lambda - Mu.
 #' ```
@@ -93,17 +103,15 @@
 #'                             Y ~ Poisson(exp(offset + Mu + phi))
 #'                             phi ~ MVGauss(0, Sigma)
 #'                             Sigma = (I - rho C)^-1 * M * tau^2.
-#' ``` 
-#' Note that the behavior of the \code{\link[geostan]{spatial}} method is slightly different for the CAR model than for the BYM model in \code{\link[geostan]{stan_icar}}. The BYM model returns a spatial trend parameter that does not contain any uncorrelated/unstructured variation; \code{phi}, in the CAR model, contains a latent spatial trend and additional variation around it. If you would like to extract the latent/implicit spatial trend from \code{phi}, you can do so by calculating:
+#' ```
+#'
+#' 
+#' In the Poisson CAR model, `phi` contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \code{phi}, you can do so by calculating (following Cressie 2015, p. 564):
 #' ```
 #'                             trend = rho * C * phi.
 #' ```
 #' This is not done automatically primarily because it is uncommon to do so.
 #'
-#' The \code{\link[geostan]{residuals.geostan_fit}} method returns:
-#' ```
-#'                             residual = Y - exp(offset + lambda).
-#' ```
 #' 
 #' ## `family = binomial()`
 #' 

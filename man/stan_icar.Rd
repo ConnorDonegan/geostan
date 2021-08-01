@@ -139,7 +139,7 @@ The ICAR prior model is a CAR model that has a spatial autocorrelation parameter
 Often, an observational-level random effect term, \code{theta}, is added to capture (heterogeneous or unstructured) deviations from \code{mu + phi}. The combined term is referred to as a convolution term:\preformatted{             convolution = phi + theta.
 }
 
-It is known as the BYM model (Besag et al. 1991), and can be specified using \code{type = "bym"}:\preformatted{             y ~ Poisson(exp(offset + mu + phi + theta))
+This is known as the BYM model (Besag et al. 1991), and can be specified using \code{type = "bym"}:\preformatted{             y ~ Poisson(exp(offset + mu + phi + theta))
              phi ~ ICAR(spatial_scale)
              theta ~ Gaussian(0, theta_scale)
              spatial_scale ~ Gaussian(0, 1)
@@ -156,8 +156,8 @@ Riebler et al. (2016) introduce a variation on the BYM model (\code{type = "bym2
 
 The two \verb{_tilde} terms are equivalent to standard normal deviates, \code{rho} is restricted to values between zero and one, and \code{scale_factor} is a constant term provided by the user. By default \code{scale_factor} is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure, \code{C}. This implies that the same prior distribution assigned to the \code{spatial_scale} will differ in its implications if \code{C} is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to \code{spatial_scale}.
 
-Borrowing \code{R} code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following \code{R} code can be used to create the \code{scale_factor} for the BYM2 model (note, this required the INLA R package):\preformatted{              ## create a list of data for stan_icar
-              icar.data <- prep_icar_data(C)
+Borrowing \code{R} code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following \code{R} code can be used to create the \code{scale_factor} for the BYM2 model (note, this requires the INLA R package):\preformatted{              ## create a list of data for stan_icar
+              icar.data <- geostan::prep_icar_data(C)
               ## calculate scale_factor for each of k connected group of nodes, using the scale_c function (Morris et al. 2019)
               k <- icar.data$k
               scale_factor <- vector(mode = "numeric", length = k)
@@ -176,7 +176,7 @@ Borrowing \code{R} code from Morris (2017) and following Freni-Sterrantino et al
 
 This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to \code{phi} automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term.
 
-The code above requires the \code{scale_c} function, which has package dependencies that are not included in \code{geostan}:\preformatted{#' compute scaling factor for adjacency matrix, accounting for differences in spatial connectivity 
+Note, the code above requires the \code{scale_c} function; it has package dependencies that are not included in \code{geostan}. To use \code{scale_c}, you have to load the following \code{R} function:\preformatted{#' compute scaling factor for adjacency matrix, accounting for differences in spatial connectivity 
 #'
 #' @param C connectivity matrix
 #'
@@ -196,20 +196,15 @@ The code above requires the \code{scale_c} function, which has package dependenc
 scale_c <- function(C) \{
  #' compute geometric mean of a vector
  geometric_mean <- function(x) exp(mean(log(x))) 
- 
  N = dim(C)[1]
- 
  # Create ICAR precision matrix  (diag - C): this is singular
  # function Diagonal creates a square matrix with given diagonal
  Q =  Diagonal(N, rowSums(C)) - C
- 
  # Add a small jitter to the diagonal for numerical stability (optional but recommended)
  Q_pert = Q + Diagonal(N) * max(diag(Q)) * sqrt(.Machine$double.eps)
- 
  # Function inla.qinv provides efficient way to calculate the elements of the
  # the inverse corresponding to the non-zero elements of Q
  Q_inv = inla.qinv(Q_pert, constr=list(A = matrix(1,1,N),e=0))
- 
  # Compute the geometric mean of the variances, which are on the diagonal of Q.inv
  scaling_factor <- geometric_mean(Matrix::diag(Q_inv)) 
  return(scaling_factor) 

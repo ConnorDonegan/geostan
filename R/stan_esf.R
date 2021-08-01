@@ -50,14 +50,22 @@
 #'
 #' Eigenvector spatial filtering (ESF) is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), drawing on the Piironen and Vehtari's (2017) regularized horseshoe prior.
 #'
-#' ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \code{C}. The resulting eigenvectors, `EV`, are mutually orthogonal and uncorrelated map patterns. ESF methodology is premised on the ability to decompose spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). SA in the outcome variable is then absorbed by the spatial filter, EV * beta_ev`, where `beta_ev` is a vector of coefficients.
+#' ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \code{C}. The resulting eigenvectors, `EV`, are mutually orthogonal and uncorrelated map patterns. ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. The spatail filter is `EV * beta_ev`, where `beta_ev` is a vector of coefficients.
 #'
 #' ESF decomposes the data into a global mean `alpha`, global patterns contributed by covariates `X * beta`, spatial trends, `EV * beta_ev`, and residual variation/ Thus, for `family=gaussian()`,
+#' 
 #' ```
-#' Y \~ Gauss(intercept + X * beta + EV * beta_ev, sigma).
+#'    Y ~ Gauss(intercept + X * beta + EV * beta_ev, sigma).
 #'```
-#' An ESF component can be incorporated into the linear predictor of any generalized linear model.
-#'
+#' An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:
+#' ```
+#'                           Y ~ Poisson(exp(offset + Mu))
+#'                           Mu = alpha + A + EV * beta_ev
+#'                           A ~ Guass(0, tau)
+#'                           tau ~ student(20, 0, 2)
+#'                           beta_ev ~ horseshoe(.)
+#' ```
+#' 
 #' The \link[geostan]{spatial} method will return `EV * beta`.
 #'
 #' The model can also be extended to the space-time domain; see \link[geostan]{shape2mat} to specify a space-time connectivity matrix. 
@@ -124,6 +132,7 @@
 #'                    C = C,
 #'                    refresh = 0
 #' )
+#' 
 #' # spatial diagnostics 
 #' sp_diag(fit.esf, sentencing)
 #'

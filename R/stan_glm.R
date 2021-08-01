@@ -1,6 +1,10 @@
 #' Generalized linear models
 #'
 #' @export
+#'
+#' @md
+#'
+#' 
 #' @description Fit a generalized linear model.
 #' 
 #' @param formula A model formula, following the R \link[stats]{formula} syntax. Binomial models are specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
@@ -38,7 +42,32 @@
 #' 
 #' @details
 #'
-#' Fit a generalized linear model using the R formula interface. Default prior distributions are designed to be weakly informative relative to the data. Much of the functionality intended for spatial models, such as the ability to add spatially lagged covariates and observational error models, are also available in \code{stan_glm}. All of \code{geostan}'s spatial models build on top of the same Stan code used in \code{stan_glm}. 
+#' Fit a generalized linear model using the R formula interface. Default prior distributions are designed to be weakly informative relative to the data. Much of the functionality intended for spatial models, such as the ability to add spatially lagged covariates and observational error models, are also available in \code{stan_glm}. All of \code{geostan}'s spatial models build on top of the same Stan code used in \code{stan_glm}.
+#'
+#' The Poisson models are often used to calculate incidence rates (mortality rates, or disease incidence rates) for administrative areas, like counties or census tracts; the user provided offset should be, in that case, the natural logarithm of the denominator, e.g., log-population at risk. If `Y` are counts of cases, and `P` are populations at risk, then the crude rates are `Y/P`, and the user should provide `offset = log(P)`. Then, a model for small area disease risk could be:
+#' ```
+#'                           Y ~ Poisson(exp(offset + Mu))
+#'                           Mu = alpha + A
+#'                           A ~ Guass(0, tau)
+#'                           tau ~ student(20, 0, 2).
+#' ```
+#' Here, `alpha` is the mean log-risk (rate). `A` is a vector of so-called random effects, enabling partial pooling of information across observations.
+#' 
+#' `Mu`, then, are log-risks (log-rates) and fitted values (as returned by the \code{\link[geostan]{fitted.geostan_fit}} method method) are:
+#' 
+#' ```
+#'                             fitted = (e^Mu* P)/P,
+#' ```
+#'
+#' and residuals are, similarly, the difference between fitted and observed rates:
+#'
+#' ```
+#'                             residual = (Y/P) - fitted.
+#' ```
+#'
+#' If no offset term is provided, a vector of zeros will be used automatically (so the denominator is `exp(0)=1`).
+#'
+#' Fitted values and residuals are handled similarly in Binomial models (i.e., rates are automatically calculated and returned, instead of counts).
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
