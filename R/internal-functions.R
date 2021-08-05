@@ -142,8 +142,9 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
       y <- log(y / exp(offset))
       scale.y <- sd(y)
       }
-  alpha_scale <- scaling_factor * scale.y
-  if (xcentered | !ncol(x)) alpha_mean <- mean(y) else alpha_mean <- 0 
+  alpha_scale <- 5 * scaling_factor * scale.y 
+### if (xcentered | !ncol(x)) alpha_mean <- mean(y) else alpha_mean <- 0 ### 
+  alpha_mean <- mean(y)
   alpha <- c(location = alpha_mean, scale = alpha_scale)
   priors <- list(intercept = alpha)
   if (ncol(x)) {

@@ -24,6 +24,9 @@
 #' n_eff(100, 0.9)
 #' n_eff(100, 1)
 #'
+#' rho <- seq(0, 1, by = 0.01)
+#' plot(rho, n_eff(100, rho), type = 'l')
+#' 
 #' @export
 #' 
 n_eff <- function(n, rho) {
@@ -36,16 +39,21 @@ n_eff <- function(n, rho) {
 
 #' Spatial autocorrelation estimator
 #'
-#' @description The approximate-profile likelihood estimator for the spatial autocorrelation parameter from a simultaneous autoregressive (SAR) model. The \code{APLE} approximation is unreliable, and may be severely wrong, when the number of observations is large.
+#' @export
+#'
+#' @md
 #' 
-#' @param x Numeric vector of values, length n. This will be standardized internally with \code{scale(x)}.
-#' @param w An n x n row-standardized spatial connectivity matrix. See \link[geostan]{shape2mat}.
+#' @description The approximate-profile likelihood estimator for the spatial autocorrelation parameter from a simultaneous autoregressive (SAR) model. Note, the `APLE` approximation is quite unreliable when the number of observations is large.
+#' 
+#' @param x Numeric vector of values, length `n`. This will be standardized internally with \code{scale(x)}.
+#' @param w An `n x n` row-standardized spatial connectivity matrix. See \link[geostan]{shape2mat}.
 #' @param digits Number of digits to round results to.
+#' 
 #' @return the APLE estimate.
 #'
 #' @seealso \link[geostan]{mc}, \link[geostan]{moran_plot}, \link[geostan]{lisa}, \link[geostan]{sim_sar}
 #'
-#' @details To check reliability, the \code{APLE} can be compared to an estimate of the spatial autocorrelation parameter from an intercept-only SAR model. 
+#' @details To check reliability, the \code{APLE} can be compared to an estimate of the spatial autocorrelation parameter from an intercept-only SAR model.
 #'
 #' @source
 #'
@@ -54,12 +62,10 @@ n_eff <- function(n, rho) {
 #' @examples
 #' 
 #' library(sf)
-#' data(ohio)
-#' w <- shape2mat(ohio, "W")
-#' x <- ohio$unemployment
+#' data(georgia)
+#' w <- shape2mat(georgia, "W")
+#' x <- georgia$ICE
 #' aple(x, w)
-#'
-#' @export
 #' 
 aple <- function(x, w, digits = 3) {
     if (any(rowSums(w) != 1)) {
@@ -74,13 +80,17 @@ aple <- function(x, w, digits = 3) {
     top <- t(z) %*% w2 %*% z
     wl <- (t(w) %*% w + as.numeric(t(lambda) %*% lambda) * I / n)
     bottom <- t(z) %*% wl %*% z
-    round(as.numeric( top / bottom ), digits = digits)
+    return( round(as.numeric( top / bottom ), digits = digits) )
 }
 
 #' Simulate spatially autocorrelated data
 #'
 #' @description Given a spatial weights matrix and degree of autocorrelation, returns autocorrelated data. 
+#'
 #' @export
+#'
+#' @md
+#' 
 #' @param m The number of samples required. Defaults to \code{m=1} to return an \code{n}-length vector; if \code{m>1}, an \code{m x n} matrix is returned (i.e. each row will contain a sample of correlated values).
 #' @param mu An \code{n}-length vector of mean values. Defaults to a vector of zeros with length equal to \code{nrow(w)}.
 #' @param w Row-standardized \code{n x n} spatial weights matrix.
@@ -98,9 +108,9 @@ aple <- function(x, w, digits = 3) {
 #' 
 #' @examples
 #' 
-#' data(ohio)
-#' w <- shape2mat(ohio, "W")
-#' x <- sim_sar(w=w, rho=.8)
+#' data(georgia)
+#' w <- shape2mat(georgia, "W")
+#' x <- sim_sar(w=w, rho=.5)
 #' aple(x, w)
 #'
 #' @importFrom MASS mvrnorm
@@ -116,7 +126,8 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
     if (!inherits(rho, "numeric") | !length(rho) %in% c(1, N) | any(rho > 1 | rho < -1)) stop("rho must be numeric value within range [-1, 1], or a k-length numeric vector where K=nrow(W).")
     if (!inherits(sigma, "numeric") | !length(sigma) %in% c(1, N) | !all(sigma > 0)) stop("sigma must be a positive numeric value, or k-length numeric vector, with K=nrow(W).")
     I <- diag(N)
-    S <- crossprod(solve(I - rho * w)) * sigma
+    S <- sigma^2 * solve( (I - rho * t(w)) %*% (I - rho * w) )
+##    S <- crossprod(solve(I - rho * w)) * sigma^2
     x <- MASS::mvrnorm(n = m, mu = mu, Sigma = S, ...)
     return(x)
 }
@@ -124,11 +135,13 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' The Moran coefficient
 #'
 #' @description The Moran coefficient, a measure of spatial autocorrelation (also known as Global Moran's I)
+#' 
 #' @export
+#' 
 #' @param x Numeric vector of input values, length n.
 #' @param w An n x n spatial connectivity matrix. See \link[geostan]{shape2mat}. 
 #' @param digits Number of digits to round results to.
-#' @param warn If FALSE, no warning will be printed to inform you when observations with zero neighbors have been dropped. 
+#' @param warn If `FALSE`, no warning will be printed to inform you when observations with zero neighbors have been dropped. 
 #' 
 #' @return The Moran coefficient, a numeric value.
 #'
@@ -139,9 +152,9 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' @examples
 #' 
 #' library(sf)
-#' data(ohio)
-#' w <- shape2mat(ohio, style = "W")
-#' x <- ohio$unemployment
+#' data(georgia)
+#' w <- shape2mat(georgia, style = "W")
+#' x <- georgia$ICE
 #' mc(x, w)
 #'
 #' @source
@@ -170,8 +183,10 @@ mc <- function(x, w, digits = 3, warn = TRUE) {
 
 #' Moran plot
 #'
-#' @description Plots a set of values against their spatially lagged values and gives the Moran coefficient as a measure of spatial autocorrelation. 
+#' @description Plots a set of values against their spatially lagged values and gives the Moran coefficient as a measure of spatial autocorrelation.
+#' 
 #' @export
+#' 
 #' @import ggplot2
 #' @param y A numeric vector of length n.
 #' @param w An n x n spatial connectivity matrix.
@@ -197,9 +212,9 @@ mc <- function(x, w, digits = 3, warn = TRUE) {
 #' @examples
 #' 
 #' library(sf)
-#' data(ohio)
-#' y <- ohio$unemployment
-#' w <- shape2mat(ohio, "W")
+#' data(georgia)
+#' y <- georgia$ICE
+#' w <- shape2mat(georgia, "W")
 #' moran_plot(y, w)
 #'
 moran_plot <- function(y, w, xlab = "y (centered)", ylab = "Spatial Lag", pch = 20, col = "darkred", size = 2, alpha = 1, lwd = 0.5) {
@@ -271,13 +286,13 @@ moran_plot <- function(y, w, xlab = "y (centered)", ylab = "Spatial Lag", pch = 
 #' library(ggplot2)
 #' library(sf)
 #' 
-#' data(ohio)
-#' w <- shape2mat(ohio, "W")
-#' x <- ohio$unemployment
+#' data(georgia)
+#' w <- shape2mat(georgia, "W")
+#' x <- georgia$ICE
 #' li = lisa(x, w)
 #' head(li)
 #'
-#' ggplot(ohio, aes(fill = li)) +
+#' ggplot(georgia, aes(fill = li)) +
 #'   geom_sf() +
 #'   scale_fill_gradient2()
 #' 
@@ -324,10 +339,10 @@ lisa <- function(x, w, type = FALSE) {
 #' @examples
 #' \dontrun{
 #' library(sf)
-#' data(ohio)
-#' sp_diag(ohio$gop_growth, ohio)
-#' fit <- stan_glm(gop_growth ~ 1, data = ohio, refresh = 0)
-#' sp_diag(fit, ohio)
+#' data(georgia)
+#' sp_diag(georgia$college, georgia)
+#' fit <- stan_glm(college ~ 1, data = georgia, refresh = 0)
+#' sp_diag(fit, georgia)
 #' }
 #' 
 sp_diag <- function(y,
@@ -355,7 +370,7 @@ sp_diag <- function(y,
         theme_void()
     g.mc <- moran_plot(y, w, xlab = name)
     if (plot) {
-        gridExtra::grid.arrange(hist, g.mc, map.y, ncol = 3)
+        return( gridExtra::grid.arrange(hist, g.mc, map.y, ncol = 3) )
     } else return (list(hist, map.y, map.y))
  }
 
@@ -387,20 +402,29 @@ sp_diag <- function(y,
 #' @examples
 #' \dontrun{
 #' library(sf)
-#' data(ohio)
-#' C <- shape2mat(ohio)
-#' ME <- list(se = data.frame(unemployment.acs = ohio$unemployment.acs.se),
-#'            spatial = TRUE
+#' data(georgia)
+#' ## binary adjacency matrix
+#' A <- shape2mat(georgia, "B")
+#' ## prepare data for the CAR model, using WCAR specification
+#' cp <- prep_car_data(A, type = "WCAR")
+#' ## provide list of data for the measurement error model
+#' ME <- list(se = data.frame(ICE = georgia$ICE.se),
+#'            spatial = TRUE,
+#'            car_parts = cp
 #'          )
-#' fit <- stan_glm(gop_growth ~ unemployment.acs,
+#' ## sample from the prior probability model only, including the ME model
+#' fit <- stan_glm(log(rate.male) ~ ICE,
 #'                 ME = ME,
 #'                 C = C,
-#'                 data = ohio, 
+#'                 data = georgia, 
 #'                 prior_only = TRUE,
 #'                 refresh = 0
 #'                 )
-#' me_diag(fit, "unemployment.acs", ohio)
-#' me_diag(fit, "unemployment.acs", ohio, index = 3)
+#' ## see ME diagnostics
+#' me_diag(fit, "ICE", georgia)
+#' ## see index values for the largest delta values
+#'  ## (differences between raw estimate and the posterior mean)
+#' me_diag(fit, "ICE", georgia, index = 3)
 #' }
 #' 
 me_diag <- function(fit,
@@ -526,10 +550,10 @@ me_diag <- function(fit,
 #' 
 #' library(ggplot2)
 #' library(sf)
-#' data(ohio)
-#' C <- shape2mat(ohio, style = "B")
+#' data(georgia)
+#' C <- shape2mat(georgia, style = "B")
 #' EV <- make_EV(C)
-#' ggplot(ohio) +
+#' ggplot(georgia) +
 #'   geom_sf(aes(fill = EV[,1])) +
 #'   scale_fill_gradient2()
 #' 
@@ -588,15 +612,25 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' 
 #'
 #' @examples
-#' data(ohio)
-#' C <- shape2mat(ohio, "B")
-#' W <- shape2mat(ohio, "W")
+#' 
+#' data(georgia)
 #'
+#' ## binary adjacency matrix
+#' C <- shape2mat(georgia, "B")
+#' ## row sums gives the numbers of neighbors per observation
+#' rowSums(C)
+#' diag(C)
+#'
+#' ## row-standardized matrix 
+#' W <- shape2mat(georgia, "W")
+#' rowSums(W)
+#' diag(W)
+#' 
 #' ## for space-time data
 #' ## if you have multiple years with same neighbors
 #' ## provide the geography (for a single year!) and number of years \code{t}
 #' ## defaults to the contemporaneous connectivity structure
-#' Cst <- shape2mat(ohio, t = 5)
+#' Cst <- shape2mat(georgia, t = 5)
 #' 
 shape2mat <- function(shape, style = c("B", "W", "C", "S"), t = 1, st.type = "contemp", zero.policy = TRUE, queen = TRUE, snap = sqrt(.Machine$double.eps)) {
   style <- match.arg(style)
@@ -647,8 +681,8 @@ student_t <- function() {
 #' @examples
 #' 
 #' \dontrun{
-#' data(ohio)
-#' fit <- stan_glm(gop_growth ~ 1, data = ohio, chains = 3, iter = 1500)
+#' data(georgia)
+#' fit <- stan_glm(college ~ 1, data = georgia)
 #' waic(fit)
 #' }
 waic <- function(fit, pointwise = FALSE, digits = 2) {
@@ -665,11 +699,15 @@ waic <- function(fit, pointwise = FALSE, digits = 2) {
 #' Expected value of the residual Moran coefficient.
 #'
 #' @description Expected value for the Moran coefficient of model residuals under the null hypothesis of no spatial autocorrelation.
+#' 
 #' @export
+#' 
 #' @param X model matrix, including column of ones.
 #' @param C Connectivity matrix.
+#' 
 #' @source
 #'  Chun, Yongwan and Griffith, Daniel A. (2013). Spatial statistics and geostatistics. Sage, p. 18.
+#' 
 #' @return Returns a numeric value.
 #'
 expected_mc <- function(X, C) {
@@ -700,6 +738,7 @@ expected_mc <- function(X, C) {
 #' @source
 #'
 #' Chun, Yongwan, Griffith, Daniel A., Lee, Mongyeon, and Sinha, Parmanand (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems 18(1): 67-85.
+#' 
 #' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. \url{https://doi.org/10.1016/j.spasta.2020.100450}
 #' 
 exp_pars <- function(formula, data, C) {
@@ -776,9 +815,9 @@ edges <- function(w) {
 #' @importFrom truncnorm rtruncnorm
 #' @examples
 #' 
-#' data(ohio)
-#' x = ohio$unemployment.acs
-#' se = ohio$unemployment.acs.se
+#' data(georgia)
+#' x = georgia$college
+#' se = georgia$college.se
 #'
 #' lse1 = se_log(x, se)
 #' lse2 = se_log(x, se, method = "delta")
@@ -923,6 +962,21 @@ prep_icar_data <- function (C, inv_sqrt_scale_factor = NULL) {
 #'
 #' @return A list containing all of the data elements required by the Stan CAR model.
 #'
+#' @examples
+#'
+#' data(georgia)
+#'
+#' ## binary adjacency matrix
+#' A <- shape2mat(georgia, style = "B")
+#'
+#' ## get list of data for Stan
+#' cp <- prep_car_data(A, "WCAR")
+#'
+#' ## pass the data to stan_car
+#' fit = stan_car(ICE ~ 1, data = georgia, car_parts = cp)
+#'
+#' ## diagnostics
+#' sp_diag(fit, georgia)
 #' 
 prep_car_data <- function(A, style = c("ACAR", "WCAR", "DCAR"), lambda = FALSE, cmat = TRUE, d, k = 1) {
     style = match.arg(style)
@@ -1048,6 +1102,7 @@ get_shp <- function(url, folder = "shape") {
 #' Shannon, Claude E. and Weaver, Warren (1963). *The Mathematical Theory of Communication*. Urbana and Chicago, USA: University if Illinois Press.
 #'
 #' @examples
+#'
 #' 
 theil <- function(rates, pops, cases = rates * pops, total = TRUE) {
     stopifnot(length(cases) == length(pops))

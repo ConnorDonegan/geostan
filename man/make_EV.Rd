@@ -32,10 +32,10 @@ Returns a set of EVs limited to those with |MC| > \code{threshold} if \code{nsa 
 
 library(ggplot2)
 library(sf)
-data(ohio)
-C <- shape2mat(ohio, style = "B")
+data(georgia)
+C <- shape2mat(georgia, style = "B")
 EV <- make_EV(C)
-ggplot(ohio) +
+ggplot(georgia) +
   geom_sf(aes(fill = EV[,1])) +
   scale_fill_gradient2()
 

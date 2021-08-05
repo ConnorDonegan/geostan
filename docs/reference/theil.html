@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>WAIC — waic • geostan</title>
+<title>Theil's inequality index — theil • geostan</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,8 @@
 
 
 
-<meta property="og:title" content="WAIC — waic" />
-<meta property="og:description" content="Widely Application Information Criteria (WAIC) for model evaluation" />
+<meta property="og:title" content="Theil's inequality index — theil" />
+<meta property="og:description" content="Calculates Theil's entropy-based measure of inequality for a given set of disease incidence rates and populations at risk." />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
@@ -126,48 +126,60 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>WAIC</h1>
+    <h1>Theil's inequality index</h1>
     <small class="dont-index">Source: <a href='https://github.com/ConnorDonegan/geostan/blob/master/R/convenience-functions.R'><code>R/convenience-functions.R</code></a></small>
-    <div class="hidden name"><code>waic.Rd</code></div>
+    <div class="hidden name"><code>theil.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Widely Application Information Criteria (WAIC) for model evaluation</p>
+    <p>Calculates Theil's entropy-based measure of inequality for a given set of disease incidence rates and populations at risk.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>waic</span><span class='op'>(</span><span class='va'>fit</span>, pointwise <span class='op'>=</span> <span class='cn'>FALSE</span>, digits <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>theil</span><span class='op'>(</span><span class='va'>rates</span>, <span class='va'>pops</span>, cases <span class='op'>=</span> <span class='va'>rates</span> <span class='op'>*</span> <span class='va'>pops</span>, total <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>fit</th>
-      <td><p>An <code>geostan_fit</code> object or any Stan model with a parameter named "log_lik", the pointwise log predictive likelihood</p></td>
+      <th>pops</th>
+      <td><p>Populations at risk.</p></td>
     </tr>
     <tr>
-      <th>pointwise</th>
-      <td><p>Logical, should a vector of values for each observation be returned?</p></td>
+      <th>cases</th>
+      <td><p>Number of cases (e.g., disease incidence).</p></td>
     </tr>
     <tr>
-      <th>digits</th>
-      <td><p>Round results to this many digits.</p></td>
+      <th>total</th>
+      <td><p>If <code>TRUE</code>, the values will all be summed; if <code>FALSE</code>, then each area's contribution to total inequality will be returned.</p></td>
+    </tr>
+    <tr>
+      <th>rate</th>
+      <td><p>Incidence rates. If provided, case counts will be calculated automatically as <code>cases = rates * pops</code></p></td>
     </tr>
     </table>
 
+    <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
+
+    <p>Conceicao, P. and P. Ferreira (2000). The young person's guide to the Theil Index: Suggesting intuitive interpretations and exploring analytical applications. University of Texas Inequality Project. UTIP Working Paper Number 14. Accessed May 1, 2021 from <a href='https://utip.gov.utexas.edu/papers.html'>https://utip.gov.utexas.edu/papers.html</a></p>
+<p>Theil, Henri (1972). <em>Statistical Decomposition Analysis.</em> Amsterdan, The Netherlands and London, UK: North-Holland Publishing Company.</p>
+<p>Shannon, Claude E. and Weaver, Warren (1963). <em>The Mathematical Theory of Communication</em>. Urbana and Chicago, USA: University if Illinois Press.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A vector of length 3 with <code>WAIC</code>, a rough measure of the effective number of parameters estimated by the model <code>Eff_pars</code>, and log predictive density <code>Lpd</code>. If <code>pointwise = TRUE</code>, results are returned in a <code>data.frame</code>.</p>
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+    <p>if <code>total = TRUE</code>, a scalar value; if <code>total = FALSE</code>, a vector of numeric values, where each value represents that area's contribution to total inequality.</p>
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <div class='dont-index'><p>See <a href='https://mc-stan.org/loo/reference/waic.html'>waic</a> as well as the more robust <a href='https://mc-stan.org/loo/reference/loo.html'>loo</a></p></div>
+    <p>Theil's index is a good index of inequality in disease and mortality burdens when multiple groups are being considered, as is typical of geospatial analysis. It provides a summary measure of inequality across a set of areal units, such as counties, that may be tracked over time. Also, it is interesting because it is additive, and thus admits of simple decompositions.</p>
+<p>The index measures discrepancies between a population's share of the disease burden, <code>omega</code>, and their share of the population, <code>eta</code>. A situation of zero inequality would imply that each population's share of cases is equal to its population share, or, <code>omega=eta</code>. Each population's contribution to total inequality is calculated as:</p><pre>             T_i = omega_i * [log(omega_i/eta_i)],
+</pre>
+
+<p>the log-ratio of case-share to population-share, weighted by their share of cases. Theil's index for all areas is the sum of each area's T_i:</p><pre>             T = sum_(i=1)^n T_i.
+</pre>
+
+<p>Theil's T is thus a weighted mean of log-ratios of case shares to population shares, where each log-ratio (which we may describe as a raw inequality score) is weighted by its share of total cases. The index has a minimum of zero and a maximum of <code><a href='https://rdrr.io/r/base/Log.html'>log(N)</a></code>, where <code>N</code> is the number of units (e.g., number of counties).
+Theil's index is based on Shannon's information theory, he used it to study a variety of topics, including income inequality and racial segregation. Theil's index is often of great interest because it is additive across multiple scales, such as when the data has a nested structure to it (e.g., counties within states). The Texas Inequality Project provides introductions to, and examples of using, the Theil index (Conceicao and Ferreira, 2000). However, this <code>R</code> function is just a simple implementation for `flat' or non-nested data structures (e.g., a set of counties).</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
-<span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
-<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_glm.html'>stan_glm</a></span><span class='op'>(</span><span class='va'>college</span> <span class='op'>~</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>georgia</span><span class='op'>)</span>
-<span class='fu'>waic</span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
-<span class='op'>}</span>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -48,15 +48,25 @@ Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matr
 The `lagged' space-time structure connects each observation to its own past (one period lagged) value and the past value of its neighbors. The `contemporaneous' specification links each observation to its neighbors and to its own in situ past (one period lagged) value (Griffith 2012, p. 23).
 }
 \examples{
-data(ohio)
-C <- shape2mat(ohio, "B")
-W <- shape2mat(ohio, "W")
+
+data(georgia)
+
+## binary adjacency matrix
+C <- shape2mat(georgia, "B")
+## row sums gives the numbers of neighbors per observation
+rowSums(C)
+diag(C)
+
+## row-standardized matrix 
+W <- shape2mat(georgia, "W")
+rowSums(W)
+diag(W)
 
 ## for space-time data
 ## if you have multiple years with same neighbors
 ## provide the geography (for a single year!) and number of years \code{t}
 ## defaults to the contemporaneous connectivity structure
-Cst <- shape2mat(ohio, t = 5)
+Cst <- shape2mat(georgia, t = 5)
 
 }
 \seealso{

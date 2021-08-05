@@ -9,10 +9,10 @@ test_that("SA indices produce the same results as spdep when expected", {
     library(spatialreg)
     d=4
     t=0.0001
-    data(sentencing)
-    W <- shape2mat(ohio, style = "W")
-    C <- shape2mat(ohio, style = "B")
-    nb <- poly2nb(ohio)
+    data(georgia)
+    W <- shape2mat(georgia, style = "W")
+    C <- shape2mat(georgia, style = "B")
+    nb <- poly2nb(georgia)
     lw.W <- nb2listw(nb, style = "W")    
     lw.C <- nb2listw(nb, style = "B")
     x <- sim_sar(w=W, rho = 0.7)

@@ -22,7 +22,7 @@
 #' \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
 #' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.}
 #' \item{spatial}{Logical value indicating whether an auto Gaussian (conditional autoregressive (CAR)) model should be used for the covariates (see \link[geostan]{stan_car} for CAR model details). For \code{stan_esf}, this defaults to \code{spatial = TRUE}. If \code{spatial = TRUE} you must provide \code{car_parts} (see below).}
-#' \item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data} (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}). Only required if \code{spatial=TRUE}.}
+#' \item{car_parts}{A list of data for the CAR model, as returned by [geostan::prep_car_data()] (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}). Only required if \code{spatial=TRUE}.}
 #' }
 #' 
 #' @param nsa Include eigenvectors representing negative spatial autocorrelation? Default \code{nsa = FALSE}. Ignored if \code{EV} is provided.
@@ -52,10 +52,10 @@
 #'
 #' ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \code{C}. The resulting eigenvectors, `EV`, are mutually orthogonal and uncorrelated map patterns. ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. The spatail filter is `EV * beta_ev`, where `beta_ev` is a vector of coefficients.
 #'
-#' ESF decomposes the data into a global mean `alpha`, global patterns contributed by covariates `X * beta`, spatial trends, `EV * beta_ev`, and residual variation/ Thus, for `family=gaussian()`,
+#' ESF decomposes the data into a global mean, `alpha`, global patterns contributed by covariates, `X * beta`, spatial trends, `EV * beta_ev`, and residual variation. Thus, for `family=gaussian()`,
 #' 
 #' ```
-#'    Y ~ Gauss(intercept + X * beta + EV * beta_ev, sigma).
+#'                          Y ~ Gauss(alpha + X * beta + EV * beta_ev, sigma).
 #'```
 #' An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:
 #' ```
@@ -96,19 +96,19 @@
 #' 
 #' @source 
 #'
-#' Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters. Journal of Geographical Systems, 18(1), 67-85. \url{10.1007/s10109-015-0225-3}
+#' Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters. *Journal of Geographical Systems*, 18(1), 67-85. \url{10.1007/s10109-015-0225-3}
 #'
-#' Dray, S., P. Legendre & P. R. Peres-Neto (2006). Spatial modelling: a comprehensive framework for principal coordinate analysis of neighbour matrices (PCNM). Ecological Modeling, 196(3-4), 483-493.
+#' Dray, S., P. Legendre & P. R. Peres-Neto (2006). Spatial modelling: a comprehensive framework for principal coordinate analysis of neighbour matrices (PCNM). *Ecological Modeling*, 196(3-4), 483-493.
 #' 
-#' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics 38. <doi.org/10.1016/j.spasta.2020.100450>
+#' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. *Spatial Statistics* 38. \url{doi.org/10.1016/j.spasta.2020.100450}
 #'
-#' Griffith, Daniel A., and P. R. Peres-Neto (2006). Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses. Ecology 87(10), 2603-2613.
+#' Griffith, Daniel A., and P. R. Peres-Neto (2006). Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses. *Ecology* 87(10), 2603-2613.
 #' 
 #' Griffith, D., and Y. Chun (2014). Spatial autocorrelation and spatial filtering, Handbook of Regional Science. Fischer, MM and Nijkamp, P. eds.
 #'
-#' Griffith, D., Chun, Y. and Li, B. (2019). Spatial Regression Analysis Using Eigenvector Spatial Filtering. Elsevier.
+#' Griffith, D., Chun, Y. and Li, B. (2019). *Spatial Regression Analysis Using Eigenvector Spatial Filtering*. Elsevier.
 #' 
-#' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In Electronic Journal of Statistics, 11(2):5018-5051. \url{https://projecteuclid.org/euclid.ejs/1513306866}
+#' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In *Electronic Journal of Statistics*, 11(2):5018-5051. \url{https://projecteuclid.org/euclid.ejs/1513306866}
 #' 
 #' @examples
 #' \dontrun{

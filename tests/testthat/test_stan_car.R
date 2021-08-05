@@ -2,15 +2,13 @@ iter=10
 silent = TRUE
 source("helpers.R")
 
-#devtools::load_all("~/dev/geostan")
-
 context("stan_car")
 
 test_that("Poisson CAR model works", {
     data(sentencing)
   SW(     fit <- stan_car(sents ~ offset(log(expected_sents)),
                     data = sentencing,
-                    car_parts = prep_car_data(shape2mat(sentencing)),
+                    car_parts = prep_car_data(shape2mat(sentencing, "B")),
                     chains = 1,
                     family = poisson(),
                     iter = iter,
@@ -20,15 +18,16 @@ test_that("Poisson CAR model works", {
 })
 
 test_that("CAR accepts covariate ME, mixed (un-) bounded", {
-    data(ohio)
+    data(georgia)
     SW(
-        fit <- stan_glm(cbind(trump_2016, total_2016 - trump_2016) ~ unemployment + historic_gop,
-                        data = ohio,
-                        C = shape2mat(ohio),
-                        family = binomial(),
-                        ME = list(se = data.frame(unemployment = rep(0.75, nrow(ohio)),
-                                                  historic_gop = rep(3, nrow(ohio))),
-                                  bounded = c(1, 0)),
+        fit <- stan_glm(log(rate.male) ~ insurance + ICE,
+                        data = georgia,
+                        C = shape2mat(georgia),
+                        ME = list(se = data.frame(insurance = georgia$insurance.se,
+                                                  ICE = georgia$ICE.se),
+                        bounded = c(1, 0),
+                        bounds = c(0, 100)
+                        ),        
                         chains = 1,
                         iter = iter,
                         silent = silent)
@@ -39,23 +38,20 @@ test_that("CAR accepts covariate ME, mixed (un-) bounded", {
 
 
 test_that("CAR accepts covariate ME with WX, mixed ME-non-ME", {
-    data(ohio)
-    C <- shape2mat(ohio)        
-    n <- nrow(ohio)
-    ME <- list(se = data.frame(unemployment = rep(0.75, n),
-                               historic_gop = rep(3, n),
-                               college_educated = rep(3, n)),
-               bounded = c(1, 0, 1))
+    data(georgia)
     SW(
-        fit <- stan_car(cbind(trump_2016, total_2016 - trump_2016) ~ log(population) + college_educated + unemployment + historic_gop,
-                    slx = ~ college_educated + unemployment + log(population),
-                    data = ohio,
-                    family = binomial(),
-                    car_parts = prep_car_data(C),
-                    ME = ME,
-                    chains = 1,
-                    iter = iter,
-                    silent = silent)
+        fit <- stan_glm(log(rate.male) ~ insurance + ICE,
+                        slx = ~ insurance + ICE,
+                        data = georgia,
+                        C = shape2mat(georgia),
+                        ME = list(se = data.frame(insurance = georgia$insurance.se),
+                        bounded = 0,
+                        bounds = c(0, 100)
+                        ),        
+                        chains = 1,
+                        iter = iter,
+                        silent = silent)
     )
     expect_geostan(fit)
 })
+

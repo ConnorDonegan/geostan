@@ -52,9 +52,9 @@ If any observations with no neighbors are found (i.e. \code{any(rowSums(w) == 0)
 \examples{
 
 library(sf)
-data(ohio)
-y <- ohio$unemployment
-w <- shape2mat(ohio, "W")
+data(georgia)
+y <- georgia$ICE
+w <- shape2mat(georgia, "W")
 moran_plot(y, w)
 
 }

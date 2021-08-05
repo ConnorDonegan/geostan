@@ -10,9 +10,9 @@ reference:
 - title: "Package overview"
 - contents:
   - geostan-package
-- title: "Spatial autocorrelation"
+- title: "Spatial analysis"
   desc: >
-    Functions for measuring and visualizing spatial autocorrelation, including model diagnostics
+    Functions for measuring and visualizing spatial autocorrelation and dispersion, including model diagnostics
 - contents: 
   - aple
   - lisa
@@ -22,6 +22,7 @@ reference:
   - n_eff
   - sp_diag
   - expected_mc
+  - theil
 - title: "Models"
   desc: "Model fitting functions and methods"
 - contents:
@@ -45,6 +46,6 @@ reference:
   - waic
 - title: "Data"
 - contents:
-  - ohio
+  - georgia
   - sentencing
 

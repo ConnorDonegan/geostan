@@ -3,9 +3,8 @@ silent = TRUE
 source("helpers.R")
 
 context("stan_glm")
-test_that("Poisson model works", {
+test_that("GLM works", {
     data(sentencing)
-    n <- nrow(sentencing)
     SW(
         fit <- stan_glm(sents ~ offset(log(expected_sents)),
                     data = sentencing,
@@ -16,16 +15,24 @@ test_that("Poisson model works", {
                     silent = silent)
        )
     expect_geostan(fit)
+    SW(
+        fit <- stan_glm(log(sents/expected_sents) ~ 1,
+                    data = sentencing,
+                    chains = 1,
+                    iter = iter,
+                    silent = silent)
+       )
+    expect_geostan(fit)    
 })
 
 test_that("GLM works with covariate ME", {
-    data(ohio)
-    n <- nrow(ohio)
-    ME <- list(se = data.frame(unemployment = rep(0.75, n)))
+    data(georgia)
+    n <- nrow(georgia)
+    ME <- list(se = data.frame(ICE = georgia$ICE.se))
     SW(
-        fit <- stan_glm(gop_growth ~ unemployment + historic_gop,
-                    data = ohio,
-                    ME = ME,
+        fit <- stan_glm(log(rate.male) ~ ICE,
+                    ME = ME,                        
+                    data = georgia,
                     chains = 1,
                     iter = iter,
                     silent = silent)
@@ -34,18 +41,17 @@ test_that("GLM works with covariate ME", {
 })
 
 test_that("GLM works with covariate ME: spatial data model", {
-    data(ohio)
-    C <- shape2mat(ohio, "B")
-    n <- nrow(ohio)
-    ME <- list(se = data.frame(unemployment = rep(0.75, n)),
-               spatial = TRUE,
-               car_parts = prep_car_data(C)
-               )
+    data(georgia)
+    A <- shape2mat(georgia, "B")
+    ME <- list(
+        se = data.frame(ICE = georgia$ICE.se),
+        spatial = TRUE,
+        car_parts = prep_car_data(A)
+        )
     SW(
-        fit <- stan_glm(gop_growth ~ unemployment + historic_gop,
-                    data = ohio,
-                    ME = ME,
-                    C = C,
+        fit <- stan_glm(log(rate.male) ~ ICE,
+                    ME = ME,                        
+                    data = georgia,
                     chains = 1,
                     iter = iter,
                     silent = silent)
@@ -53,80 +59,26 @@ test_that("GLM works with covariate ME: spatial data model", {
     expect_geostan(fit)
 })
 
-test_that("GLM accepts covariate ME, multiple x proportions", {
-    data(ohio)
-    n <- nrow(ohio)
-    ME <- list(se = data.frame(unemployment = rep(0.75, n),
-                          historic_gop = rep(3, n)),
-               bounded = c(1, 1))
+test_that("GLM accepts covariate ME, multiple proportions", {
+    data(georgia)
+    A <- shape2mat(georgia, "B")
+    ME <- list(
+        se = data.frame(
+            insurance = georgia$insurance.se,
+            college = georgia$college.se
+            ),
+        spatial = FALSE,
+        bounded = c(1,1),
+        bounds = c(0, 100)
+        )
     SW(
-        fit <- stan_glm(gop_growth ~ unemployment + historic_gop,
-                    data = ohio,
-                    ME = ME,
-                    chains = 1,
-                    iter = iter,
-                    silent = silent)
-       )
-    expect_geostan(fit)
-})
-
-test_that("GLM accepts covariate ME, mixed (un-) bounded with user-defined bounds", {
-    data(ohio)
-    n <- nrow(ohio)
-    ohio$unemployment <- ohio$unemployment / 100
-    ME <- list(se = data.frame(unemployment = rep(0.75, n),
-                          historic_gop = rep(3, n)),
-               bounded = c(1, 0),
-               bounds = c(0, 1))
-    SW(
-        fit <- stan_glm(gop_growth ~ unemployment + historic_gop,
-                    data = ohio,
-                    ME = ME,
+        fit <- stan_glm(log(rate.male) ~ insurance + college,
+                    ME = ME,                        
+                    data = georgia,
                     chains = 1,
                     iter = iter,
                     silent = silent)
     )
     expect_geostan(fit)
 })
-
-test_that("GLM accepts covariate ME with WX, mixed ME-non-ME", {
-    data(ohio)
-    n <- nrow(ohio)
-    ME <- list(se = data.frame(unemployment = rep(0.75, n),
-                          historic_gop = rep(3, n)),
-               bounded = c(1, 0))
-    SW(
-        fit <- stan_glm(gop_growth ~ log(population) + college_educated + unemployment + historic_gop,
-                    slx = ~ college_educated + unemployment,
-                    data = ohio,
-                    C = shape2mat(ohio),
-                    ME = ME,
-                    chains = 1,
-                    iter = iter,
-                    silent = silent)
-    )
-    expect_geostan(fit)
-})
-
-test_that("Binomial GLM accepts covariate ME with WX, mixed ME-non-ME, no bounded term", {
-    data(ohio)
-    n <- nrow(ohio)
-    ME <- list(se = data.frame(unemployment = rep(0.75, n),
-                          historic_gop = rep(3, n)))
-    SW(
-        fit <- stan_glm(cbind(trump_2016, total_2016 - trump_2016) ~ log(population) + college_educated + unemployment + historic_gop,
-                    slx = ~ college_educated + unemployment,
-                    data = ohio,
-                    C = shape2mat(ohio),
-                    ME = ME,
-                    chains = 1,
-                    family = binomial(),
-                    iter = iter,
-                    silent = silent)
-    )
-    expect_geostan(fit)
-})
-
-
-
 

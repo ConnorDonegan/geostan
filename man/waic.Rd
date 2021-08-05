@@ -22,8 +22,8 @@ Widely Application Information Criteria (WAIC) for model evaluation
 \examples{
 
 \dontrun{
-data(ohio)
-fit <- stan_glm(gop_growth ~ 1, data = ohio, chains = 3, iter = 1500)
+data(georgia)
+fit <- stan_glm(college ~ 1, data = georgia)
 waic(fit)
 }
 }

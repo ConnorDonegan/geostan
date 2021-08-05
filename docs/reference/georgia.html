@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>WAIC — waic • geostan</title>
+<title>Georgia all-cause, sex-specific mortality, ages 55-64, years 2014-2018 — georgia • geostan</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,8 @@
 
 
 
-<meta property="og:title" content="WAIC — waic" />
-<meta property="og:description" content="Widely Application Information Criteria (WAIC) for model evaluation" />
+<meta property="og:title" content="Georgia all-cause, sex-specific mortality, ages 55-64, years 2014-2018 — georgia" />
+<meta property="og:description" content="A simple features (sf) object for Georgia counties with sex- and age-specific deaths and populations at risk (2014-2018), plus select estimates (with standard errors) of county characteristics. Standard errors of the ICE were calculated using the Census Bureau's variance replicate tables." />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
@@ -126,47 +126,62 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>WAIC</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ConnorDonegan/geostan/blob/master/R/convenience-functions.R'><code>R/convenience-functions.R</code></a></small>
-    <div class="hidden name"><code>waic.Rd</code></div>
+    <h1>Georgia all-cause, sex-specific mortality, ages 55-64, years 2014-2018</h1>
+    <small class="dont-index">Source: <a href='https://github.com/ConnorDonegan/geostan/blob/master/R/data.R'><code>R/data.R</code></a></small>
+    <div class="hidden name"><code>georgia.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Widely Application Information Criteria (WAIC) for model evaluation</p>
+    <p>A simple features (sf) object for Georgia counties with sex- and age-specific deaths and populations at risk (2014-2018), plus select estimates (with standard errors) of county characteristics. Standard errors of the ICE were calculated using the Census Bureau's variance replicate tables.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>waic</span><span class='op'>(</span><span class='va'>fit</span>, pointwise <span class='op'>=</span> <span class='cn'>FALSE</span>, digits <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='va'>georgia</span></pre>
 
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>fit</th>
-      <td><p>An <code>geostan_fit</code> object or any Stan model with a parameter named "log_lik", the pointwise log predictive likelihood</p></td>
-    </tr>
-    <tr>
-      <th>pointwise</th>
-      <td><p>Logical, should a vector of values for each observation be returned?</p></td>
-    </tr>
-    <tr>
-      <th>digits</th>
-      <td><p>Round results to this many digits.</p></td>
-    </tr>
-    </table>
 
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
 
-    <p>A vector of length 3 with <code>WAIC</code>, a rough measure of the effective number of parameters estimated by the model <code>Eff_pars</code>, and log predictive density <code>Lpd</code>. If <code>pointwise = TRUE</code>, results are returned in a <code>data.frame</code>.</p>
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+    <p>A simple features object with county geometries and the following columns:</p><dl>
+ <dt>GEOID</dt><dd><p>Six digit combined state and county FIPS code</p></dd>
+ <dt>NAME</dt><dd><p>County name</p></dd>
+ <dt>ALAND</dt><dd><p>Land area</p></dd>
+ <dt>AWATER</dt><dd><p>Water area</p></dd>
+ <dt>population</dt><dd><p>Census Bureau 2018 county population estimate</p></dd>
+ <dt>white</dt><dd><p>Percent White, ACS 2018 five-year estimate</p></dd>
+ <dt>black</dt><dd><p>Percent Black, ACS 2018 five-year estimate</p></dd>
+ <dt>hisp</dt><dd><p>Percent Hispanic/Latino, ACS 2018 five-year estimate</p></dd>
+ <dt>ai</dt><dd><p>Percent American Indian, ACS 2018 five-year estimate</p></dd>
+ <dt>deaths.male</dt><dd><p>Male deaths, 55-64 yo, 2014-2018</p></dd>
+ <dt>pop.at.risk.male</dt><dd><p>Population estimate, males, 55-64 yo, years 2014-2018 (total), ACS 2018 five-year estimtae</p></dd>
+ <dt>pop.at.risk.male.se</dt><dd><p>Standard error of the pop.at.risk.male estimate</p></dd>
+ <dt>deaths.female</dt><dd><p>Female deaths, 55-64 yo, 2014-2018</p></dd>
+ <dt>pop.at.risk.female</dt><dd><p>Population estimate, females, 55-64 yo, years 2014-2018 (total), ACS 2018 five-year estimate</p></dd>
+ <dt>pop.at.risk.female.se</dt><dd><p>Standard error of the pop.at.risk.female estimate</p></dd>
+ <dt>ICE</dt><dd><p>Index of Concentration at the Extremes</p></dd>
+ <dt>ICE.se</dt><dd><p>Standard error of the ICE estimate, calculated using variance replicate tables</p></dd>
+ <dt>income</dt><dd><p>Median household income, ACS 2018 five-year estimate</p></dd>
+ <dt>income.se</dt><dd><p>Standard error of the income estimate</p></dd>
+ <dt>college</dt><dd><p>Percent of the population age 25 or higher than has a bachelors degree of higher, ACS 2018 five-year estimate</p></dd>
+ <dt>college.se</dt><dd><p>Standard error of the college estimate</p></dd>
+ <dt>insurance</dt><dd><p>Percent of the population with health insurance coverage, ACS 2018 five-year estimate</p></dd>
+ <dt>insurance.se</dt><dd><p>Standard error of the insurance estimate</p></dd>
+ <dt>rate.male</dt><dd><p>Raw (crude) age-specific male mortality rate, 2014-2018</p></dd>
+ <dt>rate.female</dt><dd><p>Raw (crude) age-specific female mortality rate, 2014-2018</p></dd>
+ <dt>geometry</dt><dd><p>simple features geometry for county boundaries</p></dd>  
 
-    <div class='dont-index'><p>See <a href='https://mc-stan.org/loo/reference/waic.html'>waic</a> as well as the more robust <a href='https://mc-stan.org/loo/reference/loo.html'>loo</a></p></div>
+</dl>
+
+    <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
+
+    <p>Centers for Disease Control and Prevention, National Center for Health Statistics. Underlying Cause of Death 1999-2018 on CDC Wonder Online Database. 2020. Available online: <a href='http://wonder.cdc.gov/ucd-iid10.html'>http://wonder.cdc.gov/ucd-iid10.html</a> (accessed on 19 October 2020).</p>
+<p>Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). ``Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure.'' *Int. J. Env. Res. and Public Health* 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: <a href='https://github.com/ConnorDonegan/survey-HBM'>https://github.com/ConnorDonegan/survey-HBM</a>.</p>
+<p>Kyle Walker and Matt Herman (2020). tidycensus: Load US Census Boundary and Attribute Data as 'tidyverse' and 'sf'-Ready Data  Frames. R package version 0.11. <a href='https://CRAN.R-project.org/package=tidycensus'>https://CRAN.R-project.org/package=tidycensus</a></p>
+<p>US Census Bureau. Variance Replicate Tables, 2018. Available online: <a href='https://www.census.gov/programs-surveys/acs/data/variance-tables.2018.html'>https://www.census.gov/programs-surveys/acs/data/variance-tables.2018.html</a> (accessed on 19 October 2020).</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>
-<span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
-<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_glm.html'>stan_glm</a></span><span class='op'>(</span><span class='va'>college</span> <span class='op'>~</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>georgia</span><span class='op'>)</span>
-<span class='fu'>waic</span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
+<span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>[</span>,<span class='st'>'rate.female'</span><span class='op'>]</span><span class='op'>)</span>
 <span class='op'>}</span>
 </div></pre>
   </div>

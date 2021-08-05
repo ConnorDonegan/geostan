@@ -317,8 +317,14 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
                             Sigma = (I - rho C)^-1 * M * tau^2
 </pre>
 
-<p>Applying the <code><a href='geostan_fit.html'>fitted.geostan_fit</a></code> method to this Poisson model will return <code><a href='https://rdrr.io/r/base/Log.html'>exp(offset + lambda)</a></code>, fitted values on the scale of the outcome variable.</p>
-<p>For Poisson models, the <code><a href='spatial.html'>spatial</a></code> method returns the parameter vector <code>phi</code>, which is:</p><pre>                           <span class='va'>phi</span> <span class='op'>=</span> <span class='va'>lambda</span> <span class='op'>-</span> <span class='va'>Mu.</span>
+<p>These models are most often used to calculate incidence rates (mortality rates, or disease incidence rates); the user provided offset should be, then, the natural logarithm of the denominator in the rates, e.g., log-population at risk. If <code>Y</code> are counts of cases, and <code>P</code> are populations at risk, then <code>offset = log(P)</code> and the crude rate is <code>Y/P</code>. Thus, <code>lambda</code> are log-risk (log-rates) and fitted values (as returned by the <code><a href='geostan_fit.html'>fitted.geostan_fit</a></code> method method) are:</p><pre>                            fitted = (e^lambda * P)/P,
+</pre>
+
+<p>and residuals are, similarly, the difference between fitted and observed rates:</p><pre>                            <span class='va'>residual</span> <span class='op'>=</span> <span class='op'>(</span><span class='va'>Y</span><span class='op'>/</span><span class='va'>P</span><span class='op'>)</span> <span class='op'>-</span> <span class='va'>fitted.</span>
+</pre>
+
+<p>If no offset term is provided, a vector of zeros will be used automatically (so the denominator is <code>exp(0)=1</code>).</p>
+<p>For Poisson models, the <code><a href='spatial.html'>spatial</a></code> method returns the parameter vector <code>phi</code>, which is the log-risk minus the intercept and any covariates:</p><pre>                           <span class='va'>phi</span> <span class='op'>=</span> <span class='va'>lambda</span> <span class='op'>-</span> <span class='va'>Mu.</span>
 </pre>
 
 <p>This is equivalent to re-writing the model as:</p><pre>                            Y ~ Poisson(exp(offset + Mu + phi))
@@ -326,13 +332,10 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
                             Sigma = (I - rho C)^-1 * M * tau^2.
 </pre>
 
-<p>Note that the behavior of the <code><a href='spatial.html'>spatial</a></code> method is slightly different for the CAR model than for the BYM model in <code><a href='stan_icar.html'>stan_icar</a></code>. The BYM model returns a spatial trend parameter that does not contain any uncorrelated/unstructured variation; <code>phi</code>, in the CAR model, contains a latent spatial trend and additional variation around it. If you would like to extract the latent/implicit spatial trend from <code>phi</code>, you can do so by calculating:</p><pre>                            <span class='va'>trend</span> <span class='op'>=</span> <span class='va'>rho</span> <span class='op'>*</span> <span class='va'>C</span> <span class='op'>*</span> <span class='va'>phi.</span>
+<p>In the Poisson CAR model, <code>phi</code> contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from <code>phi</code>, you can do so by calculating (following Cressie 2015, p. 564):</p><pre>                            <span class='va'>trend</span> <span class='op'>=</span> <span class='va'>rho</span> <span class='op'>*</span> <span class='va'>C</span> <span class='op'>*</span> <span class='va'>phi.</span>
 </pre>
 
 <p>This is not done automatically primarily because it is uncommon to do so.</p>
-<p>The <code><a href='geostan_fit.html'>residuals.geostan_fit</a></code> method returns:</p><pre>                            residual = Y - exp(offset + lambda).
-</pre>
-
 
 <h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a><code>family = binomial()</code></h3>
 

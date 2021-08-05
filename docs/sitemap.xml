@@ -16,6 +16,9 @@
     <loc>https://connordonegan.github.io/geostan/reference/expected_mc.html</loc>
   </url>
   <url>
+    <loc>https://connordonegan.github.io/geostan/reference/georgia.html</loc>
+  </url>
+  <url>
     <loc>https://connordonegan.github.io/geostan/reference/geostan-package.html</loc>
   </url>
   <url>
@@ -41,9 +44,6 @@
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/n_eff.html</loc>
-  </url>
-  <url>
-    <loc>https://connordonegan.github.io/geostan/reference/ohio.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/posterior_predict.html</loc>
@@ -86,6 +86,9 @@
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/student_t.html</loc>
+  </url>
+  <url>
+    <loc>https://connordonegan.github.io/geostan/reference/theil.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/waic.html</loc>

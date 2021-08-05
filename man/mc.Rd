@@ -18,7 +18,7 @@ mc(x, w, digits = 3, warn = TRUE)
 
 \item{digits}{Number of digits to round results to.}
 
-\item{warn}{If FALSE, no warning will be printed to inform you when observations with zero neighbors have been dropped.}
+\item{warn}{If `FALSE`, no warning will be printed to inform you when observations with zero neighbors have been dropped.}
 }
 \value{
 The Moran coefficient, a numeric value.
@@ -32,9 +32,9 @@ If any observations with no neighbors are found (i.e. \code{any(rowSums(w) == 0)
 \examples{
 
 library(sf)
-data(ohio)
-w <- shape2mat(ohio, style = "W")
-x <- ohio$unemployment
+data(georgia)
+w <- shape2mat(georgia, style = "W")
+x <- georgia$ICE
 mc(x, w)
 
 }

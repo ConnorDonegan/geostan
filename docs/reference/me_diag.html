@@ -183,6 +183,9 @@
     </tr>
     </table>
 
+    <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
+
+    <p>Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). ``Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure.'' *Int. J. Env. Res. and Public Health* 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: <a href='https://github.com/ConnorDonegan/survey-HBM'>https://github.com/ConnorDonegan/survey-HBM</a>.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A grid of spatial diagnostic plots for measurement error (i.e. data) models comparing the raw observations to the posterior distribution of the true values (given the specified observations, standard errors, and model). The Moran scatter plot and map depict the difference between the posterior means and the raw observations (i.e. shrinkage).</p>
@@ -193,20 +196,29 @@
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>
-<span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>
-<span class='va'>ME</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>se <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>unemployment.acs <span class='op'>=</span> <span class='va'>ohio</span><span class='op'>$</span><span class='va'>unemployment.acs.se</span><span class='op'>)</span>,
-           spatial <span class='op'>=</span> <span class='cn'>TRUE</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
+<span class='co'>## binary adjacency matrix</span>
+<span class='va'>A</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='st'>"B"</span><span class='op'>)</span>
+<span class='co'>## prepare data for the CAR model, using WCAR specification</span>
+<span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'><a href='prep_car_data.html'>prep_car_data</a></span><span class='op'>(</span><span class='va'>A</span>, type <span class='op'>=</span> <span class='st'>"WCAR"</span><span class='op'>)</span>
+<span class='co'>## provide list of data for the measurement error model</span>
+<span class='va'>ME</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>se <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>ICE <span class='op'>=</span> <span class='va'>georgia</span><span class='op'>$</span><span class='va'>ICE.se</span><span class='op'>)</span>,
+           spatial <span class='op'>=</span> <span class='cn'>TRUE</span>,
+           car_parts <span class='op'>=</span> <span class='va'>cp</span>
          <span class='op'>)</span>
-<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_glm.html'>stan_glm</a></span><span class='op'>(</span><span class='va'>gop_growth</span> <span class='op'>~</span> <span class='va'>unemployment.acs</span>,
+<span class='co'>## sample from the prior probability model only, including the ME model</span>
+<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_glm.html'>stan_glm</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>rate.male</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>ICE</span>,
                 ME <span class='op'>=</span> <span class='va'>ME</span>,
                 C <span class='op'>=</span> <span class='va'>C</span>,
-                data <span class='op'>=</span> <span class='va'>ohio</span>, 
+                data <span class='op'>=</span> <span class='va'>georgia</span>, 
                 prior_only <span class='op'>=</span> <span class='cn'>TRUE</span>,
                 refresh <span class='op'>=</span> <span class='fl'>0</span>
                 <span class='op'>)</span>
-<span class='fu'>me_diag</span><span class='op'>(</span><span class='va'>fit</span>, <span class='st'>"unemployment.acs"</span>, <span class='va'>ohio</span><span class='op'>)</span>
-<span class='fu'>me_diag</span><span class='op'>(</span><span class='va'>fit</span>, <span class='st'>"unemployment.acs"</span>, <span class='va'>ohio</span>, index <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span>
+<span class='co'>## see ME diagnostics</span>
+<span class='fu'>me_diag</span><span class='op'>(</span><span class='va'>fit</span>, <span class='st'>"ICE"</span>, <span class='va'>georgia</span><span class='op'>)</span>
+<span class='co'>## see index values for the largest delta values</span>
+ <span class='co'>## (differences between raw estimate and the posterior mean)</span>
+<span class='fu'>me_diag</span><span class='op'>(</span><span class='va'>fit</span>, <span class='st'>"ICE"</span>, <span class='va'>georgia</span>, index <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span>
 <span class='op'>}</span>
 
 </div></pre>

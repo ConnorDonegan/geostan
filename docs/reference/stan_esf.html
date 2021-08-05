@@ -202,7 +202,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <dt>bounded</dt><dd><p>If any variables in <code>se</code> are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.</p></dd>
 <dt>bounds</dt><dd><p>A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.</p></dd>
 <dt>spatial</dt><dd><p>Logical value indicating whether an auto Gaussian (conditional autoregressive (CAR)) model should be used for the covariates (see <a href='stan_car.html'>stan_car</a> for CAR model details). For <code>stan_esf</code>, this defaults to <code>spatial = TRUE</code>. If <code>spatial = TRUE</code> you must provide <code>car_parts</code> (see below).</p></dd>
-<dt>car_parts</dt><dd><p>A list of data for the CAR model, as returned by <a href='prep_car_data.html'>prep_car_data</a> (be sure to return the matrix <code>C</code>, by using the argument <code>cmat = TRUE</code>). Only required if <code>spatial=TRUE</code>.</p></dd>
+<dt>car_parts</dt><dd><p>A list of data for the CAR model, as returned by <code><a href='prep_car_data.html'>prep_car_data()</a></code> (be sure to return the matrix <code>C</code>, by using the argument <code>cmat = TRUE</code>). Only required if <code>spatial=TRUE</code>.</p></dd>
 
 </dl></td>
     </tr>
@@ -291,13 +291,13 @@ The value of <code>p0</code> is used to control the prior degree of sparsity in 
 
     <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
 
-    <p>Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters. Journal of Geographical Systems, 18(1), 67-85. <a href='10.1007/s10109-015-0225-3'>10.1007/s10109-015-0225-3</a></p>
-<p>Dray, S., P. Legendre &amp; P. R. Peres-Neto (2006). Spatial modelling: a comprehensive framework for principal coordinate analysis of neighbour matrices (PCNM). Ecological Modeling, 196(3-4), 483-493.</p>
-<p>Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics 38. &lt;doi.org/10.1016/j.spasta.2020.100450&gt;</p>
-<p>Griffith, Daniel A., and P. R. Peres-Neto (2006). Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses. Ecology 87(10), 2603-2613.</p>
+    <p>Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters. <em>Journal of Geographical Systems</em>, 18(1), 67-85. <a href='10.1007/s10109-015-0225-3'>10.1007/s10109-015-0225-3</a></p>
+<p>Dray, S., P. Legendre &amp; P. R. Peres-Neto (2006). Spatial modelling: a comprehensive framework for principal coordinate analysis of neighbour matrices (PCNM). <em>Ecological Modeling</em>, 196(3-4), 483-493.</p>
+<p>Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. <em>Spatial Statistics</em> 38. <a href='doi.org/10.1016/j.spasta.2020.100450'>doi.org/10.1016/j.spasta.2020.100450</a></p>
+<p>Griffith, Daniel A., and P. R. Peres-Neto (2006). Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses. <em>Ecology</em> 87(10), 2603-2613.</p>
 <p>Griffith, D., and Y. Chun (2014). Spatial autocorrelation and spatial filtering, Handbook of Regional Science. Fischer, MM and Nijkamp, P. eds.</p>
-<p>Griffith, D., Chun, Y. and Li, B. (2019). Spatial Regression Analysis Using Eigenvector Spatial Filtering. Elsevier.</p>
-<p>Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In Electronic Journal of Statistics, 11(2):5018-5051. <a href='https://projecteuclid.org/euclid.ejs/1513306866'>https://projecteuclid.org/euclid.ejs/1513306866</a></p>
+<p>Griffith, D., Chun, Y. and Li, B. (2019). <em>Spatial Regression Analysis Using Eigenvector Spatial Filtering</em>. Elsevier.</p>
+<p>Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In <em>Electronic Journal of Statistics</em>, 11(2):5018-5051. <a href='https://projecteuclid.org/euclid.ejs/1513306866'>https://projecteuclid.org/euclid.ejs/1513306866</a></p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl>
@@ -323,11 +323,17 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>Eigenvector spatial filtering (ESF) is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), drawing on the Piironen and Vehtari's (2017) regularized horseshoe prior.</p>
-<p>ESF models take the spectral decomposition of a transformed spatial connectivity matrix, <code>C</code>. The resulting eigenvectors, <code>EV</code>, are mutually orthogonal and uncorrelated map patterns. ESF methodology is premised on the ability to decompose spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). SA in the outcome variable is then absorbed by the spatial filter, EV * beta_ev<code>, where </code>beta_ev` is a vector of coefficients.</p>
-<p>ESF decomposes the data into a global mean <code>alpha</code>, global patterns contributed by covariates <code>X * beta</code>, spatial trends, <code>EV * beta_ev</code>, and residual variation/ Thus, for <code>family=gaussian()</code>,</p><pre>Y \~ Gauss(intercept + X * beta + EV * beta_ev, sigma).
+<p>ESF models take the spectral decomposition of a transformed spatial connectivity matrix, <code>C</code>. The resulting eigenvectors, <code>EV</code>, are mutually orthogonal and uncorrelated map patterns. ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. The spatail filter is <code>EV * beta_ev</code>, where <code>beta_ev</code> is a vector of coefficients.</p>
+<p>ESF decomposes the data into a global mean, <code>alpha</code>, global patterns contributed by covariates, <code>X * beta</code>, spatial trends, <code>EV * beta_ev</code>, and residual variation. Thus, for <code>family=gaussian()</code>,</p><pre>                         Y ~ Gauss(alpha + X * beta + EV * beta_ev, sigma).
 </pre>
 
-<p>An ESF component can be incorporated into the linear predictor of any generalized linear model.</p>
+<p>An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:</p><pre>                          <span class='va'>Y</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>Poisson</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='va'>offset</span> <span class='op'>+</span> <span class='va'>Mu</span><span class='op'>)</span><span class='op'>)</span>
+                          <span class='va'>Mu</span> <span class='op'>=</span> <span class='va'>alpha</span> <span class='op'>+</span> <span class='va'>A</span> <span class='op'>+</span> <span class='va'>EV</span> <span class='op'>*</span> <span class='va'>beta_ev</span>
+                          <span class='va'>A</span> <span class='op'>~</span> <span class='fu'>Guass</span><span class='op'>(</span><span class='fl'>0</span>, <span class='va'>tau</span><span class='op'>)</span>
+                          <span class='va'>tau</span> <span class='op'>~</span> <span class='fu'>student</span><span class='op'>(</span><span class='fl'>20</span>, <span class='fl'>0</span>, <span class='fl'>2</span><span class='op'>)</span>
+                          <span class='va'>beta_ev</span> <span class='op'>~</span> <span class='fu'>horseshoe</span><span class='op'>(</span><span class='va'>.</span><span class='op'>)</span>
+</pre>
+
 <p>The <a href='spatial.html'>spatial</a> method will return <code>EV * beta</code>.</p>
 <p>The model can also be extended to the space-time domain; see <a href='shape2mat.html'>shape2mat</a> to specify a space-time connectivity matrix.</p>
 <p>The coefficients <code>beta_ev</code> are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the <code>threshold</code> argument). By default, <code>stan_esf</code> will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the <code>nsa</code> argument.</p>
@@ -357,6 +363,7 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
                    C <span class='op'>=</span> <span class='va'>C</span>,
                    refresh <span class='op'>=</span> <span class='fl'>0</span>
 <span class='op'>)</span>
+
 <span class='co'># spatial diagnostics </span>
 <span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit.esf</span>, <span class='va'>sentencing</span><span class='op'>)</span>
 

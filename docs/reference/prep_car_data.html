@@ -190,6 +190,119 @@
 <p>For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 [1993]) and Haining and Li (2020).</p>
 <p><code>stan_car</code> requires the user to provide the full C matrix (which is returned when cmat = TRUE).</p>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
+
+<span class='co'>## binary adjacency matrix</span>
+<span class='va'>A</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, style <span class='op'>=</span> <span class='st'>"B"</span><span class='op'>)</span>
+
+<span class='co'>## get list of data for Stan</span>
+<span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'>prep_car_data</span><span class='op'>(</span><span class='va'>A</span>, <span class='st'>"WCAR"</span><span class='op'>)</span>
+
+<span class='co'>## pass the data to stan_car</span>
+<span class='va'>fit</span> <span class='op'>=</span> <span class='fu'><a href='stan_car.html'>stan_car</a></span><span class='op'>(</span><span class='va'>ICE</span> <span class='op'>~</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>georgia</span>, car_parts <span class='op'>=</span> <span class='va'>cp</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for car_scale</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt; <span class='message'>Degrees of freedom: 10</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 0.252786065145457</span></div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: -0.134386273782593</span></div><div class='output co'>#&gt; <span class='message'>Scale: 1.26393032572729</span></div><div class='output co'>#&gt; 
+#&gt; SAMPLING FOR MODEL 'car' NOW (CHAIN 1).
+#&gt; Chain 1: 
+#&gt; Chain 1: Gradient evaluation took 0.00011 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.1 seconds.
+#&gt; Chain 1: Adjust your expectations accordingly!
+#&gt; Chain 1: 
+#&gt; Chain 1: 
+#&gt; Chain 1: Iteration:    1 / 2000 [  0%]  (Warmup)
+#&gt; Chain 1: Iteration:  500 / 2000 [ 25%]  (Warmup)
+#&gt; Chain 1: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+#&gt; Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+#&gt; Chain 1: Iteration: 1500 / 2000 [ 75%]  (Sampling)
+#&gt; Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
+#&gt; Chain 1: 
+#&gt; Chain 1:  Elapsed Time: 2.4055 seconds (Warm-up)
+#&gt; Chain 1:                2.11339 seconds (Sampling)
+#&gt; Chain 1:                4.51889 seconds (Total)
+#&gt; Chain 1: 
+#&gt; 
+#&gt; SAMPLING FOR MODEL 'car' NOW (CHAIN 2).
+#&gt; Chain 2: 
+#&gt; Chain 2: Gradient evaluation took 0.00016 seconds
+#&gt; Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 1.6 seconds.
+#&gt; Chain 2: Adjust your expectations accordingly!
+#&gt; Chain 2: 
+#&gt; Chain 2: 
+#&gt; Chain 2: Iteration:    1 / 2000 [  0%]  (Warmup)
+#&gt; Chain 2: Iteration:  500 / 2000 [ 25%]  (Warmup)
+#&gt; Chain 2: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+#&gt; Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+#&gt; Chain 2: Iteration: 1500 / 2000 [ 75%]  (Sampling)
+#&gt; Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
+#&gt; Chain 2: 
+#&gt; Chain 2:  Elapsed Time: 2.30642 seconds (Warm-up)
+#&gt; Chain 2:                2.62476 seconds (Sampling)
+#&gt; Chain 2:                4.93118 seconds (Total)
+#&gt; Chain 2: 
+#&gt; 
+#&gt; SAMPLING FOR MODEL 'car' NOW (CHAIN 3).
+#&gt; Chain 3: 
+#&gt; Chain 3: Gradient evaluation took 8.7e-05 seconds
+#&gt; Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.87 seconds.
+#&gt; Chain 3: Adjust your expectations accordingly!
+#&gt; Chain 3: 
+#&gt; Chain 3: 
+#&gt; Chain 3: Iteration:    1 / 2000 [  0%]  (Warmup)
+#&gt; Chain 3: Iteration:  500 / 2000 [ 25%]  (Warmup)
+#&gt; Chain 3: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+#&gt; Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+#&gt; Chain 3: Iteration: 1500 / 2000 [ 75%]  (Sampling)
+#&gt; Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
+#&gt; Chain 3: 
+#&gt; Chain 3:  Elapsed Time: 2.10309 seconds (Warm-up)
+#&gt; Chain 3:                1.91817 seconds (Sampling)
+#&gt; Chain 3:                4.02126 seconds (Total)
+#&gt; Chain 3: 
+#&gt; 
+#&gt; SAMPLING FOR MODEL 'car' NOW (CHAIN 4).
+#&gt; Chain 4: 
+#&gt; Chain 4: Gradient evaluation took 9.7e-05 seconds
+#&gt; Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.97 seconds.
+#&gt; Chain 4: Adjust your expectations accordingly!
+#&gt; Chain 4: 
+#&gt; Chain 4: 
+#&gt; Chain 4: Iteration:    1 / 2000 [  0%]  (Warmup)
+#&gt; Chain 4: Iteration:  500 / 2000 [ 25%]  (Warmup)
+#&gt; Chain 4: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+#&gt; Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+#&gt; Chain 4: Iteration: 1500 / 2000 [ 75%]  (Sampling)
+#&gt; Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
+#&gt; Chain 4: 
+#&gt; Chain 4:  Elapsed Time: 2.17688 seconds (Warm-up)
+#&gt; Chain 4:                2.25478 seconds (Sampling)
+#&gt; Chain 4:                4.43166 seconds (Total)
+#&gt; Chain 4: 
+#&gt; 
+#&gt; SAMPLING FOR MODEL 'car' NOW (CHAIN 5).
+#&gt; Chain 5: 
+#&gt; Chain 5: Gradient evaluation took 0.00015 seconds
+#&gt; Chain 5: 1000 transitions using 10 leapfrog steps per transition would take 1.5 seconds.
+#&gt; Chain 5: Adjust your expectations accordingly!
+#&gt; Chain 5: 
+#&gt; Chain 5: 
+#&gt; Chain 5: Iteration:    1 / 2000 [  0%]  (Warmup)
+#&gt; Chain 5: Iteration:  500 / 2000 [ 25%]  (Warmup)
+#&gt; Chain 5: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+#&gt; Chain 5: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+#&gt; Chain 5: Iteration: 1500 / 2000 [ 75%]  (Sampling)
+#&gt; Chain 5: Iteration: 2000 / 2000 [100%]  (Sampling)
+#&gt; Chain 5: 
+#&gt; Chain 5:  Elapsed Time: 2.1665 seconds (Warm-up)
+#&gt; Chain 5:                2.15302 seconds (Sampling)
+#&gt; Chain 5:                4.31952 seconds (Total)
+#&gt; Chain 5: </div><div class='input'>
+<span class='co'>## diagnostics</span>
+<span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>georgia</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='prep_car_data-1.png' alt='' width='700' height='433' /></div><div class='input'>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
