@@ -254,6 +254,7 @@ stan_icar <- function(formula, slx, re, data,
   family_int <- family_2_int(family)
   intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0)
   if (intercept_only) { # x includes slx, if any, for prior specifictions; x.list$x is the processed model matrix without slx terms.
+    if (!missing(slx)) stop("Spatial lag of X (slx) term provided for an intercept only model. Did you intend to include a covariate? If you intend to specify a model in which the only covariate is a spatially-lagged term, you must create this covariate yourself and include it in the main model formula.")      
     x <- model.matrix(~ 0, data = tmpdf) 
     dbeta_prior <- 0
     slx <- " "
@@ -276,13 +277,16 @@ stan_icar <- function(formula, slx, re, data,
         wx_idx = a.zero
         dw_nonzero <- 0
     } else {
-            W <- C / rowSums(C)
-            Wx <- SLX(f = slx, DF = tmpdf, SWM = W)
-            if (scalex) Wx <- scale(Wx)            
-            dwx <- ncol(Wx)
-            dw_nonzero <- sum(W!=0)
-            wx_idx <- as.array( which(paste0("w.", dimnames(x)[[2]]) %in% dimnames(Wx)[[2]]), dim = dwx )
-            x <- cbind(Wx, x)
+        if (any(rowSums(C) != 1)) {
+            message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
+        }
+        W <- C / rowSums(C)
+        Wx <- SLX(f = slx, DF = tmpdf, W = W)
+        if (scalex) Wx <- scale(Wx)            
+        dwx <- ncol(Wx)
+        dw_nonzero <- sum(W!=0)
+        wx_idx <- as.array( which(paste0("w.", dimnames(x)[[2]]) %in% dimnames(Wx)[[2]]), dim = dwx )
+        x <- cbind(Wx, x)
     }
     dbeta_prior <- ncol(x) ## dimensions of beta prior; 
       }

@@ -45,9 +45,8 @@ scale_x <- function(x, center, scale) {
 
 #' @importFrom stats model.matrix
 #' @noRd
-SLX <- function(f, DF, SWM) {
+SLX <- function(f, DF, W) {
     # row-standardize the connectivity matrix
-    W <- SWM / rowSums(SWM)
     x <- remove_intercept(model.matrix(f, DF))
     Wx <- W %*% x
     dimnames(Wx)[[2]] <- paste0("w.", dimnames(Wx)[[2]])
@@ -169,16 +168,17 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
   priors$alpha_tau <- c(df = 20, location = 0, scale = scaling_factor * scale.y)
   priors$sigma <- c(df = 10, location = 0, scale = scaling_factor * scale.y)
   priors$nu <- c(alpha = 3, beta = 0.2)
-  if ("rhs" %in% names(user_priors)) {
+  if(!missing(rhs_scale_global)) {
       scale_ev <- sd(EV[,1])
       priors$rhs = c(slab_df = 15, slab_scale = 0.5 * (scale.y / scale_ev), scale_global = rhs_scale_global)
       }
-  for (i in seq_along(user_priors)) {
-      if (!is.null(user_priors[[i]])) {
-          par <- names(user_priors)[i]
-          priors[[which(names(priors) == par)]] <- user_priors[[i]]
+  for (i in seq_along(priors)) {
+      par.name <- names(priors)[i]
+      if(!is.null(user_priors[[par.name]])) {
+          priors[[i]] <- user_priors[[par.name]]
       }      
   }
+  if (ncol(x)) stopifnot(ncol(x) == nrow(priors$beta))
   return(priors)
 }
 
@@ -262,40 +262,46 @@ clean_results <- function(samples, pars, is_student, has_re, C, Wx, x, x_me_unbo
 #' @param priors list of priors returned by make_priors, after dropping unneeded parameters.
 #' @return Prints out information using \code{message()}
 print_priors <- function(user_priors, priors) {
-  for (i in seq_along(user_priors)) {
-      nm <- names(user_priors)[i]
-      u.p. <- user_priors[[i]]
-      if (is.null(u.p.) & nm %in% names(priors)) {          
-          message("\n*Setting prior parameters for ", nm)
-          p <- priors[[which(names(priors) == nm)]]
+  for (i in seq_along(priors)) {
+      nm <- names(priors)[i]
+      u.p. <- user_priors[[nm]]
+      if (is.null(u.p.)) {          
+          p <- priors[[nm]]
           if (nm == "beta") {
+              message("\n*Setting prior parameters for ", nm)              
               message("Gaussian")
               colnames(p) <- c("Location", "Scale")
               print(p, row.names = FALSE)
           }          
           if (nm == "intercept") {
+              message("\n*Setting prior parameters for ", nm)              
               message("Gaussian")
               message("Location: ", p[1])
               message("Scale: ", p[2])
           }
           if (nm == "sigma") {
+              message("\n*Setting prior parameters for ", nm)              
               message("Student's t")
               message("Degrees of freedom: ", p[1])
               message("Location: ", p[2])
               message("Scale: ", p[3])
           }
           if (nm == "nu") {
+              message("\n*Setting prior parameters for ", nm)              
               message("Gamma")
               message("alpha: ", p[1])
               message("beta: ", p[2])
           }
           if (nm == "alpha_tau") {
+              message("\n*Setting prior parameters for ", nm)              
               message("Student's t")
               message("Degrees of freedom: ", p[1])
               message("Location: ", p[2])
               message("Scale: ", p[3])
           }
           if (nm == "rhs") {
+              message("\n*Setting prior parameters for eigenvector coefficients")              
+              message("Regularized horseshoe (RHS) prior parameters:")
               message("Global shrinkage prior (scale_global): ", p["scale_global"])
               message("Slab degrees of freedom: ", p["slab_df"])
               message("Slab scale: ", p["slab_scale"])

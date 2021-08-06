@@ -11,7 +11,7 @@
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally); you must also provide \code{C} when including \code{slx}.
 #'  Specified covariates will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in \code{~ ID}.  The resulting random effects parameter returned is named \code{alpha_re}.
+#' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in \code{~ ID}.  The resulting random effects parameter returned is named \code{alpha_re}, and the associated scale parameter is \code{alpha_tua}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$spatial = TRUE}, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
 #' \describe{
@@ -23,12 +23,24 @@
 #' \item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data} (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}). Only required if \code{spatial=TRUE}.}
 #' }
 #' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} or spatial measurement error (\code{ME}) terms; it will automatically be row-standardized before calculating \code{slx} terms.
-#' @param family The likelihood function for the outcome variable. Current options are \code{poisson(link = "log")}, \code{binomial(link = "logit")}, \code{student_t()}, and the default \code{gaussian()}. 
-#' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
-#' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. 
-#' @param prior_sigma A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on the residual standard deviation \code{sigma}. To use a half-Cauchy prior set degrees of freedom to one; e.g. \code{prior_sigma = c(1, 0, 3)}.
-#' @param prior_nu Set the parameters for the Gamma prior distribution on the degrees of freedom in the likelihood function when using \code{family = student_t}. Defaults to \code{prior_nu = c(alpha = 3, beta = 0.2)}.
-#' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 20)}.
+#' @param family The likelihood function for the outcome variable. Current options are \code{poisson(link = "log")}, \code{binomial(link = "logit")}, \code{student_t()}, and the default \code{gaussian()}.
+#' @param prior A named list of parameters for prior distributions. Priors can be set for the intercept (`intercept`), regression coefficients (`beta`), and scale parameter (`sigma`). Users also may set the prior parameters for the degrees of freedom (`nu`) of a Student's t likelihood. For models with so-called random effects, or varying intercept terms, the prior for the scale parameter (`tau`) can be set here. What follows are details on prior models for these parameters:
+#' \describe{
+#' \item{intercept}{The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. \code{prior = list(intercept = c(location = 0, scale = 10))} to assign a Gaussian prior with mean zero and variance 10^2.}
+#' 
+#' \item{beta}{Regression coefficients are assigned Gaussian prior distributions. Provide a `data.frame` with two columns (location and scale).
+#'
+#' The order of variables must follow their order of appearance in the model `formula`; e.g., if the formula is `y ~ x1 + x2`, then providing `prior = list(beta = data.frame(location = c(0, 0), scale = c(1, 1))) will assign standard normal prior distributions to both coefficients.
+#'
+#' Note that if you also use `slx` terms (spatially lagged covariates), then you have to provide priors for them; `slx` terms *precede* other terms in the model formula. For example, providing of `y ~ x1 + x2` with `slx = ~ x1 + x2` is the same as providing `formula = y ~ Wx1 + Wx2 + x1 + x2`, where `Wx1` indicates the spatially lagged covariate.}
+#'
+#' \item{sigma}{The scale parameter for Gaussian and Student's t likelihood models is assigned a half-Student's t prior distribution. Thus, provide values for the degrees of freedom, location, and scale parameters; e.g., `prior = list(sigma = c(df = 10, location = 0, scale = 5))` for a prior centered on zero with scale of 5 and 10 degrees of freedom. The half-Student's t prior for `sigma` is constrained to be positive.}
+#'
+#' \item{nu}{The degrees of freedom for the Student's t likelihood model is assigned a gamma prior distribution. The default prior is `prior = list(nu = c(alpha = 3, beta = 0.2))`.}
+#'
+#' \item{tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(tau = c(df = 20, location = 0, scale = 20))`.}
+#' }
+#' 
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}. 
 #' @param scalex Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param prior_only Draw samples from the prior distributions of parameters only. 
@@ -73,7 +85,7 @@
 #' \describe{
 #' \item{summary}{Summaries of the main parameters of interest; a data frame}
 #' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (\code{eff_pars}) and 
-#'  mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
+#'  mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals).}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' \item{data}{a data frame containing the model data}
 #' \item{family}{the user-provided or default \code{family} argument used to fit the model}
@@ -99,8 +111,7 @@
 #' fit.pois <- stan_glm(sents ~ offset(log_e),
 #'                      re = ~ name,
 #'                      family = poisson(),
-#'                      data = sentencing,
-#'                     silent = TRUE
+#'                      data = sentencing
 #'  )
 #'
 #' # diagnostics plot: Rhat values should all by very near 1
@@ -123,8 +134,7 @@
 #' }
 stan_glm <- function(formula, slx, re, data, ME = NULL, C, 
                      family = gaussian(),
-                     prior = NULL, prior_intercept = NULL, prior_sigma = NULL, prior_nu = NULL,
-                     prior_tau = NULL,
+                     prior = NULL,
                      centerx = FALSE, scalex = FALSE,
                      prior_only = FALSE,
                      chains = 4, iter = 4e3, refresh = 1e3,
@@ -146,6 +156,7 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
   family_int <- family_2_int(family)
   intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0) 
   if (intercept_only) {
+    if (!missing(slx)) stop("Spatial lag of X (slx) term provided for an intercept only model. Did you intend to include a covariate? If you intend to specify a model in which the only covariate is a spatially-lagged term, you must create this covariate yourself and include it in the main model formula.")
     x <- model.matrix(~ 0, data = tmpdf) 
     dbeta_prior <- 0
     slx <- " "
@@ -168,13 +179,16 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
         wx_idx = a.zero
         dw_nonzero <- 0
     } else {
-            W <- C / rowSums(C)
-            Wx <- SLX(f = slx, DF = tmpdf, SWM = W)
-            if (scalex) Wx <- scale(Wx)            
-            dwx <- ncol(Wx)
-            dw_nonzero <- sum(W!=0)
-            wx_idx <- as.array( which(paste0("w.", dimnames(x)[[2]]) %in% dimnames(Wx)[[2]]), dim = dwx )
-            x <- cbind(Wx, x)
+        if (any(rowSums(C) != 1)) {
+            message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
+        }
+        W <- C / rowSums(C)
+        Wx <- SLX(f = slx, DF = tmpdf, W = W)
+        if (scalex) Wx <- scale(Wx)            
+        dwx <- ncol(Wx)
+        dw_nonzero <- sum(W!=0)
+        wx_idx <- as.array( which(paste0("w.", dimnames(x)[[2]]) %in% dimnames(Wx)[[2]]), dim = dwx )
+        x <- cbind(Wx, x)
     }
     dbeta_prior <- ncol(x) ## dimensions of beta prior; x includes slx, if any; x.list$x is the processed model matrix without slx terms. ##
       }
@@ -201,8 +215,7 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
   }
   ## PARAMETER MODEL STUFF -------------  
   is_student <- family$family == "student_t"
-  user_priors <- list(intercept = prior_intercept, beta = prior, sigma = prior_sigma, nu = prior_nu, alpha_tau = prior_tau)
-  priors <- make_priors(user_priors = user_priors, y = y, x = x, xcentered = centerx,
+  priors_made <- make_priors(user_priors = prior, y = y, x = x, xcentered = centerx,
                         link = family$link, offset = offset)
   ## GLM STUFF -------------  
   standata <- list(
@@ -216,11 +229,11 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
     has_re = has_re,
     n_ids = n_ids,
     id = id_index$idx,
-    alpha_prior = priors$intercept,
-    beta_prior = t(priors$beta), 
-    sigma_prior = priors$sigma,
-    alpha_tau_prior = priors$alpha_tau,
-    t_nu_prior = priors$nu,
+    alpha_prior = priors_made$intercept,
+    beta_prior = t(priors_made$beta), 
+    sigma_prior = priors_made$sigma,
+    alpha_tau_prior = priors_made$alpha_tau,
+    t_nu_prior = priors_made$nu,
     family = family_int,
   ## slx data -------------    
     W = W,
@@ -244,9 +257,9 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
   if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
   if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
-  priors <- priors[which(names(priors) %in% pars)]
+  priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
   ## PRINT STUFF -------------    
-  if (!silent) print_priors(user_priors, priors)
+  if (!silent) print_priors(prior, priors_made_slim)
   ## CALL STAN -------------    
   samples <- rstan::sampling(stanmodels$glm, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
   if (missing(C)) C <- NA
@@ -256,7 +269,7 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
   out$formula <- formula
   out$slx <- slx
   out$re <- re_list
-  out$priors <- priors
+  out$priors <- priors_made_slim
   out$scale_params <- scale_params
   if (!missing(ME)) out$ME <- ME
   if (has_re) {

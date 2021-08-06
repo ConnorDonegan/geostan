@@ -82,3 +82,23 @@ test_that("GLM accepts covariate ME, multiple proportions", {
     expect_geostan(fit)
 })
 
+
+test_that("Set priors for GLM", {
+    data(georgia)
+    SW(
+        fit <- stan_glm(deaths.male ~ offset(log(pop.at.risk.male)) + insurance + college,
+                        data = georgia,
+                        chains = 1,
+                        family = poisson(),
+                        prior = list(beta = data.frame(location = c(0,0),
+                                                       scale = c(10,10)),
+                                     intercept = c(0, 10)
+                                     ),
+                    iter = iter,
+                    silent = silent,
+                    init_r = 0.1
+                    )
+    )
+    expect_geostan(fit)
+})
+
