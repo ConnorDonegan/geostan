@@ -144,10 +144,6 @@
   <span class='va'>C</span>,
   family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>gaussian</a></span><span class='op'>(</span><span class='op'>)</span>,
   prior <span class='op'>=</span> <span class='cn'>NULL</span>,
-  prior_intercept <span class='op'>=</span> <span class='cn'>NULL</span>,
-  prior_sigma <span class='op'>=</span> <span class='cn'>NULL</span>,
-  prior_nu <span class='op'>=</span> <span class='cn'>NULL</span>,
-  prior_tau <span class='op'>=</span> <span class='cn'>NULL</span>,
   centerx <span class='op'>=</span> <span class='cn'>FALSE</span>,
   scalex <span class='op'>=</span> <span class='cn'>FALSE</span>,
   prior_only <span class='op'>=</span> <span class='cn'>FALSE</span>,
@@ -175,7 +171,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>re</th>
-      <td><p>If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in <code>~ ID</code>.  The resulting random effects parameter returned is named <code>alpha_re</code>.</p></td>
+      <td><p>If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in <code>~ ID</code>. The resulting random effects parameter returned is named <code>alpha_re</code>, and the associated scale parameter is <code>alpha_tua</code>. That is, <code>alpha_re ~ N(0, alpha_tau)</code>, <code>alpha_tau ~ Student_t(d.f., location, scale)</code>.</p></td>
     </tr>
     <tr>
       <th>data</th>
@@ -203,23 +199,18 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>prior</th>
-      <td><p>A <code>data.frame</code> or <code>matrix</code> with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.</p></td>
-    </tr>
-    <tr>
-      <th>prior_intercept</th>
-      <td><p>A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. <code>prior_intercept = c(0, 10)</code>.</p></td>
-    </tr>
-    <tr>
-      <th>prior_sigma</th>
-      <td><p>A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on the residual standard deviation <code>sigma</code>. To use a half-Cauchy prior set degrees of freedom to one; e.g. <code>prior_sigma = c(1, 0, 3)</code>.</p></td>
-    </tr>
-    <tr>
-      <th>prior_nu</th>
-      <td><p>Set the parameters for the Gamma prior distribution on the degrees of freedom in the likelihood function when using <code>family = student_t</code>. Defaults to <code>prior_nu = c(alpha = 3, beta = 0.2)</code>.</p></td>
-    </tr>
-    <tr>
-      <th>prior_tau</th>
-      <td><p>Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter <code>alpha_tau</code>. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., <code>prior_tau = c(df = 20, location = 0, scale = 20)</code>.</p></td>
+      <td><p>A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:</p><dl>
+<dt>intercept</dt><dd><p>The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. <code>prior = list(intercept = c(location = 0, scale = 10))</code> to assign a Gaussian prior with mean zero and variance 10^2.</p></dd>
+
+<dt>beta</dt><dd><p>Regression coefficients are assigned Gaussian prior distributions. Provide a <code>data.frame</code> with two columns (location and scale).The order of variables must follow their order of appearance in the model <code>formula</code>; e.g., if the formula is <code>y ~ x1 + x2</code>, then providing `prior = list(beta = data.frame(location = c(0, 0), scale = c(1, 1))) will assign standard normal prior distributions to both coefficients.Note that if you also use <code>slx</code> terms (spatially lagged covariates), then you have to provide priors for them; <code>slx</code> terms <em>precede</em> other terms in the model formula. For example, providing of <code>y ~ x1 + x2</code> with <code>slx = ~ x1 + x2</code> is the same as providing <code>formula = y ~ Wx1 + Wx2 + x1 + x2</code>, where <code>Wx1</code> indicates the spatially lagged covariate.</p></dd>
+
+<dt>sigma</dt><dd><p>The scale parameter for Gaussian and Student's t likelihood models is assigned a half-Student's t prior distribution. Thus, provide values for the degrees of freedom, location, and scale parameters; e.g., <code>prior = list(sigma = c(df = 10, location = 0, scale = 5))</code> for a prior centered on zero with scale of 5 and 10 degrees of freedom. The half-Student's t prior for <code>sigma</code> is constrained to be positive.</p></dd>
+
+<dt>nu</dt><dd><p>The degrees of freedom for the Student's t likelihood model is assigned a gamma prior distribution. The default prior is <code>prior = list(nu = c(alpha = 3, beta = 0.2))</code>.</p></dd>
+
+<dt>tau</dt><dd><p>The scale parameter for random effects, or varying intercepts, terms. This scale parameter, <code>tau</code>, is assigned a half-Student's t prior. To set this, use, e.g., <code>prior = list(tau = c(df = 20, location = 0, scale = 20))</code>.</p></dd>
+
+</dl></td>
     </tr>
     <tr>
       <th>centerx</th>
@@ -268,7 +259,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     <p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl>
 <dt>summary</dt><dd><p>Summaries of the main parameters of interest; a data frame</p></dd>
 <dt>diagnostic</dt><dd><p>Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (<code>eff_pars</code>) and
-mean log pointwise predictive density (<code>lpd</code>), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.</p></dd>
+mean log pointwise predictive density (<code>lpd</code>), and residual spatial autocorrelation (Moran coefficient of the residuals).</p></dd>
 <dt>stanfit</dt><dd><p>an object of class <code>stanfit</code> returned by <code><a href='https://mc-stan.org/rstan/reference/stan.html'>rstan::stan</a></code></p></dd>
 <dt>data</dt><dd><p>a data frame containing the model data</p></dd>
 <dt>family</dt><dd><p>the user-provided or default <code>family</code> argument used to fit the model</p></dd>
@@ -315,8 +306,7 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
 <span class='va'>fit.pois</span> <span class='op'>&lt;-</span> <span class='fu'>stan_glm</span><span class='op'>(</span><span class='va'>sents</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/offset.html'>offset</a></span><span class='op'>(</span><span class='va'>log_e</span><span class='op'>)</span>,
                      re <span class='op'>=</span> <span class='op'>~</span> <span class='va'>name</span>,
                      family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span>,
-                     data <span class='op'>=</span> <span class='va'>sentencing</span>,
-                    silent <span class='op'>=</span> <span class='cn'>TRUE</span>
+                     data <span class='op'>=</span> <span class='va'>sentencing</span>
  <span class='op'>)</span>
 
 <span class='co'># diagnostics plot: Rhat values should all by very near 1</span>

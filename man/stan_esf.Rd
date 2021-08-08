@@ -32,11 +32,6 @@ stan_esf(
   family = gaussian(),
   p0,
   prior = NULL,
-  prior_intercept = NULL,
-  prior_sigma = NULL,
-  prior_rhs = NULL,
-  prior_nu = NULL,
-  prior_tau = NULL,
   centerx = FALSE,
   scalex = FALSE,
   prior_only = FALSE,
@@ -52,11 +47,11 @@ stan_esf(
 \arguments{
 \item{formula}{A model formula, following the R \link[stats]{formula} syntax. Binomial models are specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.}
 
-\item{slx}{Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
+\item{slx}{Formula to specify any spatially-lagged covariates. As in, \code{slx = ~ x1 + x2} (the implicit intercept term in this formula is removed internally).
 These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.}
 
-\item{re}{If the model includes a varying intercept specify the grouping variable here using formula syntax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}.}
+\item{re}{If the model includes a varying intercept specify the grouping variable here using formula syntax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}. The scale parameter for this term is named \code{alpha_tau}. That is, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}.}
 
 \item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.}
 
@@ -80,20 +75,26 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{family}{The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{student_t()} and \code{poisson(link = "log")}, and \code{binomial(link = "logit")}.}
 
-\item{p0}{Number of eigenvector coefficients expected to be far from zero. If this and \code{prior_rhs} are missing, Chun et al.'s (2016) formula will be used to fill this in; see \link[geostan]{exp_pars}.
-The value of \code{p0} is used to control the prior degree of sparsity in the model.}
+\item{p0}{Number of eigenvector coefficients expected to be far from zero. If this and \code{prior_rhs} are missing, Chun et al.'s (2016) formula will be used to fill this in; see \link[geostan]{exp_pars}. The value of \code{p0} is used to control the prior degree of sparsity in the model.}
 
-\item{prior}{A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.}
+\item{prior}{A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:
+\describe{
+\item{intercept}{The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. \code{prior = list(intercept = c(location = 0, scale = 10))} to assign a Gaussian prior with mean zero and variance 10^2.}
 
-\item{prior_intercept}{A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}.}
+\item{beta}{Regression coefficients are assigned Gaussian prior distributions. Provide a \code{data.frame} with two columns (location and scale).
 
-\item{prior_sigma}{A vector with degrees of freedom, location and scale parameters for the half-Student's t prior on the residual standard deviation \code{sigma}. To use a half-Cauchy prior set degrees of freedom to one; e.g. \code{prior_sigma = c(1, 0, 3)}.}
+The order of variables must follow their order of appearance in the model \code{formula}; e.g., if the formula is \code{y ~ x1 + x2}, then providing `prior = list(beta = data.frame(location = c(0, 0), scale = c(1, 1))) will assign standard normal prior distributions to both coefficients.
 
-\item{prior_rhs}{A named vector with the degrees of freedom and scale of the zero mean Student's t slab for regularizing large eigenvector coefficients, and the prior scale for the global shrinkage parameter; e.g. \code{prior_rhs = c(slab_df = 15, slab_scale = 5, scale_global = 0.5)}. If \code{p0} is provided and prior_rhs is missing, \code{p0} will be used automatically to calculate \code{scale_global}, \code{slab_df} will be set to 15, and \code{slab_scale} will be set to be weakly informative automatically based on the scale of the data.}
+Note that if you also use \code{slx} terms (spatially lagged covariates), then you have to provide priors for them; \code{slx} terms \emph{precede} other terms in the model formula. For example, providing of \code{y ~ x1 + x2} with \code{slx = ~ x1 + x2} is the same as providing \code{formula = y ~ Wx1 + Wx2 + x1 + x2}, where \code{Wx1} indicates the spatially lagged covariate.}
 
-\item{prior_nu}{Set the parameters for the Gamma prior distribution on the degrees of freedom in the likelihood function when using \code{family = student_t}. Defaults to \code{prior_nu = c(alpha = 3, beta = 0.2)}.}
+\item{sigma}{The scale parameter for Gaussian and Student's t likelihood models is assigned a half-Student's t prior distribution. Thus, provide values for the degrees of freedom, location, and scale parameters; e.g., \code{prior = list(sigma = c(df = 10, location = 0, scale = 5))} for a prior centered on zero with scale of 5 and 10 degrees of freedom. The half-Student's t prior for \code{sigma} is constrained to be positive.}
 
-\item{prior_tau}{Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts (\code{alpha_re}). The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 20, location = 0, scale = 5)}.}
+\item{nu}{The degrees of freedom for the Student's t likelihood model is assigned a gamma prior distribution. The default prior is \code{prior = list(nu = c(alpha = 3, beta = 0.2))}.}
+
+\item{tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, \code{tau}, is assigned a half-Student's t prior. To set this, use, e.g., \code{prior = list(tau = c(df = 20, location = 0, scale = 20))}.}
+
+\item{rhs}{This is for controlling the regularized horseshoe (RHS) prior, which is assigned to the eigenvector coefficients. Provide a \emph{named} vector of length three. The RHS prior has two parts to consider. First is the 'slab' that is used to regularize large coefficient estimates; this is a zero-mean Student's t model, the user provides the degrees of freedom and scale parameters. The second component is the global shrinkage parameter, controlling the degree of shrinkage; provide a value nearer to zero if you wish to make the model more sparse. To allow the spatial filter to account for a greater amount of spatial autocorrelation (i.e., if you find the residuals contain spatial autocorrelation), increase the global scale parameter up to one. E.g., \code{prior = list(rhs = c(slab_df = 15, slab_scale = 5, scale_global = 0.5))}.}
+}}
 
 \item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.}
 

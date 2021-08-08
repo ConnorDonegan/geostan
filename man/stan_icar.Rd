@@ -28,8 +28,6 @@ stan_icar(
   C,
   family = poisson(),
   prior = NULL,
-  prior_intercept = NULL,
-  prior_tau = NULL,
   centerx = FALSE,
   scalex = FALSE,
   prior_only = FALSE,
@@ -49,7 +47,7 @@ stan_icar(
 These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.}
 
-\item{re}{If the model includes a varying intercept term \code{alpha_re} specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}. Before using this, read the \code{Details} section and the \code{type} argument.}
+\item{re}{If the model includes a varying intercept term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}. Before using this, read the \code{Details} section and the \code{type} argument.}
 
 \item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.}
 
@@ -71,11 +69,19 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{family}{The likelihood function for the outcome variable. Current options are \code{binomial(link = "logit")} and \code{poisson(link = "log")}.}
 
-\item{prior}{A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.}
+\item{prior}{A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:
+\describe{
 
-\item{prior_intercept}{A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}.}
+\item{intercept}{The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. \code{prior = list(intercept = c(location = 0, scale = 10))} to assign a Gaussian prior with mean zero and variance 10^2.}
 
-\item{prior_tau}{Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.}
+\item{beta}{Regression coefficients are assigned Gaussian prior distributions. Provide a \code{data.frame} with two columns (location and scale).
+
+The order of variables must follow their order of appearance in the model \code{formula}; e.g., if the formula is \code{y ~ x1 + x2}, then providing \verb{prior = list(beta = data.frame(location = c(0, 5), scale = c(1, 10))) will assign standard normal prior distributions to the coefficient on }x1\verb{; the prior for }x2\verb{would be}Gaussian(5, 10)`.
+
+Note that if you also use \code{slx} terms (spatially lagged covariates), then the priors for \code{beta} includes these \code{slx} coefficients. Note that \code{slx} terms are prepended to the model formula, so their priors should be listed first. For example, providing a formula of \code{y ~ x1 + x2} with \code{slx = ~ x1 + x2} is effectively the same as specifying \code{formula = y ~ Wx1 + Wx2 + x1 + x2}, where \code{Wx} indicates a spatially lagged covariate.}
+
+\item{alpha_tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, \code{tau}, is assigned a half-Student's t prior. To set this, use, e.g., \code{prior = list(alpha_tau = c(df = 20, location = 0, scale = 20))}.}
+}}
 
 \item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.}
 
@@ -152,6 +158,7 @@ This is known as the BYM model (Besag et al. 1991), and can be specified using \
 Riebler et al. (2016) introduce a variation on the BYM model (\code{type = "bym2"}). This specification combines \code{phi} and \code{theta} using a mixing parameter, \code{rho}, that controls the proportion of the variation that is attributable to the spatially autocorrelated term, \code{phi}, rather than the spatially unstructured term, \code{theta}. The terms share a single scale parameter:\preformatted{             convolution = [sqrt(rho/scale_factor) * phi_tilde + sqrt(1 - rho) * theta_tilde] * spatial_scale.
              phi_tilde ~ Gaussian(0, 1)
              theta_tilde ~ Gaussian(0, 1)
+             spatial_scale ~ Gaussian(0, 1)
 }
 
 The two \verb{_tilde} terms are equivalent to standard normal deviates, \code{rho} is restricted to values between zero and one, and \code{scale_factor} is a constant term provided by the user. By default \code{scale_factor} is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure, \code{C}. This implies that the same prior distribution assigned to the \code{spatial_scale} will differ in its implications if \code{C} is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to \code{spatial_scale}.
@@ -169,12 +176,12 @@ Borrowing \code{R} code from Morris (2017) and following Freni-Sterrantino et al
                  \}    
               Cg <- C[g.idx, g.idx] 
               scale_factor[j] <- scale_c(Cg) 
-\}
+              \}
                ## update the data list for stan_icar: exactly like this
               icar.data$inv_sqrt_scale_factor <- 1 / sqrt( scale_factor )
 }
 
-This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to \code{phi} automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term.
+This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to \code{phi} automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term. (If you want to avoid complications from a disconnected graph structure, see \code{\link[geostan]{stan_car}}).
 
 Note, the code above requires the \code{scale_c} function; it has package dependencies that are not included in \code{geostan}. To use \code{scale_c}, you have to load the following \code{R} function:\preformatted{#' compute scaling factor for adjacency matrix, accounting for differences in spatial connectivity 
 #'

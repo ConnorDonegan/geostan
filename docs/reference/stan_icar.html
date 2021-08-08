@@ -146,8 +146,6 @@
   <span class='va'>C</span>,
   family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span>,
   prior <span class='op'>=</span> <span class='cn'>NULL</span>,
-  prior_intercept <span class='op'>=</span> <span class='cn'>NULL</span>,
-  prior_tau <span class='op'>=</span> <span class='cn'>NULL</span>,
   centerx <span class='op'>=</span> <span class='cn'>FALSE</span>,
   scalex <span class='op'>=</span> <span class='cn'>FALSE</span>,
   prior_only <span class='op'>=</span> <span class='cn'>FALSE</span>,
@@ -175,7 +173,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>re</th>
-      <td><p>If the model includes a varying intercept term <code>alpha_re</code> specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re ~ N(0, alpha_tau)</code>, <code>alpha_tau ~ Student_t(d.f., location, scale)</code>. Before using this, read the <code>Details</code> section and the <code>type</code> argument.</p></td>
+      <td><p>If the model includes a varying intercept term, <code>alpha_re</code>, specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re ~ N(0, alpha_tau)</code>, <code>alpha_tau ~ Student_t(d.f., location, scale)</code>. Before using this, read the <code>Details</code> section and the <code>type</code> argument.</p></td>
     </tr>
     <tr>
       <th>data</th>
@@ -211,15 +209,15 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>prior</th>
-      <td><p>A <code>data.frame</code> or <code>matrix</code> with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.</p></td>
-    </tr>
-    <tr>
-      <th>prior_intercept</th>
-      <td><p>A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. <code>prior_intercept = c(0, 10)</code>.</p></td>
-    </tr>
-    <tr>
-      <th>prior_tau</th>
-      <td><p>Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter <code>alpha_tau</code>. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., <code>prior_tau = c(df = 15, location = 0, scale = 5)</code>.</p></td>
+      <td><p>A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:</p><dl>
+
+<dt>intercept</dt><dd><p>The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. <code>prior = list(intercept = c(location = 0, scale = 10))</code> to assign a Gaussian prior with mean zero and variance 10^2.</p></dd>
+
+<dt>beta</dt><dd><p>Regression coefficients are assigned Gaussian prior distributions. Provide a <code>data.frame</code> with two columns (location and scale).The order of variables must follow their order of appearance in the model <code>formula</code>; e.g., if the formula is <code>y ~ x1 + x2</code>, then providing <code>prior = list(beta = data.frame(location = c(0, 5), scale = c(1, 10))) will assign standard normal prior distributions to the coefficient on </code>x1<code>; the prior for </code>x2<code>would be</code>Gaussian(5, 10)`.Note that if you also use <code>slx</code> terms (spatially lagged covariates), then the priors for <code>beta</code> includes these <code>slx</code> coefficients. Note that <code>slx</code> terms are prepended to the model formula, so their priors should be listed first. For example, providing a formula of <code>y ~ x1 + x2</code> with <code>slx = ~ x1 + x2</code> is effectively the same as specifying <code>formula = y ~ Wx1 + Wx2 + x1 + x2</code>, where <code>Wx</code> indicates a spatially lagged covariate.</p></dd>
+
+<dt>alpha_tau</dt><dd><p>The scale parameter for random effects, or varying intercepts, terms. This scale parameter, <code>tau</code>, is assigned a half-Student's t prior. To set this, use, e.g., <code>prior = list(alpha_tau = c(df = 20, location = 0, scale = 20))</code>.</p></dd>
+
+</dl></td>
     </tr>
     <tr>
       <th>centerx</th>
@@ -324,6 +322,7 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
 <p>Riebler et al. (2016) introduce a variation on the BYM model (<code>type = "bym2"</code>). This specification combines <code>phi</code> and <code>theta</code> using a mixing parameter, <code>rho</code>, that controls the proportion of the variation that is attributable to the spatially autocorrelated term, <code>phi</code>, rather than the spatially unstructured term, <code>theta</code>. The terms share a single scale parameter:</p><pre>             convolution = [sqrt(rho/scale_factor) * phi_tilde + sqrt(1 - rho) * theta_tilde] * spatial_scale.
              phi_tilde ~ Gaussian(0, 1)
              theta_tilde ~ Gaussian(0, 1)
+             spatial_scale ~ Gaussian(0, 1)
 </pre>
 
 <p>The two <code>_tilde</code> terms are equivalent to standard normal deviates, <code>rho</code> is restricted to values between zero and one, and <code>scale_factor</code> is a constant term provided by the user. By default <code>scale_factor</code> is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure, <code>C</code>. This implies that the same prior distribution assigned to the <code>spatial_scale</code> will differ in its implications if <code>C</code> is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to <code>spatial_scale</code>.</p>
@@ -340,12 +339,12 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
                  <span class='op'>}</span>    
               <span class='va'>Cg</span> <span class='op'>&lt;-</span> <span class='va'>C</span><span class='op'>[</span><span class='va'>g.idx</span>, <span class='va'>g.idx</span><span class='op'>]</span> 
               <span class='va'>scale_factor</span><span class='op'>[</span><span class='va'>j</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='fu'>scale_c</span><span class='op'>(</span><span class='va'>Cg</span><span class='op'>)</span> 
-<span class='op'>}</span>
+              <span class='op'>}</span>
                <span class='co'>## update the data list for stan_icar: exactly like this</span>
               <span class='va'>icar.data</span><span class='op'>$</span><span class='va'>inv_sqrt_scale_factor</span> <span class='op'>&lt;-</span> <span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span><span class='op'>(</span> <span class='va'>scale_factor</span> <span class='op'>)</span>
 </pre>
 
-<p>This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to <code>phi</code> automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term.</p>
+<p>This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to <code>phi</code> automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term. (If you want to avoid complications from a disconnected graph structure, see <code><a href='stan_car.html'>stan_car</a></code>).</p>
 <p>Note, the code above requires the <code>scale_c</code> function; it has package dependencies that are not included in <code>geostan</code>. To use <code>scale_c</code>, you have to load the following <code>R</code> function:</p><pre><span class='co'>#' compute scaling factor for adjacency matrix, accounting for differences in spatial connectivity </span>
 <span class='co'>#'</span>
 <span class='co'>#' @param C connectivity matrix</span>
