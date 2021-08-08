@@ -11,7 +11,7 @@
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally); you must also provide \code{C} when including \code{slx}.
 #'  Specified covariates will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in \code{~ ID}.  The resulting random effects parameter returned is named \code{alpha_re}, and the associated scale parameter is \code{alpha_tua}.
+#' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}, and the associated scale parameter is \code{alpha_tua}. That is, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$spatial = TRUE}, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
 #' \describe{
@@ -24,7 +24,7 @@
 #' }
 #' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} or spatial measurement error (\code{ME}) terms; it will automatically be row-standardized before calculating \code{slx} terms.
 #' @param family The likelihood function for the outcome variable. Current options are \code{poisson(link = "log")}, \code{binomial(link = "logit")}, \code{student_t()}, and the default \code{gaussian()}.
-#' @param prior A named list of parameters for prior distributions. Priors can be set for the intercept (`intercept`), regression coefficients (`beta`), and scale parameter (`sigma`). Users also may set the prior parameters for the degrees of freedom (`nu`) of a Student's t likelihood. For models with so-called random effects, or varying intercept terms, the prior for the scale parameter (`tau`) can be set here. What follows are details on prior models for these parameters:
+#' @param prior A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:
 #' \describe{
 #' \item{intercept}{The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. \code{prior = list(intercept = c(location = 0, scale = 10))} to assign a Gaussian prior with mean zero and variance 10^2.}
 #' 
@@ -215,8 +215,12 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
   }
   ## PARAMETER MODEL STUFF -------------  
   is_student <- family$family == "student_t"
-  priors_made <- make_priors(user_priors = prior, y = y, x = x, xcentered = centerx,
-                        link = family$link, offset = offset)
+  priors_made <- make_priors(user_priors = prior,
+                             y = y,
+                             x = x,
+                             xcentered = centerx,
+                             link = family$link,
+                             offset = offset)
   ## GLM STUFF -------------  
   standata <- list(
   ## glm data -------------      

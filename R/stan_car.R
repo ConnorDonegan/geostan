@@ -10,7 +10,7 @@
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 #'  These will be pre-multiplied by a row-standardized version of the user-provided spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param re If the model includes a varying intercept term \code{alpha_re} specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}. With the CAR model, any \code{alpha_re} term should be at a different level or scale than the observations (i.e., a different scale than the autocorrelation structure of the CAR model itself). 
+#' @param re If the model includes a varying intercept term \code{alpha_re} specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}. With the CAR model, any \code{alpha_re} term should be at a *different* level or scale than the observations; that is, at a different scale than the autocorrelation structure of the CAR model itself. 
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. This implements the methodology introduced by Donegan et al. (2021). Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned an auto-Gaussian (CAR) model unless \code{spatial = FALSE}, in which case they are assinged the Student's t model. Elements of the list \code{ME} may include:
 #' \describe{
@@ -25,10 +25,21 @@
 #' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{gaussian()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}.
 #' @param invert To calculate the log likelihood of the data \code{log_lik} and the posterior predictive distribution \code{yrep} with the auto-Gaussian model, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set \code{invert = FALSE}. Note, this is only used when \code{family = gaussian()}.
-#' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the regression coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
-#' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. 
-#' @param prior_tau Set hyperparameters for the scale parameter of varying intercepts \code{alpha_re}. The varying intercepts are given a normal prior with scale parameter \code{alpha_tau}. \code{alpha_tau} is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.
-#' @param prior_car_scale Hyperprior parameters for the scale of the CAR model \code{car_scale}. The scale is assigned a Student's t prior model; to set its parameter values provide a length-three vector with the degrees of freedom, location, and scale parameters. E.g., \code{prior_car_scale = c(df = 15, location = 0, scale = 2)}.
+#' @param prior A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:
+#' \describe{
+#' \item{intercept}{The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. \code{prior = list(intercept = c(location = 0, scale = 10))} to assign a Gaussian prior with mean zero and variance 10^2.}
+#' 
+#' \item{beta}{Regression coefficients are assigned Gaussian prior distributions. Provide a `data.frame` with two columns (location and scale).
+#'
+#' The order of variables must follow their order of appearance in the model `formula`; e.g., if the formula is `y ~ x1 + x2`, then providing `prior = list(beta = data.frame(location = c(0, 0), scale = c(1, 1))) will assign standard normal prior distributions to both coefficients.
+#'
+#' Note that if you also use `slx` terms (spatially lagged covariates), then you have to provide priors for them; `slx` terms *precede* other terms in the model formula. For example, providing of `y ~ x1 + x2` with `slx = ~ x1 + x2` is the same as providing `formula = y ~ Wx1 + Wx2 + x1 + x2`, where `Wx1` indicates the spatially lagged covariate.}
+#'
+#' \item{tau}{The scale parameter for (spatially *un*structured) random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(tau = c(df = 20, location = 0, scale = 20))`.}
+#'
+#' \item{car_scale}{Hyperprior parameters for the scale of the CAR model, \code{car_scale}. The scale is assigned a Student's t prior model; to set its parameter values, provide a length-three vector with the degrees of freedom, location, and scale parameters. E.g., \code{prior = list(car_scale = c(df = 15, location = 0, scale = 2))}.}
+#' }
+#' 
 #' @param centerx Logical value indicating if the covariates should be centered prior to fitting the model.
 #' @param scalex Logical value indicating if the covariates be centered and scaled (divided by their standard deviation).
 #' @param prior_only Logical value; if \code{TRUE}, draw samples only from the prior distributions of parameters.
@@ -232,7 +243,7 @@ stan_car <- function(formula,
                      car_parts,
                      family = gaussian(), 
                      invert = TRUE, #!#
-                     prior = NULL, prior_intercept = NULL, prior_tau = NULL, prior_car_scale = NULL,
+                     prior = NULL, 
                      centerx = FALSE, scalex = FALSE,
                      prior_only = FALSE,
                      chains = 5, iter = 2e3, refresh = 500, pars = NULL,
@@ -317,13 +328,8 @@ stan_car <- function(formula,
     re_list <- list(formula = re, data = id_index)
   }
   ## PARAMETER MODEL STUFF -------------  
-  is_student <- FALSE # family$family == "student_t" # always false
-  user_priors <- list(intercept = prior_intercept,
-                      beta = prior,
-                      sigma = NULL,
-                      nu = NULL,
-                      alpha_tau = prior_tau)
-  priors <- make_priors(user_priors = user_priors,
+  is_student <- FALSE  # always false for CAR model #
+  priors_made <- make_priors(user_priors = prior,
                         y = y,
                         x = x,
                         xcentered = centerx,
@@ -331,16 +337,16 @@ stan_car <- function(formula,
                         offset = offset)
   ## CAR STUFF -------------  #!#
   if (family$family == "gaussian") family_int <- 5 #!# auto-Gaussian #!#
-  if (!is.null(prior_car_scale)) {
-      priors$sigma <- prior_car_scale
+  if (!is.null(prior$car_scale)) {
+      priors_made$car_scale <- prior$car_scale
   } else {
-      prior_car_scale <- priors$sigma
+      priors_made$car_scale <- priors_made$sigma
       if (!silent) {
           message("\n*Setting prior parameters for car_scale")
           message("Student's t")
-          message("Degrees of freedom: ", priors$sigma[1])
-          message("Location: ", priors$sigma[2])
-          message("Scale: ", priors$sigma[3])
+          message("Degrees of freedom: ", priors_made$car_scale[1])
+          message("Location: ", priors_made$car_scale[2])
+          message("Scale: ", priors_made$car_scale[3])
       }      
   }  
   ## MIXED STUFF -------------  
@@ -355,11 +361,11 @@ stan_car <- function(formula,
     has_re = has_re,
     n_ids = n_ids,
     id = id_index$idx,
-    alpha_prior = priors$intercept,
-    beta_prior = t(priors$beta), 
-    sigma_prior = priors$sigma,
-    alpha_tau_prior = priors$alpha_tau,
-    t_nu_prior = priors$nu,
+    alpha_prior = priors_made$intercept,
+    beta_prior = t(priors_made$beta), 
+    sigma_prior = priors_made$car_scale, # CAR specific #
+    alpha_tau_prior = priors_made$alpha_tau,
+    t_nu_prior = priors_made$nu,
     family = family_int,
   ## slx data -------------    
     W = W,
@@ -389,11 +395,9 @@ stan_car <- function(formula,
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
   if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
   if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
-  priors <- priors[which(names(priors) %in% pars)]
-  ## CAR SCALE PRIOR -------------    
-  priors <- c(priors, list(car_scale = prior_car_scale)) #!#
+  priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
   ## PRINT STUFF -------------    
-  if (!silent) print_priors(user_priors, priors)
+  if (!silent) print_priors(user_priors, priors_made_slim)
   ## CALL STAN -------------  
   samples <- rstan::sampling(stanmodels$car, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
   out <- clean_results(samples, pars, is_student, has_re, car_parts$C, Wx, x.list$x, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
@@ -402,7 +406,7 @@ stan_car <- function(formula,
   out$formula <- formula
   out$slx <- slx
   out$re <- re_list
-  out$priors <- priors
+  out$priors <- priors_made_slim
   out$scale_params <- scale_params
   if (!missing(ME)) out$ME <- ME
   if (family_int != 5) out$spatial <- data.frame(par = "phi", method = "CAR") else out$spatial <- data.frame(par = "trend", method = "CAR") #!#

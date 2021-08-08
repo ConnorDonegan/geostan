@@ -161,6 +161,7 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
     beta_location <- rep(0, times = ncol(x))
     priors$beta <- cbind(beta_location, beta_scale)
     dimnames(priors$beta)[[1]] <- dimnames(x)[[2]]
+    stopifnot(ncol(x) == nrow(priors$beta))      
   } else {
       priors$beta <- matrix(0, nrow = 0, ncol = 2)
   }
@@ -175,10 +176,16 @@ make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, s
   for (i in seq_along(priors)) {
       par.name <- names(priors)[i]
       if(!is.null(user_priors[[par.name]])) {
+          if (par.name == "beta") {
+              beta_prior <- user_priors[[par.name]]
+              if (ncol(x) == 1 &
+                  inherits(beta_prior, "numeric")
+                  ) user_priors[[par.name]] <- beta_prior <- as.data.frame(matrix(beta_prior, ncol = 2))                  
+              stopifnot(ncol(x) == nrow(beta_prior))      
+          }          
           priors[[i]] <- user_priors[[par.name]]
       }      
   }
-  if (ncol(x)) stopifnot(ncol(x) == nrow(priors$beta))
   return(priors)
 }
 

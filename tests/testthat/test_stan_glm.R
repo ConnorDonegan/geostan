@@ -102,3 +102,21 @@ test_that("Set priors for GLM", {
     expect_geostan(fit)
 })
 
+test_that("Set length-2 vector prior for 1 beta in GLM", {
+    data(georgia)
+    SW(
+        fit <- stan_glm(deaths.male ~ offset(log(pop.at.risk.male)) + insurance,
+                        data = georgia,
+                        chains = 1,
+                        family = poisson(),
+                        prior = list(beta = c(0, 10),
+                                     intercept = c(0, 10)
+                                     ),
+                    iter = iter,
+                    silent = silent,
+                    init_r = 0.1
+                    )
+    )
+    expect_geostan(fit)
+})
+

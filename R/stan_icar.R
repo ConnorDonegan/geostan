@@ -10,7 +10,7 @@
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 #'  These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param re If the model includes a varying intercept term \code{alpha_re} specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}. Before using this, read the \code{Details} section and the \code{type} argument.
+#' @param re If the model includes a varying intercept term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}. Before using this, read the \code{Details} section and the \code{type} argument.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' @param type Defaults to "icar" (partial pooling of neighboring observations through parameter \code{phi}); specify "bym" to add a second parameter vector \code{theta} to perform partial pooling across all observations; specify "bym2" for the innovation introduced by Riebler et al. (2016). See \code{Details} for more information.
 #' @param scale_factor For the BYM2 model, optional. If missing, this will be set to a vector of ones. 
@@ -25,10 +25,22 @@
 #' }
 #' @param C Spatial connectivity matrix which will be used to construct an edge list for the ICAR model, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms or spatial measurement error (ME) models. It will automatically be row-standardized before calculating \code{slx} terms. \code{C} must be a binary symmetric \code{n x n} matrix.
 #' 
-#' @param family The likelihood function for the outcome variable. Current options are \code{binomial(link = "logit")} and \code{poisson(link = "log")}. 
-#' @param prior A \code{data.frame} or \code{matrix} with location and scale parameters for Gaussian prior distributions on the model coefficients. Provide two columns---location and scale---and a row for each variable in their order of appearance in the model formula. Default priors are weakly informative relative to the scale of the data.
-#' @param prior_intercept A vector with location and scale parameters for a Gaussian prior distribution on the intercept; e.g. \code{prior_intercept = c(0, 10)}. 
-#' @param prior_tau Set hyperparameters for the scale parameter of exchangeable random effects/varying intercepts. The random effects are given a normal prior with scale parameter \code{alpha_tau}. The latter is given a half-Student's t prior with default of 20 degrees of freedom, centered on zero and scaled to the data to be weakly informative. To adjust it use, e.g., \code{prior_tau = c(df = 15, location = 0, scale = 5)}.
+#' @param family The likelihood function for the outcome variable. Current options are \code{binomial(link = "logit")} and \code{poisson(link = "log")}.
+#'
+#' @param prior A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:
+#' \describe{
+#' 
+#' \item{intercept}{The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. \code{prior = list(intercept = c(location = 0, scale = 10))} to assign a Gaussian prior with mean zero and variance 10^2.}
+#' 
+#' \item{beta}{Regression coefficients are assigned Gaussian prior distributions. Provide a `data.frame` with two columns (location and scale).
+#'
+#' The order of variables must follow their order of appearance in the model `formula`; e.g., if the formula is `y ~ x1 + x2`, then providing `prior = list(beta = data.frame(location = c(0, 5), scale = c(1, 10))) will assign standard normal prior distributions to the coefficient on `x1`; the prior for `x2` would be `Gaussian(5, 10)`.
+#'
+#' Note that if you also use `slx` terms (spatially lagged covariates), then the priors for `beta` includes these `slx` coefficients. Note that `slx` terms are prepended to the model formula, so their priors should be listed first. For example, providing a formula of `y ~ x1 + x2` with `slx = ~ x1 + x2` is effectively the same as specifying `formula = y ~ Wx1 + Wx2 + x1 + x2`, where `Wx` indicates a spatially lagged covariate.}
+#'
+#' \item{alpha_tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(alpha_tau = c(df = 20, location = 0, scale = 20))`.}
+#' }
+#'
 #' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.
 #' @param scalex Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
 #' @param prior_only Draw samples from the prior distributions of parameters only.
@@ -79,6 +91,7 @@
 #'              convolution = [sqrt(rho/scale_factor) * phi_tilde + sqrt(1 - rho) * theta_tilde] * spatial_scale.
 #'              phi_tilde ~ Gaussian(0, 1)
 #'              theta_tilde ~ Gaussian(0, 1)
+#'              spatial_scale ~ Gaussian(0, 1)
 #' ```
 #' The two `_tilde` terms are equivalent to standard normal deviates, `rho` is restricted to values between zero and one, and `scale_factor` is a constant term provided by the user. By default `scale_factor` is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure, `C`. This implies that the same prior distribution assigned to the `spatial_scale` will differ in its implications if `C` is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to `spatial_scale`.
 #'
@@ -97,11 +110,11 @@
 #'                  }    
 #'               Cg <- C[g.idx, g.idx] 
 #'               scale_factor[j] <- scale_c(Cg) 
-#'}
+#'               }
 #'                ## update the data list for stan_icar: exactly like this
 #'               icar.data$inv_sqrt_scale_factor <- 1 / sqrt( scale_factor )
 #' ```
-#' This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to `phi` automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term.
+#' This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to `phi` automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term. (If you want to avoid complications from a disconnected graph structure, see \code{\link[geostan]{stan_car}}).
 #' 
 #' Note, the code above requires the `scale_c` function; it has package dependencies that are not included in `geostan`. To use `scale_c`, you have to load the following `R` function:
 #' ```
@@ -228,9 +241,10 @@
 stan_icar <- function(formula, slx, re, data,
                       type = c("icar", "bym", "bym2"),
                       scale_factor = NULL,
-                      ME = NULL, C, 
+                      ME = NULL,
+                      C, 
                       family = poisson(),
-                      prior = NULL, prior_intercept = NULL, prior_tau = NULL,
+                      prior = NULL,
                       centerx = FALSE, scalex = FALSE, prior_only = FALSE,
                       chains = 4, iter = 4e3, refresh = 500, pars = NULL,
                       control = list(adapt_delta = .9, max_treedepth = 15),
@@ -312,10 +326,13 @@ stan_icar <- function(formula, slx, re, data,
     re_list <- list(formula = re, data = id_index)
   }
   ## PARAMETER MODEL STUFF -------------  
-  is_student <- FALSE ## family$family == "student_t"
-  user_priors <- list(intercept = prior_intercept, beta = prior, sigma = NULL, nu = NULL, alpha_tau = prior_tau)
-  priors <- make_priors(user_priors = user_priors, y = y, x = x, xcentered = centerx,
-                        link = family$link, offset = offset)
+  is_student <- FALSE ## always false for icar ##
+  priors_made <- make_priors(user_priors = prior,
+                        y = y,
+                        x = x,
+                        xcentered = centerx,
+                        link = family$link,
+                        offset = offset)
   ## MIXED STUFF -------------  
   standata <- list(
   ## glm data -------------
@@ -328,11 +345,11 @@ stan_icar <- function(formula, slx, re, data,
     has_re = has_re,
     n_ids = n_ids,
     id = id_index$idx,
-    alpha_prior = priors$intercept,
-    beta_prior = t(priors$beta), 
-    sigma_prior = priors$sigma,
-    alpha_tau_prior = priors$alpha_tau,
-    t_nu_prior = priors$nu,
+    alpha_prior = priors_made$intercept,
+    beta_prior = t(priors_made$beta), 
+    sigma_prior = priors_made$sigma,
+    alpha_tau_prior = priors_made$alpha_tau,
+    t_nu_prior = priors_made$nu,
     family = family_int,
   ## slx data -------------    
     W = W,
@@ -363,9 +380,9 @@ stan_icar <- function(formula, slx, re, data,
   if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
   if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
   if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
-  priors <- priors[which(names(priors) %in% pars)]
+  priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
   ## PRINT STUFF -------------    
-  if (!silent) print_priors(user_priors, priors)
+  if (!silent) print_priors(prior, priors_made_slim)
   ## CALL STAN -------------  
   samples <- rstan::sampling(stanmodels$icar, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
   out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
@@ -375,7 +392,7 @@ stan_icar <- function(formula, slx, re, data,
   out$slx <- slx
   out$edges <- edges(C)  
   out$re <- re_list
-  out$priors <- priors
+  out$priors <- priors_made_slim
   out$scale_params <- scale_params
   if (!missing(ME)) out$ME <- ME
   out$spatial <- data.frame(par = "phi", method = toupper(type))

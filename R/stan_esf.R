@@ -10,7 +10,7 @@
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{slx = ~ x1 + x2} (the implicit intercept term in this formula is removed internally).
 #'  These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param re If the model includes a varying intercept specify the grouping variable here using formula syntax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}. The scale parameter for this term is named `alpha_tau`.
+#' @param re If the model includes a varying intercept specify the grouping variable here using formula syntax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}. The scale parameter for this term is named `alpha_tau`. That is, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}.
 #' @param C Spatial connectivity matrix which will be used to calculate eigenvectors, residual spatial autocorrelation as well as any user specified \code{slx} terms or spatial measurement error (ME) models; it will be row-standardized before calculating \code{slx} terms.
 #' @param EV A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. If provided, still also provide a spatial weights matrix \code{C} for other purposes.  See \link[geostan]{make_EV} and \link[geostan]{shape2mat}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
@@ -30,7 +30,7 @@
 #' @param family The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{student_t()} and \code{poisson(link = "log")}, and \code{binomial(link = "logit")}. 
 #' @param p0 Number of eigenvector coefficients expected to be far from zero. If this and \code{prior_rhs} are missing, Chun et al.'s (2016) formula will be used to fill this in; see \link[geostan]{exp_pars}. The value of \code{p0} is used to control the prior degree of sparsity in the model.
 #'
-#' @param prior A named list of parameters for prior distributions. Priors can be set for the intercept (`intercept`), regression coefficients (`beta`), and scale parameter (`sigma`). Users also may set the prior parameters for the degrees of freedom (`nu`) of a Student's t likelihood. For models with so-called random effects, or varying intercept terms, the prior for the scale parameter (`tau`) can be set here. What follows are details on prior models for these parameters:
+#' @param prior A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:
 #' \describe{
 #' \item{intercept}{The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. \code{prior = list(intercept = c(location = 0, scale = 10))} to assign a Gaussian prior with mean zero and variance 10^2.}
 #' 
