@@ -1047,6 +1047,7 @@ prep_car_data <- function(A, style = c("ACAR", "WCAR", "DCAR"), lambda = FALSE, 
 #' library(sf)
 #' url <- "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_state_20m.zip"
 #' folder <- tempdir()
+#' print(folder)
 #' get_shp(url, folder)
 #' states <- sf::st_read(folder)
 #' 
