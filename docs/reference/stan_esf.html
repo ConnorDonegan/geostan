@@ -236,11 +236,11 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>centerx</th>
-      <td><p>Should the covariates be centered prior to fitting the model? Defaults to <code>FALSE</code>.</p></td>
+      <td><p>To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to <code><a href='https://rdrr.io/r/base/scale.html'>scale</a></code>.</p></td>
     </tr>
     <tr>
       <th>scalex</th>
-      <td><p>Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to <code>FALSE</code>.</p></td>
+      <td><p>To scale predictors, provide either a logical value or a numeric-alike vector of length equal to the number of columns of ‘x’. Passed to <code><a href='https://rdrr.io/r/base/scale.html'>scale</a></code>.</p></td>
     </tr>
     <tr>
       <th>prior_only</th>
