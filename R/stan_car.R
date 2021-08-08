@@ -39,9 +39,10 @@
 #'
 #' \item{car_scale}{Hyperprior parameters for the scale of the CAR model, \code{car_scale}. The scale is assigned a Student's t prior model; to set its parameter values, provide a length-three vector with the degrees of freedom, location, and scale parameters. E.g., \code{prior = list(car_scale = c(df = 15, location = 0, scale = 2))}.}
 #' }
+#'
+#' @param centerx To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to \code{\link[base]{scale}}.
+#' @param scalex To scale predictors, provide either a logical value or a numeric-alike vector of length equal to the number of columns of ‘x’. Passed to \code{\link[base]{scale}}.
 #' 
-#' @param centerx Logical value indicating if the covariates should be centered prior to fitting the model.
-#' @param scalex Logical value indicating if the covariates be centered and scaled (divided by their standard deviation).
 #' @param prior_only Logical value; if \code{TRUE}, draw samples only from the prior distributions of parameters.
 #' @param chains Number of MCMC chains to use. 
 #' @param iter Number of samples per chain. 
@@ -244,22 +245,24 @@ stan_car <- function(formula,
                      family = gaussian(), 
                      invert = TRUE, #!#
                      prior = NULL, 
-                     centerx = FALSE, scalex = FALSE,
+                     centerx = FALSE,
+                     scalex = FALSE,
                      prior_only = FALSE,
                      chains = 5, iter = 2e3, refresh = 500, pars = NULL,
                      control = list(adapt_delta = 0.9, max_treedepth = 13),
                      silent = FALSE,
                      ...
                      ) {
-  if (!inherits(family, "family") | !family$family %in% c("binomial", "poisson", "gaussian")) stop ("Must provide a valid family object: gaussian(), binomial() or poisson().") #!#
-  if (missing(formula) | !inherits(formula, "formula")) stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
-  if (missing(data)) stop("Must provide data (a data.frame or object coercible to a data.frame).")
-  if (missing(car_parts) | !inherits(car_parts, "list")) stop("Must provide a list to the argument car_parts.")
-  if(!all(c("nC", "nImC", "ImC", "ImC_v", "ImC_u", "Cidx", "M_diag", "C") %in% names(car_parts))) stop("car_parts is missing at least one required part. See ?prep_car_data. Did you use cmat = TRUE?")
-  C <- car_parts$C
-  if (!inherits(C, "matrix")) stop("car_parts$C must be a matrix.")
-  if (scalex) centerx = TRUE
-  if (silent) refresh = 0
+    stopifnot(inherits(formula, "formula"))
+    stopifnot(inherits(family, "family"))
+    stopifnot(family$family %in% c("gaussian", "poisson", "binomial"))
+    stopifnot(!missing(data))
+    stopifnot(inherits(car_parts, "list"))    
+    C <- car_parts$C    
+    stopifnot(inherits(C, "matrix"))
+    if (silent) refresh = 0
+    stopifnot(all(c("nC", "nImC", "ImC", "ImC_v", "ImC_u", "Cidx", "M_diag", "C") %in% names(car_parts)))
+    if (silent) refresh = 0
   ## GLM STUFF -------------
   a.zero <- as.array(0, dim = 1)
   tmpdf <- as.data.frame(data)
@@ -270,7 +273,7 @@ stan_car <- function(formula,
   family_int <- family_2_int(family)
   intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0)
   if (intercept_only) { # x includes slx, if any, for prior specifictions; x.list$x is the processed model matrix without slx terms.
-    if (!missing(slx)) stop("Spatial lag of X (slx) term provided for an intercept only model. Did you intend to include a covariate? If you intend to specify a model in which the only covariate is a spatially-lagged term, you must create this covariate yourself and include it in the main model formula.")      
+      if (!missing(slx)) stop("Spatial lag of X (slx) term provided for an intercept only model. Did you intend to include a covariate? If you intend to specify a model in which the only covariate is a spatially-lagged term, you must create this covariate yourself and include it in the main model formula.")
     x <- model.matrix(~ 0, data = tmpdf) 
     dbeta_prior <- 0
     slx <- " "
@@ -293,6 +296,7 @@ stan_car <- function(formula,
         wx_idx = a.zero
         dw_nonzero <- 0
     } else {
+        stopifnot(inherits(slx, "formula"))        
         if (any(rowSums(C) != 1)) {
             message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
         }
@@ -320,12 +324,12 @@ stan_car <- function(formula,
     id_index <- to_index(id, n = nrow(tmpdf))
     re_list <- NA
   } else {
-    if (class(re) != "formula") stop("re must be of class formula")
-    has_re <- 1
-    id <- tmpdf[,paste(re[2])]
-    n_ids <- length(unique(id))
-    id_index <- to_index(id)
-    re_list <- list(formula = re, data = id_index)
+      stopifnot(inherits(re, "formula"))              
+      has_re <- 1
+      id <- tmpdf[,paste(re[2])]
+      n_ids <- length(unique(id))
+      id_index <- to_index(id)
+      re_list <- list(formula = re, data = id_index)
   }
   ## PARAMETER MODEL STUFF -------------  
   is_student <- FALSE  # always false for CAR model #

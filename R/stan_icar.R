@@ -41,8 +41,9 @@
 #' \item{alpha_tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(alpha_tau = c(df = 20, location = 0, scale = 20))`.}
 #' }
 #'
-#' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.
-#' @param scalex Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
+#' @param centerx To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to \code{\link[base]{scale}}.
+#' @param scalex To scale predictors, provide either a logical value or a numeric-alike vector of length equal to the number of columns of ‘x’. Passed to \code{\link[base]{scale}}.
+#' 
 #' @param prior_only Draw samples from the prior distributions of parameters only.
 #' @param chains Number of MCMC chains to estimate. 
 #' @param iter Number of samples per chain. .
@@ -238,24 +239,28 @@
 #'   )
 #' }
 #' 
-stan_icar <- function(formula, slx, re, data,
+stan_icar <- function(formula, slx, re,
+                      data,
                       type = c("icar", "bym", "bym2"),
                       scale_factor = NULL,
                       ME = NULL,
                       C, 
                       family = poisson(),
                       prior = NULL,
-                      centerx = FALSE, scalex = FALSE, prior_only = FALSE,
+                      centerx = FALSE,
+                      scalex = FALSE,
+                      prior_only = FALSE,
                       chains = 4, iter = 4e3, refresh = 500, pars = NULL,
                       control = list(adapt_delta = .9, max_treedepth = 15),
                       silent = FALSE,
                       ...) {
-  if (class(family) != "family" | !family$family %in% c("binomial", "poisson")) stop ("Must provide a valid family object: binomial() or poisson().")
-  if (missing(formula) | class(formula) != "formula") stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
-  if (missing(data) | missing(C)) stop("Must provide data (a data.frame or object coercible to a data.frame) and connectivity matrix C.")
-  if (scalex) centerx = TRUE
-  if (silent) refresh = 0
-  type <- match.arg(type)
+    stopifnot(inherits(formula, "formula"))
+    stopifnot(inherits(family, "family"))
+    stopifnot(family$family %in% c("poisson", "binomial"))
+    stopifnot(!missing(data))
+    stopifnot(inherits(C, "matrix"))
+    if (silent) refresh = 0    
+    type <- match.arg(type)
   ## GLM STUFF -------------
   a.zero <- as.array(0, dim = 1)
   tmpdf <- as.data.frame(data)
@@ -291,6 +296,7 @@ stan_icar <- function(formula, slx, re, data,
         wx_idx = a.zero
         dw_nonzero <- 0
     } else {
+        stopifnot(inherits(slx, "formula"))        
         if (any(rowSums(C) != 1)) {
             message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
         }
@@ -318,12 +324,12 @@ stan_icar <- function(formula, slx, re, data,
     id_index <- to_index(id, n = nrow(tmpdf))
     re_list <- NA
   } else {
-    if (class(re) != "formula") stop("re must be of class formula")
-    has_re <- 1
-    id <- tmpdf[,paste(re[2])]
-    n_ids <- length(unique(id))
-    id_index <- to_index(id)
-    re_list <- list(formula = re, data = id_index)
+      stopifnot(inherits(re, "formula"))              
+      has_re <- 1
+      id <- tmpdf[,paste(re[2])]
+      n_ids <- length(unique(id))
+      id_index <- to_index(id)
+      re_list <- list(formula = re, data = id_index)
   }
   ## PARAMETER MODEL STUFF -------------  
   is_student <- FALSE ## always false for icar ##

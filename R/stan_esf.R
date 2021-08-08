@@ -49,8 +49,9 @@
 #' \item{rhs}{This is for controlling the regularized horseshoe (RHS) prior, which is assigned to the eigenvector coefficients. Provide a *named* vector of length three. The RHS prior has two parts to consider. First is the 'slab' that is used to regularize large coefficient estimates; this is a zero-mean Student's t model, the user provides the degrees of freedom and scale parameters. The second component is the global shrinkage parameter, controlling the degree of shrinkage; provide a value nearer to zero if you wish to make the model more sparse. To allow the spatial filter to account for a greater amount of spatial autocorrelation (i.e., if you find the residuals contain spatial autocorrelation), increase the global scale parameter up to one. E.g., \code{prior = list(rhs = c(slab_df = 15, slab_scale = 5, scale_global = 0.5))}.}
 #' }
 #' 
-#' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.
-#' @param scalex Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
+#' @param centerx To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to \code{\link[base]{scale}}.
+#' @param scalex To scale predictors, provide either a logical value or a numeric-alike vector of length equal to the number of columns of ‘x’. Passed to \code{\link[base]{scale}}.
+
 #' @param prior_only Draw samples from the prior distributions of parameters only.
 #' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
 #' @param iter Number of samples per chain. Default \code{iter = 2000}.
@@ -199,17 +200,19 @@ stan_esf <- function(formula, slx, re, data, C, EV, ME = NULL,
                      family = gaussian(),
                      p0,
                      prior = NULL,
-                     centerx = FALSE, scalex = FALSE,
+                     centerx = FALSE,
+                     scalex = FALSE,
                      prior_only = FALSE,
                      chains = 4, iter = 2e3, refresh = 500, pars = NULL,
                      control = list(adapt_delta = .99, max_treedepth = 15),
                      silent = FALSE,
                      ...) {
-  if (missing(formula)) stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
-  if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "poisson", "binomial")) stop ("Must provide a valid family object: gaussian(), student_t(), or poisson().")
-  if (missing(C) | missing(data)) stop ("Must provide data and a spatial connectivity matrix C.")
-  if (scalex) centerx <- TRUE
-  if (silent) refresh = 0
+    stopifnot(inherits(formula, "formula"))
+    stopifnot(inherits(family, "family"))
+    stopifnot(family$family %in% c("gaussian", "student_t", "poisson", "binomial"))
+    stopifnot(!missing(data))
+    stopifnot(inherits(C, "matrix"))
+    if (silent) refresh = 0
     ## GLM STUFF -------------  
   a.zero <- as.array(0, dim = 1)
   tmpdf <- as.data.frame(data)
@@ -247,8 +250,9 @@ stan_esf <- function(formula, slx, re, data, C, EV, ME = NULL,
         wx_idx = a.zero
         dw_nonzero <- 0
     } else {
+        stopifnot(inherits(slx, "formula"))        
         if (any(rowSums(C) != 1)) {
-            message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
+            message("*Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
         }
         W <- C / rowSums(C)
         Wx <- SLX(f = slx, DF = tmpdf, W = W)
@@ -274,12 +278,12 @@ stan_esf <- function(formula, slx, re, data, C, EV, ME = NULL,
     id_index <- to_index(id, n = nrow(tmpdf))
     re_list <- NA
   } else {
-    if (class(re) != "formula") stop("re must be of class formula")
-    has_re <- 1
-    id <- tmpdf[,paste(re[2])]
-    n_ids <- length(unique(id))
-    id_index <- to_index(id)
-    re_list <- list(formula = re, data = id_index)
+      stopifnot(inherits(re, "formula"))
+      has_re <- 1
+      id <- tmpdf[,paste(re[2])]
+      n_ids <- length(unique(id))
+      id_index <- to_index(id)
+      re_list <- list(formula = re, data = id_index)
   }
   ## ESF STUFF -------------
   if (family$family %in% c("poisson", "binomial")) rhs_scale_global = 1

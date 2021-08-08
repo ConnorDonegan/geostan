@@ -96,9 +96,9 @@ Note that if you also use \code{slx} terms (spatially lagged covariates), then y
 \item{rhs}{This is for controlling the regularized horseshoe (RHS) prior, which is assigned to the eigenvector coefficients. Provide a \emph{named} vector of length three. The RHS prior has two parts to consider. First is the 'slab' that is used to regularize large coefficient estimates; this is a zero-mean Student's t model, the user provides the degrees of freedom and scale parameters. The second component is the global shrinkage parameter, controlling the degree of shrinkage; provide a value nearer to zero if you wish to make the model more sparse. To allow the spatial filter to account for a greater amount of spatial autocorrelation (i.e., if you find the residuals contain spatial autocorrelation), increase the global scale parameter up to one. E.g., \code{prior = list(rhs = c(slab_df = 15, slab_scale = 5, scale_global = 0.5))}.}
 }}
 
-\item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.}
+\item{centerx}{To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to \code{\link[base]{scale}}.}
 
-\item{scalex}{Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.}
+\item{scalex}{To scale predictors, provide either a logical value or a numeric-alike vector of length equal to the number of columns of ‘x’. Passed to \code{\link[base]{scale}}.}
 
 \item{prior_only}{Draw samples from the prior distributions of parameters only.}
 

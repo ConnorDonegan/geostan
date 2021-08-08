@@ -41,8 +41,9 @@
 #' \item{tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(tau = c(df = 20, location = 0, scale = 20))`.}
 #' }
 #' 
-#' @param centerx Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}. 
-#' @param scalex Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.
+#' @param centerx To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to \code{\link[base]{scale}}.
+#' @param scalex To scale predictors, provide either a logical value or a numeric-alike vector of length equal to the number of columns of ‘x’. Passed to \code{\link[base]{scale}}.
+#' 
 #' @param prior_only Draw samples from the prior distributions of parameters only. 
 #' @param chains Number of MCMC chains to estimate. 
 #' @param iter Number of samples per chain. 
@@ -142,12 +143,13 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
                      control = list(adapt_delta = 0.95, max_treedepth = 15),
                      silent = FALSE,
                      ...) {
-  if (class(family) != "family" | !family$family %in% c("gaussian", "student_t", "binomial", "poisson")) stop ("Must provide a valid family object: poisson().")
-  if (missing(formula) | class(formula) != "formula") stop ("Must provide a valid formula object, as in y ~ x + z or y ~ 1 for intercept only.")
-  if (missing(data)) stop("Must provide data (a data.frame or object coercible to a data.frame).")
-  if (scalex) centerx <- TRUE
-  if (silent) refresh = 0
-  ## GLM STUFF -------------  
+    stopifnot(inherits(formula, "formula"))
+    stopifnot(inherits(family, "family"))
+    stopifnot(family$family %in% c("gaussian", "student_t", "poisson", "binomial"))
+    stopifnot(!missing(data))
+    if (!missing(C)) stopifnot(inherits(C, "matrix"))
+    if (silent) refresh = 0
+    ## GLM STUFF -------------  
   a.zero <- as.array(0, dim = 1)
   tmpdf <- as.data.frame(data)
   mod.mat <- model.matrix(formula, tmpdf)
@@ -156,7 +158,7 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
   family_int <- family_2_int(family)
   intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0) 
   if (intercept_only) {
-    if (!missing(slx)) stop("Spatial lag of X (slx) term provided for an intercept only model. Did you intend to include a covariate? If you intend to specify a model in which the only covariate is a spatially-lagged term, you must create this covariate yourself and include it in the main model formula.")
+    if (!missing(slx)) stop("You provided a spatial lag of X (slx) term for an intercept only model. Did you intend to include a covariate? If you intend to specify a model in which the only covariate is a spatially-lagged term, you must create this covariate yourself and include it in the main model formula.")
     x <- model.matrix(~ 0, data = tmpdf) 
     dbeta_prior <- 0
     slx <- " "
@@ -179,6 +181,7 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
         wx_idx = a.zero
         dw_nonzero <- 0
     } else {
+        stopifnot(inherits(slx, "formula"))
         if (any(rowSums(C) != 1)) {
             message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
         }
@@ -206,12 +209,12 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
     id_index <- to_index(id, n = nrow(tmpdf))
     re_list <- NA
   } else {
-    if (class(re) != "formula") stop("re must be of class formula")
-    has_re <- 1
-    id <- tmpdf[,paste(re[2])]
-    n_ids <- length(unique(id))
-    id_index <- to_index(id)
-    re_list <- list(formula = re, data = id_index)
+      stopifnot(inherits(re, "formula"))
+      has_re <- 1
+      id <- tmpdf[,paste(re[2])]
+      n_ids <- length(unique(id))
+      id_index <- to_index(id)
+      re_list <- list(formula = re, data = id_index)
   }
   ## PARAMETER MODEL STUFF -------------  
   is_student <- family$family == "student_t"

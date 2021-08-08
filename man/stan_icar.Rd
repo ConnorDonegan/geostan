@@ -83,9 +83,9 @@ Note that if you also use \code{slx} terms (spatially lagged covariates), then t
 \item{alpha_tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, \code{tau}, is assigned a half-Student's t prior. To set this, use, e.g., \code{prior = list(alpha_tau = c(df = 20, location = 0, scale = 20))}.}
 }}
 
-\item{centerx}{Should the covariates be centered prior to fitting the model? Defaults to \code{FALSE}.}
+\item{centerx}{To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to \code{\link[base]{scale}}.}
 
-\item{scalex}{Should the covariates be centered and scaled (divided by their standard deviation)? Defaults to \code{FALSE}.}
+\item{scalex}{To scale predictors, provide either a logical value or a numeric-alike vector of length equal to the number of columns of ‘x’. Passed to \code{\link[base]{scale}}.}
 
 \item{prior_only}{Draw samples from the prior distributions of parameters only.}
 
