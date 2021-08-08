@@ -397,7 +397,7 @@ stan_car <- function(formula,
   if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
   priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
   ## PRINT STUFF -------------    
-  if (!silent) print_priors(user_priors, priors_made_slim)
+  if (!silent) print_priors(prior, priors_made_slim)
   ## CALL STAN -------------  
   samples <- rstan::sampling(stanmodels$car, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
   out <- clean_results(samples, pars, is_student, has_re, car_parts$C, Wx, x.list$x, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
