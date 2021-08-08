@@ -203,10 +203,105 @@
 <span class='co'>## pass the data to stan_car</span>
 <span class='va'>fit</span> <span class='op'>=</span> <span class='fu'><a href='stan_car.html'>stan_car</a></span><span class='op'>(</span><span class='va'>ICE</span> <span class='op'>~</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>georgia</span>, car_parts <span class='op'>=</span> <span class='va'>cp</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for car_scale</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt; <span class='message'>Degrees of freedom: 10</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 0.252786065145457</span></div><div class='output co'>#&gt; <span class='error'>Error in print_priors(user_priors, priors_made_slim): object 'user_priors' not found</span></div><div class='input'>
+#&gt; <span class='message'>*Setting prior parameters for car_scale</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt; <span class='message'>Degrees of freedom: 10</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 0.252786065145457</span></div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: -0.134386273782593</span></div><div class='output co'>#&gt; <span class='message'>Scale: 1.26393032572729</span></div><div class='output co'>#&gt; 
+#&gt; SAMPLING FOR MODEL 'car' NOW (CHAIN 1).
+#&gt; Chain 1: 
+#&gt; Chain 1: Gradient evaluation took 0.000137 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.37 seconds.
+#&gt; Chain 1: Adjust your expectations accordingly!
+#&gt; Chain 1: 
+#&gt; Chain 1: 
+#&gt; Chain 1: Iteration:    1 / 2000 [  0%]  (Warmup)
+#&gt; Chain 1: Iteration:  500 / 2000 [ 25%]  (Warmup)
+#&gt; Chain 1: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+#&gt; Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+#&gt; Chain 1: Iteration: 1500 / 2000 [ 75%]  (Sampling)
+#&gt; Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
+#&gt; Chain 1: 
+#&gt; Chain 1:  Elapsed Time: 2.32739 seconds (Warm-up)
+#&gt; Chain 1:                2.31794 seconds (Sampling)
+#&gt; Chain 1:                4.64532 seconds (Total)
+#&gt; Chain 1: 
+#&gt; 
+#&gt; SAMPLING FOR MODEL 'car' NOW (CHAIN 2).
+#&gt; Chain 2: 
+#&gt; Chain 2: Gradient evaluation took 0.000172 seconds
+#&gt; Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 1.72 seconds.
+#&gt; Chain 2: Adjust your expectations accordingly!
+#&gt; Chain 2: 
+#&gt; Chain 2: 
+#&gt; Chain 2: Iteration:    1 / 2000 [  0%]  (Warmup)
+#&gt; Chain 2: Iteration:  500 / 2000 [ 25%]  (Warmup)
+#&gt; Chain 2: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+#&gt; Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+#&gt; Chain 2: Iteration: 1500 / 2000 [ 75%]  (Sampling)
+#&gt; Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
+#&gt; Chain 2: 
+#&gt; Chain 2:  Elapsed Time: 2.30834 seconds (Warm-up)
+#&gt; Chain 2:                2.0365 seconds (Sampling)
+#&gt; Chain 2:                4.34484 seconds (Total)
+#&gt; Chain 2: 
+#&gt; 
+#&gt; SAMPLING FOR MODEL 'car' NOW (CHAIN 3).
+#&gt; Chain 3: 
+#&gt; Chain 3: Gradient evaluation took 9e-05 seconds
+#&gt; Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.9 seconds.
+#&gt; Chain 3: Adjust your expectations accordingly!
+#&gt; Chain 3: 
+#&gt; Chain 3: 
+#&gt; Chain 3: Iteration:    1 / 2000 [  0%]  (Warmup)
+#&gt; Chain 3: Iteration:  500 / 2000 [ 25%]  (Warmup)
+#&gt; Chain 3: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+#&gt; Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+#&gt; Chain 3: Iteration: 1500 / 2000 [ 75%]  (Sampling)
+#&gt; Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
+#&gt; Chain 3: 
+#&gt; Chain 3:  Elapsed Time: 2.04192 seconds (Warm-up)
+#&gt; Chain 3:                1.86018 seconds (Sampling)
+#&gt; Chain 3:                3.9021 seconds (Total)
+#&gt; Chain 3: 
+#&gt; 
+#&gt; SAMPLING FOR MODEL 'car' NOW (CHAIN 4).
+#&gt; Chain 4: 
+#&gt; Chain 4: Gradient evaluation took 8.6e-05 seconds
+#&gt; Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.86 seconds.
+#&gt; Chain 4: Adjust your expectations accordingly!
+#&gt; Chain 4: 
+#&gt; Chain 4: 
+#&gt; Chain 4: Iteration:    1 / 2000 [  0%]  (Warmup)
+#&gt; Chain 4: Iteration:  500 / 2000 [ 25%]  (Warmup)
+#&gt; Chain 4: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+#&gt; Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+#&gt; Chain 4: Iteration: 1500 / 2000 [ 75%]  (Sampling)
+#&gt; Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
+#&gt; Chain 4: 
+#&gt; Chain 4:  Elapsed Time: 2.1112 seconds (Warm-up)
+#&gt; Chain 4:                2.18417 seconds (Sampling)
+#&gt; Chain 4:                4.29537 seconds (Total)
+#&gt; Chain 4: 
+#&gt; 
+#&gt; SAMPLING FOR MODEL 'car' NOW (CHAIN 5).
+#&gt; Chain 5: 
+#&gt; Chain 5: Gradient evaluation took 0.000143 seconds
+#&gt; Chain 5: 1000 transitions using 10 leapfrog steps per transition would take 1.43 seconds.
+#&gt; Chain 5: Adjust your expectations accordingly!
+#&gt; Chain 5: 
+#&gt; Chain 5: 
+#&gt; Chain 5: Iteration:    1 / 2000 [  0%]  (Warmup)
+#&gt; Chain 5: Iteration:  500 / 2000 [ 25%]  (Warmup)
+#&gt; Chain 5: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+#&gt; Chain 5: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+#&gt; Chain 5: Iteration: 1500 / 2000 [ 75%]  (Sampling)
+#&gt; Chain 5: Iteration: 2000 / 2000 [100%]  (Sampling)
+#&gt; Chain 5: 
+#&gt; Chain 5:  Elapsed Time: 2.61719 seconds (Warm-up)
+#&gt; Chain 5:                2.06361 seconds (Sampling)
+#&gt; Chain 5:                4.6808 seconds (Total)
+#&gt; Chain 5: </div><div class='input'>
 <span class='co'>## diagnostics</span>
 <span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>georgia</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in sp_diag(fit, georgia): object 'fit' not found</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='prep_car_data-1.png' alt='' width='700' height='433' /></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

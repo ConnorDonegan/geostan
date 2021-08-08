@@ -1050,9 +1050,7 @@ prep_car_data <- function(A, style = c("ACAR", "WCAR", "DCAR"), lambda = FALSE, 
 #' print(folder)
 #' get_shp(url, folder)
 #' states <- sf::st_read(folder)
-#' 
-#' # to delete it:
-#'  unlink(folder, recursive = TRUE)
+#' head(states)
 #' }
 #' @export
 #' @importFrom utils unzip download.file

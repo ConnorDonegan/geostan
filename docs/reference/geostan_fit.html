@@ -210,7 +210,7 @@
     <div class='dont-index'><p><a href='stan_glm.html'>stan_glm</a>, <a href='stan_esf.html'>stan_esf</a>, <a href='stan_icar.html'>stan_icar</a>, <a href='stan_car.html'>stan_car</a></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='co'># \dontrun{</span>
+    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span>
@@ -230,36 +230,11 @@
                    C <span class='op'>=</span> <span class='va'>C</span>,
                    refresh <span class='op'>=</span> <span class='fl'>0</span>
 <span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt; <span class='message'>Location: 0.111181075954193</span></div><div class='output co'>#&gt; <span class='message'>Scale: 5.75517465501317</span></div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for alpha_tau</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt; <span class='message'>Degrees of freedom: 20</span></div><div class='output co'>#&gt; <span class='message'>Location: 0</span></div><div class='output co'>#&gt; <span class='message'>Scale: 1.15103493100263</span></div><div class='input'>
+
 <span class='co'># print and plot results</span>
 <span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; Spatial Model Results 
-#&gt; Formula: sents ~ offset(log_e)
-#&gt; &lt;environment: 0x556abfe08ed8&gt;
-#&gt; Partial pooling (varying intercept): ~name
-#&gt; &lt;environment: 0x556abfe08ed8&gt;
-#&gt; Data models (ME): none
-#&gt; Spatial method (outcome):  Exchangeable 
-#&gt; Likelihood function:  poisson 
-#&gt; Link function:  log 
-#&gt; Residual Moran Coefficient:  0.099 
-#&gt; WAIC:  341.74 
-#&gt; Observations:  47 
-#&gt; Inference for Stan model: glm.
-#&gt; 4 chains, each with iter=4000; warmup=2000; thin=1; 
-#&gt; post-warmup draws per chain=2000, total post-warmup draws=8000.
-#&gt; 
-#&gt;            mean se_mean    sd   2.5%   25%   50%   75% 97.5% n_eff  Rhat
-#&gt; intercept 0.096   0.003 0.086 -0.076 0.039 0.097 0.154 0.259   962 1.005
-#&gt; alpha_tau 0.559   0.002 0.064  0.448 0.514 0.555 0.599 0.696  1691 1.002
-#&gt; 
-#&gt; Samples were drawn using NUTS(diag_e) at Sun Aug  8 09:32:40 2021.
-#&gt; For each parameter, n_eff is a crude measure of effective sample size,
-#&gt; and Rhat is the potential scale reduction factor on split chains (at 
-#&gt; convergence, Rhat=1).</div><div class='input'><span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='img'><img src='geostan_fit-1.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
+
 <span class='co'># residuals</span>
 <span class='va'>r</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>resid</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
 
@@ -268,7 +243,7 @@
 
 <span class='co'># spatial diagnostics</span>
 <span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>sentencing</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='geostan_fit-2.png' alt='' width='700' height='433' /></div><div class='input'>
+
 <span class='co'># county `random effects' </span>
 <span class='va'>sp</span> <span class='op'>=</span> <span class='fu'><a href='spatial.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
 
@@ -278,7 +253,7 @@
 
 <span class='co'># extract data.frame of posterior samples</span>
 <span class='va'>S</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='va'>fit</span>, pars <span class='op'>=</span> <span class='st'>"alpha_re"</span><span class='op'>)</span>
-<span class='co'># }</span>
+<span class='op'>}</span>
 
 </div></pre>
   </div>
