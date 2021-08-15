@@ -68,6 +68,9 @@ n_eff <- function(n, rho) {
 #' aple(x, w)
 #' 
 aple <- function(x, w, digits = 3) {
+    stopifnot(inherits(x, "numeric") | inherits(x, "integer"))
+    stopifnot(inherits(w, "matrix"))
+    stopifnot(all(dim(w) == length(x)))    
     if (any(rowSums(w) != 1)) {
         message("Row standardizing w with: w <- w / rowSums(w)")
         w <- w / rowSums(w)
@@ -116,7 +119,9 @@ aple <- function(x, w, digits = 3) {
 #' @importFrom MASS mvrnorm
 #' 
 sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
-    if (!inherits(w, "matrix") | mode(w) != "numeric" | nrow(w) != ncol(w) | !all(rowSums(w) %in% c(0,1))) stop("W must be a square, row-standardized numeric matrix.")
+    stopifnot(inherits(w, "matrix"))
+    stopifnot(ncol(w) == nrow(w))
+    stopifnot(all(rowSums(w) %in% c(0, 1)))
     N <- nrow(w)
     if (missing(mu)) {
         mu <- rep(0, N)
@@ -165,7 +170,9 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #'
 #' 
 mc <- function(x, w, digits = 3, warn = TRUE) {
-    if(missing(x) | missing(w)) stop("Must provide data x (length n vector) and n x n spatial weights matrix (w).")    
+    stopifnot(inherits(x, "numeric") | inherits(x, "integer"))
+    stopifnot(inherits(w, "matrix"))
+    stopifnot(all(dim(w) == length(x)))
     if (any(rowSums(w) == 0)) {
         zero.idx <- which(rowSums(w) == 0)
         if (warn) message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data.")
@@ -188,7 +195,7 @@ mc <- function(x, w, digits = 3, warn = TRUE) {
 #' @export
 #' 
 #' @import ggplot2
-#' @param y A numeric vector of length n.
+#' @param x A numeric vector of length n.
 #' @param w An n x n spatial connectivity matrix.
 #' @param xlab Label for the x-axis. 
 #' @param ylab Label for the y-axis.
@@ -201,7 +208,7 @@ mc <- function(x, w, digits = 3, warn = TRUE) {
 #'
 #' If any observations with no neighbors are found (i.e. \code{any(rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
 #' 
-#' @return Returns a \code{gg} plot, a scatter plot with \code{y} on the x-axis and its spatially lagged values on the y-axis (i.e. a Moran plot).
+#' @return Returns a \code{gg} plot, a scatter plot with \code{x} on the horizontal and its spatially lagged values on the vertical axis (i.e. a Moran plot).
 #'
 #' @seealso \link[geostan]{mc}, \link[geostan]{lisa}, \link[geostan]{aple}
 #'
@@ -213,49 +220,53 @@ mc <- function(x, w, digits = 3, warn = TRUE) {
 #' 
 #' library(sf)
 #' data(georgia)
-#' y <- georgia$ICE
+#' x <- georgia$ICE
 #' w <- shape2mat(georgia, "W")
-#' moran_plot(y, w)
+#' moran_plot(x, w)
 #'
-moran_plot <- function(y, w, xlab = "y (centered)", ylab = "Spatial Lag", pch = 20, col = "darkred", size = 2, alpha = 1, lwd = 0.5) {
-    if (!(inherits(y, "numeric") | inherits(y, "integer"))) stop("y must be a numeric or integer vector")
-    sqr <- all( dim(w) == length(y) )
-    if (!inherits(w, "matrix") | !sqr) stop("w must be an n x n matrix where n = length(y)")
+#' @import ggplot2
+#' @importFrom signs signs
+moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 20, col = "darkred", size = 2, alpha = 1, lwd = 0.5) {
+    stopifnot(inherits(x, "numeric") | inherits(x, "integer"))
+    stopifnot(inherits(w, "matrix"))
+    stopifnot(all(dim(w) == length(x)))
     if (any(rowSums(w) == 0)) {
         zero.idx <- which(rowSums(w) == 0)
         message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data.")
-        y <- y[-zero.idx]
+        x <- x[-zero.idx]
         w <- w[-zero.idx, -zero.idx]
     }    
-    y <- y - mean(y)
-    ylag <- as.numeric(w %*% y)
-    sub <- paste0("MC = ", round(mc(y, w),3))
-    ggplot(data.frame(y = y,
-                      ylag = ylag),
-           aes(x = y, y = ylag)
+    x <- x - mean(x)
+    xlag <- as.numeric(w %*% x)
+    sub <- paste0("MC = ", round(mc(x, w),3))
+    ggplot(data.frame(x = x,
+                      xlag = xlag),
+           aes(x = x, y = xlag)
            ) +
-    geom_hline(yintercept = mean(ylag),
+    geom_hline(yintercept = mean(xlag),
                lty = 3) +
-    geom_vline(xintercept = mean(y),
+    geom_vline(xintercept = mean(x),
                lty = 3) +
     geom_point(
         pch = 20,
         colour = col,
         size = size,
         alpha = alpha,
-        aes(x = y,
-            y = ylag)
+        aes(x = x,
+            y = xlag)
     ) +
-        geom_smooth(aes(x = y,
-                        y = ylag),
+        geom_smooth(aes(x = x,
+                        y = xlag),
                 method = "lm",
                 lwd = lwd,
                 col = "black",
                 se = FALSE) +
-    labs(x = xlab,
-         y = ylab,
-         subtitle = sub) +
-    theme_classic() 
+        scale_x_continuous(labels = signs::signs) +
+        scale_y_continuous(labels = signs::signs) +
+        labs(x = xlab,
+             y = ylab,
+             subtitle = sub) +
+        theme_classic() 
 }
 
 #' Local Moran's I
@@ -263,8 +274,8 @@ moran_plot <- function(y, w, xlab = "y (centered)", ylab = "Spatial Lag", pch = 
 #' @export
 #' @description A local indicator of spatial association (lisa).
 #'
-#' @param x Numeric vector
-#' @param w An n x n spatial connectivity matrix. See \link[geostan]{shape2mat}. If \code{w} is not row standardized (\code{all(rowSums(w) == 1)}), it will automatically be row-standardized.
+#' @param x Numeric vector of length `n`.
+#' @param w An `n x n` spatial connectivity matrix. See \link[geostan]{shape2mat}. If \code{w} is not row standardized (\code{all(rowSums(w) == 1)}), it will automatically be row-standardized.
 #' @param type Return the type of association also (High-High, Low-Low, High-Low, and Low-High)? Defaults to \code{FALSE}.
 #'
 #' @details
@@ -297,6 +308,7 @@ moran_plot <- function(y, w, xlab = "y (centered)", ylab = "Spatial Lag", pch = 
 #'   scale_fill_gradient2()
 #' 
 lisa <- function(x, w, type = FALSE) {
+    stopifnot(length(x) == nrow(w) & length(x) == ncol(w))
     if (any(rowSums(w) != 1)) {
         message("Row standardizing w with: w <- w / rowSums(w)")
         w <- w / rowSums(w)
@@ -595,7 +607,7 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' 
 #' @return A spatial connectivity matrix
 #'
-#' @seealso \link[geostan]{edges}
+#' @seealso \code{\link[geostan]{edges}}
 #' 
 #' @details
 #'
@@ -676,7 +688,7 @@ student_t <- function() {
 #' @param digits Round results to this many digits.
 #' @return A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density \code{Lpd}. If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
 #' 
-#' @seealso See \link[loo]{waic} as well as the more robust \link[loo]{loo}
+#' @seealso \code{\link[loo]{waic}} \code{\link[loo]{loo}}
 #'
 #' @examples
 #' 
@@ -1070,9 +1082,9 @@ get_shp <- function(url, folder = "shape") {
 #' 
 #' @description Calculates Theil's entropy-based measure of inequality for a given set of disease incidence rates and populations at risk. 
 #'
-#' @param rate Incidence rates. If provided, case counts will be calculated automatically as `cases = rates * pops`
-#' @param cases Number of cases (e.g., disease incidence). 
-#' @param pops Populations at risk.
+#' @param count Number of cases (e.g., disease incidence). 
+#' @param population Population size (population at risk).
+#' @param rate Incidence rates. If provided, case counts will be calculated automatically as `cases = rates * Population`#' 
 #' @param total If `TRUE`, the values will all be summed; if `FALSE`, then each area's contribution to total inequality will be returned.
 #' @return if `total = TRUE`, a scalar value; if `total = FALSE`, a vector of numeric values, where each value represents that area's contribution to total inequality.
 #' 
@@ -1102,14 +1114,14 @@ get_shp <- function(url, folder = "shape") {
 #'
 #' @examples
 #'
-#' 
-theil <- function(rates, pops, cases = rates * pops, total = TRUE) {
-    stopifnot(length(cases) == length(pops))
-    stopifnot(!any(is.na(cases)), !any(is.na(rates)))
-    omega = cases / sum(cases)
-    eta = pops / sum(pops)
+#'
+theil <- function(count, population, rates, total = TRUE) {
+    if (missing(count)) count <- rates * population
+    omega = count / sum(count)
+    eta = population / sum( population )
     T = omega * log (omega / eta)
     T[is.na(T)] <- 0
     if (total) T = sum( T )
-    return (T)
+    return (Theil = T)
 }
+
