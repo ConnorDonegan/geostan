@@ -146,8 +146,7 @@
   summary <span class='op'>=</span> <span class='cn'>FALSE</span>,
   width <span class='op'>=</span> <span class='fl'>0.95</span>,
   <span class='va'>seed</span>,
-  centerx <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  scalex <span class='op'>=</span> <span class='cn'>FALSE</span>
+  centerx <span class='op'>=</span> <span class='cn'>FALSE</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -195,11 +194,7 @@
     </tr>
     <tr>
       <th>centerx</th>
-      <td><p>Should <code>newdata</code> be centered using the means of the variables in the original data used to fit the model (stored in <code>object$scale_params</code>)? Defaults to <code>FALSE</code>.</p></td>
-    </tr>
-    <tr>
-      <th>scalex</th>
-      <td><p>Should <code>newdata</code> be centered and scaled using the standard deviations of the variables in the original data used to fit the model (stored in <code>object$scale_params</code>)? Defaults to <code>FALSE</code>.</p></td>
+      <td><p>Should <code>newdata</code> be centered using the means of the variables in the original data used to fit the model (stored in <code>object$x_center</code>)? Defaults to <code>FALSE</code>.</p></td>
     </tr>
     </table>
 
@@ -210,50 +205,7 @@
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/bayesplot/'>bayesplot</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>
-
-<span class='co'>## fit Ohio election model with a spatial filter</span>
-<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_esf.html'>stan_esf</a></span><span class='op'>(</span><span class='va'>gop_growth</span> <span class='op'>~</span> <span class='fl'>1</span>,
-                data <span class='op'>=</span> <span class='va'>ohio</span>,
-                C <span class='op'>=</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>,
-                refresh <span class='op'>=</span> <span class='fl'>0</span>
-<span class='op'>)</span> 
-
-<span class='co'># posterior predictive check (density overlay)</span>
- <span class='co'># compare distribution of observations to the predictive distribution</span>
-<span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>ohio</span><span class='op'>$</span><span class='va'>gop_growth</span>
-<span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'>posterior_predict</span><span class='op'>(</span><span class='va'>fit</span>, samples <span class='op'>=</span> <span class='fl'>75</span><span class='op'>)</span>
-<span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>yrep</span><span class='op'>)</span>
-
-<span class='co'>## plot marginal effects with credible intervals </span>
-<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_esf.html'>stan_esf</a></span><span class='op'>(</span><span class='va'>gop_growth</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/poly.html'>poly</a></span><span class='op'>(</span><span class='va'>college_educated</span>, df <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span>,
-                data <span class='op'>=</span> <span class='va'>ohio</span>,
-                C <span class='op'>=</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>ohio</span><span class='op'>)</span>,
-                refresh <span class='op'>=</span> <span class='fl'>0</span>
-<span class='op'>)</span>
-
-<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='fl'>10</span>, <span class='fl'>45</span>, by <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
-<span class='va'>newdata</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>college_educated <span class='op'>=</span> <span class='va'>x</span><span class='op'>)</span>
-<span class='va'>pred.df</span> <span class='op'>&lt;-</span> <span class='fu'>posterior_predict</span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>newdata</span>, spatial <span class='op'>=</span> <span class='cn'>FALSE</span>, summary <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
-
-<span class='co'>## plot the mean of the predictive distribution (regression line)</span>
-<span class='va'>a</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>pred.df</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>mu</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-    <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_path.html'>geom_line</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span> y <span class='op'>=</span> <span class='va'>mu</span><span class='op'>)</span><span class='op'>)</span>
-
-<span class='co'>## add the credible interval for the mean</span>
-<span class='va'>a</span> <span class='op'>&lt;-</span> <span class='va'>a</span> <span class='op'>+</span>
-    <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_ribbon.html'>geom_ribbon</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>ymin <span class='op'>=</span> <span class='va'>mu.lwr</span>,
-                    ymax <span class='op'>=</span> <span class='va'>mu.upr</span><span class='op'>)</span>,
-               fill <span class='op'>=</span> <span class='st'>"blue"</span>, alpha <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>
-
-<span class='co'>## add the 95% credible interval for predictive distribution</span>
-<span class='va'>a</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_ribbon.html'>geom_ribbon</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>ymin <span class='op'>=</span> <span class='va'>pred.lwr</span>,
-                  ymax <span class='op'>=</span> <span class='va'>pred.upr</span><span class='op'>)</span>,
-              fill <span class='op'>=</span> <span class='st'>"blue"</span>, alpha <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>
+ 
 <span class='op'>}</span>
 
 </div></pre>

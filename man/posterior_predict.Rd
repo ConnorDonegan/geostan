@@ -15,8 +15,7 @@ posterior_predict(
   summary = FALSE,
   width = 0.95,
   seed,
-  centerx = FALSE,
-  scalex = FALSE
+  centerx = FALSE
 )
 }
 \arguments{
@@ -40,9 +39,7 @@ posterior_predict(
 
 \item{seed}{A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution. Passing a value to \code{seed} enables you to obtain the same results each time (by using the same seed).}
 
-\item{centerx}{Should \code{newdata} be centered using the means of the variables in the original data used to fit the model (stored in \code{object$scale_params})? Defaults to \code{FALSE}.}
-
-\item{scalex}{Should \code{newdata} be centered and scaled using the standard deviations of the variables in the original data used to fit the model (stored in \code{object$scale_params})? Defaults to \code{FALSE}.}
+\item{centerx}{Should \code{newdata} be centered using the means of the variables in the original data used to fit the model (stored in \code{object$x_center})? Defaults to \code{FALSE}.}
 }
 \value{
 A matrix of size \code{S} x \code{N} containing samples from the posterior predictive distribution, where \code{S} is the number of samples and \code{N} is the number of observations. It is of class \code{matrix} and \code{ppd}.
@@ -54,50 +51,7 @@ Draw samples from the posterior predictive distribution of a fitted \code{geosta
 }
 \examples{
 \dontrun{
-library(bayesplot)
-library(ggplot2)
-library(sf)
-data(ohio)
-
-## fit Ohio election model with a spatial filter
-fit <- stan_esf(gop_growth ~ 1,
-                data = ohio,
-                C = shape2mat(ohio),
-                refresh = 0
-) 
-
-# posterior predictive check (density overlay)
- # compare distribution of observations to the predictive distribution
-y <- ohio$gop_growth
-yrep <- posterior_predict(fit, samples = 75)
-ppc_dens_overlay(y, yrep)
-
-## plot marginal effects with credible intervals 
-fit <- stan_esf(gop_growth ~ poly(college_educated, df = 3),
-                data = ohio,
-                C = shape2mat(ohio),
-                refresh = 0
-)
-
-x <- seq(10, 45, by = 1)
-newdata <- data.frame(college_educated = x)
-pred.df <- posterior_predict(fit, newdata, spatial = FALSE, summary = TRUE)
-
-## plot the mean of the predictive distribution (regression line)
-a <- ggplot(pred.df, aes(x = mu)) +
-    geom_line(aes( y = mu))
-
-## add the credible interval for the mean
-a <- a +
-    geom_ribbon(aes(ymin = mu.lwr,
-                    ymax = mu.upr),
-               fill = "blue", alpha = 0.5)
-
-## add the 95\% credible interval for predictive distribution
-a +
-  geom_ribbon(aes(ymin = pred.lwr,
-                  ymax = pred.upr),
-              fill = "blue", alpha = 0.5)
+ 
 }
 
 }

@@ -12,64 +12,32 @@
 #' @param summary Should the posterior predictions be summarized using quantile intervals? It \code{summary = TRUE} the function returns a data frame with the expected value of the posterior distribution (column \code{mu}) and 100*width credible intervals for, respectively, the posterior predictive distribution (columns \code{pred.lwr}, \code{pred.upr}) and mean outcome (columns \code{mu.lwr}, \code{mu.upr}).
 #' @param width Only used if \code{summary = TRUE} to set the quantiles for the credible intervals. 
 #' @param seed A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution. Passing a value to \code{seed} enables you to obtain the same results each time (by using the same seed).
-#' @param centerx Should \code{newdata} be centered using the means of the variables in the original data used to fit the model (stored in \code{object$scale_params})? Defaults to \code{FALSE}.
-#' @param scalex Should \code{newdata} be centered and scaled using the standard deviations of the variables in the original data used to fit the model (stored in \code{object$scale_params})? Defaults to \code{FALSE}.
+#' 
+#' @param centerx Should \code{newdata} be centered using the means of the variables in the original data used to fit the model (stored in \code{object$x_center})? Defaults to \code{FALSE}.
+#' 
 #' @return A matrix of size \code{S} x \code{N} containing samples from the posterior predictive distribution, where \code{S} is the number of samples and \code{N} is the number of observations. It is of class \code{matrix} and \code{ppd}.
 #'
 #' If \code{summary = TRUE} the return value is a data frame with the expected value of the posterior distribution (column \code{mu}) and 100*width credible intervals for, respectively, the posterior predictive distribution (columns \code{pred.lwr}, \code{pred.upr}) and mean outcome (columns \code{mu.lwr}, \code{mu.upr}). The width of the intervals and the quantiles corresponding to the upper and lower limits of the credible intervals are returned as an attribute of the data frame (use \code{attributes(df)$interval} to retrieve them, where \code{df} is the data frame returned by \code{posterior_predict}).
 #'
 #' @examples
 #' \dontrun{
-#' library(bayesplot)
-#' library(ggplot2)
-#' library(sf)
-#' data(ohio)
-#'
-#' ## fit Ohio election model with a spatial filter
-#' fit <- stan_esf(gop_growth ~ 1,
-#'                 data = ohio,
-#'                 C = shape2mat(ohio),
-#'                 refresh = 0
-#' ) 
-#' 
-#' # posterior predictive check (density overlay)
-#'  # compare distribution of observations to the predictive distribution
-#' y <- ohio$gop_growth
-#' yrep <- posterior_predict(fit, samples = 75)
-#' ppc_dens_overlay(y, yrep)
-#'
-#' ## plot marginal effects with credible intervals 
-#' fit <- stan_esf(gop_growth ~ poly(college_educated, df = 3),
-#'                 data = ohio,
-#'                 C = shape2mat(ohio),
-#'                 refresh = 0
-#' )
-#' 
-#' x <- seq(10, 45, by = 1)
-#' newdata <- data.frame(college_educated = x)
-#' pred.df <- posterior_predict(fit, newdata, spatial = FALSE, summary = TRUE)
-#'
-#' ## plot the mean of the predictive distribution (regression line)
-#' a <- ggplot(pred.df, aes(x = mu)) +
-#'     geom_line(aes( y = mu))
-#'
-#' ## add the credible interval for the mean
-#' a <- a +
-#'     geom_ribbon(aes(ymin = mu.lwr,
-#'                     ymax = mu.upr),
-#'                fill = "blue", alpha = 0.5)
-#'
-#' ## add the 95% credible interval for predictive distribution
-#' a +
-#'   geom_ribbon(aes(ymin = pred.lwr,
-#'                   ymax = pred.upr),
-#'               fill = "blue", alpha = 0.5)
+#'  
 #' }
 #' 
-posterior_predict <- function(object, newdata, C, samples, predictive = TRUE, re_form = NULL, spatial = TRUE, summary = FALSE, width = 0.95, seed, centerx = FALSE, scalex = FALSE) {
+posterior_predict <- function(object,
+                              newdata,
+                              C,
+                              samples,
+                              predictive = TRUE,
+                              re_form = NULL,
+                              spatial = TRUE,
+                              summary = FALSE,
+                              width = 0.95,
+                              seed,
+                              centerx = FALSE
+                              ) {
     if (!inherits(object, "geostan_fit")) stop ("object must be of class geostan_fit.")
     N <- nrow(as.matrix(object))
-    if (scalex) centerx <- TRUE
     if (!missing(seed)) set.seed(seed)                                      
     if (missing(samples)) samples <- N
     if (samples > N) {
@@ -107,15 +75,17 @@ posterior_predict <- function(object, newdata, C, samples, predictive = TRUE, re
         y <- as.character(object$formula[[2]])
         if (!y %in% names(newdata))  newdata[,y] <- 0  
     }
-    x <- remove_intercept(model.matrix(object$formula, data = newdata))
+    xraw <- remove_intercept(model.matrix(object$formula, data = newdata))
+    x_no_Wx <- center_x(xraw, center = centerx)
     offset <- model.offset(model.frame(object$formula, newdata))
-    if ( spatial & (class(object$slx) == "formula") ) {
-         Wx <- SLX(f = object$slx, DF = newdata, SWM = C)
-         x <- cbind(Wx, x)
+    if ( spatial & inherits(object$slx, "formula") ) {
+        if (any(rowSums(C) != 1)) {
+            message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
+        }
+        W <- C / rowSums(C)        
+        Wx <- SLX(f = object$slx, DF = newdata, x = x_no_Wx, W = W)
+        x <- cbind(Wx, x)
     }
-    if (centerx) centerx <- object$scale_params$center
-    if (scalex) scalex <- object$scale_params$scale
-    x <- scale(x, center = centerx, scale = scalex)    
     alpha <- as.matrix(object, pars = "intercept")[idx,]
     if (spatial & inherits(object$slx, "formula")) {
         beta <- as.matrix(object, pars = c("gamma", "beta"))[idx,]
