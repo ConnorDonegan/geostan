@@ -4,14 +4,18 @@
 #'
 #' @md
 #' 
-#' @description Apply the CAR model as a prior on parameters, or fit an auto Gaussian model.
+#' @description Use the CAR model as a prior on parameters, or fit data to an auto-Gaussian CAR model.
 #' 
 #' @param formula A model formula, following the R \code{\link[stats]{formula}} syntax. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
+#' 
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 #'  These will be pre-multiplied by a row-standardized version of the user-provided spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param re If the model includes a varying intercept term \code{alpha_re} specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}. With the CAR model, any \code{alpha_re} term should be at a *different* level or scale than the observations; that is, at a different scale than the autocorrelation structure of the CAR model itself. 
+#' 
+#' @param re If the model includes a varying intercept term \code{alpha_re} specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}. With the CAR model, any \code{alpha_re} term should be at a *different* level or scale than the observations; that is, at a different scale than the autocorrelation structure of the CAR model itself.
+#' 
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
+#' 
 #' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. This implements the methodology introduced by Donegan et al. (2021). Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned an auto-Gaussian (CAR) model unless \code{spatial = FALSE}, in which case they are assinged the Student's t model. Elements of the list \code{ME} may include:
 #' \describe{
 #' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
@@ -25,6 +29,7 @@
 #' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{gaussian()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}.
 #' @param invert To calculate the log likelihood of the data \code{log_lik} and the posterior predictive distribution \code{yrep} with the auto-Gaussian model, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set \code{invert = FALSE}. Note, this is only used when \code{family = gaussian()}.
+#' 
 #' @param prior A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:
 #' \describe{
 #' \item{intercept}{The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. \code{prior = list(intercept = c(location = 0, scale = 10))} to assign a Gaussian prior with mean zero and variance 10^2.}
@@ -41,7 +46,6 @@
 #' }
 #'
 #' @param centerx To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to \code{\link[base]{scale}}.
-#' @param scalex To scale predictors, provide either a logical value or a numeric-alike vector of length equal to the number of columns of ‘x’. Passed to \code{\link[base]{scale}}.
 #' 
 #' @param prior_only Logical value; if \code{TRUE}, draw samples only from the prior distributions of parameters.
 #' @param chains Number of MCMC chains to use. 
@@ -161,7 +165,9 @@
 #' \item{re}{A list containing \code{re}, the varying intercepts (\code{re}) formula if provided, and 
 #'  \code{Data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 #' \item{priors}{Prior specifications.}
-#' \item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
+#' 
+#' \item{x_center}{If covariates are centered internally (i.e., `centerx` is not `FALSE`), then `x_centers` is the numeric vector of values on which the covariates were centered.}
+#'
 #' \item{spatial}{A data frame with the name of the spatial component parameter (either "phi" or, for auto Gaussian models, "trend") and method ("CAR")}
 #' }
 #' 
@@ -240,15 +246,17 @@ stan_car <- function(formula,
                      slx,
                      re,
                      data,
-                     ME = NULL,
                      car_parts,
+                     ME = NULL,                     
                      family = gaussian(), 
                      invert = TRUE, #!#
                      prior = NULL, 
                      centerx = FALSE,
-                     scalex = FALSE,
                      prior_only = FALSE,
-                     chains = 5, iter = 2e3, refresh = 500, pars = NULL,
+                     chains = 5,
+                     iter = 2e3,
+                     refresh = 500,
+                     pars = NULL,
                      control = list(adapt_delta = 0.9, max_treedepth = 13),
                      silent = FALSE,
                      ...
@@ -260,160 +268,165 @@ stan_car <- function(formula,
     stopifnot(inherits(car_parts, "list"))    
     C <- car_parts$C    
     stopifnot(inherits(C, "matrix"))
-    if (silent) refresh = 0
+    stopifnot(nrow(C) == nrow(data))
     stopifnot(all(c("nC", "nImC", "ImC", "ImC_v", "ImC_u", "Cidx", "M_diag", "C") %in% names(car_parts)))
     if (silent) refresh = 0
-  ## GLM STUFF -------------
-  a.zero <- as.array(0, dim = 1)
-  tmpdf <- as.data.frame(data)
-  mod.mat <- model.matrix(formula, tmpdf)
-  if (nrow(mod.mat) < nrow(tmpdf)) stop("There are missing (NA) values in your data.")    
-  n <- nrow(mod.mat)
-  if (any(dim(C) != n)) stop("Dimensions of matrix C must match the number of observations. See ?shape2mat and ?prep_car_data for help creating C.")      
-  family_int <- family_2_int(family)
-  intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0)
-  if (intercept_only) { # x includes slx, if any, for prior specifictions; x.list$x is the processed model matrix without slx terms.
-      if (!missing(slx)) stop("Spatial lag of X (slx) term provided for an intercept only model. Did you intend to include a covariate? If you intend to specify a model in which the only covariate is a spatially-lagged term, you must create this covariate yourself and include it in the main model formula.")
-    x <- model.matrix(~ 0, data = tmpdf) 
-    dbeta_prior <- 0
-    slx <- " "
-    scale_params <- list()
-    x.list <- list(x = x)
-    W <- matrix(0, nrow = 1, ncol = 1)
-    dwx <- 0
-    dw_nonzero <- 0
-    wx_idx <- a.zero
-      } else {
-    xraw <- model.matrix(formula, data = tmpdf)
-    xraw <- remove_intercept(xraw)
-    x.list <- scale_x(xraw, center = centerx, scale = scalex)
-    x <- x.list$x
-    scale_params <- x.list$params
-    if (missing(slx)) {
-        slx <- " "
-        W <- matrix(0, ncol = 1, nrow = 1)
-        dwx = 0
-        wx_idx = a.zero
-        dw_nonzero <- 0
-    } else {
-        stopifnot(inherits(slx, "formula"))        
-        if (any(rowSums(C) != 1)) {
-            message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
+    a.zero <- as.array(0, dim = 1)
+    tmpdf <- as.data.frame(data)
+    mod.mat <- model.matrix(formula, tmpdf)
+    if (nrow(mod.mat) < nrow(tmpdf)) stop("There are missing (NA) values in your data.")  
+    n <- nrow(mod.mat)
+    family_int <- family_2_int(family)
+    intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0) 
+    if (intercept_only) {
+        if (!missing(slx)) {
+            stop("You provided a spatial lag of X (slx) term for an intercept only model. Did you intend to include a covariate?")
         }
-        W <- C / rowSums(C)
-        Wx <- SLX(f = slx, DF = tmpdf, W = W)
-        if (scalex) Wx <- scale(Wx)            
-        dwx <- ncol(Wx)
-        dw_nonzero <- sum(W!=0)
-        wx_idx <- as.array( which(paste0("w.", dimnames(x)[[2]]) %in% dimnames(Wx)[[2]]), dim = dwx )
-        x <- cbind(Wx, x)
-    }
-    dbeta_prior <- ncol(x) ## dimensions of beta prior; 
+        x_full <- x_no_Wx <- model.matrix(~ 0, data = tmpdf) 
+        dbeta_prior <- 0
+        slx <- " "
+        W <- matrix(0, nrow = 1, ncol = 1)
+        dwx <- 0
+        dw_nonzero <- 0
+        wx_idx <- a.zero
+  } else {
+      xraw <- model.matrix(formula, data = tmpdf)
+      xraw <- remove_intercept(xraw)
+      x_no_Wx <- center_x(xraw, center = centerx)
+      if (missing(slx)) {
+          slx <- " "
+          W <- matrix(0, ncol = 1, nrow = 1)
+          dwx = 0
+          wx_idx = a.zero
+          dw_nonzero <- 0
+          x_full <- x_no_Wx          
+      } else {
+          stopifnot(inherits(slx, "formula"))
+          if (any(rowSums(C) != 1)) {
+              message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
+          }
+          W <- C / rowSums(C)
+          Wx <- SLX(f = slx, DF = tmpdf, x = x_no_Wx, W = W)
+          dwx <- ncol(Wx)
+          dw_nonzero <- sum(W != 0)
+          wx_idx <- as.array( which(paste0("w.", colnames(x_no_Wx)) %in% colnames(Wx)), dim = dwx )
+          x_full <- cbind(Wx, x_no_Wx)
       }
-  ModData <- make_data(formula, tmpdf, x)
-  frame <- model.frame(formula, tmpdf)
-  y <- y_int <- model.response(frame)
-  if (family_int %in% c(1,2)) y_int <- rep(0, length(y))
-  if (is.null(model.offset(frame))) {
-    offset <- rep(0, times = n)
-  } else {
-      offset <- model.offset(frame)
+      dbeta_prior <- ncol(x_full) 
   }
-  if(missing(re)) {
-    has_re <- n_ids <- id <- 0;
-    id_index <- to_index(id, n = nrow(tmpdf))
-    re_list <- NA
-  } else {
-      stopifnot(inherits(re, "formula"))              
-      has_re <- 1
-      id <- tmpdf[,paste(re[2])]
-      n_ids <- length(unique(id))
-      id_index <- to_index(id)
-      re_list <- list(formula = re, data = id_index)
+    ModData <- make_data(formula, tmpdf, x_full)
+    frame <- model.frame(formula, tmpdf)
+    y <- y_int <- model.response(frame)
+    if (family_int %in% c(1,2)) y_int <- rep(0, length(y))
+    if (is.null(model.offset(frame))) {
+        offset <- rep(0, times = n)
+    } else {
+        offset <- model.offset(frame)
+    }
+    if(missing(re)) {
+        has_re <- n_ids <- id <- 0;
+        id_index <- to_index(id, n = nrow(tmpdf))
+        re_list <- NA
+    } else {
+        stopifnot(inherits(re, "formula"))
+        has_re <- 1
+        id <- tmpdf[,paste(re[2])]
+        n_ids <- length(unique(id))
+        id_index <- to_index(id)
+        re_list <- list(formula = re, data = id_index)
   }
-  ## PARAMETER MODEL STUFF -------------  
-  is_student <- FALSE  # always false for CAR model #
-  priors_made <- make_priors(user_priors = prior,
-                        y = y,
-                        x = x,
-                        xcentered = centerx,
-                        link = family$link,
-                        offset = offset)
-  ## CAR STUFF -------------  #!#
-  if (family$family == "gaussian") family_int <- 5 #!# auto-Gaussian #!#
-  if (!is.null(prior$car_scale)) {
-      priors_made$car_scale <- prior$car_scale
-  } else {
-      priors_made$car_scale <- priors_made$sigma
-      if (!silent) {
-          message("\n*Setting prior parameters for car_scale")
-          message("Student's t")
-          message("Degrees of freedom: ", priors_made$car_scale[1])
-          message("Location: ", priors_made$car_scale[2])
-          message("Scale: ", priors_made$car_scale[3])
-      }      
-  }  
-  ## MIXED STUFF -------------  
-  standata <- list(
-  ## glm data -------------
-    y = y,
-    y_int = y_int,
-    trials = rep(0, length(y)),
-    n = n,
-    dbeta_prior = dbeta_prior,
-    offset = offset,
-    has_re = has_re,
-    n_ids = n_ids,
-    id = id_index$idx,
-    alpha_prior = priors_made$intercept,
-    beta_prior = t(priors_made$beta), 
-    sigma_prior = priors_made$car_scale, # CAR specific #
-    alpha_tau_prior = priors_made$alpha_tau,
-    t_nu_prior = priors_made$nu,
-    family = family_int,
-  ## slx data -------------    
-    W = W,
-    dwx = dwx,
-    wx_idx = wx_idx,
-  ## draw samples from prior only, ignoring data and likelihood
-    prior_only = prior_only
-  )
-  ## CAR STUFF
-  standata <- c(standata, car_parts)
-  ## DATA MODEL STUFF -------------
-   ## overwrites any use specified ME$car_parts
-  if (!is.null(ME)) ME$car_parts <- car_parts
-  me.list <- prep_me_data(ME, x.list$x)
-  standata <- c(standata, me.list)
-  ## STAN STUFF -------------    
-  if (family$family == "binomial") {
-      standata$y <- standata$y_int <- y[,1]
-      standata$trials <- y[,1] + y[,2]
-  }
-  pars <- c(pars, 'intercept', 'car_scale', 'car_rho', 'residual', 'fitted')
-  if (invert) pars <- c(pars, 'log_lik', 'yrep')
-  if (family_int < 5) pars <- c(pars, 'phi') #!#
-  if (family_int == 5) pars <- c(pars, "trend")
-  if (!intercept_only) pars <- c(pars, 'beta')
-  if (dwx) pars <- c(pars, 'gamma')
-  if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
-  if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
-  if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
-  priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
-  ## PRINT STUFF -------------    
-  if (!silent) print_priors(prior, priors_made_slim)
-  ## CALL STAN -------------  
-  samples <- rstan::sampling(stanmodels$car, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
-  out <- clean_results(samples, pars, is_student, has_re, car_parts$C, Wx, x.list$x, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
-  out$data <- ModData
-  out$family <- family
-  out$formula <- formula
-  out$slx <- slx
-  out$re <- re_list
-  out$priors <- priors_made_slim
-  out$scale_params <- scale_params
-  if (!missing(ME)) out$ME <- ME
-  if (family_int != 5) out$spatial <- data.frame(par = "phi", method = "CAR") else out$spatial <- data.frame(par = "trend", method = "CAR") #!#
+    ## PRIORS -------------  
+    is_student <- family$family == "student_t"
+    priors_made <- make_priors(user_priors = prior,
+                               y = y,
+                               x = x_full,
+                               link = family$link,
+                               offset = offset)
+    ## CAR PRIORs [START] --------
+    if (family$family == "gaussian") family_int <- 5 #!# auto-Gaussian #!#
+    if (!is.null(prior$car_scale)) {
+        priors_made$car_scale <- prior$car_scale
+    } else {
+        priors_made$car_scale <- priors_made$sigma
+        if (!silent) {
+            message("\n*Setting prior parameters for car_scale")
+            message("Student's t")
+            message("Degrees of freedom: ", priors_made$car_scale[1])
+            message("Location: ", priors_made$car_scale[2])
+            message("Scale: ", priors_made$car_scale[3])
+         }    
+    }
+    ## CAR PRIORs [STOP] --------
+    standata <- list(
+        ## glm data -------------
+        y = y,
+        y_int = y_int,
+        trials = rep(0, length(y)),
+        n = n,
+        dbeta_prior = dbeta_prior,
+        offset = offset,
+        has_re = has_re,
+        n_ids = n_ids,
+        id = id_index$idx,
+        alpha_prior = priors_made$intercept,
+        beta_prior = t(priors_made$beta),
+        ## CAR SCALE ----
+        sigma_prior = priors_made$car_scale,
+        ## CAR SCALE ----
+        alpha_tau_prior = priors_made$alpha_tau,
+        t_nu_prior = priors_made$nu,
+        family = family_int,
+        ## slx data -------------    
+        W = W,
+        dwx = dwx,
+        wx_idx = wx_idx,
+        ## draw samples from prior only, ignoring data and likelihood
+        prior_only = prior_only
+    )
+    ## CAR DATA [START] --------
+    standata <- c(standata, car_parts)
+    # overwrites any user specified ME$car_parts
+    if ( !is.null(ME) ) ME$car_parts <- car_parts
+    ## CAR DATA [STOP] --------
+    ## ME MODEL -------------  
+    me.list <- prep_me_data(ME, x_no_Wx)
+    standata <- c(standata, me.list)
+    ## INTEGER OUTCOMES -------------    
+    if (family$family == "binomial") {
+        standata$y <- standata$y_int <- y[,1]
+        standata$trials <- y[,1] + y[,2]
+    }
+    ## PARAMETERS TO KEEP, with CAR PARAMETERS [START] -------------            
+    pars <- c(pars, 'intercept', 'car_scale', 'car_rho', 'residual', 'fitted')
+    if (invert) pars <- c(pars, 'log_lik', 'yrep')
+    if (family_int < 5) pars <- c(pars, 'phi') 
+    if (family_int == 5) pars <- c(pars, "trend")
+    if (!intercept_only) pars <- c(pars, 'beta')
+    if (dwx) pars <- c(pars, 'gamma')
+    if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
+    if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
+    if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
+    priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
+    ## PARAMETERS TO KEEP, with CAR PARAMETERS [STOP] -------------                
+    ## PRINT STUFF -------------    
+    if (!silent) print_priors(prior, priors_made_slim)
+    ## CALL STAN -------------  
+    samples <- rstan::sampling(stanmodels$car, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+    ## OUTPUT -------------
+    out <- clean_results(samples, pars, is_student, has_re, C, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
+    out$data <- ModData
+    out$family <- family
+    out$formula <- formula
+    out$slx <- slx
+    out$re <- re_list
+    out$priors <- priors_made_slim
+    out$x_center <- attributes(x_full)$`scaled:center`
+    if (!missing(ME)) out$ME <- ME
+    if (family_int != 5) {
+        out$spatial <- data.frame(par = "phi", method = "CAR")
+    } else {
+        out$spatial <- data.frame(par = "trend", method = "CAR") #!#
+    }
   class(out) <- append("geostan_fit", class(out))
   return (out)
 }

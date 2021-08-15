@@ -28,5 +28,5 @@ waic(fit)
 }
 }
 \seealso{
-See \link[loo]{waic} as well as the more robust \link[loo]{loo}
+\code{\link[loo]{waic}} \code{\link[loo]{loo}}
 }

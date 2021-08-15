@@ -25,21 +25,20 @@ stan_esf(
   re,
   data,
   C,
-  EV,
-  ME = NULL,
   nsa = FALSE,
   threshold = 0.25,
+  EV = make_EV(C, nsa = nsa, threshold = threshold),
+  ME = NULL,
   family = gaussian(),
   p0,
   prior = NULL,
   centerx = FALSE,
-  scalex = FALSE,
   prior_only = FALSE,
   chains = 4,
   iter = 2000,
   refresh = 500,
   pars = NULL,
-  control = list(adapt_delta = 0.99, max_treedepth = 15),
+  control = list(adapt_delta = 0.975, max_treedepth = 13),
   silent = FALSE,
   ...
 )
@@ -55,11 +54,15 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.}
 
-\item{C}{Spatial connectivity matrix which will be used to calculate eigenvectors, residual spatial autocorrelation as well as any user specified \code{slx} terms or spatial measurement error (ME) models; it will be row-standardized before calculating \code{slx} terms.}
+\item{C}{Spatial connectivity matrix which will be used to calculate eigenvectors, if not provided by the user. Typically, the binary connectivity matrix is best for calculating eigenvectors (i.e., using \code{C = shape2mat(shape, style = "B")} rather than \code{style = "W"}). This matrix will also be used to calculate residual spatial autocorrelation (Moran coefficient), any user specified \code{slx} terms, and any spatial measurement error (ME) models; it will be row-standardized before calculating \code{slx} terms. See \code{\link[geostan]{shape2mat}}.}
 
-\item{EV}{A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. If provided, still also provide a spatial weights matrix \code{C} for other purposes.  See \link[geostan]{make_EV} and \link[geostan]{shape2mat}.}
+\item{nsa}{Include eigenvectors representing negative spatial autocorrelation? Defaults to \code{nsa = FALSE}. This is ignored if \code{EV} is provided.}
 
-\item{ME}{To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$spatial = TRUE}, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
+\item{threshold}{Eigenvectors with standardized Moran coefficient values below this \code{threshold} value will be excluded from the candidate set of eigenvectors, \code{EV}. This defaults to \code{threshold = 0.25}, and is ignored if \code{EV} is provided.}
+
+\item{EV}{A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. With connectivity matrix \code{C}, you can create \code{EV} using \code{EV = make_EV(C)}. If \code{EV} is provided, still also provide a spatial weights matrix \code{C} for other purposes.  See \code{\link[geostan]{make_EV}} and \code{\link[geostan]{shape2mat}}.}
+
+\item{ME}{To model observational uncertainty (i.e. measurement or sampling error for survey-based areal covariates) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$spatial = TRUE}, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
 \describe{
 
 \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
@@ -68,10 +71,6 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 \item{spatial}{Logical value indicating whether an auto Gaussian (conditional autoregressive (CAR)) model should be used for the covariates (see \link[geostan]{stan_car} for CAR model details). For \code{stan_esf}, this defaults to \code{spatial = TRUE}. If \code{spatial = TRUE} you must provide \code{car_parts} (see below).}
 \item{car_parts}{A list of data for the CAR model, as returned by \code{\link[=prep_car_data]{prep_car_data()}} (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}). Only required if \code{spatial=TRUE}.}
 }}
-
-\item{nsa}{Include eigenvectors representing negative spatial autocorrelation? Default \code{nsa = FALSE}. Ignored if \code{EV} is provided.}
-
-\item{threshold}{Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default \code{threshold = 0.25}; ignored if \code{EV} is provided.}
 
 \item{family}{The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{student_t()} and \code{poisson(link = "log")}, and \code{binomial(link = "logit")}.}
 
@@ -98,8 +97,6 @@ Note that if you also use \code{slx} terms (spatially lagged covariates), then y
 
 \item{centerx}{To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to \code{\link[base]{scale}}.}
 
-\item{scalex}{To scale predictors, provide either a logical value or a numeric-alike vector of length equal to the number of columns of ‘x’. Passed to \code{\link[base]{scale}}.}
-
 \item{prior_only}{Draw samples from the prior distributions of parameters only.}
 
 \item{chains}{Number of MCMC chains to estimate. Default \code{chains = 4}.}
@@ -120,8 +117,7 @@ Note that if you also use \code{slx} terms (spatially lagged covariates), then y
 An object of class class \code{geostan_fit} (a list) containing:
 \describe{
 \item{summary}{Summaries of the main parameters of interest; a data frame}
-\item{diagnostic}{Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (\code{eff_pars}) and
-mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
+\item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
 \item{data}{a data frame containing the model data}
 \item{EV}{A matrix of eigenvectors created with \code{w} and \code{geostan::make_EV}}
 \item{C}{The spatial weights matrix used to construct EV}
@@ -131,7 +127,7 @@ mean log pointwise predictive density (\code{lpd}), and residual spatial autocor
 \item{re}{A list containing \code{re},  the random effects (varying intercepts) formula if provided, and
 \code{data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 \item{priors}{Prior specifications.}
-\item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
+\item{x_center}{If covariates are centered internally (i.e., \code{centerx} is not \code{FALSE}), then \code{x_centers} is the numeric vector of values on which the covariates were centered.}
 \item{ME}{The \code{ME} data list, if one was provided by the user for measurement error models.}
 \item{spatial}{A data frame with the name of the spatial component parameter ("esf") and method ("ESF")}
 \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}

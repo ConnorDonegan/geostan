@@ -85,7 +85,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
   }
   x.pars <- c("beta", "nu", "sigma")
   if (any(x.pars %in% names(x$priors))) pars <- c(pars, names(x$priors)[grep(paste0(x.pars, collapse="|"), names(x$priors))])   
-  if(!any(is.na(x$re))) {
+  if(inherits(x$re$formula, "formula")) {
     cat("Partial pooling (varying intercept): ")
     print(x$re$formula)
     pars <- c(pars, "alpha_tau")
@@ -119,14 +119,15 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
 plot.geostan_fit <- function(x, pars, plotfun = "hist", fill = "steelblue4", ...) {
   if(missing(pars)) {
       pars <- "intercept"
-      x.pars <- c("beta", "nu", "sigma")
+      if (inherits(x$slx, "formula")) pars <- c(pars, "gamma")      
+      x.pars <- c("beta", "nu", "sigma", "alpha_tau")
       if (any(x.pars %in% names(x$priors))) pars <- c(pars, names(x$priors)[grep(paste0(x.pars, collapse="|"), names(x$priors))])
       if (x$spatial$method == "CAR") pars <- c(pars, "car_rho", "car_scale")
       if (x$spatial$method == "BYM2") pars <- c(pars, "rho", "spatial_scale")
       if (x$spatial$method == "BYM") pars <- c(pars, "spatial_scale", "theta_scale")
       if (x$spatial$method == "ICAR") pars <- c(pars, "spatial_scale")
   }
-  rstan::plot(x$stanfit, pars = pars, plotfun = plotfun, ...)
+  rstan::plot(x$stanfit, pars = pars, fill = fill, plotfun = plotfun, ...)
 }
 
 

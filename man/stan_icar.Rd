@@ -22,20 +22,19 @@ stan_icar(
   slx,
   re,
   data,
+  C,
   type = c("icar", "bym", "bym2"),
   scale_factor = NULL,
   ME = NULL,
-  C,
   family = poisson(),
   prior = NULL,
   centerx = FALSE,
-  scalex = FALSE,
   prior_only = FALSE,
   chains = 4,
-  iter = 4000,
+  iter = 2000,
   refresh = 500,
   pars = NULL,
-  control = list(adapt_delta = 0.9, max_treedepth = 15),
+  control = list(adapt_delta = 0.9, max_treedepth = 13),
   silent = FALSE,
   ...
 )
@@ -51,6 +50,8 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.}
 
+\item{C}{Spatial connectivity matrix which will be used to construct an edge list for the ICAR model, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms or spatial measurement error (ME) models. It will automatically be row-standardized before calculating \code{slx} terms. \code{C} must be a binary symmetric \code{n x n} matrix.}
+
 \item{type}{Defaults to "icar" (partial pooling of neighboring observations through parameter \code{phi}); specify "bym" to add a second parameter vector \code{theta} to perform partial pooling across all observations; specify "bym2" for the innovation introduced by Riebler et al. (2016). See \code{Details} for more information.}
 
 \item{scale_factor}{For the BYM2 model, optional. If missing, this will be set to a vector of ones.}
@@ -64,8 +65,6 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 \item{spatial}{Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. For \code{stan_icar}, this defaults to \code{spatial = TRUE}; if \code{spatial = TRUE} you must provide \code{car_parts} (see below).}
 \item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data} (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}). Only required if \code{spatial=TRUE}.}
 }}
-
-\item{C}{Spatial connectivity matrix which will be used to construct an edge list for the ICAR model, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms or spatial measurement error (ME) models. It will automatically be row-standardized before calculating \code{slx} terms. \code{C} must be a binary symmetric \code{n x n} matrix.}
 
 \item{family}{The likelihood function for the outcome variable. Current options are \code{binomial(link = "logit")} and \code{poisson(link = "log")}.}
 
@@ -84,8 +83,6 @@ Note that if you also use \code{slx} terms (spatially lagged covariates), then t
 }}
 
 \item{centerx}{To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to \code{\link[base]{scale}}.}
-
-\item{scalex}{To scale predictors, provide either a logical value or a numeric-alike vector of length equal to the number of columns of ‘x’. Passed to \code{\link[base]{scale}}.}
 
 \item{prior_only}{Draw samples from the prior distributions of parameters only.}
 
@@ -107,7 +104,7 @@ Note that if you also use \code{slx} terms (spatially lagged covariates), then t
 An object of class class \code{geostan_fit} (a list) containing:
 \describe{
 \item{summary}{Summaries of the main parameters of interest; a data frame}
-\item{diagnostic}{Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (\code{eff_pars}) and
+\item{diagnostic}{Widely Applicable Information Criteria (WAIC) with measure of effective number of parameters (\code{eff_pars}) and
 mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
 \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 \item{data}{a data frame containing the model data}
@@ -117,12 +114,12 @@ mean log pointwise predictive density (\code{lpd}), and residual spatial autocor
 \item{slx}{The \code{slx} formula}
 \item{re}{A list with two name elements, \code{formula} and \code{Data}, containing the formula \code{re} and a data frame with columns \code{id} (the grouping variable) and \code{idx} (the index values assigned to each group).}
 \item{priors}{Prior specifications.}
-\item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
+\item{x_center}{If covariates are centered internally (i.e., \code{centerx} is not \code{FALSE}), then \code{x_centers} is the numeric vector of values on which the covariates were centered.}
 \item{spatial}{A data frame with the name of the spatial parameter (\code{"phi"} if \code{type = "icar"} else \code{"convolution"}) and method (\code{toupper(type)}).}
 }
 }
 \description{
-Assign the intrinsic conditional auto-regressive (ICAR) prior model to parameters. Options include the BYM model, the BYM2 model, and a solo ICAR term.
+The intrinsic conditional auto-regressive (ICAR) model for spatial count data. Options include the BYM model, the BYM2 model, and a solo ICAR term.
 }
 \details{
 The Stan code for the ICAR component of the model and the BYM2 option is from Morris et al. (2019) with adjustments to enable non-binary weights and disconnected graph structures (see Freni-Sterrantino (2018) and Donegan (2021)).
@@ -201,18 +198,11 @@ Note, the code above requires the \code{scale_c} function; it has package depend
 #'   Morris, Mitzi (2017). Spatial Models in Stan: Intrinsic Auto-Regressive Models for Areal Data. <https://mc-stan.org/users/documentation/case-studies/icar_stan.html>
 #'
 scale_c <- function(C) \{
- #' compute geometric mean of a vector
  geometric_mean <- function(x) exp(mean(log(x))) 
  N = dim(C)[1]
- # Create ICAR precision matrix  (diag - C): this is singular
- # function Diagonal creates a square matrix with given diagonal
  Q =  Diagonal(N, rowSums(C)) - C
- # Add a small jitter to the diagonal for numerical stability (optional but recommended)
  Q_pert = Q + Diagonal(N) * max(diag(Q)) * sqrt(.Machine$double.eps)
- # Function inla.qinv provides efficient way to calculate the elements of the
- # the inverse corresponding to the non-zero elements of Q
  Q_inv = inla.qinv(Q_pert, constr=list(A = matrix(1,1,N),e=0))
- # Compute the geometric mean of the variances, which are on the diagonal of Q.inv
  scaling_factor <- geometric_mean(Matrix::diag(Q_inv)) 
  return(scaling_factor) 
 \}

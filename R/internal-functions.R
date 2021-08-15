@@ -2,7 +2,7 @@
 #' 
 #' @noRd
 #' @param x A model frame or matrix with or without an intercept
-#' @return The same model frame or matrix with any intercept term removed
+#' @return The same model frame or matrix but without the intercept term 
 remove_intercept <- function(x) {
   varnames <- dimnames(x)[[2]][-which(attributes(x)$assign == 0)]
   xnew <- as.matrix(x[,which(attributes(x)$assign != 0)])
@@ -23,34 +23,46 @@ family_2_int <- function(family) {
     if (family$family == "binomial") return (4)
 }
 
-#' scale model matrix
+#' center model matrix
 #'
 #' @noRd
+#' 
 #' @param x model matrix
-#' @return scaled model matrix. Binary indicator variables will not be scaled.
-scale_x <- function(x, center, scale) {
-    scale_params <- list()
-    if (center) scale_params$center <- rep(0, times = ncol(x))
-    if (scale) scale_params$scale <- rep(1, times = ncol(x))
-    for (i in 1:ncol(x)) {
-        l <- length(unique(x[,i]))
-        if (l == 2) next
-        x.tmp <- scale(x[,i], center = center, scale = scale)
-        if (center) scale_params$center[i] <- attributes(x.tmp)$`scaled:center`
-        if (scale) scale_params$scale[i] <- attributes(x.tmp)$`scaled:scale`
-        x[,i] <- as.numeric(x.tmp)
+#' 
+#' @param center Logical indicator for centering covariates, or numeric vector of values on which covariates will be centered.s
+#' 
+#' @return centered model matrix. No special hanlding of indicator variables.
+#'
+center_x <- function(x, center) {
+    x <- scale(x, center = center, scale = FALSE)
+    x_center <- attributes(x)$`scaled:center`
+    if (center[1] || length(center) > 1) {
+        message("Centering covariates:")
+        for (i in 1:ncol(x)) message(" ", colnames(x)[i], ": ",  x_center[i])
     }
-    return(list(x = x, params = scale_params))
-    }
+    return(x)
+}
 
+#' Create matrix of spatially lagged covariates, using prepared (i.e., possibly centered) model matrix.
+#' 
 #' @importFrom stats model.matrix
+#'
+#' @param f formula (from slx)
+#'
+#' @param DF `as.data.frame(data)`
+#'
+#' @param x The possibly centered model matrix, no intercept
+#'
+#' @param W row-standardized spatial weights matrix
+#' 
 #' @noRd
-SLX <- function(f, DF, W) {
-    # row-standardize the connectivity matrix
-    x <- remove_intercept(model.matrix(f, DF))
-    Wx <- W %*% x
-    dimnames(Wx)[[2]] <- paste0("w.", dimnames(Wx)[[2]])
-    return(Wx)
+#' 
+SLX <- function(f, DF, x, W) {
+    z <- remove_intercept(model.matrix(f, DF))    
+    x_slx <- as.matrix(x[, colnames(z)])
+    Wx <- W %*% x_slx
+    colnames(Wx) <- paste0("w.", colnames(z))
+    return (Wx)       
    }
 
 #' Prep data to return to user
@@ -134,15 +146,14 @@ logit <- function(p) log(p/(1-p))
 #' Build list of priors
 #' @importFrom stats sd
 #' @noRd
-make_priors <- function(user_priors = NULL, y, x, xcentered, rhs_scale_global, scaling_factor = 2, link = c("identity", "log", "logit"), EV, offset) {
+make_priors <- function(user_priors = NULL, y, x, rhs_scale_global, scaling_factor = 2, link = c("identity", "log", "logit"), EV, offset) {
   if (link == "identity") scale.y <- sd(y) else scale.y <- 1
   if (link == "log") {
       if (any(y == 0)) y[which(y == 0)] <- 1 # local assignment only, not returned
       y <- log(y / exp(offset))
       scale.y <- sd(y)
       }
-  alpha_scale <- 5 * scaling_factor * scale.y 
-### if (xcentered | !ncol(x)) alpha_mean <- mean(y) else alpha_mean <- 0 ### 
+  alpha_scale <- 100 * scale.y 
   alpha_mean <- mean(y)
   alpha <- c(location = alpha_mean, scale = alpha_scale)
   priors <- list(intercept = alpha)
@@ -248,16 +259,10 @@ clean_results <- function(samples, pars, is_student, has_re, C, Wx, x, x_me_unbo
       Residual_MC <- C <- Expected_MC <- NA
   } else {
       Residual_MC <- round(mc(residuals, w = C), 3)
-      if (!has_b) {
-          n <- length(residuals)
-          Expected_MC <- -1/(n - 1)
-      } else {
-          Expected_MC <- expected_mc(X = x, C = C)
-      }
      }
     if ("log_lik" %in% pars) WAIC <- geostan::waic(samples) else WAIC <- rep(NA, 3)
     diagnostic <- c(WAIC = as.numeric(WAIC[1]), Eff_pars = as.numeric(WAIC[2]), Lpd = as.numeric(WAIC[3]),
-                    Residual_MC = Residual_MC, Expected_MC = Expected_MC)
+                    Residual_MC = Residual_MC)
     out <- list(summary = summary, diagnostic = diagnostic, stanfit = samples)
     return(out)
 }

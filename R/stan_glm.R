@@ -42,7 +42,6 @@
 #' }
 #' 
 #' @param centerx To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to \code{\link[base]{scale}}.
-#' @param scalex To scale predictors, provide either a logical value or a numeric-alike vector of length equal to the number of columns of ‘x’. Passed to \code{\link[base]{scale}}.
 #' 
 #' @param prior_only Draw samples from the prior distributions of parameters only. 
 #' @param chains Number of MCMC chains to estimate. 
@@ -85,8 +84,7 @@
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
 #' \item{summary}{Summaries of the main parameters of interest; a data frame}
-#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (\code{eff_pars}) and 
-#'  mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals).}
+#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the (posterior mean) residuals).}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' \item{data}{a data frame containing the model data}
 #' \item{family}{the user-provided or default \code{family} argument used to fit the model}
@@ -95,7 +93,7 @@
 #' \item{re}{A list containing \code{re}, the random effects (varying intercepts) formula if provided, and 
 #'  \code{Data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 #' \item{priors}{Prior specifications.}
-#' \item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
+#' \item{x_center}{If covariates are centered internally (i.e., `centerx` is not `FALSE`), then `x_centers` is the numeric vector of values on which the covariates were centered.}
 #' \item{ME}{The \code{ME} data list, if one was provided by the user for measurement error models.}
 #' \item{spatial}{NA, slot is maintained for use in \code{geostan_fit} methods.}
 #' }
@@ -116,7 +114,6 @@
 #'  )
 #'
 #' # diagnostics plot: Rhat values should all by very near 1
-#' library(rstan)
 #' rstan::stan_rhat(fit.pois$stanfit)
 #'  # see effective sample size for all parameters and generated quantities
 #'  # (including residuals, predicted values, etc.)
@@ -133,99 +130,104 @@
 #' y <- sentencing$sents
 #' ppc_dens_overlay(y, yrep)
 #' }
-stan_glm <- function(formula, slx, re, data, ME = NULL, C, 
+stan_glm <- function(formula,
+                     slx,
+                     re,
+                     data,
+                     C,
+                     ME = NULL,                     
                      family = gaussian(),
                      prior = NULL,
-                     centerx = FALSE, scalex = FALSE,
+                     centerx = FALSE, 
                      prior_only = FALSE,
-                     chains = 4, iter = 4e3, refresh = 1e3,
+                     chains = 4,
+                     iter = 2e3, 
+                     refresh = 1e3,
                      pars = NULL,
-                     control = list(adapt_delta = 0.95, max_treedepth = 15),
+                     control = list(adapt_delta = 0.95, max_treedepth = 12),
                      silent = FALSE,
                      ...) {
     stopifnot(inherits(formula, "formula"))
     stopifnot(inherits(family, "family"))
     stopifnot(family$family %in% c("gaussian", "student_t", "poisson", "binomial"))
     stopifnot(!missing(data))
-    if (!missing(C)) stopifnot(inherits(C, "matrix"))
-    if (silent) refresh = 0
-    ## GLM STUFF -------------  
-  a.zero <- as.array(0, dim = 1)
-  tmpdf <- as.data.frame(data)
-  mod.mat <- model.matrix(formula, tmpdf)
-  if (nrow(mod.mat) < nrow(tmpdf)) stop("There are missing (NA) values in your data.")  
-  n <- nrow(mod.mat)
-  family_int <- family_2_int(family)
-  intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0) 
-  if (intercept_only) {
-    if (!missing(slx)) stop("You provided a spatial lag of X (slx) term for an intercept only model. Did you intend to include a covariate? If you intend to specify a model in which the only covariate is a spatially-lagged term, you must create this covariate yourself and include it in the main model formula.")
-    x <- model.matrix(~ 0, data = tmpdf) 
-    dbeta_prior <- 0
-    slx <- " "
-    scale_params <- list()
-    x.list <- list(x = x)
-    W <- matrix(0, nrow = 1, ncol = 1)
-    dwx <- 0
-    dw_nonzero <- 0
-    wx_idx <- a.zero
-      } else {
-    xraw <- model.matrix(formula, data = tmpdf)
-    xraw <- remove_intercept(xraw)
-    x.list <- scale_x(xraw, center = centerx, scale = scalex)
-    x <- x.list$x
-    scale_params <- x.list$params
-    if (missing(slx)) {
-        slx <- " "
-        W <- matrix(0, ncol = 1, nrow = 1)
-        dwx = 0
-        wx_idx = a.zero
-        dw_nonzero <- 0
-    } else {
-        stopifnot(inherits(slx, "formula"))
-        if (any(rowSums(C) != 1)) {
-            message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
-        }
-        W <- C / rowSums(C)
-        Wx <- SLX(f = slx, DF = tmpdf, W = W)
-        if (scalex) Wx <- scale(Wx)            
-        dwx <- ncol(Wx)
-        dw_nonzero <- sum(W!=0)
-        wx_idx <- as.array( which(paste0("w.", dimnames(x)[[2]]) %in% dimnames(Wx)[[2]]), dim = dwx )
-        x <- cbind(Wx, x)
+    if (!missing(C)) {
+        stopifnot(inherits(C, "matrix"))
+        stopifnot(all(dim(C) == nrow(data)))
     }
-    dbeta_prior <- ncol(x) ## dimensions of beta prior; x includes slx, if any; x.list$x is the processed model matrix without slx terms. ##
+    if (silent) refresh = 0
+    a.zero <- as.array(0, dim = 1)
+    tmpdf <- as.data.frame(data)
+    mod.mat <- model.matrix(formula, tmpdf)
+    if (nrow(mod.mat) < nrow(tmpdf)) stop("There are missing (NA) values in your data.")  
+    n <- nrow(mod.mat)
+    family_int <- family_2_int(family)
+    intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0) 
+    if (intercept_only) {
+        if (!missing(slx)) {
+            stop("You provided a spatial lag of X (slx) term for an intercept only model. Did you intend to include a covariate?")
+        }
+        x_full <- x_no_Wx <- model.matrix(~ 0, data = tmpdf) 
+        dbeta_prior <- 0
+        slx <- " "
+        W <- matrix(0, nrow = 1, ncol = 1)
+        dwx <- 0
+        dw_nonzero <- 0
+        wx_idx <- a.zero
+  } else {
+      xraw <- model.matrix(formula, data = tmpdf)
+      xraw <- remove_intercept(xraw)
+      x_no_Wx <- center_x(xraw, center = centerx)
+      if (missing(slx)) {
+          slx <- " "
+          W <- matrix(0, ncol = 1, nrow = 1)
+          dwx = 0
+          wx_idx = a.zero
+          dw_nonzero <- 0
+          x_full <- x_no_Wx          
+      } else {
+          stopifnot(inherits(slx, "formula"))
+          if (any(rowSums(C) != 1)) {
+              message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
+          }
+          W <- C / rowSums(C)
+          Wx <- SLX(f = slx, DF = tmpdf, x = x_no_Wx, W = W)
+          dwx <- ncol(Wx)
+          dw_nonzero <- sum(W != 0)
+          wx_idx <- as.array( which(paste0("w.", colnames(x_no_Wx)) %in% colnames(Wx)), dim = dwx )
+          x_full <- cbind(Wx, x_no_Wx)
       }
-  ModData <- make_data(formula, tmpdf, x)
-  frame <- model.frame(formula, tmpdf)
-  y <- y_int <- model.response(frame)
-  if (family_int %in% c(1,2)) y_int <- rep(0, length(y))
-  if (is.null(model.offset(frame))) {
-    offset <- rep(0, times = n)
-  } else {
-      offset <- model.offset(frame)
+      dbeta_prior <- ncol(x_full) 
   }
-  if(missing(re)) {
-    has_re <- n_ids <- id <- 0;
-    id_index <- to_index(id, n = nrow(tmpdf))
-    re_list <- NA
-  } else {
-      stopifnot(inherits(re, "formula"))
-      has_re <- 1
-      id <- tmpdf[,paste(re[2])]
-      n_ids <- length(unique(id))
-      id_index <- to_index(id)
-      re_list <- list(formula = re, data = id_index)
+    ModData <- make_data(formula, tmpdf, x_full)
+    frame <- model.frame(formula, tmpdf)
+    y <- y_int <- model.response(frame)
+    if (family_int %in% c(1,2)) y_int <- rep(0, length(y))
+    if (is.null(model.offset(frame))) {
+        offset <- rep(0, times = n)
+    } else {
+        offset <- model.offset(frame)
   }
-  ## PARAMETER MODEL STUFF -------------  
-  is_student <- family$family == "student_t"
-  priors_made <- make_priors(user_priors = prior,
-                             y = y,
-                             x = x,
-                             xcentered = centerx,
-                             link = family$link,
-                             offset = offset)
-  ## GLM STUFF -------------  
-  standata <- list(
+    if(missing(re)) {
+        has_re <- n_ids <- id <- 0;
+        id_index <- to_index(id, n = nrow(tmpdf))
+        re_list <- NA
+    } else {
+        stopifnot(inherits(re, "formula"))
+        has_re <- 1
+        id <- tmpdf[,paste(re[2])]
+        n_ids <- length(unique(id))
+        id_index <- to_index(id)
+        re_list <- list(formula = re, data = id_index)
+  }
+    ## PRIORS -------------  
+    is_student <- family$family == "student_t"
+    priors_made <- make_priors(user_priors = prior,
+                               y = y,
+                               x = x_full,
+                               link = family$link,
+                               offset = offset)
+    standata <- list(
   ## glm data -------------      
     y = y,
     y_int = y_int,
@@ -248,14 +250,15 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
     wx_idx = wx_idx,
     prior_only = prior_only
     )
-  ## DATA MODEL STUFF -------------  
-  me.list <- prep_me_data(ME, x.list$x)
+  ## ME MODEL -------------  
+  me.list <- prep_me_data(ME, x_no_Wx)
   standata <- c(standata, me.list)  
-  ## STAN STUFF -------------    
+  ## INTEGER OUTCOMES -------------    
   if (family$family == "binomial") {
       standata$y <- standata$y_int <- y[,1]
       standata$trials <- y[,1] + y[,2]
   }
+  ## PARAMETERS TO KEEP -------------        
   pars <- c(pars, 'intercept', 'residual', 'log_lik', 'yrep', 'fitted')
   if (!intercept_only) pars <- c(pars, 'beta')
   if (dwx) pars <- c(pars, 'gamma')
@@ -265,19 +268,19 @@ stan_glm <- function(formula, slx, re, data, ME = NULL, C,
   if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
   if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
   priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
-  ## PRINT STUFF -------------    
   if (!silent) print_priors(prior, priors_made_slim)
   ## CALL STAN -------------    
   samples <- rstan::sampling(stanmodels$glm, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+  ## OUTPUT -------------    
   if (missing(C)) C <- NA
-  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
+  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
   out$data <- ModData
   out$family <- family
   out$formula <- formula
   out$slx <- slx
   out$re <- re_list
   out$priors <- priors_made_slim
-  out$scale_params <- scale_params
+  out$x_center <- attributes(x_full)$`scaled:center`
   if (!missing(ME)) out$ME <- ME
   if (has_re) {
       out$spatial <- data.frame(par = "alpha_re", method = "Exchangeable")

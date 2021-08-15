@@ -70,5 +70,5 @@ Cst <- shape2mat(georgia, t = 5)
 
 }
 \seealso{
-\link[geostan]{edges}
+\code{\link[geostan]{edges}}
 }

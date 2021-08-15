@@ -4,16 +4,22 @@
 #'
 #' @md
 #' 
-#' @description Assign the intrinsic conditional auto-regressive (ICAR) prior model to parameters. Options include the BYM model, the BYM2 model, and a solo ICAR term. 
+#' @description The intrinsic conditional auto-regressive (ICAR) model for spatial count data. Options include the BYM model, the BYM2 model, and a solo ICAR term. 
 #' 
 #' @param formula A model formula, following the R \link[stats]{formula} syntax. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
+#' 
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
 #'  These will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
+#' 
 #' @param re If the model includes a varying intercept term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}. Before using this, read the \code{Details} section and the \code{type} argument.
+#' 
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
+#' 
 #' @param type Defaults to "icar" (partial pooling of neighboring observations through parameter \code{phi}); specify "bym" to add a second parameter vector \code{theta} to perform partial pooling across all observations; specify "bym2" for the innovation introduced by Riebler et al. (2016). See \code{Details} for more information.
-#' @param scale_factor For the BYM2 model, optional. If missing, this will be set to a vector of ones. 
+#' 
+#' @param scale_factor For the BYM2 model, optional. If missing, this will be set to a vector of ones.
+#' 
 #' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$spatial = TRUE}, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
 #' \describe{
 #' 
@@ -42,7 +48,6 @@
 #' }
 #'
 #' @param centerx To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to \code{\link[base]{scale}}.
-#' @param scalex To scale predictors, provide either a logical value or a numeric-alike vector of length equal to the number of columns of ‘x’. Passed to \code{\link[base]{scale}}.
 #' 
 #' @param prior_only Draw samples from the prior distributions of parameters only.
 #' @param chains Number of MCMC chains to estimate. 
@@ -137,18 +142,11 @@
 #' #'   Morris, Mitzi (2017). Spatial Models in Stan: Intrinsic Auto-Regressive Models for Areal Data. <https://mc-stan.org/users/documentation/case-studies/icar_stan.html>
 #' #'
 #' scale_c <- function(C) {
-#'  #' compute geometric mean of a vector
 #'  geometric_mean <- function(x) exp(mean(log(x))) 
 #'  N = dim(C)[1]
-#'  # Create ICAR precision matrix  (diag - C): this is singular
-#'  # function Diagonal creates a square matrix with given diagonal
 #'  Q =  Diagonal(N, rowSums(C)) - C
-#'  # Add a small jitter to the diagonal for numerical stability (optional but recommended)
 #'  Q_pert = Q + Diagonal(N) * max(diag(Q)) * sqrt(.Machine$double.eps)
-#'  # Function inla.qinv provides efficient way to calculate the elements of the
-#'  # the inverse corresponding to the non-zero elements of Q
 #'  Q_inv = inla.qinv(Q_pert, constr=list(A = matrix(1,1,N),e=0))
-#'  # Compute the geometric mean of the variances, which are on the diagonal of Q.inv
 #'  scaling_factor <- geometric_mean(Matrix::diag(Q_inv)) 
 #'  return(scaling_factor) 
 #'}
@@ -157,7 +155,7 @@
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
 #' \item{summary}{Summaries of the main parameters of interest; a data frame}
-#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (\code{eff_pars}) and 
+#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with measure of effective number of parameters (\code{eff_pars}) and 
 #'  mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' \item{data}{a data frame containing the model data}
@@ -167,7 +165,7 @@
 #' \item{slx}{The \code{slx} formula}
 #' \item{re}{A list with two name elements, \code{formula} and \code{Data}, containing the formula \code{re} and a data frame with columns \code{id} (the grouping variable) and \code{idx} (the index values assigned to each group).}
 #' \item{priors}{Prior specifications.}
-#' \item{scale_params}{A list with the center and scale parameters returned from the call to \code{base::scale} on the model matrix. If \code{centerx = FALSE} and \code{scalex = FALSE} then it is an empty list.}
+#' \item{x_center}{If covariates are centered internally (i.e., `centerx` is not `FALSE`), then `x_centers` is the numeric vector of values on which the covariates were centered.}
 #' \item{spatial}{A data frame with the name of the spatial parameter (\code{"phi"} if \code{type = "icar"} else \code{"convolution"}) and method (\code{toupper(type)}).}
 #' }
 #' 
@@ -239,19 +237,20 @@
 #'   )
 #' }
 #' 
-stan_icar <- function(formula, slx, re,
+stan_icar <- function(formula,
+                      slx,
+                      re,
                       data,
-                      type = c("icar", "bym", "bym2"),
+                      C,                       
+                      type = c("icar", "bym", "bym2"),                      
                       scale_factor = NULL,
                       ME = NULL,
-                      C, 
                       family = poisson(),
                       prior = NULL,
                       centerx = FALSE,
-                      scalex = FALSE,
                       prior_only = FALSE,
-                      chains = 4, iter = 4e3, refresh = 500, pars = NULL,
-                      control = list(adapt_delta = .9, max_treedepth = 15),
+                      chains = 4, iter = 2e3, refresh = 500, pars = NULL,
+                      control = list(adapt_delta = .9, max_treedepth = 13),
                       silent = FALSE,
                       ...) {
     stopifnot(inherits(formula, "formula"))
@@ -259,89 +258,84 @@ stan_icar <- function(formula, slx, re,
     stopifnot(family$family %in% c("poisson", "binomial"))
     stopifnot(!missing(data))
     stopifnot(inherits(C, "matrix"))
-    if (silent) refresh = 0    
+    stopifnot(all(dim(C) == nrow(data)))
+    #### ICAR TYPE [START] --------
     type <- match.arg(type)
-  ## GLM STUFF -------------
-  a.zero <- as.array(0, dim = 1)
-  tmpdf <- as.data.frame(data)
-  mod.mat <- model.matrix(formula, tmpdf)
-  if (nrow(mod.mat) < nrow(tmpdf)) stop("There are missing (NA) values in your data.")
-  n <- nrow(mod.mat)
-  ## ICAR STUFF -------------
-  if (any(dim(C) != n)) stop("Dimensions of matrix C must match the number of observations. See ?shape2mat for help creating C.")
-  ## GLM STUFF -------------
-  family_int <- family_2_int(family)
-  intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0)
-  if (intercept_only) { # x includes slx, if any, for prior specifictions; x.list$x is the processed model matrix without slx terms.
-    if (!missing(slx)) stop("Spatial lag of X (slx) term provided for an intercept only model. Did you intend to include a covariate? If you intend to specify a model in which the only covariate is a spatially-lagged term, you must create this covariate yourself and include it in the main model formula.")      
-    x <- model.matrix(~ 0, data = tmpdf) 
-    dbeta_prior <- 0
-    slx <- " "
-    scale_params <- list()
-    x.list <- list(x = x)
-    W <- matrix(0, nrow = 1, ncol = 1)
-    dwx <- 0
-    dw_nonzero <- 0
-    wx_idx <- a.zero
-      } else {
-    xraw <- model.matrix(formula, data = tmpdf)
-    xraw <- remove_intercept(xraw)
-    x.list <- scale_x(xraw, center = centerx, scale = scalex)
-    x <- x.list$x
-    scale_params <- x.list$params
-    if (missing(slx)) {
-        slx <- " "
-        W <- matrix(0, ncol = 1, nrow = 1)
-        dwx = 0
-        wx_idx = a.zero
-        dw_nonzero <- 0
-    } else {
-        stopifnot(inherits(slx, "formula"))        
-        if (any(rowSums(C) != 1)) {
-            message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
+    #### ICAR TYPE [STOP] --------
+    if (silent) refresh = 0    
+    a.zero <- as.array(0, dim = 1)
+    tmpdf <- as.data.frame(data)
+    mod.mat <- model.matrix(formula, tmpdf)
+    if (nrow(mod.mat) < nrow(tmpdf)) stop("There are missing (NA) values in your data.")  
+    n <- nrow(mod.mat)
+    family_int <- family_2_int(family)
+    intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0) 
+    if (intercept_only) {
+        if (!missing(slx)) {
+            stop("You provided a spatial lag of X (slx) term for an intercept only model. Did you intend to include a covariate? If you intend to specify a model in which the only covariate is a spatially-lagged term, you must create this covariate yourself and include it in the main model formula.")
         }
-        W <- C / rowSums(C)
-        Wx <- SLX(f = slx, DF = tmpdf, W = W)
-        if (scalex) Wx <- scale(Wx)            
-        dwx <- ncol(Wx)
-        dw_nonzero <- sum(W!=0)
-        wx_idx <- as.array( which(paste0("w.", dimnames(x)[[2]]) %in% dimnames(Wx)[[2]]), dim = dwx )
-        x <- cbind(Wx, x)
-    }
-    dbeta_prior <- ncol(x) ## dimensions of beta prior; 
+        x_full <- x_no_Wx <- model.matrix(~ 0, data = tmpdf) 
+        dbeta_prior <- 0
+        slx <- " "
+        W <- matrix(0, nrow = 1, ncol = 1)
+        dwx <- 0
+        dw_nonzero <- 0
+        wx_idx <- a.zero
+  } else {
+      xraw <- model.matrix(formula, data = tmpdf)
+      xraw <- remove_intercept(xraw)
+      x_no_Wx <- center_x(xraw, center = centerx)
+      if (missing(slx)) {
+          slx <- " "
+          W <- matrix(0, ncol = 1, nrow = 1)
+          dwx = 0
+          wx_idx = a.zero
+          dw_nonzero <- 0
+          x_full <- x_no_Wx
+      } else {
+          stopifnot(inherits(slx, "formula"))
+          if (any(rowSums(C) != 1)) {
+              message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
+          }
+          W <- C / rowSums(C)
+          Wx <- SLX(f = slx, DF = tmpdf, x = x_no_Wx, W = W)
+          dwx <- ncol(Wx)
+          dw_nonzero <- sum(W != 0)
+          wx_idx <- as.array( which(paste0("w.", colnames(x_no_Wx)) %in% colnames(Wx)), dim = dwx )
+          x_full <- cbind(Wx, x_no_Wx)
       }
-  ModData <- make_data(formula, tmpdf, x)
-  frame <- model.frame(formula, tmpdf)
-  y <- y_int <- model.response(frame)
-  if (family_int %in% c(1,2)) y_int <- rep(0, length(y))
-  if (is.null(model.offset(frame))) {
-    offset <- rep(0, times = n)
-  } else {
-      offset <- model.offset(frame)
+      dbeta_prior <- ncol(x_full) 
   }
-  if(missing(re)) {
-    has_re <- n_ids <- id <- 0;
-    id_index <- to_index(id, n = nrow(tmpdf))
-    re_list <- NA
-  } else {
-      stopifnot(inherits(re, "formula"))              
-      has_re <- 1
-      id <- tmpdf[,paste(re[2])]
-      n_ids <- length(unique(id))
-      id_index <- to_index(id)
-      re_list <- list(formula = re, data = id_index)
+    ModData <- make_data(formula, tmpdf, x_full)
+    frame <- model.frame(formula, tmpdf)
+    y <- y_int <- model.response(frame)
+    if (family_int %in% c(1,2)) y_int <- rep(0, length(y))
+    if (is.null(model.offset(frame))) {
+        offset <- rep(0, times = n)
+    } else {
+        offset <- model.offset(frame)
   }
-  ## PARAMETER MODEL STUFF -------------  
-  is_student <- FALSE ## always false for icar ##
-  priors_made <- make_priors(user_priors = prior,
-                        y = y,
-                        x = x,
-                        xcentered = centerx,
-                        link = family$link,
-                        offset = offset)
-  ## MIXED STUFF -------------  
-  standata <- list(
-  ## glm data -------------
+    if(missing(re)) {
+        has_re <- n_ids <- id <- 0;
+        id_index <- to_index(id, n = nrow(tmpdf))
+        re_list <- NA
+    } else {
+        stopifnot(inherits(re, "formula"))
+        has_re <- 1
+        id <- tmpdf[,paste(re[2])]
+        n_ids <- length(unique(id))
+        id_index <- to_index(id)
+        re_list <- list(formula = re, data = id_index)
+  }
+    ## PRIORS -------------  
+    is_student <- family$family == "student_t"
+    priors_made <- make_priors(user_priors = prior,
+                               y = y,
+                               x = x_full,
+                               link = family$link,
+                               offset = offset)
+    standata <- list(
+  ## glm data -------------      
     y = y,
     y_int = y_int,
     trials = rep(0, length(y)),
@@ -361,48 +355,56 @@ stan_icar <- function(formula, slx, re,
     W = W,
     dwx = dwx,
     wx_idx = wx_idx,
-  ## if TRUE, ignore data and likelihood, return prior model
     prior_only = prior_only
-  )
-  ## ICAR STUFF -------------
-  if (inherits(scale_factor, "NULL")) inv_sqrt_scale_factor = NULL else inv_sqrt_scale_factor = 1 / sqrt(scale_factor)
-  iar.list <- prep_icar_data(C, inv_sqrt_scale_factor = inv_sqrt_scale_factor)
-  standata <- c(standata, iar.list)
-  standata$type <- match(type, c("icar", "bym", "bym2"))  
-  ## DATA MODEL STUFF -------------  
-  me.list <- prep_me_data(ME, x.list$x)
-  standata <- c(standata, me.list)
-  ## STAN STUFF -------------    
-  if (family$family == "binomial") {
+    )     
+    ## ICAR DATA [START] -------------
+    if (inherits(scale_factor, "NULL")) {
+        inv_sqrt_scale_factor = NULL
+    } else {
+        inv_sqrt_scale_factor = 1 / sqrt(scale_factor)
+    }
+    iar.list <- prep_icar_data(C, inv_sqrt_scale_factor = inv_sqrt_scale_factor)
+    standata <- c(standata, iar.list)
+    standata$type <- match(type, c("icar", "bym", "bym2"))
+    ## ICAR DATA [STOP] -------------
+    ## ME MODEL -------------  
+    me.list <- prep_me_data(ME, x_no_Wx)
+    standata <- c(standata, me.list)  
+    ## INTEGER OUTCOMES -------------    
+    if (family$family == "binomial") {
       standata$y <- standata$y_int <- y[,1]
       standata$trials <- y[,1] + y[,2]
-  }
-  pars <- c(pars, 'intercept', 'residual', 'log_lik', 'yrep', 'fitted', 'phi', 'spatial_scale')
-  if (type == "bym2") pars <- c(pars, "theta", "rho")
-  if (type == "bym") pars <- c(pars, "theta", "theta_scale")
-  if (standata$m) pars <- c(pars, "alpha_phi")
-  if (!intercept_only) pars <- c(pars, 'beta')
-  if (dwx) pars <- c(pars, 'gamma')
-  if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
-  if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
-  if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
-  priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
-  ## PRINT STUFF -------------    
-  if (!silent) print_priors(prior, priors_made_slim)
-  ## CALL STAN -------------  
-  samples <- rstan::sampling(stanmodels$icar, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
-  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x.list$x, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
-  out$data <- ModData
-  out$family <- family
-  out$formula <- formula
-  out$slx <- slx
-  out$edges <- edges(C)  
-  out$re <- re_list
-  out$priors <- priors_made_slim
-  out$scale_params <- scale_params
-  if (!missing(ME)) out$ME <- ME
-  out$spatial <- data.frame(par = "phi", method = toupper(type))
-  class(out) <- append("geostan_fit", class(out))
-  return (out)
+    }
+    ## PARAMETERS TO KEEP with ICAR [START] -------------        
+    pars <- c(pars, 'intercept', 'residual', 'log_lik', 'yrep', 'fitted', 'phi', 'spatial_scale')
+    if (type == "bym2") pars <- c(pars, "theta", "rho")
+    if (type == "bym") pars <- c(pars, "theta", "theta_scale")
+    if (standata$m) pars <- c(pars, "alpha_phi")
+    if (!intercept_only) pars <- c(pars, 'beta')
+    if (dwx) pars <- c(pars, 'gamma')
+    if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
+    if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
+    if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
+    priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
+    ## PARAMETERS TO KEEP with ICAR [STOP] -------------              
+    if (!silent) print_priors(prior, priors_made_slim)
+    ## CALL STAN -------------  
+    samples <- rstan::sampling(stanmodels$icar, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+    ## OUTPUT -------------        
+    out <- clean_results(samples, pars, is_student, has_re, C, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
+    out$data <- ModData
+    out$family <- family
+    out$formula <- formula
+    out$slx <- slx
+    out$re <- re_list
+    out$priors <- priors_made_slim
+    out$x_center <- attributes(x_full)$`scaled:center`
+    if (!missing(ME)) out$ME <- ME
+    ## ICAR OUTPUT [START] --------
+    out$edges <- edges(C)       
+    out$spatial <- data.frame(par = "phi", method = toupper(type))
+    ## ICAR OUTPUT [STOP] --------
+    class(out) <- append("geostan_fit", class(out))
+    return (out)
 }
 

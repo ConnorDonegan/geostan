@@ -141,21 +141,20 @@
   <span class='va'>re</span>,
   <span class='va'>data</span>,
   <span class='va'>C</span>,
-  <span class='va'>EV</span>,
-  ME <span class='op'>=</span> <span class='cn'>NULL</span>,
   nsa <span class='op'>=</span> <span class='cn'>FALSE</span>,
   threshold <span class='op'>=</span> <span class='fl'>0.25</span>,
+  EV <span class='op'>=</span> <span class='fu'><a href='make_EV.html'>make_EV</a></span><span class='op'>(</span><span class='va'>C</span>, nsa <span class='op'>=</span> <span class='va'>nsa</span>, threshold <span class='op'>=</span> <span class='va'>threshold</span><span class='op'>)</span>,
+  ME <span class='op'>=</span> <span class='cn'>NULL</span>,
   family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>gaussian</a></span><span class='op'>(</span><span class='op'>)</span>,
   <span class='va'>p0</span>,
   prior <span class='op'>=</span> <span class='cn'>NULL</span>,
   centerx <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  scalex <span class='op'>=</span> <span class='cn'>FALSE</span>,
   prior_only <span class='op'>=</span> <span class='cn'>FALSE</span>,
   chains <span class='op'>=</span> <span class='fl'>4</span>,
   iter <span class='op'>=</span> <span class='fl'>2000</span>,
   refresh <span class='op'>=</span> <span class='fl'>500</span>,
   pars <span class='op'>=</span> <span class='cn'>NULL</span>,
-  control <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>adapt_delta <span class='op'>=</span> <span class='fl'>0.99</span>, max_treedepth <span class='op'>=</span> <span class='fl'>15</span><span class='op'>)</span>,
+  control <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>adapt_delta <span class='op'>=</span> <span class='fl'>0.975</span>, max_treedepth <span class='op'>=</span> <span class='fl'>13</span><span class='op'>)</span>,
   silent <span class='op'>=</span> <span class='cn'>FALSE</span>,
   <span class='va'>...</span>
 <span class='op'>)</span></pre>
@@ -183,15 +182,23 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>C</th>
-      <td><p>Spatial connectivity matrix which will be used to calculate eigenvectors, residual spatial autocorrelation as well as any user specified <code>slx</code> terms or spatial measurement error (ME) models; it will be row-standardized before calculating <code>slx</code> terms.</p></td>
+      <td><p>Spatial connectivity matrix which will be used to calculate eigenvectors, if not provided by the user. Typically, the binary connectivity matrix is best for calculating eigenvectors (i.e., using <code>C = shape2mat(shape, style = "B")</code> rather than <code>style = "W"</code>). This matrix will also be used to calculate residual spatial autocorrelation (Moran coefficient), any user specified <code>slx</code> terms, and any spatial measurement error (ME) models; it will be row-standardized before calculating <code>slx</code> terms. See <code><a href='shape2mat.html'>shape2mat</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>nsa</th>
+      <td><p>Include eigenvectors representing negative spatial autocorrelation? Defaults to <code>nsa = FALSE</code>. This is ignored if <code>EV</code> is provided.</p></td>
+    </tr>
+    <tr>
+      <th>threshold</th>
+      <td><p>Eigenvectors with standardized Moran coefficient values below this <code>threshold</code> value will be excluded from the candidate set of eigenvectors, <code>EV</code>. This defaults to <code>threshold = 0.25</code>, and is ignored if <code>EV</code> is provided.</p></td>
     </tr>
     <tr>
       <th>EV</th>
-      <td><p>A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. If provided, still also provide a spatial weights matrix <code>C</code> for other purposes.  See <a href='make_EV.html'>make_EV</a> and <a href='shape2mat.html'>shape2mat</a>.</p></td>
+      <td><p>A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. With connectivity matrix <code>C</code>, you can create <code>EV</code> using <code>EV = make_EV(C)</code>. If <code>EV</code> is provided, still also provide a spatial weights matrix <code>C</code> for other purposes.  See <code><a href='make_EV.html'>make_EV</a></code> and <code><a href='shape2mat.html'>shape2mat</a></code>.</p></td>
     </tr>
     <tr>
       <th>ME</th>
-      <td><p>To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if <code>ME$spatial = TRUE</code>, an auto Gaussian (CAR) model. Elements of the list <code>ME</code> may include:</p><dl>
+      <td><p>To model observational uncertainty (i.e. measurement or sampling error for survey-based areal covariates) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if <code>ME$spatial = TRUE</code>, an auto Gaussian (CAR) model. Elements of the list <code>ME</code> may include:</p><dl>
 
 <dt>se</dt><dd><p>a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
 <dt>bounded</dt><dd><p>If any variables in <code>se</code> are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.</p></dd>
@@ -200,14 +207,6 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <dt>car_parts</dt><dd><p>A list of data for the CAR model, as returned by <code><a href='prep_car_data.html'>prep_car_data()</a></code> (be sure to return the matrix <code>C</code>, by using the argument <code>cmat = TRUE</code>). Only required if <code>spatial=TRUE</code>.</p></dd>
 
 </dl></td>
-    </tr>
-    <tr>
-      <th>nsa</th>
-      <td><p>Include eigenvectors representing negative spatial autocorrelation? Default <code>nsa = FALSE</code>. Ignored if <code>EV</code> is provided.</p></td>
-    </tr>
-    <tr>
-      <th>threshold</th>
-      <td><p>Threshold for eigenvector MC value; eigenvectors with values below threshold will be excluded from the candidate set. Default <code>threshold = 0.25</code>; ignored if <code>EV</code> is provided.</p></td>
     </tr>
     <tr>
       <th>family</th>
@@ -237,10 +236,6 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     <tr>
       <th>centerx</th>
       <td><p>To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to <code><a href='https://rdrr.io/r/base/scale.html'>scale</a></code>.</p></td>
-    </tr>
-    <tr>
-      <th>scalex</th>
-      <td><p>To scale predictors, provide either a logical value or a numeric-alike vector of length equal to the number of columns of ‘x’. Passed to <code><a href='https://rdrr.io/r/base/scale.html'>scale</a></code>.</p></td>
     </tr>
     <tr>
       <th>prior_only</th>
@@ -289,8 +284,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl>
 <dt>summary</dt><dd><p>Summaries of the main parameters of interest; a data frame</p></dd>
-<dt>diagnostic</dt><dd><p>Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (<code>eff_pars</code>) and
-mean log pointwise predictive density (<code>lpd</code>), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.</p></dd>
+<dt>diagnostic</dt><dd><p>Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (<code>eff_pars</code>) and mean log pointwise predictive density (<code>lpd</code>), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.</p></dd>
 <dt>data</dt><dd><p>a data frame containing the model data</p></dd>
 <dt>EV</dt><dd><p>A matrix of eigenvectors created with <code>w</code> and <code><a href='make_EV.html'>geostan::make_EV</a></code></p></dd>
 <dt>C</dt><dd><p>The spatial weights matrix used to construct EV</p></dd>
@@ -300,7 +294,7 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
 <dt>re</dt><dd><p>A list containing <code>re</code>,  the random effects (varying intercepts) formula if provided, and
 <code>data</code> a data frame with columns <code>id</code>, the grouping variable, and <code>idx</code>, the index values assigned to each group.</p></dd>
 <dt>priors</dt><dd><p>Prior specifications.</p></dd>
-<dt>scale_params</dt><dd><p>A list with the center and scale parameters returned from the call to <code><a href='https://rdrr.io/r/base/scale.html'>base::scale</a></code> on the model matrix. If <code>centerx = FALSE</code> and <code>scalex = FALSE</code> then it is an empty list.</p></dd>
+<dt>x_center</dt><dd><p>If covariates are centered internally (i.e., <code>centerx</code> is not <code>FALSE</code>), then <code>x_centers</code> is the numeric vector of values on which the covariates were centered.</p></dd>
 <dt>ME</dt><dd><p>The <code>ME</code> data list, if one was provided by the user for measurement error models.</p></dd>
 <dt>spatial</dt><dd><p>A data frame with the name of the spatial component parameter ("esf") and method ("ESF")</p></dd>
 <dt>stanfit</dt><dd><p>an object of class <code>stanfit</code> returned by <code><a href='https://mc-stan.org/rstan/reference/stan.html'>rstan::stan</a></code></p></dd>

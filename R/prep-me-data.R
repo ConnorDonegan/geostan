@@ -1,12 +1,14 @@
 #' prep_me_data
 #' 
 #' internal function to prepare observational error model for Stan
+#' 
 ##' @param ME user-provided list of observational error stuff
-##' @param x take design matrix from x.list$x
+##' 
+##' @param x design matrix, excluding any Wx (slx) terms
 ##' 
 ##' @return Partial data list to pass to Stan. 
 ##' @noRd
-prep_me_data <- function(ME, x) { # for x pass in x.list$x
+prep_me_data <- function(ME, x) { # for x pass in x_no_Wx
    # some defaults
   x.df <- as.data.frame(x)
   n <- nrow(x.df)  
@@ -59,7 +61,7 @@ prep_me_data <- function(ME, x) { # for x pass in x.list$x
     if (!inherits(ME, "list")) stop("ME must be a list .")
     if (!is.null(ME$spatial)) {
         if (length(ME$spatial) != 1 | !ME$spatial %in% c(0, 1, TRUE, FALSE)) stop("ME$spatial must be logical (0, 1, TRUE, or FALSE) and of length 1.")
-        spatial_me = ME$spatial
+        spatial_me <- ME$spatial
     } else {
         spatial_me <- FALSE
     }

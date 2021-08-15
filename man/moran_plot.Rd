@@ -8,9 +8,9 @@ Anselin, Luc. "Local indicators of spatial association—LISA." Geographical ana
 }
 \usage{
 moran_plot(
-  y,
+  x,
   w,
-  xlab = "y (centered)",
+  xlab = "x (centered)",
   ylab = "Spatial Lag",
   pch = 20,
   col = "darkred",
@@ -20,7 +20,7 @@ moran_plot(
 )
 }
 \arguments{
-\item{y}{A numeric vector of length n.}
+\item{x}{A numeric vector of length n.}
 
 \item{w}{An n x n spatial connectivity matrix.}
 
@@ -39,7 +39,7 @@ moran_plot(
 \item{lwd}{Width of the regression line.}
 }
 \value{
-Returns a \code{gg} plot, a scatter plot with \code{y} on the x-axis and its spatially lagged values on the y-axis (i.e. a Moran plot).
+Returns a \code{gg} plot, a scatter plot with \code{x} on the horizontal and its spatially lagged values on the vertical axis (i.e. a Moran plot).
 }
 \description{
 Plots a set of values against their spatially lagged values and gives the Moran coefficient as a measure of spatial autocorrelation.
@@ -53,9 +53,9 @@ If any observations with no neighbors are found (i.e. \code{any(rowSums(w) == 0)
 
 library(sf)
 data(georgia)
-y <- georgia$ICE
+x <- georgia$ICE
 w <- shape2mat(georgia, "W")
-moran_plot(y, w)
+moran_plot(x, w)
 
 }
 \seealso{

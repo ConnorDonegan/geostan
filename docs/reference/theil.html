@@ -135,18 +135,18 @@
     <p>Calculates Theil's entropy-based measure of inequality for a given set of disease incidence rates and populations at risk.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>theil</span><span class='op'>(</span><span class='va'>rates</span>, <span class='va'>pops</span>, cases <span class='op'>=</span> <span class='va'>rates</span> <span class='op'>*</span> <span class='va'>pops</span>, total <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>theil</span><span class='op'>(</span><span class='va'>count</span>, <span class='va'>population</span>, <span class='va'>rates</span>, total <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>pops</th>
-      <td><p>Populations at risk.</p></td>
+      <th>count</th>
+      <td><p>Number of cases (e.g., disease incidence).</p></td>
     </tr>
     <tr>
-      <th>cases</th>
-      <td><p>Number of cases (e.g., disease incidence).</p></td>
+      <th>population</th>
+      <td><p>Population size (population at risk).</p></td>
     </tr>
     <tr>
       <th>total</th>
@@ -154,7 +154,7 @@
     </tr>
     <tr>
       <th>rate</th>
-      <td><p>Incidence rates. If provided, case counts will be calculated automatically as <code>cases = rates * pops</code></p></td>
+      <td><p>Incidence rates. If provided, case counts will be calculated automatically as <code>cases = rates * Population</code>#'</p></td>
     </tr>
     </table>
 

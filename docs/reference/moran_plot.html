@@ -136,9 +136,9 @@
     </div>
 
     <pre class="usage"><span class='fu'>moran_plot</span><span class='op'>(</span>
-  <span class='va'>y</span>,
+  <span class='va'>x</span>,
   <span class='va'>w</span>,
-  xlab <span class='op'>=</span> <span class='st'>"y (centered)"</span>,
+  xlab <span class='op'>=</span> <span class='st'>"x (centered)"</span>,
   ylab <span class='op'>=</span> <span class='st'>"Spatial Lag"</span>,
   pch <span class='op'>=</span> <span class='fl'>20</span>,
   col <span class='op'>=</span> <span class='st'>"darkred"</span>,
@@ -151,7 +151,7 @@
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>y</th>
+      <th>x</th>
       <td><p>A numeric vector of length n.</p></td>
     </tr>
     <tr>
@@ -193,7 +193,7 @@
     <p>Anselin, Luc. "Local indicators of spatial association—LISA." Geographical analysis 27, no. 2 (1995): 93-115.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns a <code>gg</code> plot, a scatter plot with <code>y</code> on the x-axis and its spatially lagged values on the y-axis (i.e. a Moran plot).</p>
+    <p>Returns a <code>gg</code> plot, a scatter plot with <code>x</code> on the horizontal and its spatially lagged values on the vertical axis (i.e. a Moran plot).</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>For details on the symbol parameters see the documentation for <a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a>.</p>
@@ -206,9 +206,9 @@
     <pre class="examples"><div class='input'>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
-<span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>georgia</span><span class='op'>$</span><span class='va'>ICE</span>
+<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>georgia</span><span class='op'>$</span><span class='va'>ICE</span>
 <span class='va'>w</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='st'>"W"</span><span class='op'>)</span>
-<span class='fu'>moran_plot</span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>w</span><span class='op'>)</span>
+<span class='fu'>moran_plot</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='moran_plot-1.png' alt='' width='700' height='433' /></div><div class='input'>
 </div></pre>
   </div>
