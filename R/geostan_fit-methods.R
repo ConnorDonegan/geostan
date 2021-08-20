@@ -78,7 +78,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
   cat("Spatial Model Results \n")
   cat("Formula: ")
   print(x$formula)
-  if (class(x$slx) == "formula") {
+  if (inherits(x$slx, "formula")) {
    cat("SLX: ")
    print(x$slx)
    pars <- c(pars, "gamma")
