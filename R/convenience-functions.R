@@ -368,6 +368,8 @@ sp_diag <- function(y,
         name <- "Residuals"
         }
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
+    stopifnot(length(y) == nrow(shape))
+    shape$y <- y
     hist <- ggplot() +
         geom_histogram(aes(y),
                        fill = "gray20",
@@ -383,7 +385,7 @@ sp_diag <- function(y,
     g.mc <- moran_plot(y, w, xlab = name)
     if (plot) {
         return( gridExtra::grid.arrange(hist, g.mc, map.y, ncol = 3) )
-    } else return (list(hist, map.y, map.y))
+    } else return (list(hist, mc.y, map.y))
  }
 
 
@@ -945,12 +947,17 @@ prep_icar_data <- function (C, inv_sqrt_scale_factor = NULL) {
 #' @export
 #' @importFrom rstan extract_sparse_parts
 #' 
-#' @param A binary adjacency matrix
-#' @param style specification for the connectivity matrix (C) and conditional variances (M)
+#' @param A Binary adjacency matrix.
+#' 
+#' @param style Specification for the connectivity matrix (C) and conditional variances (M); one of "WCAR", "ACAR", or "DCAR".
+#' 
 #' @param lambda If TRUE, return eigenvalues required for calculating the log determinant of the precision matrix and for determining the range of permissible values of rho. These will also be printed with a message if lambda = TRUE.
+#' 
 #' @param cmat Return the full matrix C if TRUE.
+#' 
 #' @param d distance matrix. Non-neighboring values (as indicated by A) will be set to zero internally.
-#' @param k inverse distances will be raised to the -k power (d^-k).
+#' 
+#' @param k If provided with `style = DCAR` and `d`, distances will be raised to the -k power (d^-k).
 #' 
 #' @details The CAR model is N(Mu, Sigma), Sigma = (I - rho C)^-1 M.
 #'
