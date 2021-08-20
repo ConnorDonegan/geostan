@@ -211,7 +211,7 @@ stan_glm <- function(formula,
     if(missing(re)) {
         has_re <- n_ids <- id <- 0;
         id_index <- to_index(id, n = nrow(tmpdf))
-        re_list <- NA
+        re_list <- NULL
     } else {
         stopifnot(inherits(re, "formula"))
         has_re <- 1
