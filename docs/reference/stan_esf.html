@@ -284,7 +284,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl>
 <dt>summary</dt><dd><p>Summaries of the main parameters of interest; a data frame</p></dd>
-<dt>diagnostic</dt><dd><p>Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (<code>eff_pars</code>) and mean log pointwise predictive density (<code>lpd</code>), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.</p></dd>
+<dt>diagnostic</dt><dd><p>Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (<code>eff_pars</code>) and mean log pointwise predictive density (<code>lpd</code>), and mean residual spatial autocorrelation as measured by the Moran coefficient.</p></dd>
 <dt>data</dt><dd><p>a data frame containing the model data</p></dd>
 <dt>EV</dt><dd><p>A matrix of eigenvectors created with <code>w</code> and <code><a href='make_EV.html'>geostan::make_EV</a></code></p></dd>
 <dt>C</dt><dd><p>The spatial weights matrix used to construct EV</p></dd>

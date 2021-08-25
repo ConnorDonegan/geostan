@@ -27,7 +27,8 @@
 #' 
 #' @param car_parts A list of data for the CAR model, as returned by \code{\link[geostan]{prep_car_data}} (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}).
 #' 
-#' @param family The likelihood function for the outcome variable. Current options are \code{gaussian()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}.
+#' @param family The likelihood function for the outcome variable. Current options are \code{auto_gaussian()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}; if `family = gaussian()` is provided, it will automatically be converted to `auto_gaussian()`.
+#' 
 #' @param invert To calculate the log likelihood of the data \code{log_lik} and the posterior predictive distribution \code{yrep} with the auto-Gaussian model, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set \code{invert = FALSE}. Note, this is only used when \code{family = gaussian()}.
 #' 
 #' @param prior A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:
@@ -96,19 +97,7 @@
 #'                             lambda ~ MVGauss(Mu, Sigma)
 #'                             Sigma = (I - rho C)^-1 * M * tau^2
 #' ```
-#' These models are most often used to calculate incidence rates (mortality rates, or disease incidence rates); the user provided offset should be, then, the natural logarithm of the denominator in the rates, e.g., log-population at risk. If `Y` are counts of cases, and `P` are populations at risk, then `offset = log(P)` and the crude rate is `Y/P`. Thus, `lambda` are log-risk (log-rates) and fitted values (as returned by the \code{\link[geostan]{fitted.geostan_fit}} method method) are:
-#' 
-#' ```
-#'                             fitted = (e^lambda * P)/P,
-#' ```
-#'
-#' and residuals are, similarly, the difference between fitted and observed rates:
-#'
-#' ```
-#'                             residual = (Y/P) - fitted.
-#' ```
-#'
-#' If no offset term is provided, a vector of zeros will be used automatically (so the denominator is `exp(0)=1`).
+#' These models are most often used to calculate incidence rates (mortality rates, or disease incidence rates); the user provided offset should be, then, the natural logarithm of the denominator in the rates, e.g., log-population at risk.
 #' 
 #' For Poisson models, the \code{\link[geostan]{spatial}} method returns the parameter vector \code{phi}, which is the log-risk minus the intercept and any covariates:
 #'  ```
@@ -120,14 +109,11 @@
 #'                             phi ~ MVGauss(0, Sigma)
 #'                             Sigma = (I - rho C)^-1 * M * tau^2.
 #' ```
-#'
 #' 
 #' In the Poisson CAR model, `phi` contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \code{phi}, you can do so by calculating (following Cressie 2015, p. 564):
 #' ```
 #'                             trend = rho * C * phi.
 #' ```
-#' This is not done automatically primarily because it is uncommon to do so.
-#'
 #' 
 #' ## `family = binomial()`
 #' 
@@ -143,20 +129,11 @@
 #'```
 #'                             phi = logit(theta) - Mu.
 #'```
-#' The \code{\link[geostan]{fitted}} method applied to the Binomial model returns:
-#' ```
-#'                            fitted = (theta * N)/N,
-#' ```
-#' and the \code{\link[geostan]{residuals.geostan_fit}} method returns:
-#' ```
-#'                            residual = (Y/N) - fitted.
-#' ```
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
 #' \item{summary}{Summaries of the main parameters of interest; a data frame.}
-#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with crude measure of effective number of parameters (\code{eff_pars}) and 
-#'  mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
+#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and mean residual spatial autocorrelation as measured by the Moran coefficient.}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' \item{data}{a data frame containing the model data}
 #' \item{family}{the user-provided or default \code{family} argument used to fit the model}
@@ -201,6 +178,13 @@
 #'                     car_parts = car.dl,
 #'                     refresh = 0
 #' )
+#'
+#' # MCMC diagnostics
+#' rstan::stan_rhat(fit.car$stanfit)
+#' rstan::stan_ess(fit.car$stanfit)
+#'
+#' # Spatial diagnostics
+#' sp_diag(fit.car, sentencing)
 #' 
 #' # posterior predictive distribution
 #' yrep <- posterior_predict(fit.car, samples = 75)
@@ -219,8 +203,7 @@
 #'  
 #' # calculate log-standardized sentencing ratios (log-SSRs)
 #' # (like Standardized Incidence Ratios: observed/exected case counts)
-#' f <- fitted(fit.car)$mean
-#' SSR <-  f / sentencing$expected_sents
+#' SSR <- fitted(fit.car)$mean
 #' log.SSR <- log( SSR, base = 2 )
 #'
 #' st_as_sf(sentencing) %>%
@@ -263,7 +246,8 @@ stan_car <- function(formula,
                      ) {
     stopifnot(inherits(formula, "formula"))
     stopifnot(inherits(family, "family"))
-    stopifnot(family$family %in% c("gaussian", "poisson", "binomial"))
+    stopifnot(family$family %in% c("gaussian", "auto_gaussian", "poisson", "binomial"))
+    if (family$family == "gaussian") family <- auto_gaussian()
     stopifnot(!missing(data))
     stopifnot(inherits(car_parts, "list"))    
     C <- car_parts$C    
@@ -343,7 +327,6 @@ stan_car <- function(formula,
                                link = family$link,
                                offset = offset)
     ## CAR PRIORs [START] --------
-    if (family$family == "gaussian") family_int <- 5 #!# auto-Gaussian #!#
     if (!is.null(prior$car_scale)) {
         priors_made$car_scale <- prior$car_scale
     } else {
@@ -397,8 +380,8 @@ stan_car <- function(formula,
         standata$trials <- y[,1] + y[,2]
     }
     ## PARAMETERS TO KEEP, with CAR PARAMETERS [START] -------------            
-    pars <- c(pars, 'intercept', 'car_scale', 'car_rho', 'residual', 'fitted')
-    if (invert) pars <- c(pars, 'log_lik', 'yrep')
+    pars <- c(pars, 'intercept', 'car_scale', 'car_rho', 'fitted')
+    if (invert) pars <- c(pars, 'log_lik')
     if (family_int < 5) pars <- c(pars, 'phi') 
     if (family_int == 5) pars <- c(pars, "trend")
     if (!intercept_only) pars <- c(pars, 'beta')
@@ -422,12 +405,13 @@ stan_car <- function(formula,
     out$priors <- priors_made_slim
     out$x_center <- attributes(x_full)$`scaled:center`
     if (!missing(ME)) out$ME <- ME
-    if (family_int != 5) {
-        out$spatial <- data.frame(par = "phi", method = "CAR")
-    } else {
+    if (family_int == 5) {
         out$spatial <- data.frame(par = "trend", method = "CAR") #!#
+    } else {
+        out$spatial <- data.frame(par = "phi", method = "CAR")
     }
-  class(out) <- append("geostan_fit", class(out))
-  return (out)
+    R <- resid(out, summary = FALSE)
+    if (inherits(C, "matrix")) out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )    
+    return (out)
 }
 

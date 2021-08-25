@@ -33,6 +33,7 @@ reference:
 - title: "Convenience functions"
   desc: Tools for working with spatial data and **geostan** models
 - contents:
+  - auto_gaussian
   - edges
   - exp_pars
   - get_shp

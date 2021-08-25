@@ -46,10 +46,10 @@
 // process model (likelihood)
   if (!prior_only) {
     if (is_student) {	
-      y ~ student_t(nu[1], f, sigma[has_sigma]);
+      y ~ student_t(nu[1], fitted, sigma[has_sigma]);
       }   
-    if (is_gaussian)  y ~ normal(f, sigma[has_sigma]);
-    if (is_poisson) y_int ~ poisson_log(f);
-    if (is_binomial) y_int ~ binomial(trials, f);
-  }
+    if (is_gaussian)  y ~ normal(fitted, sigma[has_sigma]);
+    if (is_poisson) y_int ~ poisson(fitted);
+    if (is_binomial) y_int ~ binomial(trials, fitted);
+}
   

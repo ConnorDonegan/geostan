@@ -152,29 +152,53 @@ as.array.geostan_fit <- function(x, ...){
     as.array(x$stanfit, ...)
 }
 
+
+#' @noRd
+#' 
+.resid <- function(yhat, y) y - yhat
+
 #' @export
+#'
+#' @param rates For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to `TRUE`.
+#' 
 #' @method residuals geostan_fit
 #' @name geostan_fit
 #' 
-residuals.geostan_fit <- function(object, summary = TRUE, ...) {
-  if (summary) {
-    post_summary(object, "residual") 
-    } else {
-    as.matrix(object$stanfit, pars = "residual")
-  }
+residuals.geostan_fit <- function(object, summary = TRUE, rates = TRUE) {
+    y <- object$data[,1]
+    fits <- fitted(object, summary = FALSE, rates = rates)
+    if (rates && object$family$family == "binomial") y <- y / object$data[,2]
+    if (rates && object$family$family == "poisson" && "offset" %in% c(colnames(object$data))) {
+        log.at.risk <- object$data[, "offset"]
+        at.risk <- exp( log.at.risk )
+        y <- y / at.risk     
+    }
+    R = sweep(fits, MARGIN = 2, STATS = as.array(y), FUN = .resid)
+    colnames(R) <- gsub("fitted", "residual", colnames(R))
+    if (summary) return( post_summary(R) )
+    return (R)  
 }
 
 #' @export
+#'
+#' @param rates For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to `TRUE`.
+#' 
 #' @import stats
 #' @method fitted geostan_fit
 #' @name geostan_fit
-fitted.geostan_fit <- function(object, summary = TRUE, ...) {
-  if (summary) {
-    fitted <- post_summary(object, "fitted")
-  } else {
-   fitted <- as.matrix(object$stanfit, pars = "fitted")
-  }
-  return(fitted)
+fitted.geostan_fit <- function(object, summary = TRUE, rates = TRUE, ...) {
+    fits <- as.matrix(object$stanfit, pars = "fitted")
+    if (!rates && object$family$family == "binomial") {        
+        denominator <- object$data[,2]
+        fits <- sweep(fits, MARGIN = 2, STATS = as.array(denominator), FUN = "*")
+    }
+    if (rates && object$family$family == "poisson" && "offset" %in% c(colnames(object$data))) {
+        log.at.risk <- object$data[, "offset"]
+        at.risk <- exp( log.at.risk )
+        fits <- sweep(fits, MARGIN = 2, STATS = as.array(at.risk), FUN = "/")
+    }
+    if (summary) return( post_summary(fits) )
+    return (fits)          
 }
 
 #' Extract spatial component from a fitted geostan model
@@ -196,10 +220,10 @@ spatial <- function(object, summary = TRUE, ...) {
 spatial.geostan_fit <- function(object, summary = TRUE, ...) {
   if (is.na(object$spatial$par)) stop("This model does not have a spatial trend component to extract.")
   par <- as.character(object$spatial$par)
+  samples <- as.matrix(object, pars = par, ...)
   if (summary) {
-    post_summary(object, par)
+    return ( post_summary(samples) )
   } else {
-    as.matrix(object$stanfit, pars = par, ...)
+      return( samples )
   }
 }
-

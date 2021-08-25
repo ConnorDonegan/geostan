@@ -21,6 +21,7 @@ family_2_int <- function(family) {
     if (family$family == "student_t") return (2)
     if (family$family == "poisson") return (3)
     if (family$family == "binomial") return (4)
+    if (family$family == "auto_gaussian") return (5)
 }
 
 #' center model matrix
@@ -97,20 +98,14 @@ to_index <- function(id, n) {
 #' Summarize samples from an geostan_fit object
 #' @import stats
 #' @noRd
-#' @param stanfit a stanfit object
-#' @param par name of parameter
-post_summary <- function(stanfit, par) {
-  par_mat <- as.matrix(stanfit, par = par)
-  par_summary <- data.frame(
-    mean = apply(par_mat, 2, mean),
-    sd = apply(par_mat, 2, sd),
-    q.025 = apply(par_mat, 2, quantile, probs = .025),
-    q.20 = apply(par_mat, 2, quantile, probs = .20),
-    q.50 = apply(par_mat, 2, quantile, probs = .5),
-    q.80 = apply(par_mat, 2, quantile, probs = .8),
-    q.975 = apply(par_mat, 2, quantile, probs = .975)
-  )
-    return(par_summary)
+#' @param samples matrix of MCMC samples
+#' 
+post_summary <- function(samples) {
+    qs = apply(samples, 2, quantile, probs = c(0.025, 0.2, 0.50, 0.80, 0.975))
+    ms <- apply(samples, 2, mean)
+    sds <- apply(samples, 2, sd)
+    x <- as.data.frame(cbind(mean = ms, sd = sds, t(qs)))
+    return (x)
 }
 
 #' Rename Stan model parameters
@@ -211,14 +206,6 @@ log_sum_exp <- function(x) {
   xmax + log(xsum)
 }
 
-IDW <- function(mat, lambda) {
-    mat <- 1/mat^lambda
-    diag(mat) <- 0
-    mat <- mat / rowSums(mat)
-    class(mat) <- "matrix"
-    return(mat)
-}
-
 clean_results <- function(samples, pars, is_student, has_re, C, Wx, x, x_me_unbounded_idx, x_me_bounded_idx) {
     n <- nrow(x)
     if ("gamma" %in% pars) {
@@ -250,20 +237,16 @@ clean_results <- function(samples, pars, is_student, has_re, C, Wx, x, x_me_unbo
     if (is_student) samples <- par_alias(samples, "^nu\\[1\\]", "nu")
     if (has_re) samples <- par_alias(samples, "^alpha_tau\\[1\\]", "alpha_tau")
     main_pars <- pars[which(pars %in% c("nu", "intercept", "alpha_tau", "gamma", "beta", "sigma", "rho", "spatial_scale", "theta_scale", "car_scale", "car_rho"))]
-    summary_list <- lapply(main_pars, post_summary, stanfit = samples)
-    summary <- do.call("rbind", summary_list)
-    summary <- apply(summary, 2, round, 3)
-    residuals <- as.matrix(samples, pars = "residual")
-    residuals <- apply(residuals, 2, mean)
-  if (is.logical(C)) {
-      Residual_MC <- C <- Expected_MC <- NA
-  } else {
-      Residual_MC <- round(mc(residuals, w = C), 3)
-     }
+
+    S <- as.matrix(samples, pars = main_pars)
+    summary <- post_summary(S)
+    Residual_MC <- NA
     if ("log_lik" %in% pars) WAIC <- geostan::waic(samples) else WAIC <- rep(NA, 3)
     diagnostic <- c(WAIC = as.numeric(WAIC[1]), Eff_pars = as.numeric(WAIC[2]), Lpd = as.numeric(WAIC[3]),
                     Residual_MC = Residual_MC)
-    out <- list(summary = summary, diagnostic = diagnostic, stanfit = samples)
+    out <- list(summary = summary,
+                diagnostic = diagnostic, stanfit = samples)
+    class(out) <- append("geostan_fit", class(out))    
     return(out)
 }
 

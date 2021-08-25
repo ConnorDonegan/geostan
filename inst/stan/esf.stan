@@ -36,7 +36,7 @@ transformed parameters {
     error_scale = 1;
       }
   beta_ev = rhs_prior(dev, z, aux1_global, aux2_global, aux1_local, aux2_local, caux, scale_global, slab_scale, error_scale);
-  f += EV * beta_ev;
+  fitted += EV * beta_ev;
 #include parts/trans_params_expression.stan
 }
 

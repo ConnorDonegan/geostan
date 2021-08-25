@@ -1,119 +1,51 @@
+
 #' Draw samples from the posterior predictive distribution
 #'
 #' @description Draw samples from the posterior predictive distribution of a fitted \code{geostan} model. Use the original data or new data, with or without the spatial component and other partial pooling terms.
 #' @export
 #' @param object A \code{geostan_fit} object.
-#' @param newdata A \code{data.frame} or \code{matrix} with data to use for predictions. Must be named and the names must match the model formula. If the model has an slx term and \code{spatial = TRUE} then \code{newdata} must have the same number of rows as the data used to fit the model.
-#' @param C Spatial connectivity matrix for calculating spatially lagged covariates (slx). Only used if \code{spatial = TRUE} and the model contains an \code{slx} term. It will be row-standardized automatically.
-#' @param samples Number of samples to take from the posterior distribution. Maximum is the total number of samples stored in the model.
-#' @param predictive Return the predictive distribution? Defaults to \code{TRUE}. If \code{FALSE}, then the linear predictor is returned after applying the inverse link function (results are on the same scale as the outcome variable). 
-#' @param re_form If \code{re_form = NA} any random effects terms will be ignored when making predictions. If default \code{re_form = NULL} is set, then the results will include random effects terms. Those are the only options; this syntax is used to maintain some consistency with other R packages which have additional options.
-#' @param spatial Include the spatial component in the model predictions? Defaults to \code{TRUE} and will be ignored if the model does not have a spatial component (i.e. \code{\link[geostan]{stan_glm}}). For models fit by \code{\link[geostan]{stan_esf}}, \code{\link[geostan]{stan_icar}}, and \code{\link[geostan]{stan_car}} this option requires that \code{newdata} have the same number of observations as the data that the model was fit to.
-#' @param summary Should the posterior predictions be summarized using quantile intervals? It \code{summary = TRUE} the function returns a data frame with the expected value of the posterior distribution (column \code{mu}) and 100*width credible intervals for, respectively, the posterior predictive distribution (columns \code{pred.lwr}, \code{pred.upr}) and mean outcome (columns \code{mu.lwr}, \code{mu.upr}).
-#' @param width Only used if \code{summary = TRUE} to set the quantiles for the credible intervals. 
-#' @param seed A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution. Passing a value to \code{seed} enables you to obtain the same results each time (by using the same seed).
 #' 
-#' @param centerx Should \code{newdata} be centered using the means of the variables in the original data used to fit the model (stored in \code{object$x_center})? Defaults to \code{FALSE}.
+#' @param S Optional; number of samples to take from the posterior distribution. The default, and maximum, is the total number of samples stored in the model.
 #' 
-#' @return A matrix of size \code{S} x \code{N} containing samples from the posterior predictive distribution, where \code{S} is the number of samples and \code{N} is the number of observations. It is of class \code{matrix} and \code{ppd}.
+#' @param summary Should the predictive distribution be summarized by its means and central quantile intervals? If \code{summary = FALSE}, an `S` x `N` matrix of samples will be returned. If \code{summary = TRUE}, then a `data.frame` with the means and `100*width` credible intervals is returned.
+#' 
+#' @param width Only used if \code{summary = TRUE}, to set the quantiles for the credible intervals. Defaults to `width = 0.95`.
 #'
-#' If \code{summary = TRUE} the return value is a data frame with the expected value of the posterior distribution (column \code{mu}) and 100*width credible intervals for, respectively, the posterior predictive distribution (columns \code{pred.lwr}, \code{pred.upr}) and mean outcome (columns \code{mu.lwr}, \code{mu.upr}). The width of the intervals and the quantiles corresponding to the upper and lower limits of the credible intervals are returned as an attribute of the data frame (use \code{attributes(df)$interval} to retrieve them, where \code{df} is the data frame returned by \code{posterior_predict}).
+#' @param car_parts Data for CAR model specification; only required for \code{\link[geostan]{stan_car}} with `family = auto_gaussian()`.
+#' 
+#' @param seed A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution. 
+#' 
+#' @return A matrix of size `S x `N` containing samples from the posterior predictive distribution, where `S` is the number of samples drawn and `N` is the number of observations. If `summary = TRUE`, a `data.frame` with `N` rows and `3` columns is returned (with column names `mu`, `lwr`, and `upr`).
 #'
 #' @examples
 #' \dontrun{
 #'  
 #' }
 #' 
-posterior_predict <- function(object,
-                              newdata,
-                              C,
-                              samples,
-                              predictive = TRUE,
-                              re_form = NULL,
-                              spatial = TRUE,
-                              summary = FALSE,
-                              width = 0.95,
-                              seed,
-                              centerx = FALSE
-                              ) {
-    if (!inherits(object, "geostan_fit")) stop ("object must be of class geostan_fit.")
-    N <- nrow(as.matrix(object))
-    if (!missing(seed)) set.seed(seed)                                      
-    if (missing(samples)) samples <- N
-    if (samples > N) {
-        warning (paste0("Cannot draw more samples than were taken from the posterior. Using samples = ", N))
-        samples <- N
+posterior_predict <- function(object, 
+                S,
+                summary = FALSE,
+                width = 0.95,
+                C,
+                seed
+                ) {
+    stopifnot(inherits(object, "geostan_fit"))
+    family <- object$family$family    
+    if (!missing(seed)) set.seed(seed)
+    mu <- as.matrix(object, pars = "fitted") #!# change to "f", after updinat .stan and stan_*.R files #!#
+    M <- nrow(mu)                                      
+    if (missing(S)) S <- M
+    if (S > M) {
+        warning (paste0("Cannot draw more samples than were taken from the posterior. Using S = ", M))
+        S <- M
     }
-    family <- object$family$family
-    link <- object$family$link
-    idx <- sample(N, samples)
-    if (missing(newdata)) {
-        preds <- as.matrix(object, pars = "yrep")[idx,]
-        if (family == "binomial") {
-	     y <- model.response(model.frame(object$formula, as.data.frame(object$data)))
-	     trials <- as.integer(y[, 1] + y[, 2])
-	     preds <- sweep(preds, 2, trials, "/")
+    idx <- sample(M, S)
+    mu <- as.matrix(object, pars = "fitted")[idx,] 
+    if (family == "auto_gaussian") {
+        rho <- as.matrix(fit, "car_rho")[idx, ]
+        tau <- as.matrix(fit, "car_scale")[idx, ]
+        preds <- .pp_auto_gaussian(mu, rho, tau, cp)
     }
-        if (summary) {
-            mu.samples <- fitted(object, summary = FALSE)
-            df <- .pp_summary(preds, mu.samples, object$data, width = width)
-            return(df)
-        }
-        class(preds) <- append("ppd", class(preds))
-        return(preds)
-    } else {
-        newdata <- as.data.frame(newdata)
-    }
-    if ( spatial & (class(object$slx) == "formula") ) {
-        if (missing(C)) stop ("If spatial = TRUE, you must provide spatial weights matrix C to calculate spatial lag of X terms (slx) for this model")
-        if ( nrow(newdata) != nrow(C) | (nrow(newdata) != nrow(object$data)) ) stop ("C, newdata, and object$data must have same number of rows.")
-    }
-    if (family == "binomial") {
-        y <- model.response(model.frame(object$formula, newdata))
-        trials <- as.integer(y[, 1] + y[, 2])
-    } else {
-        y <- as.character(object$formula[[2]])
-        if (!y %in% names(newdata))  newdata[,y] <- 0  
-    }
-    xraw <- remove_intercept(model.matrix(object$formula, data = newdata))
-    x_no_Wx <- center_x(xraw, center = centerx)
-    offset <- model.offset(model.frame(object$formula, newdata))
-    if ( spatial & inherits(object$slx, "formula") ) {
-        if (any(rowSums(C) != 1)) {
-            message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
-        }
-        W <- C / rowSums(C)        
-        Wx <- SLX(f = object$slx, DF = newdata, x = x_no_Wx, W = W)
-        x <- cbind(Wx, x)
-    }
-    alpha <- as.matrix(object, pars = "intercept")[idx,]
-    if (spatial & inherits(object$slx, "formula")) {
-        beta <- as.matrix(object, pars = c("gamma", "beta"))[idx,]
-    } else {
-    beta <- as.matrix(object, pars = "beta")[idx,]
-    }
-    mu <- alpha + beta %*% t(x)
-    if (!is.null(offset)) mu <- sweep(mu, 2, offset, "+")
-    if (is.null(re_form) & !is.na(object$re[1])) {
-        newdata$order <- 1:nrow(newdata)
-        re_term <- as.character( object$re$formula[[2]] )
-        re_idx <- which( names(newdata) == re_term )
-        if ( !all(newdata[,re_idx] %in% object$re$data$id) ) stop ("New levels for the random effects term are not allowed. Find fitted levels in object$re$data$id.")
-        names(newdata)[re_idx] <- "id"
-        newdata <- merge(newdata, object$re$data, by = "id", sort = FALSE)
-        newdata <- newdata[order(newdata$order),]
-        alpha_re <- as.matrix(object, pars = "alpha_re")[idx,]
-        alpha_re <- alpha_re[,paste0("alpha_re[",newdata$idx,"]")]
-        mu <- mu + alpha_re
-    }
-    if (spatial & !object$spatial$method %in% c("None", "none", "Exchangeable")) { 
-       if (nrow(object$data) != nrow(newdata)) stop ("If spatial = TRUE, newdata must contain the same number of observations as the original data (i.e. nrow(object$data)).")
-       sp <- spatial(object, summary = FALSE)[idx,]
-       mu <- mu + sp
-    }
-    if (link == "log") mu <- exp(mu) 
-    if (link == "logit") mu <- inv_logit(mu)
-    if (!predictive) return (mu)
     if (family == "gaussian") {
         sigma <- as.matrix(object, pars = "sigma")[idx,]
         preds <- .pp_gaussian(mu, sigma)
@@ -124,18 +56,24 @@ posterior_predict <- function(object,
         preds <- .pp_student(nu, mu, sigma)
     }
     if (family == "poisson") preds <- .pp_poisson(mu)
-    if (family == "binomial") preds <- .pp_binomial(mu, trials)
+    if (family == "binomial") {
+        trials <- object$data[,1] + object$data[,2]
+        preds <- .pp_binomial(mu, trials)
+    }
     if (summary) {
-        newdata[,y] <- NULL
-        df <- .pp_summary(preds, mu, newdata, width = width)
+        df <- .pp_summary(preds, mu, object$data, width = width)
         return(df)
-        }    
-    class(preds) <- append("ppd", class(preds))
-    return(preds)
+    }    
+    return(preds)    
 }
 
-
-inv_logit <- function(x) exp(x)/(1+exp(x))
+.pp_auto_gaussian <- function(mu, rho, tau, car_parts) {
+    I <- diag(nrow(car_parts$C))    
+    t(sapply(1:nrow(mu), function(s) {
+        Sigma <- solve(I - rho[s] * car_parts$C) %*% diag(car_parts$M_diag) * tau[s]^2
+        MASS::mvrnorm(n = 1, mu = mu[s,], Sigma = Sigma)
+    }))        
+}
 
 .pp_gaussian <- function(mu, sigma) {
   t(sapply(1:nrow(mu), function(s) {
@@ -162,19 +100,20 @@ inv_logit <- function(x) exp(x)/(1+exp(x))
 }
 
 
-.pp_summary <- function(pred.samples, mu.samples, data, width) {
+.pp_summary <- function(samples, width) {
     p.lwr <- (1 - width) / 2
     probs <- c(p.lwr, 1 - p.lwr)
-    mu <- apply(mu.samples, 2, mean)
-    mu.int <- apply(mu.samples, 2, quantile, probs = probs)
-    pred.int <- apply(pred.samples, 2, quantile, probs = probs)
-    df <- data.frame(mu = mu,
-           mu.lwr = mu.int[1,],
-           mu.upr = mu.int[2,],
-           pred.lwr = pred.int[1,],
-           pred.upr = pred.int[2,]
-           )
-    df <- cbind(data, df)
+    mu <- apply(samples, 2, mean)
+    int <- apply(samples, 2, quantile, probs = probs)
+    df <- data.frame(
+        mu = mu,
+        lwr = int[1,],
+        upr = int[2,]
+    )
     attributes(df)$interval <- list(width = width, probs = probs)
     return(df)
 }
+
+
+
+

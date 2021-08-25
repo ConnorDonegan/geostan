@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Standard error of log(x) — se_log • geostan</title>
+<title>auto Gaussian family for CAR models — auto_gaussian • geostan</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,8 @@
 
 
 
-<meta property="og:title" content="Standard error of log(x) — se_log" />
-<meta property="og:description" content="Transform the standard error of x to standard error of log(x)." />
+<meta property="og:title" content="auto Gaussian family for CAR models — auto_gaussian" />
+<meta property="og:description" content="create a family object for the auto-Gaussian CAR specification" />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
@@ -126,66 +126,25 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Standard error of log(x)</h1>
+    <h1>auto Gaussian family for CAR models</h1>
     <small class="dont-index">Source: <a href='https://github.com/ConnorDonegan/geostan/blob/master/R/convenience-functions.R'><code>R/convenience-functions.R</code></a></small>
-    <div class="hidden name"><code>se_log.Rd</code></div>
+    <div class="hidden name"><code>auto_gaussian.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Transform the standard error of <code>x</code> to standard error of <code><a href='https://rdrr.io/r/base/Log.html'>log(x)</a></code>.</p>
+    <p>create a family object for the auto-Gaussian CAR specification</p>
     </div>
 
-    <pre class="usage"><span class='fu'>se_log</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>se</span>, method <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"mc"</span>, <span class='st'>"delta"</span><span class='op'>)</span>, nsim <span class='op'>=</span> <span class='fl'>5000</span>, bounds <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='cn'>Inf</span><span class='op'>)</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>auto_gaussian</span><span class='op'>(</span><span class='op'>)</span></pre>
 
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>x</th>
-      <td><p>Estimated value of the variable <code>x</code></p></td>
-    </tr>
-    <tr>
-      <th>se</th>
-      <td><p>Standard error of <code>x</code></p></td>
-    </tr>
-    <tr>
-      <th>method</th>
-      <td><p><code>"delta"</code> method uses a Taylor series approximation; the default method <code>"mc"</code> uses a monte carlo method.</p></td>
-    </tr>
-    <tr>
-      <th>nsim</th>
-      <td><p>Number of draws to take if <code>method = "mc"</code>.</p></td>
-    </tr>
-    <tr>
-      <th>bounds</th>
-      <td><p>Lower and upper bounds for the variable, used in the monte carlo method. Must be a length-two numeric vector with lower bound greater than or equal to zero (i.e. <code><a href='https://rdrr.io/r/base/c.html'>c(lower, upper)</a></code> as in default <code>bounds = c(0, Inf)</code>.</p></td>
-    </tr>
-    </table>
 
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>The delta method returns <code>x^(-1) * se</code>. The monte carlo method is detailed in the examples section.</p>
+    <p>An object of class <code>family</code></p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
-<span class='va'>x</span> <span class='op'>=</span> <span class='va'>georgia</span><span class='op'>$</span><span class='va'>college</span>
-<span class='va'>se</span> <span class='op'>=</span> <span class='va'>georgia</span><span class='op'>$</span><span class='va'>college.se</span>
+    <div class='dont-index'><p><code><a href='stan_car.html'>stan_car</a></code></p></div>
 
-<span class='va'>lse1</span> <span class='op'>=</span> <span class='fu'>se_log</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>se</span><span class='op'>)</span>
-<span class='va'>lse2</span> <span class='op'>=</span> <span class='fu'>se_log</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>se</span>, method <span class='op'>=</span> <span class='st'>"delta"</span><span class='op'>)</span>
-<span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>lse1</span>, <span class='va'>lse2</span><span class='op'>)</span>; <span class='fu'><a href='https://rdrr.io/r/graphics/abline.html'>abline</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>1</span><span class='op'>)</span>
-</div><div class='img'><img src='se_log-1.png' alt='' width='700' height='433' /></div><div class='input'>
-<span class='co'># the monte carlo method</span>
-<span class='va'>x</span> <span class='op'>=</span> <span class='fl'>10</span>
-<span class='va'>se</span> <span class='op'>=</span> <span class='fl'>2</span>
-<span class='va'>z</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span>n <span class='op'>=</span> <span class='fl'>30e3</span>, mean <span class='op'>=</span> <span class='va'>x</span>,  sd <span class='op'>=</span> <span class='va'>se</span><span class='op'>)</span>
-<span class='va'>l.z</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>z</span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/stats/sd.html'>sd</a></span><span class='op'>(</span><span class='va'>l.z</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] 0.2106079</div><div class='input'><span class='fu'>se_log</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>se</span>, method <span class='op'>=</span> <span class='st'>"mc"</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] 0.2108671</div><div class='input'><span class='fu'>se_log</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>se</span>, method <span class='op'>=</span> <span class='st'>"delta"</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] 0.2</div><div class='input'>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

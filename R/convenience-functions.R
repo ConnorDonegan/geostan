@@ -681,6 +681,18 @@ student_t <- function() {
   return(family)
 }
 
+#' auto Gaussian family for CAR models
+#'
+#' @export
+#' @description create a family object for the auto-Gaussian CAR specification
+#' @return An object of class \code{family}
+#' @seealso \code{\link[geostan]{stan_car}}
+auto_gaussian <- function() {
+    family <- list(family = "auto_gaussian", link = "identity")
+    class(family) <- "family"
+    return(family)
+}
+
 #' WAIC
 #'
 #' @description Widely Application Information Criteria (WAIC) for model evaluation
@@ -997,7 +1009,7 @@ prep_icar_data <- function (C, inv_sqrt_scale_factor = NULL) {
 #' ## diagnostics
 #' sp_diag(fit, georgia)
 #' 
-prep_car_data <- function(A, style = c("ACAR", "WCAR", "DCAR"), lambda = FALSE, cmat = TRUE, d, k = 1) {
+prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), lambda = FALSE, cmat = TRUE, d, k = 1) {
     style = match.arg(style)
     n <- nrow(A)    
     if (style == "WCAR") {

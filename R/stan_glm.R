@@ -56,35 +56,20 @@
 #'
 #' Fit a generalized linear model using the R formula interface. Default prior distributions are designed to be weakly informative relative to the data. Much of the functionality intended for spatial models, such as the ability to add spatially lagged covariates and observational error models, are also available in \code{stan_glm}. All of \code{geostan}'s spatial models build on top of the same Stan code used in \code{stan_glm}.
 #'
-#' The Poisson models are often used to calculate incidence rates (mortality rates, or disease incidence rates) for administrative areas, like counties or census tracts; the user provided offset should be, in that case, the natural logarithm of the denominator, e.g., log-population at risk. If `Y` are counts of cases, and `P` are populations at risk, then the crude rates are `Y/P`, and the user should provide `offset = log(P)`. Then, a model for small area disease risk could be:
+#' Poisson models are often used to calculate incidence rates (mortality rates, or disease incidence rates) for administrative areas, like counties or census tracts; the user provided offset should be, in that case, the natural logarithm of the denominator, e.g., log-population at risk. If `Y` are counts of cases, and `P` are populations at risk, then the crude rates are `Y/P`, and the user should provide an offset value of `log(P)`. For such a case, disease incidence across the collection of areas could be modeled as:
 #' ```
 #'                           Y ~ Poisson(exp(offset + Mu))
 #'                           Mu = alpha + A
 #'                           A ~ Guass(0, tau)
-#'                           tau ~ student(20, 0, 2).
+#'                           tau ~ student(20, 0, 2),
 #' ```
-#' Here, `alpha` is the mean log-risk (rate). `A` is a vector of so-called random effects, enabling partial pooling of information across observations.
+#' where `alpha` is the mean log-risk (incidence rate) and `A` is a vector of (so-called) random effects, which enable partial pooling of information across observations. See the example section of this documenet for a demonstration. 
 #' 
-#' `Mu`, then, are log-risks (log-rates) and fitted values (as returned by the \code{\link[geostan]{fitted.geostan_fit}} method method) are:
-#' 
-#' ```
-#'                             fitted = (e^Mu* P)/P,
-#' ```
-#'
-#' and residuals are, similarly, the difference between fitted and observed rates:
-#'
-#' ```
-#'                             residual = (Y/P) - fitted.
-#' ```
-#'
-#' If no offset term is provided, a vector of zeros will be used automatically (so the denominator is `exp(0)=1`).
-#'
-#' Fitted values and residuals are handled similarly in Binomial models (i.e., rates are automatically calculated and returned, instead of counts).
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
 #' \item{summary}{Summaries of the main parameters of interest; a data frame}
-#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the (posterior mean) residuals).}
+#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and mean residual spatial autocorrelation as measured by the Moran coefficient.}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' \item{data}{a data frame containing the model data}
 #' \item{family}{the user-provided or default \code{family} argument used to fit the model}
@@ -113,7 +98,7 @@
 #'                      data = sentencing
 #'  )
 #'
-#' # diagnostics plot: Rhat values should all by very near 1
+#' # MCMC diagnostics plot: Rhat values should all by very near 1
 #' rstan::stan_rhat(fit.pois$stanfit)
 #'  # see effective sample size for all parameters and generated quantities
 #'  # (including residuals, predicted values, etc.)
@@ -121,10 +106,10 @@
 #' # or for a particular parameter
 #' rstan::stan_ess(fit.pois$stanfit, "alpha_re")
 #'
-#' # spatial autocorrelation/residual diagnostics
+#' # Spatial autocorrelation/residual diagnostics
 #' sp_diag(fit.pois, sentencing)
 #' 
-# posterior predictive check
+#' ## Posterior predictive check                                        
 #' library(bayesplot)
 #' yrep <- posterior_predict(fit.pois, samples = 75)
 #' y <- sentencing$sents
@@ -250,44 +235,45 @@ stan_glm <- function(formula,
     wx_idx = wx_idx,
     prior_only = prior_only
     )
-  ## ME MODEL -------------  
-  me.list <- prep_me_data(ME, x_no_Wx)
-  standata <- c(standata, me.list)  
-  ## INTEGER OUTCOMES -------------    
-  if (family$family == "binomial") {
-      standata$y <- standata$y_int <- y[,1]
-      standata$trials <- y[,1] + y[,2]
-  }
-  ## PARAMETERS TO KEEP -------------        
-  pars <- c(pars, 'intercept', 'residual', 'log_lik', 'yrep', 'fitted')
-  if (!intercept_only) pars <- c(pars, 'beta')
-  if (dwx) pars <- c(pars, 'gamma')
-  if (family$family %in% c("gaussian", "student_t")) pars <- c(pars, 'sigma')
-  if (is_student) pars <- c(pars, "nu")
-  if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
-  if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
-  if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
-  priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
-  if (!silent) print_priors(prior, priors_made_slim)
-  ## CALL STAN -------------    
-  samples <- rstan::sampling(stanmodels$glm, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
-  ## OUTPUT -------------    
-  if (missing(C)) C <- NA
-  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
-  out$data <- ModData
-  out$family <- family
-  out$formula <- formula
-  out$slx <- slx
-  out$re <- re_list
-  out$priors <- priors_made_slim
-  out$x_center <- attributes(x_full)$`scaled:center`
-  if (!missing(ME)) out$ME <- ME
+    ## ME MODEL -------------  
+    me.list <- prep_me_data(ME, x_no_Wx)
+    standata <- c(standata, me.list)  
+    ## INTEGER OUTCOMES -------------    
+    if (family$family == "binomial") {
+        standata$y <- standata$y_int <- y[,1]
+        standata$trials <- y[,1] + y[,2]
+    }
+    ## PARAMETERS TO KEEP -------------        
+    pars <- c(pars, 'intercept', 'log_lik', 'fitted')
+    if (!intercept_only) pars <- c(pars, 'beta')
+    if (dwx) pars <- c(pars, 'gamma')
+    if (family$family %in% c("gaussian", "student_t")) pars <- c(pars, 'sigma')
+    if (is_student) pars <- c(pars, "nu")
+    if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
+    if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
+    if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
+    priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
+    if (!silent) print_priors(prior, priors_made_slim)
+    ## CALL STAN -------------    
+    samples <- rstan::sampling(stanmodels$glm, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+    ## OUTPUT -------------    
+    if (missing(C)) C <- NA
+    out <- clean_results(samples, pars, is_student, has_re, C, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
+    out$data <- ModData
+    out$family <- family
+    out$formula <- formula
+    out$slx <- slx
+    out$re <- re_list
+    out$priors <- priors_made_slim
+    out$x_center <- attributes(x_full)$`scaled:center`
+    if (!missing(ME)) out$ME <- ME
   if (has_re) {
       out$spatial <- data.frame(par = "alpha_re", method = "Exchangeable")
   } else {
       out$spatial <- data.frame(par = "none", method = "none")
-      }
-  class(out) <- append("geostan_fit", class(out))
-  return(out)
+  }
+    R <- resid(out, summary = FALSE)
+    if (inherits(C, "matrix")) out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )    
+    return(out)
 }
 

@@ -92,7 +92,7 @@
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
 #' \item{summary}{Summaries of the main parameters of interest; a data frame}
-#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
+#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and mean residual spatial autocorrelation as measured by the Moran coefficient.}
 #' \item{data}{a data frame containing the model data}
 #' \item{EV}{A matrix of eigenvectors created with \code{w} and \code{geostan::make_EV}}
 #' \item{C}{The spatial weights matrix used to construct EV}
@@ -345,42 +345,43 @@ stan_esf <- function(formula,
     scale_global = priors_made$rhs["scale_global"],
     prior_only = prior_only
     )
-  ## ME MODEL STUFF -------------  
-  me.list <- prep_me_data(ME, x_no_Wx)
-  standata <- c(standata, me.list)
-  ## INTEGER OUTCOMES -------------    
-  if (family$family == "binomial") {
+    ## ME MODEL STUFF -------------  
+    me.list <- prep_me_data(ME, x_no_Wx)
+    standata <- c(standata, me.list)
+    ## INTEGER OUTCOMES -------------    
+    if (family$family == "binomial") {
       standata$y <- standata$y_int <- y[,1]
       standata$trials <- y[,1] + y[,2]
   }
-  ## PARAMETERS TO KEEP -------------          
-  pars <- c(pars, 'intercept', 'esf', 'beta_ev', 'residual', 'log_lik', 'yrep', 'fitted')
-  if (!intercept_only) pars <- c(pars, 'beta')
-  if (dwx) pars <- c(pars, 'gamma')
-  if (family$family %in% c("gaussian", "student_t")) pars <- c(pars, 'sigma')
-  if (is_student) pars <- c(pars, "nu")
-  if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
-  if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
-  if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
-  priors_made_slim <- priors_made[which(names(priors_made) %in% c(pars, "rhs"))]
-  if (!silent) print_priors(prior, priors_made_slim)
-  ## CALL STAN -------------    
-   samples <- rstan::sampling(stanmodels$esf, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
-  ## OUTPUT -------------    
-  if (missing(C)) C <- NA
-  out <- clean_results(samples, pars, is_student, has_re, C, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)  
-  out$data <- ModData
-  out$family <- family
-  out$formula <- formula
-  out$slx <- slx
-  out$C <- C
-  out$EV <- EV  
-  out$re <- re_list
-  out$priors <- priors_made_slim
-  out$x_center <- attributes(x_full)$`scaled:center`
-  if (!missing(ME)) out$ME <- ME
-  out$spatial <- data.frame(par = "esf", method = "ESF")
-  class(out) <- append("geostan_fit", class(out))
+    ## PARAMETERS TO KEEP -------------          
+    pars <- c(pars, 'intercept', 'esf', 'beta_ev', 'log_lik', 'fitted')
+    if (!intercept_only) pars <- c(pars, 'beta')
+    if (dwx) pars <- c(pars, 'gamma')
+    if (family$family %in% c("gaussian", "student_t")) pars <- c(pars, 'sigma')
+    if (is_student) pars <- c(pars, "nu")
+    if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
+    if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
+    if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
+    priors_made_slim <- priors_made[which(names(priors_made) %in% c(pars, "rhs"))]
+    if (!silent) print_priors(prior, priors_made_slim)
+    ## CALL STAN -------------    
+    samples <- rstan::sampling(stanmodels$esf, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+    ## OUTPUT -------------    
+    if (missing(C)) C <- NA
+    out <- clean_results(samples, pars, is_student, has_re, C, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)  
+    out$data <- ModData
+    out$family <- family
+    out$formula <- formula
+    out$slx <- slx
+    out$C <- C
+    out$EV <- EV  
+    out$re <- re_list
+    out$priors <- priors_made_slim
+    out$x_center <- attributes(x_full)$`scaled:center`
+    if (!missing(ME)) out$ME <- ME
+    out$spatial <- data.frame(par = "esf", method = "ESF")
+    R <- resid(out, summary = FALSE)
+    if (inherits(C, "matrix")) out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )    
   return (out)
 }
 

@@ -54,7 +54,7 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{type}{Defaults to "icar" (partial pooling of neighboring observations through parameter \code{phi}); specify "bym" to add a second parameter vector \code{theta} to perform partial pooling across all observations; specify "bym2" for the innovation introduced by Riebler et al. (2016). See \code{Details} for more information.}
 
-\item{scale_factor}{For the BYM2 model, optional. If missing, this will be set to a vector of ones.}
+\item{scale_factor}{For the BYM2 model, optional. If missing, this will be set to a vector of ones. See \code{Details}.}
 
 \item{ME}{To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$spatial = TRUE}, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
 \describe{
@@ -104,8 +104,7 @@ Note that if you also use \code{slx} terms (spatially lagged covariates), then t
 An object of class class \code{geostan_fit} (a list) containing:
 \describe{
 \item{summary}{Summaries of the main parameters of interest; a data frame}
-\item{diagnostic}{Widely Applicable Information Criteria (WAIC) with measure of effective number of parameters (\code{eff_pars}) and
-mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
+\item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and mean residual spatial autocorrelation as measured by the Moran coefficient.}
 \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 \item{data}{a data frame containing the model data}
 \item{edges}{The edge list representing all unique sets of neighbors and the weight attached to each pair (i.e., their corresponding element in the connectivity matrix  C}
@@ -134,7 +133,7 @@ For Poisson models for count data, y, the basic model specification (\code{type 
 
 where \code{mu} contains an intercept and potentially covariates. The spatial trend, \code{phi}, has a mean of zero and a single scale parameter, \code{spatial_scale}.
 
-The ICAR prior model is a CAR model that has a spatial autocorrelation parameter \code{car_alpha} equal to 1 (see \link[geostan]{stan_car}). Thus the ICAR prior places high probability on a smooth spatially (or temporally) varying mean.
+The ICAR prior model is a CAR model that has a spatial autocorrelation parameter \code{car_alpha} equal to 1 (see \link[geostan]{stan_car}). Thus the ICAR prior places high probability on a smooth spatially (or temporally) varying mean. This is rarely sufficient to model the amount of variation present in social and health data.
 }
 
 \subsection{\code{type = 'bym'}}{
@@ -158,11 +157,11 @@ Riebler et al. (2016) introduce a variation on the BYM model (\code{type = "bym2
              spatial_scale ~ Gaussian(0, 1)
 }
 
-The two \verb{_tilde} terms are equivalent to standard normal deviates, \code{rho} is restricted to values between zero and one, and \code{scale_factor} is a constant term provided by the user. By default \code{scale_factor} is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure, \code{C}. This implies that the same prior distribution assigned to the \code{spatial_scale} will differ in its implications if \code{C} is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to \code{spatial_scale}.
+The two \verb{_tilde} terms are standard normal deviates, \code{rho} is restricted to values between zero and one, and \code{scale_factor} is a constant term provided by the user. By default, \code{scale_factor} is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure, \code{C}. This implies that the same prior distribution assigned to the \code{spatial_scale} will differ in its implications if \code{C} is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to \code{spatial_scale}.
 
-Borrowing \code{R} code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following \code{R} code can be used to create the \code{scale_factor} for the BYM2 model (note, this requires the INLA R package):\preformatted{              ## create a list of data for stan_icar
+Borrowing \code{R} code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following \code{R} code can be used to create the \code{scale_factor} for the BYM2 model (note, this requires the INLA R package), given a spatial adjacency matrix, C:\preformatted{              ## create a list of data for stan_icar
               icar.data <- geostan::prep_icar_data(C)
-              ## calculate scale_factor for each of k connected group of nodes, using the scale_c function (Morris et al. 2019)
+              ## calculate scale_factor for each of k connected group of nodes
               k <- icar.data$k
               scale_factor <- vector(mode = "numeric", length = k)
               for (j in 1:k) \{
@@ -174,11 +173,9 @@ Borrowing \code{R} code from Morris (2017) and following Freni-Sterrantino et al
               Cg <- C[g.idx, g.idx] 
               scale_factor[j] <- scale_c(Cg) 
               \}
-               ## update the data list for stan_icar: exactly like this
-              icar.data$inv_sqrt_scale_factor <- 1 / sqrt( scale_factor )
 }
 
-This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to \code{phi} automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term. (If you want to avoid complications from a disconnected graph structure, see \code{\link[geostan]{stan_car}}).
+This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to \code{phi} automatically inside the Stan model. Therefore, the user never needs to make any adjustments for this term. (If you want to avoid complications from a disconnected graph structure, see \code{\link[geostan]{stan_car}}).
 
 Note, the code above requires the \code{scale_c} function; it has package dependencies that are not included in \code{geostan}. To use \code{scale_c}, you have to load the following \code{R} function:\preformatted{#' compute scaling factor for adjacency matrix, accounting for differences in spatial connectivity 
 #'
@@ -194,7 +191,7 @@ Note, the code above requires the \code{scale_c} function; it has package depend
 #' library(igraph)
 #'  
 #' @source
-
+#'
 #'   Morris, Mitzi (2017). Spatial Models in Stan: Intrinsic Auto-Regressive Models for Areal Data. <https://mc-stan.org/users/documentation/case-studies/icar_stan.html>
 #'
 scale_c <- function(C) \{
@@ -222,8 +219,7 @@ fit.bym <- stan_icar(sents ~ offset(log_e),
                      family = poisson(),
                      data = sentencing,
                      type = "bym",
-                     C = C,
-                     refresh = 0
+                     C = C
  )
 
 # check effective sample size and convergence

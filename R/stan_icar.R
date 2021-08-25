@@ -18,7 +18,7 @@
 #' 
 #' @param type Defaults to "icar" (partial pooling of neighboring observations through parameter \code{phi}); specify "bym" to add a second parameter vector \code{theta} to perform partial pooling across all observations; specify "bym2" for the innovation introduced by Riebler et al. (2016). See \code{Details} for more information.
 #' 
-#' @param scale_factor For the BYM2 model, optional. If missing, this will be set to a vector of ones.
+#' @param scale_factor For the BYM2 model, optional. If missing, this will be set to a vector of ones. See `Details`.
 #' 
 #' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$spatial = TRUE}, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
 #' \describe{
@@ -73,7 +73,7 @@
 #' ```
 #'  where `mu` contains an intercept and potentially covariates. The spatial trend, `phi`, has a mean of zero and a single scale parameter, `spatial_scale`.
 #' 
-#' The ICAR prior model is a CAR model that has a spatial autocorrelation parameter \code{car_alpha} equal to 1 (see \link[geostan]{stan_car}). Thus the ICAR prior places high probability on a smooth spatially (or temporally) varying mean.
+#' The ICAR prior model is a CAR model that has a spatial autocorrelation parameter \code{car_alpha} equal to 1 (see \link[geostan]{stan_car}). Thus the ICAR prior places high probability on a smooth spatially (or temporally) varying mean. This is rarely sufficient to model the amount of variation present in social and health data.
 #'
 #' ### `type = 'bym'`
 #'
@@ -99,13 +99,13 @@
 #'              theta_tilde ~ Gaussian(0, 1)
 #'              spatial_scale ~ Gaussian(0, 1)
 #' ```
-#' The two `_tilde` terms are equivalent to standard normal deviates, `rho` is restricted to values between zero and one, and `scale_factor` is a constant term provided by the user. By default `scale_factor` is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure, `C`. This implies that the same prior distribution assigned to the `spatial_scale` will differ in its implications if `C` is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to `spatial_scale`.
+#' The two `_tilde` terms are standard normal deviates, `rho` is restricted to values between zero and one, and `scale_factor` is a constant term provided by the user. By default, `scale_factor` is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure, `C`. This implies that the same prior distribution assigned to the `spatial_scale` will differ in its implications if `C` is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to `spatial_scale`.
 #'
-#' Borrowing `R` code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following `R` code can be used to create the `scale_factor` for the BYM2 model (note, this requires the INLA R package):
+#' Borrowing `R` code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following `R` code can be used to create the `scale_factor` for the BYM2 model (note, this requires the INLA R package), given a spatial adjacency matrix, C:
 #' ```
 #'               ## create a list of data for stan_icar
 #'               icar.data <- geostan::prep_icar_data(C)
-#'               ## calculate scale_factor for each of k connected group of nodes, using the scale_c function (Morris et al. 2019)
+#'               ## calculate scale_factor for each of k connected group of nodes
 #'               k <- icar.data$k
 #'               scale_factor <- vector(mode = "numeric", length = k)
 #'               for (j in 1:k) {
@@ -117,10 +117,8 @@
 #'               Cg <- C[g.idx, g.idx] 
 #'               scale_factor[j] <- scale_c(Cg) 
 #'               }
-#'                ## update the data list for stan_icar: exactly like this
-#'               icar.data$inv_sqrt_scale_factor <- 1 / sqrt( scale_factor )
 #' ```
-#' This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to `phi` automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term. (If you want to avoid complications from a disconnected graph structure, see \code{\link[geostan]{stan_car}}).
+#' This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to `phi` automatically inside the Stan model. Therefore, the user never needs to make any adjustments for this term. (If you want to avoid complications from a disconnected graph structure, see \code{\link[geostan]{stan_car}}).
 #' 
 #' Note, the code above requires the `scale_c` function; it has package dependencies that are not included in `geostan`. To use `scale_c`, you have to load the following `R` function:
 #' ```
@@ -138,7 +136,7 @@
 #' #' library(igraph)
 #' #'  
 #' #' @source
-#' 
+#' #'
 #' #'   Morris, Mitzi (2017). Spatial Models in Stan: Intrinsic Auto-Regressive Models for Areal Data. <https://mc-stan.org/users/documentation/case-studies/icar_stan.html>
 #' #'
 #' scale_c <- function(C) {
@@ -155,8 +153,7 @@
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
 #' \item{summary}{Summaries of the main parameters of interest; a data frame}
-#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with measure of effective number of parameters (\code{eff_pars}) and 
-#'  mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
+#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and mean residual spatial autocorrelation as measured by the Moran coefficient.}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' \item{data}{a data frame containing the model data}
 #' \item{edges}{The edge list representing all unique sets of neighbors and the weight attached to each pair (i.e., their corresponding element in the connectivity matrix  C}
@@ -200,8 +197,7 @@
 #'                      family = poisson(),
 #'                      data = sentencing,
 #'                      type = "bym",
-#'                      C = C,
-#'                      refresh = 0
+#'                      C = C
 #'  )
 #'
 #' # check effective sample size and convergence
@@ -376,7 +372,7 @@ stan_icar <- function(formula,
       standata$trials <- y[,1] + y[,2]
     }
     ## PARAMETERS TO KEEP with ICAR [START] -------------        
-    pars <- c(pars, 'intercept', 'residual', 'log_lik', 'yrep', 'fitted', 'phi', 'spatial_scale')
+    pars <- c(pars, 'intercept', 'log_lik', 'fitted', 'phi', 'spatial_scale')
     if (type == "bym2") pars <- c(pars, "theta", "rho")
     if (type == "bym") pars <- c(pars, "theta", "theta_scale")
     if (standata$m) pars <- c(pars, "alpha_phi")
@@ -399,12 +395,13 @@ stan_icar <- function(formula,
     out$re <- re_list
     out$priors <- priors_made_slim
     out$x_center <- attributes(x_full)$`scaled:center`
-    if (!missing(ME)) out$ME <- ME
+    R <- resid(out, summary = FALSE)
+    out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )        
+    if (!missing(ME)) out$ME <- ME    
     ## ICAR OUTPUT [START] --------
     out$edges <- edges(C)       
     out$spatial <- data.frame(par = "phi", method = toupper(type))
     ## ICAR OUTPUT [STOP] --------
-    class(out) <- append("geostan_fit", class(out))
     return (out)
 }
 

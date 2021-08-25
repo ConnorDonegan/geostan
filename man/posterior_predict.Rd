@@ -4,47 +4,23 @@
 \alias{posterior_predict}
 \title{Draw samples from the posterior predictive distribution}
 \usage{
-posterior_predict(
-  object,
-  newdata,
-  C,
-  samples,
-  predictive = TRUE,
-  re_form = NULL,
-  spatial = TRUE,
-  summary = FALSE,
-  width = 0.95,
-  seed,
-  centerx = FALSE
-)
+posterior_predict(object, S, summary = FALSE, width = 0.95, C, seed)
 }
 \arguments{
 \item{object}{A \code{geostan_fit} object.}
 
-\item{newdata}{A \code{data.frame} or \code{matrix} with data to use for predictions. Must be named and the names must match the model formula. If the model has an slx term and \code{spatial = TRUE} then \code{newdata} must have the same number of rows as the data used to fit the model.}
+\item{S}{Optional; number of samples to take from the posterior distribution. The default, and maximum, is the total number of samples stored in the model.}
 
-\item{C}{Spatial connectivity matrix for calculating spatially lagged covariates (slx). Only used if \code{spatial = TRUE} and the model contains an \code{slx} term. It will be row-standardized automatically.}
+\item{summary}{Should the predictive distribution be summarized by its means and central quantile intervals? If \code{summary = FALSE}, an `S` x `N` matrix of samples will be returned. If \code{summary = TRUE}, then a `data.frame` with the means and `100*width` credible intervals is returned.}
 
-\item{samples}{Number of samples to take from the posterior distribution. Maximum is the total number of samples stored in the model.}
+\item{width}{Only used if \code{summary = TRUE}, to set the quantiles for the credible intervals. Defaults to `width = 0.95`.}
 
-\item{predictive}{Return the predictive distribution? Defaults to \code{TRUE}. If \code{FALSE}, then the linear predictor is returned after applying the inverse link function (results are on the same scale as the outcome variable).}
+\item{seed}{A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution.}
 
-\item{re_form}{If \code{re_form = NA} any random effects terms will be ignored when making predictions. If default \code{re_form = NULL} is set, then the results will include random effects terms. Those are the only options; this syntax is used to maintain some consistency with other R packages which have additional options.}
-
-\item{spatial}{Include the spatial component in the model predictions? Defaults to \code{TRUE} and will be ignored if the model does not have a spatial component (i.e. \code{\link[geostan]{stan_glm}}). For models fit by \code{\link[geostan]{stan_esf}}, \code{\link[geostan]{stan_icar}}, and \code{\link[geostan]{stan_car}} this option requires that \code{newdata} have the same number of observations as the data that the model was fit to.}
-
-\item{summary}{Should the posterior predictions be summarized using quantile intervals? It \code{summary = TRUE} the function returns a data frame with the expected value of the posterior distribution (column \code{mu}) and 100*width credible intervals for, respectively, the posterior predictive distribution (columns \code{pred.lwr}, \code{pred.upr}) and mean outcome (columns \code{mu.lwr}, \code{mu.upr}).}
-
-\item{width}{Only used if \code{summary = TRUE} to set the quantiles for the credible intervals.}
-
-\item{seed}{A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution. Passing a value to \code{seed} enables you to obtain the same results each time (by using the same seed).}
-
-\item{centerx}{Should \code{newdata} be centered using the means of the variables in the original data used to fit the model (stored in \code{object$x_center})? Defaults to \code{FALSE}.}
+\item{car_parts}{Data for CAR model specification; only required for \code{\link[geostan]{stan_car}} with `family = auto_gaussian()`.}
 }
 \value{
-A matrix of size \code{S} x \code{N} containing samples from the posterior predictive distribution, where \code{S} is the number of samples and \code{N} is the number of observations. It is of class \code{matrix} and \code{ppd}.
-
-If \code{summary = TRUE} the return value is a data frame with the expected value of the posterior distribution (column \code{mu}) and 100*width credible intervals for, respectively, the posterior predictive distribution (columns \code{pred.lwr}, \code{pred.upr}) and mean outcome (columns \code{mu.lwr}, \code{mu.upr}). The width of the intervals and the quantiles corresponding to the upper and lower limits of the credible intervals are returned as an attribute of the data frame (use \code{attributes(df)$interval} to retrieve them, where \code{df} is the data frame returned by \code{posterior_predict}).
+A matrix of size `S x `N` containing samples from the posterior predictive distribution, where `S` is the number of samples drawn and `N` is the number of observations. If `summary = TRUE`, a `data.frame` with `N` rows and `3` columns is returned (with column names `mu`, `lwr`, and `upr`).
 }
 \description{
 Draw samples from the posterior predictive distribution of a fitted \code{geostan} model. Use the original data or new data, with or without the spatial component and other partial pooling terms.

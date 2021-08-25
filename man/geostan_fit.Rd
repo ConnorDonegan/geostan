@@ -22,9 +22,9 @@
 
 \method{as.array}{geostan_fit}(x, ...)
 
-\method{residuals}{geostan_fit}(object, summary = TRUE, ...)
+\method{residuals}{geostan_fit}(object, summary = TRUE, rates = TRUE)
 
-\method{fitted}{geostan_fit}(object, summary = TRUE, ...)
+\method{fitted}{geostan_fit}(object, summary = TRUE, rates = TRUE, ...)
 
 \method{spatial}{geostan_fit}(object, summary = TRUE, ...)
 }
@@ -46,6 +46,8 @@
 \item{object}{A fitted model object of class \code{geostan_fit}.}
 
 \item{summary}{Logical; should the values be summarized with the mean, standard deviation and quantiles (\code{probs = c(.025, .2, .5, .8, .975)}) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.}
+
+\item{rates}{For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to `TRUE`.}
 }
 \value{
 Methods \code{residuals}, \code{fitted}, \code{spatial} return a matrix containing all samples for each observation if \code{summary = FALSE}, else if \code{summary = TRUE} a \code{data.frame} containing a summary of the posterior distribution at each observation (of, respectively, residuals, fitted values, or the spatial trend).

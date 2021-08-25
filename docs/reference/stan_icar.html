@@ -188,7 +188,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>scale_factor</th>
-      <td><p>For the BYM2 model, optional. If missing, this will be set to a vector of ones.</p></td>
+      <td><p>For the BYM2 model, optional. If missing, this will be set to a vector of ones. See <code>Details</code>.</p></td>
     </tr>
     <tr>
       <th>ME</th>
@@ -268,8 +268,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl>
 <dt>summary</dt><dd><p>Summaries of the main parameters of interest; a data frame</p></dd>
-<dt>diagnostic</dt><dd><p>Widely Applicable Information Criteria (WAIC) with measure of effective number of parameters (<code>eff_pars</code>) and
-mean log pointwise predictive density (<code>lpd</code>), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.</p></dd>
+<dt>diagnostic</dt><dd><p>Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (<code>eff_pars</code>) and mean log pointwise predictive density (<code>lpd</code>), and mean residual spatial autocorrelation as measured by the Moran coefficient.</p></dd>
 <dt>stanfit</dt><dd><p>an object of class <code>stanfit</code> returned by <code><a href='https://mc-stan.org/rstan/reference/stan.html'>rstan::stan</a></code></p></dd>
 <dt>data</dt><dd><p>a data frame containing the model data</p></dd>
 <dt>edges</dt><dd><p>The edge list representing all unique sets of neighbors and the weight attached to each pair (i.e., their corresponding element in the connectivity matrix  C</p></dd>
@@ -295,7 +294,7 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
 </pre>
 
 <p>where <code>mu</code> contains an intercept and potentially covariates. The spatial trend, <code>phi</code>, has a mean of zero and a single scale parameter, <code>spatial_scale</code>.</p>
-<p>The ICAR prior model is a CAR model that has a spatial autocorrelation parameter <code>car_alpha</code> equal to 1 (see <a href='stan_car.html'>stan_car</a>). Thus the ICAR prior places high probability on a smooth spatially (or temporally) varying mean.</p>
+<p>The ICAR prior model is a CAR model that has a spatial autocorrelation parameter <code>car_alpha</code> equal to 1 (see <a href='stan_car.html'>stan_car</a>). Thus the ICAR prior places high probability on a smooth spatially (or temporally) varying mean. This is rarely sufficient to model the amount of variation present in social and health data.</p>
 
 <h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a><code>type = 'bym'</code></h3>
 
@@ -320,10 +319,10 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
              spatial_scale ~ Gaussian(0, 1)
 </pre>
 
-<p>The two <code>_tilde</code> terms are equivalent to standard normal deviates, <code>rho</code> is restricted to values between zero and one, and <code>scale_factor</code> is a constant term provided by the user. By default <code>scale_factor</code> is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure, <code>C</code>. This implies that the same prior distribution assigned to the <code>spatial_scale</code> will differ in its implications if <code>C</code> is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to <code>spatial_scale</code>.</p>
-<p>Borrowing <code>R</code> code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following <code>R</code> code can be used to create the <code>scale_factor</code> for the BYM2 model (note, this requires the INLA R package):</p><pre>              <span class='co'>## create a list of data for stan_icar</span>
+<p>The two <code>_tilde</code> terms are standard normal deviates, <code>rho</code> is restricted to values between zero and one, and <code>scale_factor</code> is a constant term provided by the user. By default, <code>scale_factor</code> is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure, <code>C</code>. This implies that the same prior distribution assigned to the <code>spatial_scale</code> will differ in its implications if <code>C</code> is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to <code>spatial_scale</code>.</p>
+<p>Borrowing <code>R</code> code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following <code>R</code> code can be used to create the <code>scale_factor</code> for the BYM2 model (note, this requires the INLA R package), given a spatial adjacency matrix, C:</p><pre>              <span class='co'>## create a list of data for stan_icar</span>
               <span class='va'>icar.data</span> <span class='op'>&lt;-</span> <span class='fu'>geostan</span><span class='fu'>::</span><span class='fu'><a href='prep_icar_data.html'>prep_icar_data</a></span><span class='op'>(</span><span class='va'>C</span><span class='op'>)</span>
-              <span class='co'>## calculate scale_factor for each of k connected group of nodes, using the scale_c function (Morris et al. 2019)</span>
+              <span class='co'>## calculate scale_factor for each of k connected group of nodes</span>
               <span class='va'>k</span> <span class='op'>&lt;-</span> <span class='va'>icar.data</span><span class='op'>$</span><span class='va'>k</span>
               <span class='va'>scale_factor</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/vector.html'>vector</a></span><span class='op'>(</span>mode <span class='op'>=</span> <span class='st'>"numeric"</span>, length <span class='op'>=</span> <span class='va'>k</span><span class='op'>)</span>
               <span class='kw'>for</span> <span class='op'>(</span><span class='va'>j</span> <span class='kw'>in</span> <span class='fl'>1</span><span class='op'>:</span><span class='va'>k</span><span class='op'>)</span> <span class='op'>{</span>
@@ -335,11 +334,9 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
               <span class='va'>Cg</span> <span class='op'>&lt;-</span> <span class='va'>C</span><span class='op'>[</span><span class='va'>g.idx</span>, <span class='va'>g.idx</span><span class='op'>]</span> 
               <span class='va'>scale_factor</span><span class='op'>[</span><span class='va'>j</span><span class='op'>]</span> <span class='op'>&lt;-</span> <span class='fu'>scale_c</span><span class='op'>(</span><span class='va'>Cg</span><span class='op'>)</span> 
               <span class='op'>}</span>
-               <span class='co'>## update the data list for stan_icar: exactly like this</span>
-              <span class='va'>icar.data</span><span class='op'>$</span><span class='va'>inv_sqrt_scale_factor</span> <span class='op'>&lt;-</span> <span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/MathFun.html'>sqrt</a></span><span class='op'>(</span> <span class='va'>scale_factor</span> <span class='op'>)</span>
 </pre>
 
-<p>This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to <code>phi</code> automatically inside the Stan model. Therefore, the use never needs to make any adjustments for this term. (If you want to avoid complications from a disconnected graph structure, see <code><a href='stan_car.html'>stan_car</a></code>).</p>
+<p>This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to <code>phi</code> automatically inside the Stan model. Therefore, the user never needs to make any adjustments for this term. (If you want to avoid complications from a disconnected graph structure, see <code><a href='stan_car.html'>stan_car</a></code>).</p>
 <p>Note, the code above requires the <code>scale_c</code> function; it has package dependencies that are not included in <code>geostan</code>. To use <code>scale_c</code>, you have to load the following <code>R</code> function:</p><pre><span class='co'>#' compute scaling factor for adjacency matrix, accounting for differences in spatial connectivity </span>
 <span class='co'>#'</span>
 <span class='co'>#' @param C connectivity matrix</span>
@@ -354,7 +351,7 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
 <span class='co'>#' library(igraph)</span>
 <span class='co'>#'  </span>
 <span class='co'>#' @source</span>
-
+<span class='co'>#'</span>
 <span class='co'>#'   Morris, Mitzi (2017). Spatial Models in Stan: Intrinsic Auto-Regressive Models for Areal Data. &lt;https://mc-stan.org/users/documentation/case-studies/icar_stan.html&gt;</span>
 <span class='co'>#'</span>
 <span class='va'>scale_c</span> <span class='op'>&lt;-</span> <span class='kw'>function</span><span class='op'>(</span><span class='va'>C</span><span class='op'>)</span> <span class='op'>{</span>
@@ -389,8 +386,7 @@ mean log pointwise predictive density (<code>lpd</code>), and residual spatial a
                      family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span>,
                      data <span class='op'>=</span> <span class='va'>sentencing</span>,
                      type <span class='op'>=</span> <span class='st'>"bym"</span>,
-                     C <span class='op'>=</span> <span class='va'>C</span>,
-                     refresh <span class='op'>=</span> <span class='fl'>0</span>
+                     C <span class='op'>=</span> <span class='va'>C</span>
  <span class='op'>)</span>
 
 <span class='co'># check effective sample size and convergence</span>

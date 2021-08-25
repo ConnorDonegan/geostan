@@ -135,19 +135,7 @@
     <p>Draw samples from the posterior predictive distribution of a fitted <code>geostan</code> model. Use the original data or new data, with or without the spatial component and other partial pooling terms.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>posterior_predict</span><span class='op'>(</span>
-  <span class='va'>object</span>,
-  <span class='va'>newdata</span>,
-  <span class='va'>C</span>,
-  <span class='va'>samples</span>,
-  predictive <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  re_form <span class='op'>=</span> <span class='cn'>NULL</span>,
-  spatial <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  summary <span class='op'>=</span> <span class='cn'>FALSE</span>,
-  width <span class='op'>=</span> <span class='fl'>0.95</span>,
-  <span class='va'>seed</span>,
-  centerx <span class='op'>=</span> <span class='cn'>FALSE</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>posterior_predict</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>S</span>, summary <span class='op'>=</span> <span class='cn'>FALSE</span>, width <span class='op'>=</span> <span class='fl'>0.95</span>, <span class='va'>C</span>, <span class='va'>seed</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -157,51 +145,30 @@
       <td><p>A <code>geostan_fit</code> object.</p></td>
     </tr>
     <tr>
-      <th>newdata</th>
-      <td><p>A <code>data.frame</code> or <code>matrix</code> with data to use for predictions. Must be named and the names must match the model formula. If the model has an slx term and <code>spatial = TRUE</code> then <code>newdata</code> must have the same number of rows as the data used to fit the model.</p></td>
-    </tr>
-    <tr>
-      <th>C</th>
-      <td><p>Spatial connectivity matrix for calculating spatially lagged covariates (slx). Only used if <code>spatial = TRUE</code> and the model contains an <code>slx</code> term. It will be row-standardized automatically.</p></td>
-    </tr>
-    <tr>
-      <th>samples</th>
-      <td><p>Number of samples to take from the posterior distribution. Maximum is the total number of samples stored in the model.</p></td>
-    </tr>
-    <tr>
-      <th>predictive</th>
-      <td><p>Return the predictive distribution? Defaults to <code>TRUE</code>. If <code>FALSE</code>, then the linear predictor is returned after applying the inverse link function (results are on the same scale as the outcome variable).</p></td>
-    </tr>
-    <tr>
-      <th>re_form</th>
-      <td><p>If <code>re_form = NA</code> any random effects terms will be ignored when making predictions. If default <code>re_form = NULL</code> is set, then the results will include random effects terms. Those are the only options; this syntax is used to maintain some consistency with other R packages which have additional options.</p></td>
-    </tr>
-    <tr>
-      <th>spatial</th>
-      <td><p>Include the spatial component in the model predictions? Defaults to <code>TRUE</code> and will be ignored if the model does not have a spatial component (i.e. <code><a href='stan_glm.html'>stan_glm</a></code>). For models fit by <code><a href='stan_esf.html'>stan_esf</a></code>, <code><a href='stan_icar.html'>stan_icar</a></code>, and <code><a href='stan_car.html'>stan_car</a></code> this option requires that <code>newdata</code> have the same number of observations as the data that the model was fit to.</p></td>
+      <th>S</th>
+      <td><p>Optional; number of samples to take from the posterior distribution. The default, and maximum, is the total number of samples stored in the model.</p></td>
     </tr>
     <tr>
       <th>summary</th>
-      <td><p>Should the posterior predictions be summarized using quantile intervals? It <code>summary = TRUE</code> the function returns a data frame with the expected value of the posterior distribution (column <code>mu</code>) and 100*width credible intervals for, respectively, the posterior predictive distribution (columns <code>pred.lwr</code>, <code>pred.upr</code>) and mean outcome (columns <code>mu.lwr</code>, <code>mu.upr</code>).</p></td>
+      <td><p>Should the predictive distribution be summarized by its means and central quantile intervals? If <code>summary = FALSE</code>, an `S` x `N` matrix of samples will be returned. If <code>summary = TRUE</code>, then a `data.frame` with the means and `100*width` credible intervals is returned.</p></td>
     </tr>
     <tr>
       <th>width</th>
-      <td><p>Only used if <code>summary = TRUE</code> to set the quantiles for the credible intervals.</p></td>
+      <td><p>Only used if <code>summary = TRUE</code>, to set the quantiles for the credible intervals. Defaults to `width = 0.95`.</p></td>
     </tr>
     <tr>
       <th>seed</th>
-      <td><p>A single integer value to be used in a call to <code><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></code> before taking samples from the posterior distribution. Passing a value to <code>seed</code> enables you to obtain the same results each time (by using the same seed).</p></td>
+      <td><p>A single integer value to be used in a call to <code><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></code> before taking samples from the posterior distribution.</p></td>
     </tr>
     <tr>
-      <th>centerx</th>
-      <td><p>Should <code>newdata</code> be centered using the means of the variables in the original data used to fit the model (stored in <code>object$x_center</code>)? Defaults to <code>FALSE</code>.</p></td>
+      <th>car_parts</th>
+      <td><p>Data for CAR model specification; only required for <code><a href='stan_car.html'>stan_car</a></code> with `family = auto_gaussian()`.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A matrix of size <code>S</code> x <code>N</code> containing samples from the posterior predictive distribution, where <code>S</code> is the number of samples and <code>N</code> is the number of observations. It is of class <code>matrix</code> and <code>ppd</code>.</p>
-<p>If <code>summary = TRUE</code> the return value is a data frame with the expected value of the posterior distribution (column <code>mu</code>) and 100*width credible intervals for, respectively, the posterior predictive distribution (columns <code>pred.lwr</code>, <code>pred.upr</code>) and mean outcome (columns <code>mu.lwr</code>, <code>mu.upr</code>). The width of the intervals and the quantiles corresponding to the upper and lower limits of the credible intervals are returned as an attribute of the data frame (use <code>attributes(df)$interval</code> to retrieve them, where <code>df</code> is the data frame returned by <code>posterior_predict</code>).</p>
+    <p>A matrix of size `S x `N` containing samples from the posterior predictive distribution, where `S` is the number of samples drawn and `N` is the number of observations. If `summary = TRUE`, a `data.frame` with `N` rows and `3` columns is returned (with column names `mu`, `lwr`, and `upr`).</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>

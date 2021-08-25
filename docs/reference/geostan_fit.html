@@ -151,10 +151,10 @@
 <span class='fu'><a href='https://rdrr.io/r/base/array.html'>as.array</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for geostan_fit</span>
-<span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>residuals</a></span><span class='op'>(</span><span class='va'>object</span>, summary <span class='op'>=</span> <span class='cn'>TRUE</span>, <span class='va'>...</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>residuals</a></span><span class='op'>(</span><span class='va'>object</span>, summary <span class='op'>=</span> <span class='cn'>TRUE</span>, rates <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
 
 <span class='co'># S3 method for geostan_fit</span>
-<span class='fu'><a href='https://rdrr.io/r/stats/fitted.values.html'>fitted</a></span><span class='op'>(</span><span class='va'>object</span>, summary <span class='op'>=</span> <span class='cn'>TRUE</span>, <span class='va'>...</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/stats/fitted.values.html'>fitted</a></span><span class='op'>(</span><span class='va'>object</span>, summary <span class='op'>=</span> <span class='cn'>TRUE</span>, rates <span class='op'>=</span> <span class='cn'>TRUE</span>, <span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for geostan_fit</span>
 <span class='fu'><a href='spatial.html'>spatial</a></span><span class='op'>(</span><span class='va'>object</span>, summary <span class='op'>=</span> <span class='cn'>TRUE</span>, <span class='va'>...</span><span class='op'>)</span></pre>
@@ -197,6 +197,10 @@
     <tr>
       <th>summary</th>
       <td><p>Logical; should the values be summarized with the mean, standard deviation and quantiles (<code>probs = c(.025, .2, .5, .8, .975)</code>) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.</p></td>
+    </tr>
+    <tr>
+      <th>rates</th>
+      <td><p>For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to `TRUE`.</p></td>
     </tr>
     </table>
 

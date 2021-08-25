@@ -22,7 +22,7 @@ transformed parameters {
   // declaration
   matrix[n, dx_all] x_all;
   vector[n] log_lambda_mu;
-  vector[n] f;  
+  vector[n] fitted;  
   if (dx_obs) x_all[,x_obs_idx] = x_obs;
   if (dx_me_unbounded) for (j in 1:dx_me_unbounded) x_all[ ,x_me_unbounded_idx[j]] = x_true_unbounded[j];
   if (dx_me_bounded) for (j in 1:dx_me_bounded) x_all[,x_me_bounded_idx[j]] = x_true_bounded[j];
@@ -44,17 +44,18 @@ transformed parameters {
   } 
   if (dx_all) log_lambda_mu += x_all * beta;
   if (is_auto_gaussian) {
-    f = offset + log_lambda_mu;
+    fitted = offset + log_lambda_mu;
       } else {
-    f = offset + log_lambda;
+    fitted = offset + log_lambda;
   }
-  if (is_binomial) f = inv_logit(f);
+  if (is_binomial) fitted = inv_logit(fitted);
+  if (is_poisson) fitted = exp(fitted);
 }
 
 model {
 #include parts/model.stan
   car_scale ~ student_t(sigma_prior[1], sigma_prior[2], sigma_prior[3]);
-  if (is_auto_gaussian * !prior_only) y ~ car_normal(f, car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n);
+  if (is_auto_gaussian * !prior_only) y ~ car_normal(fitted, car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n);
   if (!is_auto_gaussian) log_lambda ~ car_normal(log_lambda_mu, car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n);
 }
 
@@ -68,14 +69,14 @@ generated quantities {
 #include parts/gen_quants_expression_in_loop.stan
   }
   if (is_auto_gaussian) {
-  trend = car_rho * C * (y - f);
-  fitted = f;
-  residual = y - f - trend;
+  trend = car_rho * C * (y - fitted);
+  //  fitted = f;
+  //  residual = y - f - trend;
  }
   if (invert * is_auto_gaussian) {
     S = car_scale^2 * diag_post_multiply(inverse(diag_matrix(rep_vector(1, n)) - car_rho * C), M_diag);      
-    yrep = multi_normal_rng(f, S);    
-    log_lik[1] = multi_normal_lpdf(y | f, S);
-  }
+    //   yrep = multi_normal_rng(f, S);    
+    log_lik[1] = multi_normal_lpdf(y | fitted, S);
+  } 
 }
 

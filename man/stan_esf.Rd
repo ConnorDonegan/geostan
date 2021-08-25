@@ -117,7 +117,7 @@ Note that if you also use \code{slx} terms (spatially lagged covariates), then y
 An object of class class \code{geostan_fit} (a list) containing:
 \describe{
 \item{summary}{Summaries of the main parameters of interest; a data frame}
-\item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and residual spatial autocorrelation (Moran coefficient of the residuals). Residuals are relative to the mean posterior fitted values.}
+\item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and mean residual spatial autocorrelation as measured by the Moran coefficient.}
 \item{data}{a data frame containing the model data}
 \item{EV}{A matrix of eigenvectors created with \code{w} and \code{geostan::make_EV}}
 \item{C}{The spatial weights matrix used to construct EV}
