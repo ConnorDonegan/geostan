@@ -62,7 +62,7 @@
 #'
 #' The Stan code for this implementation of the CAR model first introduced in Donegan et al. (2021, supplementary material) for models of small area survey data.
 #' 
-#' Details and results depend on the \code{family} argument (see also \link[geostan]{prep_car_data}).
+#' Details and results depend on the \code{family} argument, as well as on the particular CAR specification chosen (see \link[geostan]{prep_car_data}).
 #' 
 #' ##  `family = gaussian()`
 #'
@@ -71,7 +71,7 @@
 #'                             Y ~ MVGauss(Mu, Sigma)
 #'                             Sigma = (I - rho C)^-1 * M * tau^2
 #' ```
-#' where \code{Mu} is the mean vector (with intercept, covariates, etc.), \code{C} is the spatial connectivity matrix, and \code{M} is a known diagonal matrix with diagonal entries proportional to the conditional variances (see the \code{M_diagonal} argument). 
+#' where \code{Mu} is the mean vector (with intercept, covariates, etc.), \code{C} is a spatial connectivity matrix, and \code{M} is a known diagonal matrix with diagonal entries proportional to the conditional variances (see the \code{M_diagonal} argument). `C` and `M` are provided by \link[geostan]{prep_car_data}.
 #'
 #' The covariance matrix of the CAR model, \code{Sigma}, contains two parameters to estimate: \code{car_rho} (rho), which controls the degree of spatial autocorrelation, and the scale parameter, \code{car_scale} (tau). The range of permissible values for \code{rho} depends on the specification of \code{C} and \code{M}; for options, see \code{\link[geostan]{prep_car_data}} and Cressie and Wikle (2011, pp. 184-188).
 #'
@@ -85,8 +85,6 @@
 #' ```
 #'                             residual = Y - Mu - trend.
 #' ```
-#' The posterior predictive distribution (PPD) is returned in the parameter vector \code{yrep}. For the auto-Gaussian model, each sample from the PPD is a draw of n values from the multivariate Gaussian density function, with parameters \code{Mu} and \code{Sigma}. Draws from the PPD can be extracted from a fitted modeling using the \link[geostan]{posterior_predict} method. The log likelihood of the data conditional on the model (\code{log_lik}, required for calculating \code{\link[geostan]{waic}}) is calculated analogously, using the above parameterization of the multivariate normal density. Note, these quantities are *only* returned `invert = TRUE`, and may be costly to compute for large models.
-#' 
 #' 
 #' ## `family = poisson()`
 #'
