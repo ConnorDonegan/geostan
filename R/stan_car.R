@@ -249,9 +249,9 @@ stan_car <- function(formula,
     stopifnot(!missing(data))
     stopifnot(inherits(car_parts, "list"))    
     C <- car_parts$C    
-    stopifnot(inherits(C, "matrix"))
-    stopifnot(nrow(C) == nrow(data))
-    stopifnot(all(c("nC", "nImC", "ImC", "ImC_v", "ImC_u", "Cidx", "M_diag", "C") %in% names(car_parts)))
+    stopifnot(inherits(car_parts$C, "matrix"))
+    stopifnot(nrow(car_parts$C) == nrow(data))
+    stopifnot(all(c("Ax_w", "Ax_v", "Ax_u", "nAx_w", "Cidx", "nC", "Delta_inv", "log_det_Delta_inv", "WCAR", "lambda", "dim_C", "C")  %in% names(car_parts)))
     if (silent) refresh = 0
     a.zero <- as.array(0, dim = 1)
     tmpdf <- as.data.frame(data)
@@ -299,7 +299,7 @@ stan_car <- function(formula,
     ModData <- make_data(formula, tmpdf, x_full)
     frame <- model.frame(formula, tmpdf)
     y <- y_int <- model.response(frame)
-    if (family_int %in% c(1,2)) y_int <- rep(0, length(y))
+    if (family_int %in% c(1,2,5)) y_int <- rep(0, length(y))
     if (is.null(model.offset(frame))) {
         offset <- rep(0, times = n)
     } else {

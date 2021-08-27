@@ -20,14 +20,14 @@ test_that("Poisson CAR model works", {
 test_that("CAR accepts covariate ME, mixed (un-) bounded", {
     data(georgia)
     SW(
-        fit <- stan_glm(log(rate.male) ~ insurance + ICE,
+        fit <- stan_car(log(rate.male) ~ insurance + ICE,
                         data = georgia,
-                        C = shape2mat(georgia),
                         ME = list(se = data.frame(insurance = georgia$insurance.se,
                                                   ICE = georgia$ICE.se),
                         bounded = c(1, 0),
                         bounds = c(0, 100)
-                        ),        
+                        ),
+                        car_parts = prep_car_data(shape2mat(georgia, "B")),                        
                         chains = 1,
                         iter = iter,
                         silent = silent)

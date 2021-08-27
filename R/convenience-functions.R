@@ -959,7 +959,7 @@ prep_icar_data <- function (C, inv_sqrt_scale_factor = NULL) {
 #' @export
 #' @importFrom rstan extract_sparse_parts
 #' 
-#' @param A Binary adjacency matrix.
+#' @param A Binary adjacency matrix; for `style = DCAR`, provide a symmetric matrix of distances instead. The distance matrix should be sparse, meaning that most distances should be zero (usually obtained by setting some threshold distance beyond which all are zero).
 #' 
 #' @param style Specification for the connectivity matrix (C) and conditional variances (M); one of "WCAR", "ACAR", or "DCAR".
 #' 
@@ -967,9 +967,7 @@ prep_icar_data <- function (C, inv_sqrt_scale_factor = NULL) {
 #' 
 #' @param cmat Return the full matrix C if TRUE.
 #' 
-#' @param d distance matrix. Non-neighboring values (as indicated by A) will be set to zero internally.
-#' 
-#' @param k If provided with `style = DCAR` and `d`, distances will be raised to the -k power (d^-k).
+#' @param k For `style = DCAR`, distances will be raised to the -k power (d^-k).
 #' 
 #' @details The CAR model is N(Mu, Sigma), Sigma = (I - rho C)^-1 M.
 #'
@@ -1009,14 +1007,11 @@ prep_icar_data <- function (C, inv_sqrt_scale_factor = NULL) {
 #' ## diagnostics
 #' sp_diag(fit, georgia)
 #' 
-prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), lambda = FALSE, cmat = TRUE, d, k = 1) {
+prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), lambda = TRUE, cmat = TRUE, k = 1) {
     style = match.arg(style)
-    n <- nrow(A)    
-    if (style == "WCAR") {
-        Ni <- rowSums(A)
-        C <- A / Ni
-        M_diag <- 1 / Ni
-    }
+    stopifnot(inherits(A, "matrix"))
+    if (style %in% c("ACAR", "WCAR")) stopifnot(all(A %in% c(1,0)))
+    n <- nrow(A)
     if (style == "ACAR") {
         Ni <- rowSums(A)
         C <- matrix(0, nrow = n, ncol = n)
@@ -1024,33 +1019,41 @@ prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), lambda = FALSE, 
         M_diag <- 1 / Ni
     }
     if (style == "DCAR") {
-        if (missing(d)) stop("d matrix is required for the DCAR specification.")
-        class(d) <- "matrix"    
-        stopifnot(all( dim(d) == n ))        
-        # d -> d^-k; neighbors only
-        dinv <- A * d
+        dinv <- A
         dinv[dinv>0] <- dinv[dinv>0]^(-k)
-        # scale by max d^-k
         max.dinv <- max(dinv)
         dinv <- dinv / max.dinv
         # conditional variance proportional to total d^-k
         dinv.sums <- rowSums(dinv)
         M_diag <- 1 / dinv.sums
-        # C scaled by ratio of conditional standard deviations
+        # C scaled by sqrt of ratio of total distances
         C <- matrix(0, nrow = n, ncol = n)
-        for (i in 1:n) for (j in 1:n) C[i,j] <- dinv[i,j] * sqrt( dinv.sums[j] / dinv.sums[i]  )
+        for (i in 1:n) for (j in 1:n) C[i,j] <- dinv[i,j] * sqrt(dinv.sums[j] / dinv.sums[i])
     }
-    stopifnot( isSymmetric.matrix(C %*% diag(M_diag), check.attributes = FALSE) )
-    car.dl <- rstan::extract_sparse_parts(diag(n) - C)
-    car.dl$Cidx <- which( car.dl$w != 1 )
-    names(car.dl)[1] <- "ImC"
-    names(car.dl)[2] <- "ImC_v"
-    names(car.dl)[3] <- "ImC_u"
-    car.dl$nImC <- length(car.dl$ImC)
-    car.dl$nC <- length(car.dl$Cidx)
-    car.dl$M_diag <- M_diag
-    car.dl$dim_C <- n
+    if (style == "WCAR") {
+        Ni <- rowSums(A)
+        C <- A / Ni
+        M_diag <- 1 / Ni
+        stopifnot( isSymmetric.matrix(C %*% diag(M_diag), check.attributes = FALSE) )
+        car.dl <- rstan::extract_sparse_parts(A)
+        names(car.dl) <- paste0("Ax_", names(car.dl))
+        car.dl$nAx_w <- length(car.dl$Ax_w)
+        car.dl$Cidx <- array(0, dim = 1)
+        car.dl$nC <- 1
+        car.dl$WCAR <- 1
+    } else {
+        stopifnot( isSymmetric.matrix(C %*% diag(M_diag), check.attributes = FALSE) )
+        car.dl <- rstan::extract_sparse_parts(diag(n) - C)
+        names(car.dl) <- paste0("Ax_", names(car.dl))
+        car.dl$nAx_w <- length(car.dl$Ax_w)        
+        car.dl$Cidx <- which( car.dl$Ax_w != 1 )
+        car.dl$nC <- length(car.dl$Cidx)
+        car.dl$WCAR <- 0
+    }
+    car.dl$Delta_inv <- 1 / M_diag
     car.dl$style <- style
+    car.dl$log_det_Delta_inv = base::determinant(diag(car.dl$Delta_inv), log = TRUE)$modulus
+    car.dl$dim_C <- n
     if (lambda) {
         MCM <- diag( 1 / sqrt(M_diag) ) %*% C %*% diag( sqrt(M_diag) )
         stopifnot(isSymmetric.matrix(MCM, check.attributes = FALSE))

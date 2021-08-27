@@ -20,8 +20,6 @@
   matrix[n, dwx] WX;
 // for auto-Gaussian models
   vector[n] mean_zero = rep_vector(0, n);
-  vector[n] M_inv = 1 ./ M_diag;
-  vector[n] lambda;
 
   is_gaussian = family == 1;
   is_student =  family == 2;
@@ -52,8 +50,4 @@
        prior_mean_x_true_bounded[j] = mean(x_me_bounded[j]);
     }
   }
-  if (nC > 1) {
-    lambda = eMCM(C, M_inv);
-  } else {
-    lambda = rep_vector(1, n);
-  }
+  

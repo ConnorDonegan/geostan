@@ -20,15 +20,18 @@ prep_me_data <- function(ME, x) { # for x pass in x_no_Wx
   x_me_unbounded_idx = a.zero
   bounds <- c(0, 100)
   empty_car_parts <- list(
-      M_diag = rep(1, n),
       nC = 1,
-      dim_C = 1,
-      nImC = 1,
-      C = array(1, dim = c(1, 1)),          
-      ImC = a.zero,
-      ImC_v = a.zero,
-      ImC_u = rep(0, n+1),
-      Cidx = a.zero
+      nAx_w = 1,
+      dim_C = 1,      
+      C = array(1, dim = c(1, 1)),
+      Delta_inv = rep(1, n),
+      log_det_Delta_inv = 0,
+      Ax_w = a.zero,
+      Ax_v = a.zero,
+      Ax_u = rep(0, n+1),
+      Cidx = a.zero,
+      lambda = rep(0, n),
+      WCAR = 0
   )
     if (is.null(ME)) { # return items in data list ready for Stan: no ME model at all. 
       x_obs <- x
@@ -60,12 +63,13 @@ prep_me_data <- function(ME, x) { # for x pass in x_no_Wx
   }
     if (!inherits(ME, "list")) stop("ME must be a list .")
     if (!is.null(ME$spatial)) {
-        if (length(ME$spatial) != 1 | !ME$spatial %in% c(0, 1, TRUE, FALSE)) stop("ME$spatial must be logical (0, 1, TRUE, or FALSE) and of length 1.")
+        stopifnot(length(ME$spatial) == 1)
+        stopifnot(ME$spatial %in% c(0, 1, TRUE, FALSE))
         spatial_me <- ME$spatial
     } else {
         spatial_me <- FALSE
     }
-#### observational error in offset terms: remove because it samples extremely poorly.
+#### observational error in offset terms: removed because it samples extremely poorly.
   ## if (length(ME$offset)) { # ME model for offset; holding for future implementation. Ignored.
   ##       offset_me <- ME$offset
   ##       model_offset <- 1
@@ -105,7 +109,7 @@ prep_me_data <- function(ME, x) { # for x pass in x_no_Wx
  ##          me.list <- c(me.list, me.x.list)
  ## } else {
     if (!inherits(ME$se, "data.frame")) stop("ME$se must be a list in which the element named ME is of class data.frame, containing standard errors for the observations.")
-    if  (!all(names(ME$se) %in% names(x.df))) stop("All column names in ME$se must be found in the model matrix (from model.matrix(formula, data)). This error may occur if you've included some kind of data transformation in your model formula, such as a logarithm or polynomial, which is not supported for variables with sampling/measurement error.")
+    if (!all(names(ME$se) %in% names(x.df))) stop("All column names in ME$se must be found in the model matrix (from model.matrix(formula, data)). This error may occur if you've included some kind of data transformation in your model formula, such as a logarithm or polynomial.")
     if (length(ME$bounded)) {
         if (length(ME$bounded) != ncol(ME$se)) stop("ME$bounded mis-specified: bounded must be a vector with one element per column in the ME dataframe.")
         bounded <- which(ME$bounded == 1)
@@ -118,11 +122,11 @@ prep_me_data <- function(ME, x) { # for x pass in x_no_Wx
         bounded <- integer(0) #rep(0, times = ncol(ME$se))
         not.bounded <- 1:ncol(ME$se) #rep(1, times = ncol(ME$se))
     }           
-                                        # gather any/all variables without ME
+     # gather any/all variables without ME
     x_obs_idx <- as.array( which( !names(x.df) %in% names(ME$se) )) 
     x_obs <- as.data.frame(x.df[, x_obs_idx])
     dx_obs <- ncol(x_obs)
-                                        # now X.me needs to be parsed into bounded/non-bounded variables and ordered as x
+    # now X.me needs to be parsed into bounded/non-bounded variables and ordered as x
     nm_me_unbounded <- names(ME$se)[not.bounded]
     x_me_unbounded <- data.frame( x.df[, nm_me_unbounded] )
     names(x_me_unbounded) <- nm_me_unbounded
@@ -175,7 +179,7 @@ prep_me_data <- function(ME, x) { # for x pass in x_no_Wx
     )
     if (spatial_me) {
        if(!inherits(ME$car_parts, "list")) stop("If ME$spatial = TRUE, you must provide car_parts---a list of data for the CAR model. See ?prep_car_data.")
-        if(!all(c("nC", "nImC", "ImC", "ImC_v", "ImC_u", "Cidx", "M_diag", "C") %in% names(ME$car_parts))) stop("car_parts is missing at least one required part. See ?prep_car_data. Did you use cmat = TRUE?")
+        if(!all(c("nC", "Cidx", "nAx_w", "Ax_w", "Ax_v", "Ax_u", "Delta_inv", "log_det_Delta_inv", "dim_C", "C", "lambda", "WCAR") %in% names(ME$car_parts))) stop("car_parts is missing at least one required part. See ?prep_car_data. Did you use cmat = TRUE and lambda = TRUE?")
         me.list <- c(me.list, ME$car_parts)
     } else {
         me.list <- c(me.list, empty_car_parts)

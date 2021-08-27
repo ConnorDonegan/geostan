@@ -1,4 +1,4 @@
-// parameter models 
+// parameter models
   intercept ~ normal(alpha_prior[1], alpha_prior[2]);
   if (dx_all) append_row(gamma, beta) ~ normal(beta_prior[1], beta_prior[2]);
   if (has_sigma) sigma ~ student_t(sigma_prior[1], sigma_prior[2], sigma_prior[3]);
@@ -9,8 +9,23 @@
     if (spatial_me) {
       for (j in 1:dx_me_unbounded) {
         x_me_unbounded[j] ~ normal(x_true_unbounded[j], sigma_me_unbounded[j]);
-	x_true_unbounded[j] ~ car_normal(rep_vector(mu_x_true_unbounded[j], n), sigma_x_true_unbounded[j], car_rho_x_true_unbounded[j], ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n);
-        }
+	if (WCAR) {
+	  x_true_unbounded[j] ~ wcar_normal(rep_vector(mu_x_true_unbounded[j], n),
+					    sigma_x_true_unbounded[j],
+					    car_rho_x_true_unbounded[j],
+					    Ax_w, Ax_v, Ax_u,
+					    Delta_inv, log_det_Delta_inv,
+					    lambda, n);
+	} else {
+	  x_true_unbounded[j] ~ car_normal(rep_vector(mu_x_true_unbounded[j], n),
+					   sigma_x_true_unbounded[j],
+					   car_rho_x_true_unbounded[j],
+					   Ax_w, Ax_v, Ax_u,
+					   Cidx,
+					   Delta_inv, log_det_Delta_inv,
+					   lambda, n);
+	}
+      }
       } else {
       for (j in 1:dx_me_unbounded) {
       	  x_me_unbounded[j] ~ normal(x_true_unbounded[j], sigma_me_unbounded[j]);
@@ -25,8 +40,23 @@
   if (dx_me_bounded) {
     if (spatial_me) {
       for (j in 1:dx_me_bounded) {
-	x_me_bounded[j] ~ normal(x_true_bounded[j], sigma_me_bounded[j]);	
-        x_true_bounded[j] ~ car_normal(rep_vector(mu_x_true_bounded[j], n), sigma_x_true_bounded[j], car_rho_x_true_bounded[j], ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n);
+	x_me_bounded[j] ~ normal(x_true_bounded[j], sigma_me_bounded[j]);
+	if (WCAR) {
+	  x_true_bounded[j] ~ wcar_normal(rep_vector(mu_x_true_bounded[j], n),
+					  sigma_x_true_bounded[j],
+					  car_rho_x_true_bounded[j],
+					  Ax_w, Ax_v, Ax_u,
+					  Delta_inv, log_det_Delta_inv,
+					  lambda, n);
+	} else {
+	  x_true_bounded[j] ~ car_normal(rep_vector(mu_x_true_bounded[j], n),
+					 sigma_x_true_bounded[j],
+					 car_rho_x_true_bounded[j],
+					 Ax_w, Ax_v, Ax_u,
+					 Cidx,
+					 Delta_inv, log_det_Delta_inv,
+					 lambda, n);					 
+	}	
         }
       } else {
       for (j in 1:dx_me_bounded) {

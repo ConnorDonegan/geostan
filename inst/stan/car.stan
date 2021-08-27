@@ -55,8 +55,34 @@ transformed parameters {
 model {
 #include parts/model.stan
   car_scale ~ student_t(sigma_prior[1], sigma_prior[2], sigma_prior[3]);
-  if (is_auto_gaussian * !prior_only) y ~ car_normal(fitted, car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n);
-  if (!is_auto_gaussian) log_lambda ~ car_normal(log_lambda_mu, car_scale, car_rho, ImC, ImC_v, ImC_u, Cidx, M_inv, lambda, n);
+  if (is_auto_gaussian * !prior_only) {
+    if (WCAR) {
+      y ~ wcar_normal(fitted, car_scale, car_rho,
+		      Ax_w, Ax_v, Ax_u,
+		      Delta_inv, log_det_Delta_inv,
+		      lambda, n);
+    } else {
+      y ~ car_normal(fitted, car_scale, car_rho,
+		     Ax_w, Ax_v, Ax_u,
+		     Cidx,
+		     Delta_inv, log_det_Delta_inv,
+		     lambda, n);
+    }
+  }
+  if (!is_auto_gaussian) {
+    if (WCAR) {
+      log_lambda ~ wcar_normal(log_lambda_mu, car_scale, car_rho,
+			       Ax_w, Ax_v, Ax_u,
+			       Delta_inv, log_det_Delta_inv,
+			       lambda, n);
+    } else {
+      log_lambda ~ car_normal(log_lambda_mu, car_scale, car_rho,
+			      Ax_w, Ax_v, Ax_u,
+			      Cidx,
+			      Delta_inv, log_det_Delta_inv,
+			      lambda, n);
+    }
+  }
 }
 
 generated quantities {
@@ -70,12 +96,9 @@ generated quantities {
   }
   if (is_auto_gaussian) {
   trend = car_rho * C * (y - fitted);
-  //  fitted = f;
-  //  residual = y - f - trend;
  }
   if (invert * is_auto_gaussian) {
-    S = car_scale^2 * diag_post_multiply(inverse(diag_matrix(rep_vector(1, n)) - car_rho * C), M_diag);      
-    //   yrep = multi_normal_rng(f, S);    
+    S = car_scale^2 * diag_post_multiply(inverse(diag_matrix(rep_vector(1, n)) - car_rho * C), 1.0 ./ Delta_inv);      
     log_lik[1] = multi_normal_lpdf(y | fitted, S);
   } 
 }

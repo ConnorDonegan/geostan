@@ -34,15 +34,18 @@
 
 // data for auto-Guassian [data] models
   int<lower=0,upper=1> spatial_me;
+  int<lower=0,upper=1> WCAR;
   int dim_C;
   matrix<lower=0>[dim_C, dim_C] C; // connectivity matrix
-  int nImC;
+  int nAx_w;
   int nC;
-  vector[nImC] ImC;
-  int ImC_v[nImC];
-  int ImC_u[n + 1];
+  vector[nAx_w] Ax_w;
+  int Ax_v[nAx_w];
+  int Ax_u[n + 1];
   int Cidx[nC];
-  vector[n] M_diag;
+  vector[n] Delta_inv;
+  real log_det_Delta_inv;
+  vector[n] lambda;
 
 // non-spatial partial pooling 
   int<lower=0,upper=1> has_re; // has varying intercept?
