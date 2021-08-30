@@ -54,33 +54,37 @@ transformed parameters {
 
 model {
 #include parts/model.stan
-  car_scale ~ student_t(sigma_prior[1], sigma_prior[2], sigma_prior[3]);
+  target += student_t_lpdf(car_scale | sigma_prior[1], sigma_prior[2], sigma_prior[3]);
   if (is_auto_gaussian * !prior_only) {
     if (WCAR) {
-      y ~ wcar_normal(fitted, car_scale, car_rho,
-		      Ax_w, Ax_v, Ax_u,
-		      Delta_inv, log_det_Delta_inv,
-		      lambda, n);
+      target += wcar_normal_lpdf(y |
+				 fitted, car_scale, car_rho,
+				 Ax_w, Ax_v, Ax_u,
+				 Delta_inv, log_det_Delta_inv,
+				 lambda, n);
     } else {
-      y ~ car_normal(fitted, car_scale, car_rho,
-		     Ax_w, Ax_v, Ax_u,
-		     Cidx,
-		     Delta_inv, log_det_Delta_inv,
-		     lambda, n);
+      target += car_normal_lpdf(y |
+				fitted, car_scale, car_rho,
+				Ax_w, Ax_v, Ax_u,
+				Cidx,
+				Delta_inv, log_det_Delta_inv,
+				lambda, n);
     }
   }
   if (!is_auto_gaussian) {
     if (WCAR) {
-      log_lambda ~ wcar_normal(log_lambda_mu, car_scale, car_rho,
-			       Ax_w, Ax_v, Ax_u,
-			       Delta_inv, log_det_Delta_inv,
-			       lambda, n);
+      target += wcar_normal_lpdf(log_lambda |
+				 log_lambda_mu, car_scale, car_rho,
+				 Ax_w, Ax_v, Ax_u,
+				 Delta_inv, log_det_Delta_inv,
+				 lambda, n);
     } else {
-      log_lambda ~ car_normal(log_lambda_mu, car_scale, car_rho,
-			      Ax_w, Ax_v, Ax_u,
-			      Cidx,
-			      Delta_inv, log_det_Delta_inv,
-			      lambda, n);
+      target += car_normal_lpdf(log_lambda |
+				log_lambda_mu, car_scale, car_rho,
+				Ax_w, Ax_v, Ax_u,
+				Cidx,
+				Delta_inv, log_det_Delta_inv,
+				lambda, n);
     }
   }
 }

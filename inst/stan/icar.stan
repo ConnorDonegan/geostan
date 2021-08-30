@@ -60,13 +60,13 @@ transformed parameters {
 model {
 #include parts/model.stan
   if (has_theta) {
-   theta_tilde ~ std_normal();
-   if (type == 2) theta_scale[1] ~ std_normal();
+    target += std_normal_lpdf(theta_tilde);
+    if (type == 2) target += std_normal_lpdf(theta_scale[1]);
    // implicit uniform prior on rho:   if (type == 3) rho[1] ~ beta(1, 1);
   }
-  spatial_scale ~ std_normal();
+  target += std_normal_lpdf(spatial_scale);
   phi_tilde ~ icar_normal(spatial_scale, node1, node2, k, group_size, group_idx, has_theta);
-  if (m) alpha_phi ~ normal(0, alpha_prior[2]);  
+  if (m) target += normal_lpdf(alpha_phi | 0, alpha_prior[2]);  
  }
 
 generated quantities {
