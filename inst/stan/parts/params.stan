@@ -5,7 +5,7 @@
   real<lower=0> nu[is_student]; 
   real<lower=0> sigma[has_sigma];
 // for partial pooling across groups/geographies
-  vector[n_ids] alpha_re_tilde;
+  vector[n_ids] alpha_re;
   real<lower=0> alpha_tau[has_re];
 // observational error models //
 // covariates to model: bounded

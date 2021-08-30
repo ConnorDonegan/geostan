@@ -1,6 +1,6 @@
   if (has_re) {
     for (i in 1:n) {
-      fitted[i] += alpha_tau[has_re] * alpha_re_tilde[id[i]];
+      fitted[i] += alpha_re[id[i]];
    }
   }  
   if (dwx) {

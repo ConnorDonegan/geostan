@@ -74,8 +74,8 @@
 }
 // partial pooling of observations across all groups/geographies (varying intercept)
   if (has_re) {
+    target += normal_lpdf(alpha_re | 0, alpha_tau[has_re]);
     target += student_t_lpdf(alpha_tau[has_re] | alpha_tau_prior[1], alpha_tau_prior[2], alpha_tau_prior[3]);
-    target += std_normal_lpdf(alpha_re_tilde);
   }
 // process model (likelihood)
   if (!prior_only) {

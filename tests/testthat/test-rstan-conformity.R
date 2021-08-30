@@ -1,5 +1,5 @@
-####devtools::load_all("~/dev/geostan")
-library(rstan)
+###devtools::load_all("~/dev/geostan")
+###library(rstan)
 
 
 context("RStan conformity")
