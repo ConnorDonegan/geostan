@@ -142,14 +142,25 @@ logit <- function(p) log(p/(1-p))
 #' @importFrom stats sd
 #' @noRd
 make_priors <- function(user_priors = NULL, y, x, rhs_scale_global, scaling_factor = 2, link = c("identity", "log", "logit"), EV, offset) {
-  if (link == "identity") scale.y <- sd(y) else scale.y <- 1
+    link <- match.arg(link)
+    if (link == "identity") {
+        scale.y <- sd(y)
+        alpha_scale <- max(10 * sd(y), 1)
+        alpha_mean <- mean(y)
+    }
   if (link == "log") {
       if (any(y == 0)) y[which(y == 0)] <- 1 # local assignment only, not returned
       y <- log(y / exp(offset))
+      alpha_mean <- mean(y)
       scale.y <- sd(y)
-      }
-  alpha_scale <- 100 * scale.y 
-  alpha_mean <- mean(y)
+      alpha_scale <- max(10 * scale.y, 1)
+  }
+  if (link == "logit") {
+      y <- y[,1] / (y[,1] + y[,2])
+      alpha_mean <- 0
+      scale.y <- sd(y)
+      alpha_scale <- 10
+  }
   alpha <- c(location = alpha_mean, scale = alpha_scale)
   priors <- list(intercept = alpha)
   if (ncol(x)) {
@@ -163,7 +174,7 @@ make_priors <- function(user_priors = NULL, y, x, rhs_scale_global, scaling_fact
       scalex_bin <- apply(as.matrix(x[,x_bin]), 2, function(x) max(x) - min(x))
       scalex[x_bin] <- scalex_bin
     }
-    beta_scale <- scaling_factor * (scale.y / scalex)
+    beta_scale <- max(scaling_factor * (scale.y / scalex), 1)
     beta_location <- rep(0, times = ncol(x))
     priors$beta <- cbind(beta_location, beta_scale)
     dimnames(priors$beta)[[1]] <- dimnames(x)[[2]]
@@ -172,8 +183,8 @@ make_priors <- function(user_priors = NULL, y, x, rhs_scale_global, scaling_fact
       priors$beta <- matrix(0, nrow = 0, ncol = 2)
   }
   # the following will be ignored when when not needed (RE scale, resid scale, student T df)
-  priors$alpha_tau <- c(df = 20, location = 0, scale = scaling_factor * scale.y)
-  priors$sigma <- c(df = 10, location = 0, scale = scaling_factor * scale.y)
+  priors$alpha_tau <- c(df = 20, location = 0, scale = max(scaling_factor * scale.y, 1))
+  priors$sigma <- c(df = 10, location = 0, scale = max(scaling_factor * scale.y, 1))
   priors$nu <- c(alpha = 3, beta = 0.2)
   if(!missing(rhs_scale_global)) {
       scale_ev <- sd(EV[,1])
