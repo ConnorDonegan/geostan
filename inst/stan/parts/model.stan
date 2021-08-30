@@ -79,11 +79,9 @@
   }
 // process model (likelihood)
   if (!prior_only) {
-    if (is_student) {	
-      target += student_t_lpdf(y | nu[1], fitted, sigma[has_sigma]);
-      }   
+    if (is_student)  target += student_t_lpdf(y | nu[1], fitted, sigma[has_sigma]);
     if (is_gaussian) target += normal_lpdf(y | fitted, sigma[has_sigma]);
-    if (is_poisson) target += poisson_lpmf(y_int | fitted);
+    if (is_poisson)  target += poisson_lpmf(y_int | fitted);
     if (is_binomial) target += binomial_lpmf(y_int | trials, fitted);
 }
   
