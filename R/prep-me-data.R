@@ -59,6 +59,8 @@ prep_me_data <- function(ME, x) { # for x pass in x_no_Wx
           spatial_me = FALSE
       )
       me.list <- c(me.list, empty_car_parts)
+      pl <- me_priors(ME, me.list)
+      me.list <- c(me.list, pl)
       return(me.list)
   }
     if (!inherits(ME, "list")) stop("ME must be a list .")
@@ -183,8 +185,41 @@ prep_me_data <- function(ME, x) { # for x pass in x_no_Wx
         me.list <- c(me.list, ME$car_parts)
     } else {
         me.list <- c(me.list, empty_car_parts)
-    }       
+    }
+    pl <- me_priors(ME, me.list)
+    me.list <- c(me.list, pl)
     return(me.list)
 }
 
 
+me_priors <- function(ME, me.list) {
+    pl <- list()
+    if (inherits(ME$prior, "NULL")) {
+        pl$prior_mux_true_bounded_location   <- rep(0, times = me.list$dx_me_bounded)
+        pl$prior_mux_true_bounded_scale      <- rep(100, times = me.list$dx_me_bounded)
+        pl$prior_sigmax_true_bounded_scale   <- rep(40, times = me.list$dx_me_bounded)        
+        pl$prior_mux_true_unbounded_location <- rep(0, times = me.list$dx_me_unbounded)
+        pl$prior_mux_true_unbounded_scale    <- rep(100, times = me.list$dx_me_unbounded)
+        pl$prior_sigmax_true_unbounded_scale <- rep(40, times = me.list$dx_me_unbounded)
+        print_me_priors()
+    } else {
+        stopifnot(inherits(ME$prior, "list"))
+        stopifnot(c("location", "scale") %in% names(ME$prior))
+        pl$prior_mux_true_bounded_location   <- ME$prior$location$location[me.list$x_me_bounded_idx]
+        pl$prior_mux_true_bounded_scale      <- ME$prior$location$scale[me.list$x_me_bounded_idx]
+        pl$prior_sigmax_true_bounded_scale   <- ME$prior$scale[me.list$x_me_bounded_idx]
+        pl$prior_mux_true_unbounded_location <- ME$prior$location$location[me.list$x_me_unbounded_idx]
+        pl$prior_mux_true_unbounded_scale    <- ME$prior$location$scale[me.list$x_me_unbounded_idx]
+        pl$prior_sigmax_true_unbounded_scale <- ME$prior$scale[me.list$x_me_unbounded_idx]        
+    }
+    pl <- lapply(pl, as.array)
+    return(pl)        
+}
+
+print_me_priors <- function() {
+    message("\n*Setting prior parameters for measurement error models\n",
+            "Models for covariates have location and scale parameters.",
+            "\nDefault priors for location parameters are Normal(0, 100)",
+            "\nDefault priors for scale parameters are Student-t(10, 0, 40)"
+            )
+}

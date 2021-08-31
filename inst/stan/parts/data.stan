@@ -23,7 +23,7 @@
   int<lower=0> x_obs_idx[dx_obs ? dx_obs : 1];
   int<lower=0> x_me_unbounded_idx[dx_me_unbounded ? dx_me_unbounded : 1];
   int<lower=0> x_me_bounded_idx[dx_me_bounded ? dx_me_bounded : 1];
-    // covariates observed with high certainty 
+    // covariates observed with practical certainty 
   matrix[n, dx_obs ? dx_obs : 0] x_obs;
     // covariates observed with uncertainty, and standard errors: unbounded
   vector[n] x_me_unbounded[dx_me_unbounded];
@@ -31,8 +31,15 @@
    // covariates observed with uncertainty, and standard errors: bounded
   vector<lower=bounds[1],upper=bounds[2]>[n] x_me_bounded[dx_me_bounded];
   vector<lower=0>[n] sigma_me_bounded[dx_me_bounded];
+  //  priors for x_true 
+  vector[dx_me_unbounded] prior_mux_true_unbounded_location;
+  vector[dx_me_unbounded] prior_mux_true_unbounded_scale;
+  vector[dx_me_unbounded] prior_sigmax_true_unbounded_scale;
+  vector[dx_me_bounded] prior_mux_true_bounded_location;
+  vector[dx_me_bounded] prior_mux_true_bounded_scale;
+  vector[dx_me_bounded] prior_sigmax_true_bounded_scale;
 
-// data for auto-Guassian [data] models
+  // data for auto-Guassian [data] models
   int<lower=0,upper=1> spatial_me;
   int<lower=0,upper=1> WCAR;
   int dim_C;

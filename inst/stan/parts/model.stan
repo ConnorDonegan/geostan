@@ -35,8 +35,8 @@
 	target += gamma_lpdf(nu_x_true_unbounded[j] | 3, 0.2);
     }
   }
-      target += normal_lpdf(mu_x_true_unbounded | prior_mean_x_true_unbounded, 2 * prior_scale_x_true_unbounded);
-      target += student_t_lpdf(sigma_x_true_unbounded | 10, 0, 2 * prior_scale_x_true_unbounded);
+      target += normal_lpdf(mu_x_true_unbounded | prior_mux_true_unbounded_location, prior_mux_true_unbounded_scale);
+      target += student_t_lpdf(sigma_x_true_unbounded | 10, 0, prior_sigmax_true_unbounded_scale);
 }
   // bounded variables
   if (dx_me_bounded) {
@@ -69,8 +69,8 @@
 	target += gamma_lpdf(nu_x_true_bounded[j] | 3, 0.2);
     }
   }
-    target += normal_lpdf(mu_x_true_bounded | prior_mean_x_true_bounded, 2 * prior_scale_x_true_bounded);
-    target += student_t_lpdf(sigma_x_true_bounded | 10, 0, 2 * prior_scale_x_true_bounded);
+    target += normal_lpdf(mu_x_true_bounded | prior_mux_true_bounded_location, prior_mux_true_bounded_scale);
+    target += student_t_lpdf(sigma_x_true_bounded | 10, 0, prior_sigmax_true_bounded_scale);
 }
 // partial pooling of observations across all groups/geographies (varying intercept)
   if (has_re) {
