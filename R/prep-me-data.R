@@ -55,8 +55,8 @@ prep_me_data <- function(ME, x) { # for x pass in x_no_Wx
           sigma_me_bounded = vec.zero,
           sigma_me_unbounded = vec.zero,
           offset_me = rep(0, times = n),
-          model_offset = 0,
-          spatial_me = FALSE
+          spatial_me = FALSE,
+          has_me = FALSE
       )
       me.list <- c(me.list, empty_car_parts)
       pl <- me_priors(ME, me.list)
@@ -66,7 +66,7 @@ prep_me_data <- function(ME, x) { # for x pass in x_no_Wx
     if (!inherits(ME, "list")) stop("ME must be a list .")
     if (!is.null(ME$spatial)) {
         stopifnot(length(ME$spatial) == 1)
-        stopifnot(ME$spatial %in% c(0, 1, TRUE, FALSE))
+        stopifnot(as.numeric(ME$spatial) %in% c(0, 1))
         spatial_me <- ME$spatial
     } else {
         spatial_me <- FALSE
@@ -177,12 +177,19 @@ prep_me_data <- function(ME, x) { # for x pass in x_no_Wx
         x_me_unbounded = array(t(x_me_unbounded), dim = c(dx_me_unbounded, n)),
         sigma_me_bounded = array(t(sigma_me_bounded), dim = c(dx_me_bounded, n)),
         sigma_me_unbounded = array(t(sigma_me_unbounded), dim = c(dx_me_unbounded, n)),
-        spatial_me = spatial_me
+        spatial_me = spatial_me,
+        nm_me_bounded = nm_me_bounded,
+        nm_me_unbounded = nm_me_unbounded,
+        has_me = TRUE,
+        bounded_idx = bounded,
+        not_bounded_idx = not.bounded
     )
     if (spatial_me) {
        if(!inherits(ME$car_parts, "list")) stop("If ME$spatial = TRUE, you must provide car_parts---a list of data for the CAR model. See ?prep_car_data.")
         if(!all(c("nC", "Cidx", "nAx_w", "Ax_w", "Ax_v", "Ax_u", "Delta_inv", "log_det_Delta_inv", "dim_C", "C", "lambda", "WCAR") %in% names(ME$car_parts))) stop("car_parts is missing at least one required part. See ?prep_car_data. Did you use cmat = TRUE and lambda = TRUE?")
-        me.list <- c(me.list, ME$car_parts)
+       me.list <- c(me.list, ME$car_parts)
+       me.list$ME_prior_car_rho <- 1 / range(ME$car_parts$lambda)
+       names(me.list$ME_prior_car_rho) <- c("minimum", "maximum")
     } else {
         me.list <- c(me.list, empty_car_parts)
     }
@@ -193,33 +200,64 @@ prep_me_data <- function(ME, x) { # for x pass in x_no_Wx
 
 
 me_priors <- function(ME, me.list) {
+    a.zero <- array(0, dim = 0)
     pl <- list()
     if (inherits(ME$prior, "NULL")) {
+        default_priors <- TRUE
         pl$prior_mux_true_bounded_location   <- rep(0, times = me.list$dx_me_bounded)
         pl$prior_mux_true_bounded_scale      <- rep(100, times = me.list$dx_me_bounded)
         pl$prior_sigmax_true_bounded_scale   <- rep(40, times = me.list$dx_me_bounded)        
         pl$prior_mux_true_unbounded_location <- rep(0, times = me.list$dx_me_unbounded)
         pl$prior_mux_true_unbounded_scale    <- rep(100, times = me.list$dx_me_unbounded)
         pl$prior_sigmax_true_unbounded_scale <- rep(40, times = me.list$dx_me_unbounded)
-        print_me_priors()
     } else {
         stopifnot(inherits(ME$prior, "list"))
         stopifnot(c("location", "scale") %in% names(ME$prior))
-        pl$prior_mux_true_bounded_location   <- ME$prior$location$location[me.list$x_me_bounded_idx]
-        pl$prior_mux_true_bounded_scale      <- ME$prior$location$scale[me.list$x_me_bounded_idx]
-        pl$prior_sigmax_true_bounded_scale   <- ME$prior$scale[me.list$x_me_bounded_idx]
-        pl$prior_mux_true_unbounded_location <- ME$prior$location$location[me.list$x_me_unbounded_idx]
-        pl$prior_mux_true_unbounded_scale    <- ME$prior$location$scale[me.list$x_me_unbounded_idx]
-        pl$prior_sigmax_true_unbounded_scale <- ME$prior$scale[me.list$x_me_unbounded_idx]        
+        default_priors <- FALSE
+        pl$prior_mux_true_bounded_location   <- ME$prior$location$location[me.list$bounded_idx]
+        pl$prior_mux_true_bounded_scale      <- ME$prior$location$scale[me.list$bounded_idx]
+        pl$prior_sigmax_true_bounded_scale   <- ME$prior$scale[me.list$bounded_idx]
+        pl$prior_mux_true_unbounded_location <- ME$prior$location$location[me.list$not_bounded_idx]
+        pl$prior_mux_true_unbounded_scale    <- ME$prior$location$scale[me.list$not_bounded_idx]
+        pl$prior_sigmax_true_unbounded_scale <- ME$prior$scale[me.list$not_bounded_idx]        
     }
     pl <- lapply(pl, as.array)
+    prior_mux_true_bounded <- cbind(pl$prior_mux_true_bounded_location, pl$prior_mux_true_bounded_scale)
+    rownames(prior_mux_true_bounded) <- me.list$nm_me_bounded
+    prior_mux_true_unbounded <- cbind(pl$prior_mux_true_unbounded_location, pl$prior_mux_true_unbounded_scale)
+    row.names(prior_mux_true_unbounded) <- me.list$nm_me_unbounded
+    pl$ME_prior_mean <- as.data.frame(rbind(prior_mux_true_unbounded, prior_mux_true_bounded))
+    names(pl$ME_prior_mean) <- c("location", "scale")
+    pl$ME_prior_scale <- as.data.frame(cbind(10, 0, c(pl$prior_sigmax_true_unbounded_scale,
+                                         pl$prior_sigmax_true_bounded_scale)
+                                  ))
+    row.names(pl$ME_prior_scale) <- c(me.list$nm_me_unbounded, me.list$nm_me_bounded)
+    if (ncol(pl$ME_prior_scale) == 3) names(pl$ME_prior_scale) <- c("df", "location", "scale")
+    if (me.list$has_me && default_priors) print_default_me_priors(pl, me.list)
     return(pl)        
 }
 
-print_me_priors <- function() {
-    message("\n*Setting prior parameters for measurement error models\n",
-            "Models for covariates have location and scale parameters.",
-            "\nDefault priors for location parameters are Normal(0, 100)",
-            "\nDefault priors for scale parameters are Student-t(10, 0, 40)"
-            )
+print_default_me_priors <- function(pl, me.list) {
+    message(
+        "----",
+        "\n*Setting prior parameters for measurement error models\n",
+        "*Location (mean)\n",
+        "Gaussian"
+        )
+    print(pl$ME_prior_mean)
+    message(
+        "\n*Scale\n",
+        "Student's t"
+        )
+    print(pl$ME_prior_scale)
+    if (me.list$spatial_me) print_spatial_me_prior(me.list)
+    message("----")    
+}
+
+print_spatial_me_prior <- function(me.list) {
+    message(
+        "\n*CAR spatial autocorrelation parameter (rho)\n",
+        "Uniform (1/lambda_min, 1/lambda_max)"
+    )
+    print(me.list$ME_prior_car_rho)
 }
