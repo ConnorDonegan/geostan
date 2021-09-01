@@ -26,7 +26,17 @@
 #' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
 #' \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
 #' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.}
+#' 
+#'  \item{prior}{Provide parameter values for the prior distributions of the measurement error model(s). The spatial conditional autoregressive (CAR) and non-spatial student's t models both contain a location parameter (the mean) and a scale parameter, each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console.
+#'
+#' To set these priors to custom values, provide a named list with items `location` and `scale` (you must provide both). The prior for the location parameter is Gaussian, the default being `Gauss(0, 100)`. To change these values, provide a `data.frame` with columns named `location` and `scale`. Provide prior specifications for each covariate in `se`; list the priors in the same order as the columns of `se`.
+#'
+#' The prior for the `scale` parameters is Student's t, and the default is `Student_t(10, 0, 40)`. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of `se`.
+#'
+#' For example, `ME$prior <- list(location = data.frame(location = c(0, 0), scale = c(100, 100)), scale = c(40, 40))`.}
+#' 
 #' \item{spatial}{Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. For \code{stan_icar}, this defaults to \code{spatial = TRUE}; if \code{spatial = TRUE} you must provide \code{car_parts} (see below).}
+#' 
 #' \item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data} (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}). Only required if \code{spatial=TRUE}.}
 #' }
 #' @param C Spatial connectivity matrix which will be used to construct an edge list for the ICAR model, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms or spatial measurement error (ME) models. It will automatically be row-standardized before calculating \code{slx} terms. \code{C} must be a binary symmetric \code{n x n} matrix.
@@ -42,7 +52,7 @@
 #'
 #' The order of variables must follow their order of appearance in the model `formula`; e.g., if the formula is `y ~ x1 + x2`, then providing `prior = list(beta = data.frame(location = c(0, 5), scale = c(1, 10))) will assign standard normal prior distributions to the coefficient on `x1`; the prior for `x2` would be `Gaussian(5, 10)`.
 #'
-#' Note that if you also use `slx` terms (spatially lagged covariates), then the priors for `beta` includes these `slx` coefficients. Note that `slx` terms are prepended to the model formula, so their priors should be listed first. For example, providing a formula of `y ~ x1 + x2` with `slx = ~ x1 + x2` is effectively the same as specifying `formula = y ~ Wx1 + Wx2 + x1 + x2`, where `Wx` indicates a spatially lagged covariate.}
+#' Note that if you also use `slx` terms (spatially lagged covariates), then you have to provide priors for them; `slx` terms *precede* other terms in the model formula. For example, providing of `y ~ x1 + x2` with `slx = ~ x1 + x2` is the same as providing `formula = y ~ I(W \%*\% x1) + I(W \%*\% x2) + x1 + x2`, where `W` is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}).}
 #'
 #' \item{alpha_tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(alpha_tau = c(df = 20, location = 0, scale = 20))`.}
 #' }
@@ -55,7 +65,6 @@
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples; set \code{refresh=0} to silence this.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} except that \code{adapt_delta} is raised to \code{.9} and \code{max_treedepth = 15}.
-#' @param silent If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' @details
 #' 
@@ -247,7 +256,6 @@ stan_icar <- function(formula,
                       prior_only = FALSE,
                       chains = 4, iter = 2e3, refresh = 500, pars = NULL,
                       control = list(adapt_delta = .9, max_treedepth = 13),
-                      silent = FALSE,
                       ...) {
     stopifnot(inherits(formula, "formula"))
     stopifnot(inherits(family, "family"))
@@ -258,7 +266,6 @@ stan_icar <- function(formula,
     #### ICAR TYPE [START] --------
     type <- match.arg(type)
     #### ICAR TYPE [STOP] --------
-    if (silent) refresh = 0    
     a.zero <- as.array(0, dim = 1)
     tmpdf <- as.data.frame(data)
     mod.mat <- model.matrix(formula, tmpdf)
@@ -382,8 +389,9 @@ stan_icar <- function(formula,
     if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
     if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
     priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
+    if (me.list$has_me) priors_made_slim <- c(priors_made_slim, list(ME_location = me.list$ME_prior_mean, ME_scale = me.list$ME_prior_scale))
+    print_priors(prior, priors_made_slim)    
     ## PARAMETERS TO KEEP with ICAR [STOP] -------------              
-    if (!silent) print_priors(prior, priors_made_slim)
     ## CALL STAN -------------  
     samples <- rstan::sampling(stanmodels$icar, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
     ## OUTPUT -------------        
