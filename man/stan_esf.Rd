@@ -39,7 +39,6 @@ stan_esf(
   refresh = 500,
   pars = NULL,
   control = list(adapt_delta = 0.975, max_treedepth = 13),
-  silent = FALSE,
   ...
 )
 }
@@ -68,6 +67,15 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
 \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
 \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.}
+
+\item{prior}{Provide parameter values for the prior distributions of the measurement error model(s). The spatial conditional autoregressive (CAR) and non-spatial student's t models both contain a location parameter (the mean) and a scale parameter, each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console.
+
+To set these priors to custom values, provide a named list with items \code{location} and \code{scale} (you must provide both). The prior for the location parameter is Gaussian, the default being \code{Gauss(0, 100)}. To change these values, provide a \code{data.frame} with columns named \code{location} and \code{scale}. Provide prior specifications for each covariate in \code{se}; list the priors in the same order as the columns of \code{se}.
+
+The prior for the \code{scale} parameters is Student's t, and the default is \code{Student_t(10, 0, 40)}. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of \code{se}.
+
+For example, \code{ME$prior <- list(location = data.frame(location = c(0, 0), scale = c(100, 100)), scale = c(40, 40))}.}
+
 \item{spatial}{Logical value indicating whether an auto Gaussian (conditional autoregressive (CAR)) model should be used for the covariates (see \link[geostan]{stan_car} for CAR model details). For \code{stan_esf}, this defaults to \code{spatial = TRUE}. If \code{spatial = TRUE} you must provide \code{car_parts} (see below).}
 \item{car_parts}{A list of data for the CAR model, as returned by \code{\link[=prep_car_data]{prep_car_data()}} (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}). Only required if \code{spatial=TRUE}.}
 }}
@@ -84,7 +92,7 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 The order of variables must follow their order of appearance in the model \code{formula}; e.g., if the formula is \code{y ~ x1 + x2}, then providing `prior = list(beta = data.frame(location = c(0, 0), scale = c(1, 1))) will assign standard normal prior distributions to both coefficients.
 
-Note that if you also use \code{slx} terms (spatially lagged covariates), then you have to provide priors for them; \code{slx} terms \emph{precede} other terms in the model formula. For example, providing of \code{y ~ x1 + x2} with \code{slx = ~ x1 + x2} is the same as providing \code{formula = y ~ Wx1 + Wx2 + x1 + x2}, where \code{Wx1} indicates the spatially lagged covariate.}
+Note that if you also use \code{slx} terms (spatially lagged covariates), then you have to provide priors for them; \code{slx} terms \emph{precede} other terms in the model formula. For example, providing of \code{y ~ x1 + x2} with \code{slx = ~ x1 + x2} is the same as providing \verb{formula = y ~ I(W \\\%*\\\% x1) + I(W \\\%*\\\% x2) + x1 + x2}, where \code{W} is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}).}
 
 \item{sigma}{The scale parameter for Gaussian and Student's t likelihood models is assigned a half-Student's t prior distribution. Thus, provide values for the degrees of freedom, location, and scale parameters; e.g., \code{prior = list(sigma = c(df = 10, location = 0, scale = 5))} for a prior centered on zero with scale of 5 and 10 degrees of freedom. The half-Student's t prior for \code{sigma} is constrained to be positive.}
 
@@ -108,8 +116,6 @@ Note that if you also use \code{slx} terms (spatially lagged covariates), then y
 \item{pars}{Optional; specify any additional parameters you'd like stored from the Stan model. Parameters from the RHS priors include \code{tau} (the global shrinkage parameter) and \code{lambda} (the local shrinkage parameter).}
 
 \item{control}{A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} except that \code{adapt_delta} is raised to \code{.99} and \code{max_treedepth = 15}.}
-
-\item{silent}{If \code{TRUE}, suppress printed messages including prior specifications and Stan sampling progress (i.e. \code{refresh=0}). Stan's error and warning messages will still print.}
 
 \item{...}{Other arguments passed to \link[rstan]{sampling}.}
 }

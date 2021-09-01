@@ -1,5 +1,5 @@
 iter=10
-silent = TRUE
+refresh = 0
 source("helpers.R")
 
 context("stan_car")
@@ -12,7 +12,7 @@ test_that("Poisson CAR model works", {
                     chains = 1,
                     family = poisson(),
                     iter = iter,
-                    silent = silent)
+                    refresh = refresh)
   )
     expect_geostan(fit)    
 })
@@ -30,7 +30,7 @@ test_that("CAR accepts covariate ME, mixed (un-) bounded", {
                         car_parts = prep_car_data(shape2mat(georgia, "B")),                        
                         chains = 1,
                         iter = iter,
-                        silent = silent)
+                        refresh = refresh)
     )
     expect_geostan(fit)
 })
@@ -50,7 +50,7 @@ test_that("CAR accepts covariate ME with WX, mixed ME-non-ME", {
                         ),        
                         chains = 1,
                         iter = iter,
-                        silent = silent)
+                        refresh = refresh)
     )
     expect_geostan(fit)
 })

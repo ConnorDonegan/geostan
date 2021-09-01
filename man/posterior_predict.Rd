@@ -4,7 +4,7 @@
 \alias{posterior_predict}
 \title{Draw samples from the posterior predictive distribution}
 \usage{
-posterior_predict(object, S, summary = FALSE, width = 0.95, C, seed)
+posterior_predict(object, S, summary = FALSE, width = 0.95, car_parts, seed)
 }
 \arguments{
 \item{object}{A \code{geostan_fit} object.}
@@ -15,9 +15,9 @@ posterior_predict(object, S, summary = FALSE, width = 0.95, C, seed)
 
 \item{width}{Only used if \code{summary = TRUE}, to set the quantiles for the credible intervals. Defaults to `width = 0.95`.}
 
-\item{seed}{A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution.}
-
 \item{car_parts}{Data for CAR model specification; only required for \code{\link[geostan]{stan_car}} with `family = auto_gaussian()`.}
+
+\item{seed}{A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution.}
 }
 \value{
 A matrix of size `S x `N` containing samples from the posterior predictive distribution, where `S` is the number of samples drawn and `N` is the number of observations. If `summary = TRUE`, a `data.frame` with `N` rows and `3` columns is returned (with column names `mu`, `lwr`, and `upr`).

@@ -1,5 +1,5 @@
 iter=30
-silent = TRUE
+refresh = 0
 source("helpers.R")
 
 context("stan_esf")
@@ -35,7 +35,7 @@ test_that("ESF model works", {
                     chains = 1,
                     family = poisson(),
                     iter = iter,
-                    silent = silent)
+                    refresh = refresh)
        )
     expect_geostan(fit)
 })
@@ -53,7 +53,7 @@ test_that("ESF model works by providing EV", {
                     chains = 1,
                     family = poisson(),
                     iter = iter,
-                    silent = silent)
+                    refresh = refresh)
        )
     expect_geostan(fit)
 })

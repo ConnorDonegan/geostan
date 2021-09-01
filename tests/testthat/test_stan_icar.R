@@ -1,6 +1,6 @@
 
 iter=10
-silent = TRUE
+refresh = 0
 source("helpers.R")
 
 context("stan_icar")
@@ -16,7 +16,7 @@ test_that("Poisson model works, icar: icar", {
                     chains = 1,
                     family = poisson(),
                     iter = iter,
-                    silent = silent)
+                    refresh = refresh)
     )
     expect_geostan(fit)    
 })
@@ -34,7 +34,7 @@ test_that("Poisson offset model works, icar: bym", {
                     chains = 1,
                     family = poisson(),
                     iter = iter,
-                    silent = silent)
+                    refresh = refresh)
     )
     expect_geostan(fit)    
 })
@@ -51,7 +51,7 @@ test_that("Poisson model works, icar: bym2", {
                     chains = 1,
                     family = poisson(),
                     iter = iter,
-                    silent = silent)
+                    refresh = refresh)
     )
     expect_geostan(fit)    
 })
@@ -73,7 +73,7 @@ test_that("Poisson model works with length-2 vector beta prior", {
                     chains = 1,
                     family = poisson(),
                     iter = iter,
-                    silent = silent)
+                    refresh = refresh)
     )
     expect_geostan(fit)    
 })

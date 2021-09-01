@@ -151,7 +151,6 @@
   refresh <span class='op'>=</span> <span class='fl'>1000</span>,
   pars <span class='op'>=</span> <span class='cn'>NULL</span>,
   control <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>adapt_delta <span class='op'>=</span> <span class='fl'>0.95</span>, max_treedepth <span class='op'>=</span> <span class='fl'>12</span><span class='op'>)</span>,
-  silent <span class='op'>=</span> <span class='cn'>FALSE</span>,
   <span class='va'>...</span>
 <span class='op'>)</span></pre>
 
@@ -187,8 +186,12 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <dt>se</dt><dd><p>a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
 <dt>bounded</dt><dd><p>If any variables in <code>se</code> are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.</p></dd>
 <dt>bounds</dt><dd><p>A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.</p></dd>
+
+<dt>prior</dt><dd><p>Provide parameter values for the prior distributions of the measurement error model(s). The spatial conditional autoregressive (CAR) and non-spatial student's t models both contain a location parameter (the mean) and a scale parameter, each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console.To set these priors to custom values, provide a named list with items <code>location</code> and <code>scale</code> (you must provide both). The prior for the location parameter is Gaussian, the default being <code>Gauss(0, 100)</code>. To change these values, provide a <code>data.frame</code> with columns named <code>location</code> and <code>scale</code>. Provide prior specifications for each covariate in <code>se</code>; list the priors in the same order as the columns of <code>se</code>.The prior for the <code>scale</code> parameters is Student's t, and the default is <code>Student_t(10, 0, 40)</code>. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of <code>se</code>.For example, <code>ME$prior &lt;- list(location = data.frame(location = c(0, 0), scale = c(100, 100)), scale = c(40, 40))</code>.</p></dd>
+
 <dt>spatial</dt><dd><p>Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. For <code>stan_glm</code>, this defaults to <code>spatial = FALSE</code>. If <code>spatial = TRUE</code> you must provide <code>car_parts</code> (see below).</p></dd>
 <dt>car_parts</dt><dd><p>A list of data for the CAR model, as returned by <a href='prep_car_data.html'>prep_car_data</a> (be sure to return the matrix <code>C</code>, by using the argument <code>cmat = TRUE</code>). Only required if <code>spatial=TRUE</code>.</p></dd>
+
 
 </dl></td>
     </tr>
@@ -201,7 +204,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
       <td><p>A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:</p><dl>
 <dt>intercept</dt><dd><p>The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. <code>prior = list(intercept = c(location = 0, scale = 10))</code> to assign a Gaussian prior with mean zero and variance 10^2.</p></dd>
 
-<dt>beta</dt><dd><p>Regression coefficients are assigned Gaussian prior distributions. Provide a <code>data.frame</code> with two columns (location and scale).The order of variables must follow their order of appearance in the model <code>formula</code>; e.g., if the formula is <code>y ~ x1 + x2</code>, then providing `prior = list(beta = data.frame(location = c(0, 0), scale = c(1, 1))) will assign standard normal prior distributions to both coefficients.Note that if you also use <code>slx</code> terms (spatially lagged covariates), then you have to provide priors for them; <code>slx</code> terms <em>precede</em> other terms in the model formula. For example, providing of <code>y ~ x1 + x2</code> with <code>slx = ~ x1 + x2</code> is the same as providing <code>formula = y ~ Wx1 + Wx2 + x1 + x2</code>, where <code>Wx1</code> indicates the spatially lagged covariate.</p></dd>
+<dt>beta</dt><dd><p>Regression coefficients are assigned Gaussian prior distributions. Provide a <code>data.frame</code> with two columns (location and scale).The order of variables must follow their order of appearance in the model <code>formula</code>; e.g., if the formula is <code>y ~ x1 + x2</code>, then providing `prior = list(beta = data.frame(location = c(0, 0), scale = c(1, 1))) will assign standard normal prior distributions to both coefficients.Note that if you also use <code>slx</code> terms (spatially lagged covariates), then you have to provide priors for them; <code>slx</code> terms <em>precede</em> other terms in the model formula. For example, providing of <code>y ~ x1 + x2</code> with <code>slx = ~ x1 + x2</code> is the same as providing <code>formula = y ~ I(W \%*\% x1) + I(W \%*\% x2) + x1 + x2</code>, where <code>W</code> is a row-standardized spatial weights matrix (see <code><a href='shape2mat.html'>shape2mat</a></code>).</p></dd>
 
 <dt>sigma</dt><dd><p>The scale parameter for Gaussian and Student's t likelihood models is assigned a half-Student's t prior distribution. Thus, provide values for the degrees of freedom, location, and scale parameters; e.g., <code>prior = list(sigma = c(df = 10, location = 0, scale = 5))</code> for a prior centered on zero with scale of 5 and 10 degrees of freedom. The half-Student's t prior for <code>sigma</code> is constrained to be positive.</p></dd>
 
@@ -238,10 +241,6 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     <tr>
       <th>control</th>
       <td><p>A named list of parameters to control the sampler's behavior. See <a href='https://mc-stan.org/rstan/reference/stan.html'>stan</a> for details. The defaults are the same <code><a href='https://mc-stan.org/rstan/reference/stan.html'>rstan::stan</a></code> except that <code>adapt_delta</code> is raised to <code>0.95</code> and <code>max_treedepth = 15</code>.</p></td>
-    </tr>
-    <tr>
-      <th>silent</th>
-      <td><p>If <code>TRUE</code>, suppress printed messages including prior specifications and Stan sampling progress (i.e. <code>refresh=0</code>). Stan's error and warning messages will still print.</p></td>
     </tr>
     <tr>
       <th>...</th>

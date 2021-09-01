@@ -135,7 +135,7 @@
     <p>Draw samples from the posterior predictive distribution of a fitted <code>geostan</code> model. Use the original data or new data, with or without the spatial component and other partial pooling terms.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>posterior_predict</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>S</span>, summary <span class='op'>=</span> <span class='cn'>FALSE</span>, width <span class='op'>=</span> <span class='fl'>0.95</span>, <span class='va'>C</span>, <span class='va'>seed</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>posterior_predict</span><span class='op'>(</span><span class='va'>object</span>, <span class='va'>S</span>, summary <span class='op'>=</span> <span class='cn'>FALSE</span>, width <span class='op'>=</span> <span class='fl'>0.95</span>, <span class='va'>car_parts</span>, <span class='va'>seed</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -157,12 +157,12 @@
       <td><p>Only used if <code>summary = TRUE</code>, to set the quantiles for the credible intervals. Defaults to `width = 0.95`.</p></td>
     </tr>
     <tr>
-      <th>seed</th>
-      <td><p>A single integer value to be used in a call to <code><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></code> before taking samples from the posterior distribution.</p></td>
-    </tr>
-    <tr>
       <th>car_parts</th>
       <td><p>Data for CAR model specification; only required for <code><a href='stan_car.html'>stan_car</a></code> with `family = auto_gaussian()`.</p></td>
+    </tr>
+    <tr>
+      <th>seed</th>
+      <td><p>A single integer value to be used in a call to <code><a href='https://rdrr.io/r/base/Random.html'>set.seed</a></code> before taking samples from the posterior distribution.</p></td>
     </tr>
     </table>
 

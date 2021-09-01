@@ -1,5 +1,5 @@
 iter=20
-silent = TRUE
+refresh = 0
 source("helpers.R")
 
 context("stan_glm")
@@ -12,7 +12,7 @@ test_that("GLM works", {
                     family = poisson(),
                     init_r = 0.2,
                     iter = iter,
-                    silent = silent)
+                    refresh = refresh)
        )
     expect_geostan(fit)
     SW(
@@ -20,7 +20,7 @@ test_that("GLM works", {
                     data = sentencing,
                     chains = 1,
                     iter = iter,
-                    silent = silent)
+                    refresh = refresh)
        )
     expect_geostan(fit)    
 })
@@ -35,7 +35,7 @@ test_that("GLM works with covariate ME", {
                     data = georgia,
                     chains = 1,
                     iter = iter,
-                    silent = silent)
+                    refresh = refresh)
     )
     expect_geostan(fit)
 })
@@ -54,7 +54,7 @@ test_that("GLM works with covariate ME: spatial data model", {
                     data = georgia,
                     chains = 1,
                     iter = iter,
-                    silent = silent)
+                    refresh = refresh)
     )
     expect_geostan(fit)
 })
@@ -77,7 +77,7 @@ test_that("GLM accepts covariate ME, multiple proportions", {
                     data = georgia,
                     chains = 1,
                     iter = iter,
-                    silent = silent)
+                    refresh = refresh)
     )
     expect_geostan(fit)
 })
@@ -95,7 +95,7 @@ test_that("Set priors for GLM", {
                                      intercept = c(0, 10)
                                      ),
                     iter = iter,
-                    silent = silent,
+                    refresh = refresh,
                     init_r = 0.1
                     )
     )
@@ -113,7 +113,7 @@ test_that("Set length-2 vector prior for 1 beta in GLM", {
                                      intercept = c(0, 10)
                                      ),
                     iter = iter,
-                    silent = silent,
+                    refresh = refresh,
                     init_r = 0.1
                     )
     )
