@@ -17,6 +17,7 @@
 #' 
 #' @return A matrix of size `S x `N` containing samples from the posterior predictive distribution, where `S` is the number of samples drawn and `N` is the number of observations. If `summary = TRUE`, a `data.frame` with `N` rows and `3` columns is returned (with column names `mu`, `lwr`, and `upr`).
 #'
+#' 
 #' @examples
 #' \dontrun{
 #'  
@@ -26,13 +27,13 @@ posterior_predict <- function(object,
                 S,
                 summary = FALSE,
                 width = 0.95,
-                C,
+                car_parts,
                 seed
                 ) {
     stopifnot(inherits(object, "geostan_fit"))
     family <- object$family$family    
     if (!missing(seed)) set.seed(seed)
-    mu <- as.matrix(object, pars = "fitted") #!# change to "f", after updinat .stan and stan_*.R files #!#
+    mu <- as.matrix(object, pars = "fitted")
     M <- nrow(mu)                                      
     if (missing(S)) S <- M
     if (S > M) {
@@ -42,9 +43,10 @@ posterior_predict <- function(object,
     idx <- sample(M, S)
     mu <- as.matrix(object, pars = "fitted")[idx,] 
     if (family == "auto_gaussian") {
+        stopifnot(!missing(car_parts))
         rho <- as.matrix(fit, "car_rho")[idx, ]
         tau <- as.matrix(fit, "car_scale")[idx, ]
-        preds <- .pp_auto_gaussian(mu, rho, tau, cp)
+        preds <- .pp_auto_gaussian(mu, rho, tau, car_parts)
     }
     if (family == "gaussian") {
         sigma <- as.matrix(object, pars = "sigma")[idx,]
@@ -67,10 +69,13 @@ posterior_predict <- function(object,
     return(preds)    
 }
 
+#' @importFrom Matrix Diagonal Matrix
 .pp_auto_gaussian <- function(mu, rho, tau, car_parts) {
-    I <- diag(nrow(car_parts$C))    
+    I <- Matrix::Diagonal(car_parts$dim_C)
+    M <- Matrix::Diagonal(x = 1 / car_parts$Delta_inv)
+    C <- Matrix(car_parts$C)
     t(sapply(1:nrow(mu), function(s) {
-        Sigma <- solve(I - rho[s] * car_parts$C) %*% diag(car_parts$M_diag) * tau[s]^2
+        Sigma <- solve(I - rho[s] * C) %*% M * tau[s]^2
         MASS::mvrnorm(n = 1, mu = mu[s,], Sigma = Sigma)
     }))        
 }
@@ -113,7 +118,5 @@ posterior_predict <- function(object,
     attributes(df)$interval <- list(width = width, probs = probs)
     return(df)
 }
-
-
 
 
