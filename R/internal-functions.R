@@ -174,7 +174,7 @@ make_priors <- function(user_priors = NULL, y, x, rhs_scale_global, scaling_fact
       scalex_bin <- apply(as.matrix(x[,x_bin]), 2, function(x) max(x) - min(x))
       scalex[x_bin] <- scalex_bin
     }
-    beta_scale <- max(scaling_factor * (scale.y / scalex), 1)
+    beta_scale <- scaling_factor * (scale.y / scalex)
     beta_location <- rep(0, times = ncol(x))
     priors$beta <- cbind(beta_location, beta_scale)
     dimnames(priors$beta)[[1]] <- dimnames(x)[[2]]
@@ -282,15 +282,12 @@ print_priors <- function(user_priors, priors) {
           if (nm == "intercept") {
               message("\n*Setting prior parameters for ", nm)              
               message("Gaussian")
-              message("Location: ", p[1])
-              message("Scale: ", p[2])
+              print(p)
           }
           if (nm == "sigma") {
               message("\n*Setting prior parameters for ", nm)              
               message("Student's t")
-              message("Degrees of freedom: ", p[1])
-              message("Location: ", p[2])
-              message("Scale: ", p[3])
+              print(p)
           }
           if (nm == "nu") {
               message("\n*Setting prior parameters for ", nm)              
@@ -301,9 +298,7 @@ print_priors <- function(user_priors, priors) {
           if (nm == "alpha_tau") {
               message("\n*Setting prior parameters for ", nm)              
               message("Student's t")
-              message("Degrees of freedom: ", p[1])
-              message("Location: ", p[2])
-              message("Scale: ", p[3])
+              print(p)
           }
           if (nm == "rhs") {
               message("\n*Setting prior parameters for eigenvector coefficients")              
@@ -311,6 +306,12 @@ print_priors <- function(user_priors, priors) {
               message("Global shrinkage prior (scale_global): ", p["scale_global"])
               message("Slab degrees of freedom: ", p["slab_df"])
               message("Slab scale: ", p["slab_scale"])
+          }
+          if (nm == "car_scale") {
+              message("\n*Setting prior parameters for car_scale")
+              message("Student's t")
+              print(p)
+
           }
   }  
   } 
