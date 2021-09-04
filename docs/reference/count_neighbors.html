@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>The Moran coefficient — mc • geostan</title>
+<title>Used internally to count neights per element of an nb list; as in, `Ni &lt;- unlist(lapply(nb, count_neighbors))` — count_neighbors • geostan</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,8 @@
 
 
 
-<meta property="og:title" content="The Moran coefficient — mc" />
-<meta property="og:description" content="The Moran coefficient, a measure of spatial autocorrelation (also known as Global Moran's I)" />
+<meta property="og:title" content="Used internally to count neights per element of an nb list; as in, `Ni &lt;- unlist(lapply(nb, count_neighbors))` — count_neighbors" />
+<meta property="og:description" content="Used internally to count neights per element of an nb list; as in, `Ni &amp;lt;- unlist(lapply(nb, count_neighbors))`" />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
@@ -126,61 +126,27 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>The Moran coefficient</h1>
+    <h1>Used internally to count neights per element of an nb list; as in, `Ni &lt;- unlist(lapply(nb, count_neighbors))`</h1>
     <small class="dont-index">Source: <a href='https://github.com/ConnorDonegan/geostan/blob/master/R/convenience-functions.R'><code>R/convenience-functions.R</code></a></small>
-    <div class="hidden name"><code>mc.Rd</code></div>
+    <div class="hidden name"><code>count_neighbors.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>The Moran coefficient, a measure of spatial autocorrelation (also known as Global Moran's I)</p>
+    <p>Used internally to count neights per element of an nb list; as in, `Ni &lt;- unlist(lapply(nb, count_neighbors))`</p>
     </div>
 
-    <pre class="usage"><span class='fu'>mc</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span>, digits <span class='op'>=</span> <span class='fl'>3</span>, warn <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>count_neighbors</span><span class='op'>(</span><span class='va'>z</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>x</th>
-      <td><p>Numeric vector of input values, length n.</p></td>
-    </tr>
-    <tr>
-      <th>w</th>
-      <td><p>An n x n spatial connectivity matrix. See <a href='shape2mat.html'>shape2mat</a>.</p></td>
-    </tr>
-    <tr>
-      <th>digits</th>
-      <td><p>Number of digits to round results to.</p></td>
-    </tr>
-    <tr>
-      <th>warn</th>
-      <td><p>If `FALSE`, no warning will be printed to inform you when observations with zero neighbors have been dropped.</p></td>
+      <th>z</th>
+      <td><p>an element from spdep's nb object</p></td>
     </tr>
     </table>
 
-    <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
 
-    <p>Chun, Yongwan, and Daniel A. Griffith. Spatial statistics and geostatistics: theory and applications for geographic information science and technology. Sage, 2013.</p>
-<p>Cliff, Andrew David, and J. Keith Ord. Spatial processes: models &amp; applications. Taylor &amp; Francis, 1981.</p>
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>The Moran coefficient, a numeric value.</p>
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>If any observations with no neighbors are found (i.e. <code><a href='https://rdrr.io/r/base/any.html'>any(Matrix::rowSums(w) == 0)</a></code>) they will be dropped automatically and a message will print stating how many were dropped.</p>
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
-
-    <div class='dont-index'><p><a href='moran_plot.html'>moran_plot</a>, <a href='lisa.html'>lisa</a>, <a href='aple.html'>aple</a></p></div>
-
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
-<span class='va'>w</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, style <span class='op'>=</span> <span class='st'>"W"</span><span class='op'>)</span>
-<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>georgia</span><span class='op'>$</span><span class='va'>ICE</span>
-<span class='fu'>mc</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] 0.519</div><div class='input'>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

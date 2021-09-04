@@ -261,7 +261,7 @@ stan_icar <- function(formula,
     stopifnot(inherits(family, "family"))
     stopifnot(family$family %in% c("poisson", "binomial"))
     stopifnot(!missing(data))
-    stopifnot(inherits(C, "matrix"))
+    stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
     stopifnot(all(dim(C) == nrow(data)))
     #### ICAR TYPE [START] --------
     type <- match.arg(type)
@@ -275,14 +275,13 @@ stan_icar <- function(formula,
     intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0) 
     if (intercept_only) {
         if (!missing(slx)) {
-            stop("You provided a spatial lag of X (slx) term for an intercept only model. Did you intend to include a covariate? If you intend to specify a model in which the only covariate is a spatially-lagged term, you must create this covariate yourself and include it in the main model formula.")
+            stop("You provided a spatial lag of X (slx) term for an intercept only model. Did you intend to include a covariate?")
         }
         x_full <- x_no_Wx <- model.matrix(~ 0, data = tmpdf) 
         dbeta_prior <- 0
         slx <- " "
-        W <- matrix(0, nrow = 1, ncol = 1)
+        W.list <- list(w = 1, v = 1, u = 1)
         dwx <- 0
-        dw_nonzero <- 0
         wx_idx <- a.zero
   } else {
       xraw <- model.matrix(formula, data = tmpdf)
@@ -290,20 +289,16 @@ stan_icar <- function(formula,
       x_no_Wx <- center_x(xraw, center = centerx)
       if (missing(slx)) {
           slx <- " "
-          W <- matrix(0, ncol = 1, nrow = 1)
-          dwx = 0
+          W.list <- list(w = 1, v = 1, u = 1)
           wx_idx = a.zero
-          dw_nonzero <- 0
-          x_full <- x_no_Wx
+          dwx <- 0
+          x_full <- x_no_Wx          
       } else {
           stopifnot(inherits(slx, "formula"))
-          if (any(rowSums(C) != 1)) {
-              message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
-          }
-          W <- C / rowSums(C)
+          W <- row_standardize(C, msg =  "Row standardizing connectivity matrix to calculate spatially lagged covaraite(s)")
+          W.list <- rstan::extract_sparse_parts(W)
           Wx <- SLX(f = slx, DF = tmpdf, x = x_no_Wx, W = W)
           dwx <- ncol(Wx)
-          dw_nonzero <- sum(W != 0)
           wx_idx <- as.array( which(paste0("w.", colnames(x_no_Wx)) %in% colnames(Wx)), dim = dwx )
           x_full <- cbind(Wx, x_no_Wx)
       }
@@ -354,19 +349,19 @@ stan_icar <- function(formula,
     alpha_tau_prior = priors_made$alpha_tau,
     t_nu_prior = priors_made$nu,
     family = family_int,
+    prior_only = prior_only,    
   ## slx data -------------    
-    W = W,
+    W_w = as.array(W.list$w),
+    W_v = as.array(W.list$v),
+    W_u = as.array(W.list$u),
+    dw_nonzero = length(W.list$w),
     dwx = dwx,
-    wx_idx = wx_idx,
-    prior_only = prior_only
+    wx_idx = wx_idx
     )     
     ## ICAR DATA [START] -------------
-    if (inherits(scale_factor, "NULL")) {
-        inv_sqrt_scale_factor = NULL
-    } else {
-        inv_sqrt_scale_factor = 1 / sqrt(scale_factor)
-    }
-    iar.list <- prep_icar_data(C, inv_sqrt_scale_factor = inv_sqrt_scale_factor)
+    iar.list <- prep_icar_data(C, scale_factor = scale_factor)
+    if (!inherits(scale_factor, "NULL")) stopifnot(length(scale_factor) == iar.list$k)
+    iar.list$inv_sqrt_scale_factor <- 1 / sqrt( iar.list$scale_factor )
     standata <- c(standata, iar.list)
     standata$type <- match(type, c("icar", "bym", "bym2"))
     ## ICAR DATA [STOP] -------------
@@ -395,7 +390,7 @@ stan_icar <- function(formula,
     ## CALL STAN -------------  
     samples <- rstan::sampling(stanmodels$icar, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
     ## OUTPUT -------------        
-    out <- clean_results(samples, pars, is_student, has_re, C, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
+    out <- clean_results(samples, pars, is_student, has_re, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
     out$data <- ModData
     out$family <- family
     out$formula <- formula
@@ -403,13 +398,13 @@ stan_icar <- function(formula,
     out$re <- re_list
     out$priors <- priors_made_slim
     out$x_center <- attributes(x_full)$`scaled:center`
-    R <- resid(out, summary = FALSE)
-    out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )        
     if (!missing(ME)) out$ME <- ME    
     ## ICAR OUTPUT [START] --------
     out$edges <- edges(C)       
     out$spatial <- data.frame(par = "phi", method = toupper(type))
     ## ICAR OUTPUT [STOP] --------
+    R <- resid(out, summary = FALSE)
+    out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )    
     return (out)
 }
 

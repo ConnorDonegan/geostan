@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>geostan_fit methods — geostan_fit • geostan</title>
+<title>geostan_fit methods — print.geostan_fit • geostan</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,7 +46,7 @@
 
 
 
-<meta property="og:title" content="geostan_fit methods — geostan_fit" />
+<meta property="og:title" content="geostan_fit methods — print.geostan_fit" />
 <meta property="og:description" content="Methods for fitted geostan models: extract residuals, fitted values, posterior predictive distribution or spatial component from a spatial regression model; extract samples from the posterior distribution; print regression results; plot posterior distributions." />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
@@ -151,7 +151,7 @@
 <span class='fu'><a href='https://rdrr.io/r/base/array.html'>as.array</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for geostan_fit</span>
-<span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>residuals</a></span><span class='op'>(</span><span class='va'>object</span>, summary <span class='op'>=</span> <span class='cn'>TRUE</span>, rates <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/stats/residuals.html'>residuals</a></span><span class='op'>(</span><span class='va'>object</span>, summary <span class='op'>=</span> <span class='cn'>TRUE</span>, rates <span class='op'>=</span> <span class='cn'>TRUE</span>, detrend <span class='op'>=</span> <span class='cn'>TRUE</span>, <span class='va'>...</span><span class='op'>)</span>
 
 <span class='co'># S3 method for geostan_fit</span>
 <span class='fu'><a href='https://rdrr.io/r/stats/fitted.values.html'>fitted</a></span><span class='op'>(</span><span class='va'>object</span>, summary <span class='op'>=</span> <span class='cn'>TRUE</span>, rates <span class='op'>=</span> <span class='cn'>TRUE</span>, <span class='va'>...</span><span class='op'>)</span>
@@ -200,7 +200,11 @@
     </tr>
     <tr>
       <th>rates</th>
-      <td><p>For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to `TRUE`.</p></td>
+      <td><p>For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to <code>TRUE</code>.</p></td>
+    </tr>
+    <tr>
+      <th>detrend</th>
+      <td><p>For CAR models with Gaussian likelihood only (auto-gaussian); if <code>detrend = TRUE</code>, the implicit spatial trend will be removed from the residuals. The implicit spatial trend is <code>Trend = rho * C %*% (Y - Mu)</code> (see <code><a href='stan_car.html'>stan_car</a></code>). I.e., <code>resid = Y - (Mu + Trend)</code>.</p></td>
     </tr>
     </table>
 

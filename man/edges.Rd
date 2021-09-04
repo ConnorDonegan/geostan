@@ -4,19 +4,21 @@
 \alias{edges}
 \title{Edge list}
 \usage{
-edges(w)
+edges(C, unique_pairs_only = TRUE)
 }
 \arguments{
-\item{w}{A connectivity matrix where connection between two nodes is indicated by non-zero entries.}
+\item{C}{A connectivity matrix where connection between two nodes is indicated by non-zero entries.}
+
+\item{unique_pairs_only}{By default, only unique pairs of nodes (i, j) will be included in the output.}
 }
 \value{
-Returns a \code{data.frame} with three columns. The first two columns (\code{node1} and \code{node2}) contain the indices of connected pairs of nodes; only unique pairs of nodes are included. The third column (\code{weight}) contains the element \code{w[node1, node2]}.
+Returns a \code{data.frame} with three columns. The first two columns (\code{node1} and \code{node2}) contain the indices of connected pairs of nodes; only unique pairs of nodes are included (unless `unique_pairs_only = FALSE`). The third column (\code{weight}) contains the corresponding matrix element, \code{C[node1, node2]}.
 }
 \description{
 Creates a list of connected nodes following the graph representation of a spatial connectivity matrix.
 }
 \details{
-This is used internally for \link[geostan]{stan_icar} and it is also helpful for creating the scaling factor for BYM2 models fit with \code{stan_icar}.
+This is used internally for \code{\link[geostan]{stan_icar}} and it is also helpful for creating the scaling factor for BYM2 models fit with \code{\link[geostan]{stan_icar}}.
 }
 \examples{
 
@@ -27,5 +29,5 @@ head(nbs)
 
 }
 \seealso{
-\link[geostan]{shape2mat}, \link[geostan]{prep_icar_data}, \link[geostan]{stan_icar}
+\code{\link[geostan]{shape2mat}}, \code{\link[geostan]{prep_icar_data}}, \code{\link[geostan]{stan_icar}}
 }

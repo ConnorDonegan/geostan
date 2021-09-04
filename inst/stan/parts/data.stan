@@ -10,7 +10,9 @@
   int<lower=0> dwx;
   int wx_idx[dwx ? dwx : 1];
   int<lower=0> dw_nonzero;
-  matrix[dwx ? n : 1, dwx ? n : 1] W;
+  vector[dw_nonzero] W_w;
+  int W_v[dw_nonzero];
+  int W_u[dwx ? n + 1 : 1];
   
 // covariates and observational error information
     // lower, upper bounds for bounded data models
@@ -39,11 +41,9 @@
   vector[dx_me_bounded] prior_mux_true_bounded_scale;
   vector[dx_me_bounded] prior_sigmax_true_bounded_scale;
 
-  // data for auto-Guassian [data] models
+  // data for auto-Guassian [ME] models
   int<lower=0,upper=1> spatial_me;
   int<lower=0,upper=1> WCAR;
-  int dim_C;
-  matrix<lower=0>[dim_C, dim_C] C; // connectivity matrix
   int nAx_w;
   int nC;
   vector[nAx_w] Ax_w;

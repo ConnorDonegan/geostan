@@ -135,18 +135,18 @@
     <p>Given a symmetric n x n connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>prep_icar_data</span><span class='op'>(</span><span class='va'>C</span>, inv_sqrt_scale_factor <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>prep_icar_data</span><span class='op'>(</span><span class='va'>C</span>, scale_factor <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>C</th>
-      <td><p>connectivity matrix</p></td>
+      <td><p>Connectivity matrix</p></td>
     </tr>
     <tr>
-      <th>inv_sqrt_scale_factor</th>
-      <td><p>optional vector of scale factors for each connected portion of the graph structure. If not provided by the user it will be fixed to a vector of ones.</p></td>
+      <th>scale_factor</th>
+      <td><p>Optional vector of scale factors for each connected portion of the graph structure. If not provided by the user it will be fixed to a vector of ones.</p></td>
     </tr>
     </table>
 
@@ -170,10 +170,10 @@
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>This is used internally to prepare data for <a href='stan_icar.html'>stan_icar</a> models. It can also be helpful for fitting custom ICAR models outside of <code>geostan</code>. It relies on <a href='https://rdrr.io/pkg/spdep/man/graphneigh.html'>graph2nb</a> and <a href='https://rdrr.io/pkg/spdep/man/compon.html'>n.comp.nb</a>.</p>
+    <p>This is used internally to prepare data for <a href='stan_icar.html'>stan_icar</a> models. It can also be helpful for fitting custom ICAR models outside of <code>geostan</code>.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><a href='stan_icar.html'>stan_icar</a>, <a href='edges.html'>edges</a>, <a href='shape2mat.html'>shape2mat</a></p></div>
+    <div class='dont-index'><p><code><a href='stan_icar.html'>stan_icar</a></code>, <code><a href='edges.html'>edges</a></code>, <code><a href='shape2mat.html'>shape2mat</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>

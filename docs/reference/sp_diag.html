@@ -135,7 +135,7 @@
     <p>Visual diagnostics for areal data and model residuals</p>
     </div>
 
-    <pre class="usage"><span class='fu'>sp_diag</span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>shape</span>, name <span class='op'>=</span> <span class='st'>"y"</span>, w <span class='op'>=</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>shape</span>, <span class='st'>"W"</span><span class='op'>)</span>, plot <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>sp_diag</span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>shape</span>, name <span class='op'>=</span> <span class='st'>"y"</span>, w <span class='op'>=</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>shape</span>, <span class='st'>"W"</span><span class='op'>)</span>, plot <span class='op'>=</span> <span class='cn'>TRUE</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -154,30 +154,87 @@
     </tr>
     <tr>
       <th>w</th>
-      <td><p>An optional spatial connectivity matrix; if not provided, then a row-standardized adjacency matrix will be created using <code><a href='shape2mat.html'>shape2mat(shape, "W")</a></code>.</p></td>
+      <td><p>An optional spatial connectivity matrix; if not provided, then a row-standardized adjacency matrix will be created using <code><a href='shape2mat.html'>shape2mat</a></code>.</p></td>
     </tr>
     <tr>
       <th>plot</th>
       <td><p>If <code>FALSE</code>, return a list of <code>gg</code> plots.</p></td>
     </tr>
+    <tr>
+      <th>...</th>
+      <td><p>Additional arguments passed to <code><a href='print.geostan_fit.html'>residuals.geostan_fit</a></code>. For binomail and Poisson models, this includes the option to view the outcome variable as a rate (the default) rather than a count; for <code><a href='stan_car.html'>stan_car</a></code> models with auto-Gaussian likelihood (`fit$family$family = "auto_gaussian"), the residuals will be detrended by default, but this can be changed using `detrend = FALSE`.</p></td>
+    </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A grid of spatial diagnostic plots including a Moran plot plus a map and histogram of <code>y</code>. If a fitted <code>geostan</code> model is provided, model residuals are plotted and mapped (i.e. <code>y = resid(fit)$mean</code>).</p>
+    <p>A grid of spatial diagnostic plots: a map, a scatter Moran plot, and a histogram of <code>y</code>. If a fitted <code>geostan</code> model is provided, model residuals are plotted and mapped (i.e. <code>y = resid(fit)$mean</code>). If `plot = TRUE`, the `ggplots` are drawn using <code><a href='https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html'>grid.arrange</a></code>; otherwise, they are returned in a list.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><a href='me_diag.html'>me_diag</a>, <a href='mc.html'>mc</a>, <a href='moran_plot.html'>moran_plot</a>, <a href='aple.html'>aple</a></p></div>
+    <div class='dont-index'><p><code><a href='me_diag.html'>me_diag</a></code>, <code><a href='mc.html'>mc</a></code>, <code><a href='moran_plot.html'>moran_plot</a></code>, <code><a href='aple.html'>aple</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
+    <pre class="examples"><div class='input'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
 <span class='fu'>sp_diag</span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>$</span><span class='va'>college</span>, <span class='va'>georgia</span><span class='op'>)</span>
-<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_glm.html'>stan_glm</a></span><span class='op'>(</span><span class='va'>college</span> <span class='op'>~</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>georgia</span>, refresh <span class='op'>=</span> <span class='fl'>0</span><span class='op'>)</span>
-<span class='fu'>sp_diag</span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>georgia</span><span class='op'>)</span>
-<span class='op'>}</span>
-
+</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='sp_diag-1.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_glm.html'>stan_glm</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>rate.male</span><span class='op'>)</span> <span class='op'>~</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>georgia</span>, chains <span class='op'>=</span> <span class='fl'>1</span>, iter <span class='op'>=</span> <span class='fl'>500</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt;  location     scale 
+#&gt; -4.169701  3.000000 </div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for sigma</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt;       df location    scale 
+#&gt;       10        0        1 
+#&gt; 
+#&gt; SAMPLING FOR MODEL 'glm' NOW (CHAIN 1).
+#&gt; Chain 1: 
+#&gt; Chain 1: Gradient evaluation took 1.4e-05 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.14 seconds.
+#&gt; Chain 1: Adjust your expectations accordingly!
+#&gt; Chain 1: 
+#&gt; Chain 1: 
+#&gt; Chain 1: Iteration:   1 / 500 [  0%]  (Warmup)
+#&gt; Chain 1: Iteration: 251 / 500 [ 50%]  (Sampling)
+#&gt; Chain 1: Iteration: 500 / 500 [100%]  (Sampling)
+#&gt; Chain 1: 
+#&gt; Chain 1:  Elapsed Time: 0.011093 seconds (Warm-up)
+#&gt; Chain 1:                0.008967 seconds (Sampling)
+#&gt; Chain 1:                0.02006 seconds (Total)
+#&gt; Chain 1: </div><div class='output co'>#&gt; <span class='warning'>Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
+#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
+#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#tail-ess</span></div><div class='input'><span class='fu'>sp_diag</span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>georgia</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='sp_diag-2.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'><a href='prep_car_data.html'>prep_car_data</a></span><span class='op'>(</span><span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; Range of permissible rho values:  -1.661134 1 </div><div class='input'><span class='va'>fit2</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_car.html'>stan_car</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>rate.male</span><span class='op'>)</span> <span class='op'>~</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>georgia</span>, car_parts <span class='op'>=</span> <span class='va'>cp</span>, iter <span class='op'>=</span> <span class='fl'>500</span>, chains <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt;  location     scale 
+#&gt; -4.169701  3.000000 </div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior parameters for car_scale</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt;       df location    scale 
+#&gt;       10        0        1 </div><div class='output co'>#&gt; <span class='message'></span>
+#&gt; <span class='message'>*Setting prior for car_rho (spatial autocorrelation parameter)</span>
+#&gt; <span class='message'>Uniform (1/lambda_min, 1/lambda_max)</span></div><div class='output co'>#&gt;   minimum   maximum 
+#&gt; -1.661134  1.000000 
+#&gt; 
+#&gt; SAMPLING FOR MODEL 'car' NOW (CHAIN 1).
+#&gt; Chain 1: 
+#&gt; Chain 1: Gradient evaluation took 5.5e-05 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.55 seconds.
+#&gt; Chain 1: Adjust your expectations accordingly!
+#&gt; Chain 1: 
+#&gt; Chain 1: 
+#&gt; Chain 1: Iteration:   1 / 500 [  0%]  (Warmup)
+#&gt; Chain 1: Iteration: 251 / 500 [ 50%]  (Sampling)
+#&gt; Chain 1: Iteration: 500 / 500 [100%]  (Sampling)
+#&gt; Chain 1: 
+#&gt; Chain 1:  Elapsed Time: 0.420318 seconds (Warm-up)
+#&gt; Chain 1:                0.394198 seconds (Sampling)
+#&gt; Chain 1:                0.814516 seconds (Total)
+#&gt; Chain 1: </div><div class='output co'>#&gt; <span class='warning'>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
+#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
+#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#bulk-ess</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
+#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
+#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#tail-ess</span></div><div class='input'><span class='fu'>sp_diag</span><span class='op'>(</span><span class='va'>fit2</span>, <span class='va'>georgia</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='sp_diag-3.png' alt='' width='700' height='433' /></div><div class='input'><span class='fu'>sp_diag</span><span class='op'>(</span><span class='va'>fit2</span>, <span class='va'>georgia</span>, detrend <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='sp_diag-4.png' alt='' width='700' height='433' /></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

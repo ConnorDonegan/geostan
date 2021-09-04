@@ -27,7 +27,7 @@ The Moran coefficient, a numeric value.
 The Moran coefficient, a measure of spatial autocorrelation (also known as Global Moran's I)
 }
 \details{
-If any observations with no neighbors are found (i.e. \code{any(rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
+If any observations with no neighbors are found (i.e. \code{any(Matrix::rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
 }
 \examples{
 

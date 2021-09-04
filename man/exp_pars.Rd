@@ -6,7 +6,7 @@
 \source{
 Chun, Yongwan, Griffith, Daniel A., Lee, Mongyeon, and Sinha, Parmanand (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems 18(1): 67-85.
 
-Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. \url{https://doi.org/10.1016/j.spasta.2020.100450}
+Donegan, C., Y. Chun and A. E. Hughes (2020). "Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors." Spatial Statistics. \url{https://doi.org/10.1016/j.spasta.2020.100450}
 }
 \usage{
 exp_pars(formula, data, C)
@@ -22,14 +22,12 @@ exp_pars(formula, data, C)
 Returns a numeric value representing the expected number of eigenvectors required to estimate a spatial filter (i.e. number of non-zero or 'large' coefficients).
 }
 \description{
-Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression.
-For \link[geostan]{stan_esf} the result can be
-used to set the hyper parameter \code{p0}, controlling the hyper-prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior.
+Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression. This is used internally for \code{\link[geostan]{stan_esf}}; the result can be used to set the hyper parameter \code{p0}, controlling the prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior.
 }
 \details{
 Following Chun et al. (2016), the expected number of eigenvectors required to remove residual spatial autocorrelation from a model
  is an increasing function of the degree of spatial autocorrelation in the outcome variable and the number of links in the connectivity matrix.
 }
 \seealso{
-\link[geostan]{stan_esf}
+\code{\link[geostan]{stan_esf}}
 }

@@ -67,7 +67,7 @@
 #' @param ... Other arguments passed to \code{\link[rstan]{sampling}}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first. 
 #' @details
 #'
-#' CAR models are discussed in Cressie and Wikle (2011, p. 184-88), Cressie (2015 [1993], Ch. 6-7), and Haining and Li (2020, p. 249-51).
+#' CAR models are discussed in Cressie and Wikle (2011, p. 184-88), Cressie (2015, Ch. 6-7), and Haining and Li (2020, p. 249-51).
 #'
 #' The Stan code for this implementation of the CAR model first introduced in Donegan et al. (2021, supplementary material) for models of small area survey data.
 #' 
@@ -153,13 +153,14 @@
 #' \item{x_center}{If covariates are centered internally (i.e., `centerx` is not `FALSE`), then `x_centers` is the numeric vector of values on which the covariates were centered.}
 #'
 #' \item{spatial}{A data frame with the name of the spatial component parameter (either "phi" or, for auto Gaussian models, "trend") and method ("CAR")}
+#' \item{C}{Spatial connectivity matrix (in sparse matrix format).}
 #' }
 #' 
 #' @author Connor Donegan, \email{Connor.Donegan@UTDallas.edu}
 #' 
 #' @source
 #'
-#' Cressie, Noel (2015 [1993]). *Statistics for Spatial Data*. Wiley Classics, Revised Edition.
+#' Cressie, Noel (2015 (1993)). *Statistics for Spatial Data*. Wiley Classics, Revised Edition.
 #' 
 #' Cressie, Noel and Wikle, Christopher (2011). *Statistics for Spatio-Temporal Data*. Wiley.
 #'
@@ -256,10 +257,10 @@ stan_car <- function(formula,
     if (family$family == "gaussian") family <- auto_gaussian()
     stopifnot(!missing(data))
     stopifnot(inherits(car_parts, "list"))    
-    C <- car_parts$C    
-    stopifnot(inherits(car_parts$C, "matrix"))
-    stopifnot(nrow(car_parts$C) == nrow(data))
-    stopifnot(all(c("Ax_w", "Ax_v", "Ax_u", "nAx_w", "Cidx", "nC", "Delta_inv", "log_det_Delta_inv", "WCAR", "lambda", "dim_C", "C")  %in% names(car_parts)))
+    stopifnot(length(car_parts$Delta_inv) == nrow(data))
+    stopifnot(all(c("Ax_w", "Ax_v", "Ax_u", "nAx_w", "Cidx", "nC", "Delta_inv", "log_det_Delta_inv", "WCAR", "lambda", "C")  %in% names(car_parts)))
+    stopifnot(inherits(car_parts$C, "Matrix") | inherits(car_parts$C, "matrix"))    
+    C <- car_parts$C        
     a.zero <- as.array(0, dim = 1)
     tmpdf <- as.data.frame(data)
     mod.mat <- model.matrix(formula, tmpdf)
@@ -274,9 +275,8 @@ stan_car <- function(formula,
         x_full <- x_no_Wx <- model.matrix(~ 0, data = tmpdf) 
         dbeta_prior <- 0
         slx <- " "
-        W <- matrix(0, nrow = 1, ncol = 1)
+        W.list <- list(w = 1, v = 1, u = 1)
         dwx <- 0
-        dw_nonzero <- 0
         wx_idx <- a.zero
   } else {
       xraw <- model.matrix(formula, data = tmpdf)
@@ -284,20 +284,16 @@ stan_car <- function(formula,
       x_no_Wx <- center_x(xraw, center = centerx)
       if (missing(slx)) {
           slx <- " "
-          W <- matrix(0, ncol = 1, nrow = 1)
-          dwx = 0
+          W.list <- list(w = 1, v = 1, u = 1)
           wx_idx = a.zero
-          dw_nonzero <- 0
+          dwx <- 0
           x_full <- x_no_Wx          
       } else {
           stopifnot(inherits(slx, "formula"))
-          if (any(rowSums(C) != 1)) {
-              message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
-          }
-          W <- C / rowSums(C)
+          W <- row_standardize(C, msg =  "Row standardizing connectivity matrix to calculate spatially lagged covaraite(s)")
+          W.list <- rstan::extract_sparse_parts(W)
           Wx <- SLX(f = slx, DF = tmpdf, x = x_no_Wx, W = W)
           dwx <- ncol(Wx)
-          dw_nonzero <- sum(W != 0)
           wx_idx <- as.array( which(paste0("w.", colnames(x_no_Wx)) %in% colnames(Wx)), dim = dwx )
           x_full <- cbind(Wx, x_no_Wx)
       }
@@ -360,17 +356,20 @@ stan_car <- function(formula,
         alpha_tau_prior = priors_made$alpha_tau,
         t_nu_prior = priors_made$nu,
         family = family_int,
+        prior_only = prior_only,        
         ## slx data -------------    
-        W = W,
+        W_w = as.array(W.list$w),
+        W_v = as.array(W.list$v),
+        W_u = as.array(W.list$u),
+        dw_nonzero = length(W.list$w),
         dwx = dwx,
-        wx_idx = wx_idx,
-        ## draw samples from prior only, ignoring data and likelihood
-        prior_only = prior_only
+        wx_idx = wx_idx
     )
     ## CAR DATA [START] --------
+    if (invert) car_parts$C <- as.matrix(car_parts$C) else car_parts$C <- matrix(1, 1, 1)    
     standata <- c(standata, car_parts)
     # overwrites any user specified ME$car_parts
-    if ( !is.null(ME) ) ME$car_parts <- car_parts
+    if ( !is.null(ME) ) ME$car_parts <- NULL
     ## CAR DATA [STOP] --------
     ## ME MODEL -------------  
     me.list <- prep_me_data(ME, x_no_Wx)
@@ -384,7 +383,7 @@ stan_car <- function(formula,
     pars <- c(pars, 'intercept', 'car_scale', 'car_rho', 'fitted')
     if (invert) pars <- c(pars, 'log_lik')
     if (family_int < 5) pars <- c(pars, 'phi') 
-    if (family_int == 5) pars <- c(pars, "trend")
+##    if (family_int == 5) pars <- c(pars, "trend")
     if (!intercept_only) pars <- c(pars, 'beta')
     if (dwx) pars <- c(pars, 'gamma')
     if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
@@ -402,7 +401,7 @@ stan_car <- function(formula,
     ## CALL STAN -------------  
     samples <- rstan::sampling(stanmodels$car, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
     ## OUTPUT -------------
-    out <- clean_results(samples, pars, is_student, has_re, C, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
+    out <- clean_results(samples, pars, is_student, has_re, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
     out$data <- ModData
     out$family <- family
     out$formula <- formula
@@ -416,8 +415,9 @@ stan_car <- function(formula,
     } else {
         out$spatial <- data.frame(par = "phi", method = "CAR")
     }
+    out$C <- Matrix::Matrix(C)    
     R <- resid(out, summary = FALSE)
-    if (inherits(C, "matrix")) out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )    
+    out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )    
     return (out)
 }
 

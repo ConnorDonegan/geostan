@@ -47,9 +47,7 @@
 
 
 <meta property="og:title" content="Expected dimensions of an eigenvector spatial filter — exp_pars" />
-<meta property="og:description" content="Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression.
-For stan_esf the result can be
-used to set the hyper parameter p0, controlling the hyper-prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior." />
+<meta property="og:description" content="Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression. This is used internally for stan_esf; the result can be used to set the hyper parameter p0, controlling the prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior." />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
@@ -134,9 +132,7 @@ used to set the hyper parameter p0, controlling the hyper-prior scale parameter 
     </div>
 
     <div class="ref-description">
-    <p>Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression.
-For <a href='stan_esf.html'>stan_esf</a> the result can be
-used to set the hyper parameter <code>p0</code>, controlling the hyper-prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior.</p>
+    <p>Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression. This is used internally for <code><a href='stan_esf.html'>stan_esf</a></code>; the result can be used to set the hyper parameter <code>p0</code>, controlling the prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior.</p>
     </div>
 
     <pre class="usage"><span class='fu'>exp_pars</span><span class='op'>(</span><span class='va'>formula</span>, <span class='va'>data</span>, <span class='va'>C</span><span class='op'>)</span></pre>
@@ -161,7 +157,7 @@ used to set the hyper parameter <code>p0</code>, controlling the hyper-prior sca
     <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
 
     <p>Chun, Yongwan, Griffith, Daniel A., Lee, Mongyeon, and Sinha, Parmanand (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems 18(1): 67-85.</p>
-<p>Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. <a href='https://doi.org/10.1016/j.spasta.2020.100450'>https://doi.org/10.1016/j.spasta.2020.100450</a></p>
+<p>Donegan, C., Y. Chun and A. E. Hughes (2020). "Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors." Spatial Statistics. <a href='https://doi.org/10.1016/j.spasta.2020.100450'>https://doi.org/10.1016/j.spasta.2020.100450</a></p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>Returns a numeric value representing the expected number of eigenvectors required to estimate a spatial filter (i.e. number of non-zero or 'large' coefficients).</p>
@@ -171,7 +167,7 @@ used to set the hyper parameter <code>p0</code>, controlling the hyper-prior sca
  is an increasing function of the degree of spatial autocorrelation in the outcome variable and the number of links in the connectivity matrix.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><a href='stan_esf.html'>stan_esf</a></p></div>
+    <div class='dont-index'><p><code><a href='stan_esf.html'>stan_esf</a></code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

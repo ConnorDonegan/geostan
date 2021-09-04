@@ -2,7 +2,7 @@ pandoc: '2.5'
 pkgdown: 1.6.1
 pkgdown_sha: ~
 articles: {}
-last_built: 2021-09-01T18:34Z
+last_built: 2021-09-04T15:51Z
 urls:
   reference: https://connordonegan.github.io/geostan/reference
   article: https://connordonegan.github.io/geostan/articles

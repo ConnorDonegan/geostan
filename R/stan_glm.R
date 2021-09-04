@@ -145,7 +145,7 @@ stan_glm <- function(formula,
     stopifnot(family$family %in% c("gaussian", "student_t", "poisson", "binomial"))
     stopifnot(!missing(data))
     if (!missing(C)) {
-        stopifnot(inherits(C, "matrix"))
+        stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
         stopifnot(all(dim(C) == nrow(data)))
     }
     a.zero <- as.array(0, dim = 1)
@@ -162,9 +162,8 @@ stan_glm <- function(formula,
         x_full <- x_no_Wx <- model.matrix(~ 0, data = tmpdf) 
         dbeta_prior <- 0
         slx <- " "
-        W <- matrix(0, nrow = 1, ncol = 1)
+        W.list <- list(w = 1, v = 1, u = 1)
         dwx <- 0
-        dw_nonzero <- 0
         wx_idx <- a.zero
   } else {
       xraw <- model.matrix(formula, data = tmpdf)
@@ -172,20 +171,16 @@ stan_glm <- function(formula,
       x_no_Wx <- center_x(xraw, center = centerx)
       if (missing(slx)) {
           slx <- " "
-          W <- matrix(0, ncol = 1, nrow = 1)
-          dwx = 0
+          W.list <- list(w = 1, v = 1, u = 1)
           wx_idx = a.zero
-          dw_nonzero <- 0
+          dwx <- 0
           x_full <- x_no_Wx          
       } else {
           stopifnot(inherits(slx, "formula"))
-          if (any(rowSums(C) != 1)) {
-              message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
-          }
-          W <- C / rowSums(C)
+          W <- row_standardize(C, msg =  "Row standardizing connectivity matrix to calculate spatially lagged covaraite(s)")
+          W.list <- rstan::extract_sparse_parts(W)
           Wx <- SLX(f = slx, DF = tmpdf, x = x_no_Wx, W = W)
           dwx <- ncol(Wx)
-          dw_nonzero <- sum(W != 0)
           wx_idx <- as.array( which(paste0("w.", colnames(x_no_Wx)) %in% colnames(Wx)), dim = dwx )
           x_full <- cbind(Wx, x_no_Wx)
       }
@@ -236,11 +231,14 @@ stan_glm <- function(formula,
     alpha_tau_prior = priors_made$alpha_tau,
     t_nu_prior = priors_made$nu,
     family = family_int,
+    prior_only = prior_only,    
   ## slx data -------------    
-    W = W,
+    W_w = as.array(W.list$w),
+    W_v = as.array(W.list$v),
+    W_u = as.array(W.list$u),
+    dw_nonzero = length(W.list$w),
     dwx = dwx,
-    wx_idx = wx_idx,
-    prior_only = prior_only
+    wx_idx = wx_idx
     )
     ## ME MODEL -------------  
     me.list <- prep_me_data(ME, x_no_Wx)
@@ -267,7 +265,7 @@ stan_glm <- function(formula,
     samples <- rstan::sampling(stanmodels$glm, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
     ## OUTPUT -------------    
     if (missing(C)) C <- NA
-    out <- clean_results(samples, pars, is_student, has_re, C, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
+    out <- clean_results(samples, pars, is_student, has_re, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
     out$data <- ModData
     out$family <- family
     out$formula <- formula
@@ -276,13 +274,15 @@ stan_glm <- function(formula,
     out$priors <- priors_made_slim
     out$x_center <- attributes(x_full)$`scaled:center`
     if (!missing(ME)) out$ME <- ME
-  if (has_re) {
-      out$spatial <- data.frame(par = "alpha_re", method = "Exchangeable")
-  } else {
-      out$spatial <- data.frame(par = "none", method = "none")
-  }
-    R <- resid(out, summary = FALSE)
-    if (inherits(C, "matrix")) out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )    
+    if (has_re) {
+        out$spatial <- data.frame(par = "alpha_re", method = "Exchangeable")
+    } else {
+        out$spatial <- data.frame(par = "none", method = "none")
+    }
+    if (inherits(C, "matrix") | inherits(C, "Matrix")) {
+        R <- resid(out, summary = FALSE)
+        out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )
+    }        
     return(out)
 }
 

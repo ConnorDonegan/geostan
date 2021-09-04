@@ -197,7 +197,7 @@
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>For details on the symbol parameters see the documentation for <a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a>.</p>
-<p>If any observations with no neighbors are found (i.e. <code><a href='https://rdrr.io/r/base/any.html'>any(rowSums(w) == 0)</a></code>) they will be dropped automatically and a message will print stating how many were dropped.</p>
+<p>If any observations with no neighbors are found (i.e. <code><a href='https://rdrr.io/r/base/any.html'>any(Matrix::rowSums(w) == 0)</a></code>) they will be dropped automatically and a message will print stating how many were dropped.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><a href='mc.html'>mc</a>, <a href='lisa.html'>lisa</a>, <a href='aple.html'>aple</a></p></div>

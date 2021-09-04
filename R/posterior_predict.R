@@ -19,10 +19,23 @@
 #'
 #' 
 #' @examples
-#' \dontrun{
-#'  
-#' }
 #' 
+#'  fit <- stan_glm(sents ~ offset(log(expected_sents)),
+#'                  data = sentencing,
+#'                  family = poisson(),
+#'                  chains = 1)
+#'  yrep <- posterior_predict(fit, S = 100)
+#'  bayesplot::ppc_dens_overlay(y = sentencing$sents, yrep = yrep)
+#'
+#'  fit2 <- stan_glm(sents ~ offset(log(expected_sents)),
+#'                   re = ~ name,
+#'                   data = sentencing,
+#'                   family = poisson(),
+#'                   chains = 1)
+#'  yrep <- posterior_predict(fit2, S = 100)
+#'  bayesplot::ppc_dens_overlay(y = sentencing$sents, yrep = yrep)
+#'  sp_diag(fit2, sentencing)
+#'  
 posterior_predict <- function(object, 
                 S,
                 summary = FALSE,
@@ -44,8 +57,8 @@ posterior_predict <- function(object,
     mu <- as.matrix(object, pars = "fitted")[idx,] 
     if (family == "auto_gaussian") {
         stopifnot(!missing(car_parts))
-        rho <- as.matrix(fit, "car_rho")[idx, ]
-        tau <- as.matrix(fit, "car_scale")[idx, ]
+        rho <- as.matrix(object, "car_rho")[idx, ]
+        tau <- as.matrix(object, "car_scale")[idx, ]
         preds <- .pp_auto_gaussian(mu, rho, tau, car_parts)
     }
     if (family == "gaussian") {
@@ -63,7 +76,7 @@ posterior_predict <- function(object,
         preds <- .pp_binomial(mu, trials)
     }
     if (summary) {
-        df <- .pp_summary(preds, mu, object$data, width = width)
+        df <- .pp_summary(preds, width = width)
         return(df)
     }    
     return(preds)    
@@ -73,7 +86,7 @@ posterior_predict <- function(object,
 .pp_auto_gaussian <- function(mu, rho, tau, car_parts) {
     I <- Matrix::Diagonal(car_parts$dim_C)
     M <- Matrix::Diagonal(x = 1 / car_parts$Delta_inv)
-    C <- Matrix(car_parts$C)
+    C <- Matrix::Matrix(car_parts$C)
     t(sapply(1:nrow(mu), function(s) {
         Sigma <- solve(I - rho[s] * C) %*% M * tau[s]^2
         MASS::mvrnorm(n = 1, mu = mu[s,], Sigma = Sigma)

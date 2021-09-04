@@ -142,7 +142,7 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>C</th>
-      <td><p>A binary spatial weights matrix. See <a href='shape2mat.html'>shape2mat</a> or <a href='https://rdrr.io/pkg/spdep/man/nb2mat.html'>nb2mat</a>.</p></td>
+      <td><p>A binary spatial weights matrix. See <code><a href='shape2mat.html'>shape2mat</a></code>.</p></td>
     </tr>
     <tr>
       <th>nsa</th>
@@ -167,7 +167,7 @@ Setting <code>nsa = TRUE</code> will result in a candidate set of EVs that conta
     <p>A <code>data.frame</code> of eigenvectors for spatial filtering. If <code>values=TRUE</code> then a named list is returned with elements <code>eigenvectors</code> and <code>eigenvalues</code>.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Returns a set of EVs limited to those with |MC| &gt; <code>threshold</code> if <code>nsa = TRUE</code> or MC &gt; <code>threshold</code> if <code>nsa = FALSE</code>, along with corresponding eigenvalues (optionally). Given a spatial connectivity matrix C, the function returns eigenvectors from a transformed spatial weights matrix.</p>
+    <p>Returns a set of eigenvectors related to the Moran coefficient (MC), limited to those eigenvectors with |MC| &gt; <code>threshold</code> if <code>nsa = TRUE</code> or MC &gt; <code>threshold</code> if <code>nsa = FALSE</code>, optionally with corresponding eigenvalues.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><a href='stan_esf.html'>stan_esf</a>, <a href='mc.html'>mc</a></p></div>
@@ -182,8 +182,7 @@ Setting <code>nsa = TRUE</code> will result in a candidate set of EVs that conta
 <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>EV</span><span class='op'>[</span>,<span class='fl'>1</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span><span class='op'>)</span>
-</div><div class='img'><img src='make_EV-1.png' alt='' width='700' height='433' /></div><div class='input'>
-</div></pre>
+</div><div class='img'><img src='make_EV-1.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

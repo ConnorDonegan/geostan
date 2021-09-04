@@ -5,6 +5,7 @@ functions {
 data {
 #include parts/data.stan
   int<lower=0, upper=1> invert;
+  matrix<lower=0>[invert ? n : 1, invert ? n : 1] C;
 }
 
 transformed data {
@@ -36,7 +37,7 @@ transformed parameters {
   if (dwx) {
     if (has_me) {
       for (i in 1:dwx) {
-	log_lambda_mu += csr_matrix_times_vector(n, n, w, v, u, x_all[,wx_idx[i]]) * gamma[i];
+	log_lambda_mu += csr_matrix_times_vector(n, n, W_w, W_v, W_u, x_all[,wx_idx[i]]) * gamma[i];
       }
     } else {
       log_lambda_mu += WX * gamma;
@@ -90,17 +91,13 @@ model {
 }
 
 generated quantities {
-  matrix[n, n] S;
-  vector[n] trend;
+  matrix[invert ? n : 0, invert ? n : 0] S;
   vector[is_auto_gaussian ? 0 : n] phi;
 #include parts/gen_quants_declaration.stan
   if (!is_auto_gaussian) phi = log_lambda - log_lambda_mu;  
   for (i in 1:n) {
 #include parts/gen_quants_expression_in_loop.stan
   }
-  if (is_auto_gaussian) {
-  trend = car_rho * C * (y - fitted);
- }
   if (invert * is_auto_gaussian) {
     S = car_scale^2 * diag_post_multiply(inverse(diag_matrix(rep_vector(1, n)) - car_rho * C), 1.0 ./ Delta_inv);      
     log_lik[1] = multi_normal_lpdf(y | fitted, S);

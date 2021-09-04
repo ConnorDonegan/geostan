@@ -146,7 +146,7 @@
     </tr>
     <tr>
       <th>w</th>
-      <td><p>An `n x n` spatial connectivity matrix. See <a href='shape2mat.html'>shape2mat</a>. If <code>w</code> is not row standardized (<code><a href='https://rdrr.io/r/base/all.html'>all(rowSums(w) == 1)</a></code>), it will automatically be row-standardized.</p></td>
+      <td><p>An `n x n` spatial connectivity matrix. See <a href='shape2mat.html'>shape2mat</a>. If <code>w</code> is not row standardized (<code><a href='https://rdrr.io/r/base/all.html'>all(Matrix::rowSums(w) == 1)</a></code>), it will automatically be row-standardized.</p></td>
     </tr>
     <tr>
       <th>type</th>
@@ -166,7 +166,7 @@
 <p>An above-average value (i.e. positive z-value) with positive mean spatial lag indicates local positive spatial autocorrelation and is designated type "High-High"; a low value surrounded by high values indicates negative spatial autocorrelation and is designated type "Low-High", and so on.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><a href='moran_plot.html'>moran_plot</a>, <a href='mc.html'>mc</a>, <a href='aple.html'>aple</a></p></div>
+    <div class='dont-index'><p><code><a href='moran_plot.html'>moran_plot</a></code>, <code><a href='mc.html'>mc</a></code>, <code><a href='aple.html'>aple</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
@@ -182,8 +182,7 @@
 <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>li</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span><span class='op'>)</span>
-</div><div class='img'><img src='lisa-1.png' alt='' width='700' height='433' /></div><div class='input'>
-</div></pre>
+</div><div class='img'><img src='lisa-1.png' alt='' width='700' height='433' /></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

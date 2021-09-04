@@ -154,7 +154,7 @@
     </tr>
     <tr>
       <th>rho</th>
-      <td><p>Spatial autocorrelation parameter in the range -1, 1. Typically a scalar value; otherwise an n-length numeric vector.</p></td>
+      <td><p>Spatial autocorrelation parameter in the range (-1, 1). Typically a scalar value; otherwise an n-length numeric vector.</p></td>
     </tr>
     <tr>
       <th>sigma</th>
@@ -174,7 +174,7 @@
     <p>Calls <code><a href='https://rdrr.io/pkg/MASS/man/mvrnorm.html'>MASS::mvrnorm</a></code> internally to draw from the multivariate normal distribution. The covariance matrix is specified following the simultaneous autoregressive (SAR) model.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><a href='aple.html'>aple</a>, <a href='shape2mat.html'>shape2mat</a>, <a href='https://rdrr.io/pkg/MASS/man/mvrnorm.html'>mvrnorm</a></p></div>
+    <div class='dont-index'><p><code><a href='aple.html'>aple</a></code>, <code><a href='shape2mat.html'>shape2mat</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
@@ -182,7 +182,7 @@
 <span class='va'>w</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='st'>"W"</span><span class='op'>)</span>
 <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='fu'>sim_sar</span><span class='op'>(</span>w<span class='op'>=</span><span class='va'>w</span>, rho<span class='op'>=</span><span class='fl'>.5</span><span class='op'>)</span>
 <span class='fu'><a href='aple.html'>aple</a></span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] 0.655</div><div class='input'>
+</div><div class='output co'>#&gt; <span class='message'>Row standardizing connectivity matrix</span></div><div class='output co'>#&gt; [1] 0.505</div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

@@ -13,7 +13,7 @@ test_that("make_EV returns a data.frame", {
 
 test_that('data types correct', {
     A <- shape2mat(georgia, "B")
-    expect_is(A, 'matrix')
+    expect_is(A, 'Matrix')
     EV <- make_EV(A)
     expect_is(EV, 'data.frame')
     EV.l <- make_EV(A, values = TRUE)

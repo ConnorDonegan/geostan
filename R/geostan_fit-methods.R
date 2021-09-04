@@ -2,7 +2,7 @@
 #'
 #' @description Methods for fitted geostan models: extract residuals, fitted values, posterior predictive distribution or spatial component from a spatial regression model; extract samples from the posterior distribution; print regression results; plot posterior distributions.
 #'
-#' @rdname geostan_fit
+#' 
 #' @param object A fitted model object of class \code{geostan_fit}.
 #' @param x A fitted model object of class \code{geostan_fit}.
 #' @param summary Logical; should the values be summarized with the mean, standard deviation and quantiles (\code{probs = c(.025, .2, .5, .8, .975)}) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.
@@ -11,6 +11,8 @@
 #' @param digits number of digits to print
 #' @param probs Argument passed to \code{quantile}; which quantiles to calculate and print.
 #' @param fill fill color for histograms and density plots.
+#' @param rates For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to `TRUE`.
+#' @param detrend For CAR models with Gaussian likelihood only (auto-gaussian); if `detrend = TRUE`, the implicit spatial trend will be removed from the residuals. The implicit spatial trend is `Trend = rho * C %*% (Y - Mu)` (see \code{\link[geostan]{stan_car}}). I.e., `resid = Y - (Mu + Trend)`.
 #' @param ... additional arguments.
 #' @return
 #'
@@ -69,10 +71,9 @@
 #' }
 #' 
 #' @export
-#' 
+#' @md
 #' @method print geostan_fit
-#' @name geostan_fit
-#' 
+#' @rdname geostan_fit
 print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digits = 3, ...) {
   pars <- "intercept"
   cat("Spatial Model Results \n")
@@ -114,7 +115,8 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
 
 #' @export
 #' @import graphics
-#' @name geostan_fit
+#' @importFrom signs signs
+#' @rdname geostan_fit
 #' @method plot geostan_fit
 plot.geostan_fit <- function(x, pars, plotfun = "hist", fill = "steelblue4", ...) {
   if(missing(pars)) {
@@ -127,7 +129,7 @@ plot.geostan_fit <- function(x, pars, plotfun = "hist", fill = "steelblue4", ...
       if (x$spatial$method == "BYM") pars <- c(pars, "spatial_scale", "theta_scale")
       if (x$spatial$method == "ICAR") pars <- c(pars, "spatial_scale")
   }
-  rstan::plot(x$stanfit, pars = pars, fill = fill, plotfun = plotfun, ...)
+  rstan::plot(x$stanfit, pars = pars, fill = fill, plotfun = plotfun, ...) + scale_x_continuous(labels = signs::signs) + scale_y_continuous(labels = signs::signs)
 }
 
 
@@ -139,14 +141,14 @@ as.matrix.geostan_fit <- function(x, ...) {
 }
 
 #' @export
-#' @name geostan_fit
+#' @rdname geostan_fit
 #' @method as.data.frame geostan_fit
 as.data.frame.geostan_fit <- function(x, ...) {
     as.data.frame(x$stanfit, ...)
 }
 
 #' @export
-#' @name geostan_fit
+#' @rdname geostan_fit
 #' @method as.array geostan_fit
 as.array.geostan_fit <- function(x, ...){
     as.array(x$stanfit, ...)
@@ -154,43 +156,38 @@ as.array.geostan_fit <- function(x, ...){
 
 
 #' @noRd
-#' 
 .resid <- function(yhat, y) y - yhat
 
-#' @export
-#'
-#' @param rates For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to `TRUE`.
-#' 
+
 #' @method residuals geostan_fit
-#' @name geostan_fit
-#' 
-residuals.geostan_fit <- function(object, summary = TRUE, rates = TRUE) {
+#' @rdname geostan_fit
+#' @export
+residuals.geostan_fit <- function(object, summary = TRUE, rates = TRUE, detrend = TRUE, ...) {
     y <- object$data[,1]
     fits <- fitted(object, summary = FALSE, rates = rates)
-    if (rates && object$family$family == "binomial") y <- y / object$data[,2]
+    if (rates && object$family$family == "binomial") { y <- y / (y + object$data[,2]) }
     if (rates && object$family$family == "poisson" && "offset" %in% c(colnames(object$data))) {
         log.at.risk <- object$data[, "offset"]
         at.risk <- exp( log.at.risk )
         y <- y / at.risk     
     }
     R = sweep(fits, MARGIN = 2, STATS = as.array(y), FUN = .resid)
+    if (object$family$family == "auto_gaussian" && detrend) R <- R - spatial(object, summary = FALSE)
     colnames(R) <- gsub("fitted", "residual", colnames(R))
     if (summary) return( post_summary(R) )
     return (R)  
 }
 
 #' @export
-#'
-#' @param rates For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to `TRUE`.
 #' 
 #' @import stats
 #' @method fitted geostan_fit
-#' @name geostan_fit
+#' @rdname geostan_fit
 fitted.geostan_fit <- function(object, summary = TRUE, rates = TRUE, ...) {
     fits <- as.matrix(object$stanfit, pars = "fitted")
     if (!rates && object$family$family == "binomial") {        
-        denominator <- object$data[,2]
-        fits <- sweep(fits, MARGIN = 2, STATS = as.array(denominator), FUN = "*")
+        trials <- object$data[,1] + object$data[,2]
+        fits <- sweep(fits, MARGIN = 2, STATS = as.array(trials), FUN = "*")
     }
     if (rates && object$family$family == "poisson" && "offset" %in% c(colnames(object$data))) {
         log.at.risk <- object$data[, "offset"]
@@ -209,21 +206,30 @@ fitted.geostan_fit <- function(object, summary = TRUE, rates = TRUE, ...) {
 #' @param summary should the posterior distribution be summarized? If \code{FALSE}, returns a matrix of samples; else a \code{data.frame} with summary statistics of the spatial filter at each observation.
 #' @param ... additional arguments
 #' @export
-#' 
 spatial <- function(object, summary = TRUE, ...) {
     UseMethod("spatial", object)
 }
 
 #' @export
 #' @method spatial geostan_fit
-#' @name geostan_fit
+#' @rdname geostan_fit
 spatial.geostan_fit <- function(object, summary = TRUE, ...) {
   if (is.na(object$spatial$par)) stop("This model does not have a spatial trend component to extract.")
   par <- as.character(object$spatial$par)
-  samples <- as.matrix(object, pars = par, ...)
+  if (object$family$family == "auto_gaussian") {
+      C <- object$C      
+      R <- resid(object, summary = FALSE, detrend = FALSE)
+      rho <- as.matrix(object, pars = "car_rho")
+      spatial.samples <- t(sapply(1:nrow(rho), function(i) {
+          as.numeric( rho[i] * C %*% R[i,] )
+      }))
+  } else {      
+      spatial.samples <- as.matrix(object, pars = par, ...)
+  }
   if (summary) {
-    return ( post_summary(samples) )
+    return ( post_summary(spatial.samples) )
   } else {
-      return( samples )
+      return( spatial.samples )
   }
 }
+

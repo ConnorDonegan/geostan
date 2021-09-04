@@ -135,7 +135,7 @@
     <p>Calculates Theil's entropy-based measure of inequality for a given set of disease incidence rates and populations at risk.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>theil</span><span class='op'>(</span><span class='va'>count</span>, <span class='va'>population</span>, <span class='va'>rates</span>, total <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>theil</span><span class='op'>(</span><span class='va'>count</span>, <span class='va'>population</span>, <span class='va'>rate</span>, total <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -149,12 +149,12 @@
       <td><p>Population size (population at risk).</p></td>
     </tr>
     <tr>
-      <th>total</th>
-      <td><p>If <code>TRUE</code>, the values will all be summed; if <code>FALSE</code>, then each area's contribution to total inequality will be returned.</p></td>
-    </tr>
-    <tr>
       <th>rate</th>
       <td><p>Incidence rates. If provided, case counts will be calculated automatically as <code>cases = rates * Population</code>#'</p></td>
+    </tr>
+    <tr>
+      <th>total</th>
+      <td><p>If <code>TRUE</code>, the values will all be summed; if <code>FALSE</code>, then each area's contribution to total inequality will be returned.</p></td>
     </tr>
     </table>
 

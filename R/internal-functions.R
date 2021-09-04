@@ -123,19 +123,9 @@ par_alias <- function(samples, par, replacement) {
   return(samples)
 }
 
-#' Root mean square error
-#' 
-#' @noRd
-#' @param error numeric vector of residuals
-rmse <- function(error, digits) {
-  rmse <- sqrt(mean(error^2))
-  if(!missing(digits)) rmse <- round(rmse, digits = digits)
-  return(rmse)
-}
-
 #' logit
 #' @noRd
-#' @param p probability, ratio
+#' @param p probability
 logit <- function(p) log(p/(1-p))
 
 #' Build list of priors
@@ -145,7 +135,7 @@ make_priors <- function(user_priors = NULL, y, x, rhs_scale_global, scaling_fact
     link <- match.arg(link)
     if (link == "identity") {
         scale.y <- sd(y)
-        alpha_scale <- max(10 * sd(y), 1)
+        alpha_scale <- max(4 * sd(y), 3)
         alpha_mean <- mean(y)
     }
   if (link == "log") {
@@ -153,13 +143,13 @@ make_priors <- function(user_priors = NULL, y, x, rhs_scale_global, scaling_fact
       y <- log(y / exp(offset))
       alpha_mean <- mean(y)
       scale.y <- sd(y)
-      alpha_scale <- max(10 * scale.y, 1)
+      alpha_scale <- max(4 * scale.y, 3)
   }
   if (link == "logit") {
       y <- y[,1] / (y[,1] + y[,2])
       alpha_mean <- 0
       scale.y <- sd(y)
-      alpha_scale <- 10
+      alpha_scale <- 5
   }
   alpha <- c(location = alpha_mean, scale = alpha_scale)
   priors <- list(intercept = alpha)
@@ -217,7 +207,7 @@ log_sum_exp <- function(x) {
   xmax + log(xsum)
 }
 
-clean_results <- function(samples, pars, is_student, has_re, C, Wx, x, x_me_unbounded_idx, x_me_bounded_idx) {
+clean_results <- function(samples, pars, is_student, has_re, Wx, x, x_me_unbounded_idx, x_me_bounded_idx) {
     n <- nrow(x)
     if ("gamma" %in% pars) {
     g_names = dimnames(Wx)[[2]]
@@ -257,7 +247,7 @@ clean_results <- function(samples, pars, is_student, has_re, C, Wx, x, x_me_unbo
                     Residual_MC = Residual_MC)
     out <- list(summary = summary,
                 diagnostic = diagnostic, stanfit = samples)
-    class(out) <- append("geostan_fit", class(out))    
+    class(out) <- append("geostan_fit", class(out))
     return(out)
 }
 

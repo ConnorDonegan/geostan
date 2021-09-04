@@ -15,7 +15,7 @@ Biarch: true
 Depends: 
     R (>= 3.4.0)
 Imports:
-    spdep,
+    spdep (>= 1.1-8),
     sf,
     ggplot2 (>= 3.0.0),
     bayesplot,
@@ -24,8 +24,12 @@ Imports:
     stats,
     MASS,
     truncnorm,
+    signs,
     gridExtra,
+    utils,
+    Matrix (>= 1.3),
     Rcpp (>= 0.12.0),
+    RcppParallel,	    
     rstan (>= 2.18.1),
     rstantools (>= 2.0.0)
 LinkingTo: 
@@ -33,7 +37,8 @@ LinkingTo:
     Rcpp (>= 0.12.0),
     RcppEigen (>= 0.3.3.3.0),
     rstan (>= 2.18.1),
-    StanHeaders (>= 2.18.0)
+    StanHeaders (>= 2.18.0),
+    RcppParallel     
 Suggests:
     testthat,
     knitr,

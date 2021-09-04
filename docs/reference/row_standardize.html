@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>The Moran coefficient — mc • geostan</title>
+<title>Row-standardize a matrix; safe for zero row-sums. — row_standardize • geostan</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,8 @@
 
 
 
-<meta property="og:title" content="The Moran coefficient — mc" />
-<meta property="og:description" content="The Moran coefficient, a measure of spatial autocorrelation (also known as Global Moran's I)" />
+<meta property="og:title" content="Row-standardize a matrix; safe for zero row-sums. — row_standardize" />
+<meta property="og:description" content="Row-standardize a matrix; safe for zero row-sums." />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
@@ -126,61 +126,56 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>The Moran coefficient</h1>
+    <h1>Row-standardize a matrix; safe for zero row-sums.</h1>
     <small class="dont-index">Source: <a href='https://github.com/ConnorDonegan/geostan/blob/master/R/convenience-functions.R'><code>R/convenience-functions.R</code></a></small>
-    <div class="hidden name"><code>mc.Rd</code></div>
+    <div class="hidden name"><code>row_standardize.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>The Moran coefficient, a measure of spatial autocorrelation (also known as Global Moran's I)</p>
+    <p>Row-standardize a matrix; safe for zero row-sums.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>mc</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span>, digits <span class='op'>=</span> <span class='fl'>3</span>, warn <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>row_standardize</span><span class='op'>(</span><span class='va'>C</span>, warn <span class='op'>=</span> <span class='cn'>TRUE</span>, msg <span class='op'>=</span> <span class='st'>"Row standardizing connectivity matrix"</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>x</th>
-      <td><p>Numeric vector of input values, length n.</p></td>
-    </tr>
-    <tr>
-      <th>w</th>
-      <td><p>An n x n spatial connectivity matrix. See <a href='shape2mat.html'>shape2mat</a>.</p></td>
-    </tr>
-    <tr>
-      <th>digits</th>
-      <td><p>Number of digits to round results to.</p></td>
+      <th>C</th>
+      <td><p>A matrix</p></td>
     </tr>
     <tr>
       <th>warn</th>
-      <td><p>If `FALSE`, no warning will be printed to inform you when observations with zero neighbors have been dropped.</p></td>
+      <td><p>Print `msg` if `warn = TRUE`.</p></td>
+    </tr>
+    <tr>
+      <th>msg</th>
+      <td><p>A warning message to print.</p></td>
     </tr>
     </table>
 
-    <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
-
-    <p>Chun, Yongwan, and Daniel A. Griffith. Spatial statistics and geostatistics: theory and applications for geographic information science and technology. Sage, 2013.</p>
-<p>Cliff, Andrew David, and J. Keith Ord. Spatial processes: models &amp; applications. Taylor &amp; Francis, 1981.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>The Moran coefficient, a numeric value.</p>
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>If any observations with no neighbors are found (i.e. <code><a href='https://rdrr.io/r/base/any.html'>any(Matrix::rowSums(w) == 0)</a></code>) they will be dropped automatically and a message will print stating how many were dropped.</p>
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
-
-    <div class='dont-index'><p><a href='moran_plot.html'>moran_plot</a>, <a href='lisa.html'>lisa</a>, <a href='aple.html'>aple</a></p></div>
+    <p>A row-standardized matrix, W (i.e., all row sums equal 1, or zero).</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
-<span class='va'>w</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, style <span class='op'>=</span> <span class='st'>"W"</span><span class='op'>)</span>
-<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>georgia</span><span class='op'>$</span><span class='va'>ICE</span>
-<span class='fu'>mc</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] 0.519</div><div class='input'>
-</div></pre>
+    <pre class="examples"><div class='input'><span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/colSums.html'>rowSums</a></span><span class='op'>(</span><span class='va'>C</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='error'>Error in rowSums(C): 'x' must be an array of at least two dimensions</span></div><div class='input'><span class='va'>W</span> <span class='op'>&lt;-</span> <span class='fu'>row_standardize</span><span class='op'>(</span><span class='va'>C</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; <span class='message'>Row standardizing connectivity matrix</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='fu'>Matrix</span><span class='fu'>::</span><span class='fu'>summary</span><span class='op'>(</span><span class='va'>W</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; 159 x 159 sparse Matrix of class "dgCMatrix", with 860 entries 
+#&gt;     i j         x
+#&gt; 1  23 1 0.1666667
+#&gt; 2  58 1 0.1428571
+#&gt; 3  59 1 0.1666667
+#&gt; 4 131 1 0.2000000
+#&gt; 5 148 1 0.1428571
+#&gt; 6 159 1 0.1250000</div><div class='input'><span class='fu'>Matrix</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/Matrix/man/colSums.html'>rowSums</a></span><span class='op'>(</span><span class='va'>W</span><span class='op'>)</span>
+</div><div class='output co'>#&gt;   [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+#&gt;  [38] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+#&gt;  [75] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+#&gt; [112] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+#&gt; [149] 1 1 1 1 1 1 1 1 1 1 1</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

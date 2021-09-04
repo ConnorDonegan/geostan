@@ -227,7 +227,7 @@ stan_esf <- function(formula,
     stopifnot(inherits(family, "family"))
     stopifnot(family$family %in% c("gaussian", "student_t", "poisson", "binomial"))
     stopifnot(!missing(data))
-    stopifnot(inherits(C, "matrix"))
+    stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
     stopifnot(all(dim(C) == nrow(data)))
     ## ESF [START] -------------    
     stopifnot(nrow(EV) == nrow(data))
@@ -242,14 +242,13 @@ stan_esf <- function(formula,
     intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0) 
     if (intercept_only) {
         if (!missing(slx)) {
-            stop("You provided a spatial lag of X (slx) term for an intercept only model. Did you intend to include a covariate? If you intend to specify a model in which the only covariate is a spatially-lagged term, you must create this covariate yourself and include it in the main model formula.")
+            stop("You provided a spatial lag of X (slx) term for an intercept only model. Did you intend to include a covariate?")
         }
         x_full <- x_no_Wx <- model.matrix(~ 0, data = tmpdf) 
         dbeta_prior <- 0
         slx <- " "
-        W <- matrix(0, nrow = 1, ncol = 1)
+        W.list <- list(w = 1, v = 1, u = 1)
         dwx <- 0
-        dw_nonzero <- 0
         wx_idx <- a.zero
   } else {
       xraw <- model.matrix(formula, data = tmpdf)
@@ -257,23 +256,19 @@ stan_esf <- function(formula,
       x_no_Wx <- center_x(xraw, center = centerx)
       if (missing(slx)) {
           slx <- " "
-          W <- matrix(0, ncol = 1, nrow = 1)
-          dwx = 0
+          W.list <- list(w = 1, v = 1, u = 1)
           wx_idx = a.zero
-          dw_nonzero <- 0
+          dwx <- 0
           x_full <- x_no_Wx          
       } else {
           stopifnot(inherits(slx, "formula"))
-          if (any(rowSums(C) != 1)) {
-              message("Creating row-standardized W matrix from C to calculate SLX terms: W = C / rowSums(C)")
-          }
-          W <- C / rowSums(C)
+          W <- row_standardize(C, msg =  "Row standardizing connectivity matrix to calculate spatially lagged covaraite(s)")
+          W.list <- rstan::extract_sparse_parts(W)
           Wx <- SLX(f = slx, DF = tmpdf, x = x_no_Wx, W = W)
           dwx <- ncol(Wx)
-          dw_nonzero <- sum(W != 0)
           wx_idx <- as.array( which(paste0("w.", colnames(x_no_Wx)) %in% colnames(Wx)), dim = dwx )
           x_full <- cbind(Wx, x_no_Wx)
-      }      
+      }
       dbeta_prior <- ncol(x_full) 
   }
     ModData <- make_data(formula, tmpdf, x_full)
@@ -303,7 +298,6 @@ stan_esf <- function(formula,
       # if no prior is provided at all for the rhs:
         if (is.null(prior$rhs)) {
             if (missing(p0)) {
-                if (missing(C)) stop("To calculate the prior for the eigenvector coefficients, please provide connectivity matrix C.")
                 p0 <- exp_pars(formula = formula, data = tmpdf, C = C)
                 if(p0 >= ncol(EV)) p0 <- ncol(EV) - 0.1
             }
@@ -340,17 +334,20 @@ stan_esf <- function(formula,
     alpha_tau_prior = priors_made$alpha_tau,
     t_nu_prior = priors_made$nu,
     family = family_int,
+    prior_only = prior_only,    
   ## slx data -------------
-    W = W,
+    W_w = as.array(W.list$w),
+    W_v = as.array(W.list$v),
+    W_u = as.array(W.list$u),
+    dw_nonzero = length(W.list$w),
     dwx = dwx,
-    wx_idx = wx_idx,
+    wx_idx = wx_idx,    
   ## esf data -------------
     dev = dev,
     EV = EV,
     slab_df = priors_made$rhs["slab_df"],
     slab_scale = priors_made$rhs["slab_scale"],    
-    scale_global = priors_made$rhs["scale_global"],
-    prior_only = prior_only
+    scale_global = priors_made$rhs["scale_global"]
     )
     ## ME MODEL STUFF -------------  
     me.list <- prep_me_data(ME, x_no_Wx)
@@ -375,8 +372,7 @@ stan_esf <- function(formula,
     ## CALL STAN -------------    
     samples <- rstan::sampling(stanmodels$esf, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
     ## OUTPUT -------------    
-    if (missing(C)) C <- NA
-    out <- clean_results(samples, pars, is_student, has_re, C, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)  
+    out <- clean_results(samples, pars, is_student, has_re, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)  
     out$data <- ModData
     out$family <- family
     out$formula <- formula
@@ -389,7 +385,7 @@ stan_esf <- function(formula,
     if (!missing(ME)) out$ME <- ME
     out$spatial <- data.frame(par = "esf", method = "ESF")
     R <- resid(out, summary = FALSE)
-    if (inherits(C, "matrix")) out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )    
+    out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )    
   return (out)
 }
 

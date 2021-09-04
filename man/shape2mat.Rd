@@ -6,44 +6,39 @@
 \source{
 Griffith, D. A. (2012). Space, time, and space-time eigenvector filter specifications that account for autocorrelation. Estadística Espanola, 54(177), 7-34.
 
-Griffith, D. A., Chun, Y., Li, B. (2020). Spatial Regression Analysis Using Eigenvector Spatial Filtering. Academic Press, Ch. 8.
-
 Haining, R. P., & Li, G. (2020). Regression Modelling Wih Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.
 }
 \usage{
 shape2mat(
   shape,
-  style = c("B", "W", "C", "S"),
-  t = 1,
-  st.type = "contemp",
-  zero.policy = TRUE,
+  style = c("B", "W"),
   queen = TRUE,
-  snap = sqrt(.Machine$double.eps)
+  snap = sqrt(.Machine$double.eps),
+  t = 1,
+  st.style = c("contemp", "lag")
 )
 }
 \arguments{
 \item{shape}{An object of class \code{sf}, \code{SpatialPolygons} or \code{SpatialPolygonsDataFrame}.}
 
-\item{style}{What kind of coding scheme should be used to create the spatial connectivity matrix? Defaults to "B" for binary; use "W" for row-standardized weights; "C" for globally standardized and "S" for the Tiefelsdorf et al.'s (1999) variance-stabilizing scheme. This is passed internally to \link[spdep]{nb2mat}.}
+\item{style}{What kind of coding scheme should be used to create the spatial connectivity matrix? Defaults to "B" for binary; use "W" for row-standardized weights.}
 
-\item{t}{Number of time periods. Currently only the binary coding scheme is available for space-time connectivity matrices.}
+\item{queen}{Passed to \code{\link[spdep]{poly2nb}} to set the contiguity condition. Defaults to \code{TRUE} so that a single shared boundary point (rather than a shared border/line) between polygons is sufficient for them to be considered neighbors.}
 
-\item{st.type}{For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and "contemp" (the default) for contemporaneous specification.}
+\item{snap}{Passed to \code{\link[spdep]{poly2nb}}; "boundary points less than ‘snap’ distance apart are considered to indicate contiguity."}
 
-\item{zero.policy}{Are regions with zero neighbors allowed? Default \code{zero.policy = TRUE} (allowing regions to have zero neighbors). Also passed to \link[spdep]{nb2mat}.}
+\item{t}{Number of time periods. Only the binary coding scheme is available for space-time connectivity matrices.}
 
-\item{queen}{Passed to \link[spdep]{poly2nb} to set the contiguity condition. Defaults to \code{TRUE} so that a single shared boundary point between polygons is sufficient for them to be considered neighbors.}
-
-\item{snap}{Passed to \link[spdep]{poly2nb}; "boundary points less than ‘snap’ distance apart are considered to indicate contiguity."}
+\item{st.style}{For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and "contemp" (the default) for contemporaneous specification (see Details).}
 }
 \value{
 A spatial connectivity matrix
 }
 \description{
-A wrapper function for a string of \link{spdep} (and other) functions required to convert spatial objects to spatial or spatio-temporal connectivity matrices.
+Creates sparse matrix representations of spatial connectivity structures
 }
 \details{
-Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matrices (Ch. 4) and spatio-temporal connectivity matricies (Ch. 15).
+Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matrices (Ch. 4).
 
 The `lagged' space-time structure connects each observation to its own past (one period lagged) value and the past value of its neighbors. The `contemporaneous' specification links each observation to its neighbors and to its own in situ past (one period lagged) value (Griffith 2012, p. 23).
 }
@@ -54,19 +49,20 @@ data(georgia)
 ## binary adjacency matrix
 C <- shape2mat(georgia, "B")
 ## row sums gives the numbers of neighbors per observation
-rowSums(C)
+Matrix::rowSums(C)
 diag(C)
 
 ## row-standardized matrix 
 W <- shape2mat(georgia, "W")
-rowSums(W)
+Matrix::rowSums(W)
 diag(W)
 
-## for space-time data
-## if you have multiple years with same neighbors
+## space-time matricies 
+## for space-time eigenvector space-time filtering
+## if you have multiple years with same neighbors,
 ## provide the geography (for a single year!) and number of years \code{t}
-## defaults to the contemporaneous connectivity structure
 Cst <- shape2mat(georgia, t = 5)
+EVst <- make_EV(Cst)
 
 }
 \seealso{

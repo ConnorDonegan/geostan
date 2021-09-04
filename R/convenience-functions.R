@@ -66,23 +66,21 @@ n_eff <- function(n, rho) {
 #' w <- shape2mat(georgia, "W")
 #' x <- georgia$ICE
 #' aple(x, w)
-#' 
+#'
+#' @importFrom Matrix t
 aple <- function(x, w, digits = 3) {
     stopifnot(inherits(x, "numeric") | inherits(x, "integer"))
-    stopifnot(inherits(w, "matrix"))
+    stopifnot(inherits(w, "matrix") | inherits(w, "Matrix"))
     stopifnot(all(dim(w) == length(x)))    
-    if (any(rowSums(w) != 1)) {
-        message("Row standardizing w with: w <- w / rowSums(w)")
-        w <- w / rowSums(w)
-    }    
+    if (any(Matrix::rowSums(w) != 1)) w <- row_standardize(w)
     z <- as.numeric(scale(x))
     n <- length(z)
     I <- diag(n)
     lambda <- eigen(w)$values
-    w2 <- (w + t(w)) / 2
-    top <- t(z) %*% w2 %*% z
-    wl <- (t(w) %*% w + as.numeric(t(lambda) %*% lambda) * I / n)
-    bottom <- t(z) %*% wl %*% z
+    w2 <- (w + Matrix::t(w)) / 2
+    top <- Matrix::t(z) %*% w2 %*% z
+    wl <- (Matrix::t(w) %*% w + as.numeric(Matrix::t(lambda) %*% lambda) * I / n)
+    bottom <- Matrix::t(z) %*% wl %*% z
     return( round(as.numeric( top / bottom ), digits = digits) )
 }
 
@@ -97,7 +95,7 @@ aple <- function(x, w, digits = 3) {
 #' @param m The number of samples required. Defaults to \code{m=1} to return an \code{n}-length vector; if \code{m>1}, an \code{m x n} matrix is returned (i.e. each row will contain a sample of correlated values).
 #' @param mu An \code{n}-length vector of mean values. Defaults to a vector of zeros with length equal to \code{nrow(w)}.
 #' @param w Row-standardized \code{n x n} spatial weights matrix.
-#' @param rho Spatial autocorrelation parameter in the range [-1, 1]. Typically a scalar value; otherwise an n-length numeric vector.
+#' @param rho Spatial autocorrelation parameter in the range (-1, 1). Typically a scalar value; otherwise an n-length numeric vector.
 #' @param sigma Scale parameter (standard deviation). Defaults to \code{sigma = 1}. Typically a scalar value; otherwise an n-length numeric vector.
 #' @param ... further arguments passed to \code{MASS::mvrnorm}.
 #' 
@@ -107,7 +105,7 @@ aple <- function(x, w, digits = 3) {
 #'
 #' @details Calls \code{MASS::mvrnorm} internally to draw from the multivariate normal distribution. The covariance matrix is specified following the simultaneous autoregressive (SAR) model. 
 #'
-#' @seealso \link[geostan]{aple}, \link[geostan]{shape2mat}, \link[MASS]{mvrnorm} 
+#' @seealso \code{\link[geostan]{aple}}, \code{\link[geostan]{shape2mat}}
 #' 
 #' @examples
 #' 
@@ -119,9 +117,9 @@ aple <- function(x, w, digits = 3) {
 #' @importFrom MASS mvrnorm
 #' 
 sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
-    stopifnot(inherits(w, "matrix"))
+    stopifnot(inherits(w, "matrix") | inherits(w, "Matrix"))
     stopifnot(ncol(w) == nrow(w))
-    stopifnot(all(rowSums(w) %in% c(0, 1)))
+    stopifnot(all(round(Matrix::rowSums(w), 10) == 1))
     N <- nrow(w)
     if (missing(mu)) {
         mu <- rep(0, N)
@@ -131,7 +129,7 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
     if (!inherits(rho, "numeric") | !length(rho) %in% c(1, N) | any(rho > 1 | rho < -1)) stop("rho must be numeric value within range [-1, 1], or a k-length numeric vector where K=nrow(W).")
     if (!inherits(sigma, "numeric") | !length(sigma) %in% c(1, N) | !all(sigma > 0)) stop("sigma must be a positive numeric value, or k-length numeric vector, with K=nrow(W).")
     I <- diag(N)
-    S <- sigma^2 * solve( (I - rho * t(w)) %*% (I - rho * w) )
+    S <- sigma^2 * solve( (I - rho * Matrix::t(w)) %*% (I - rho * w) )
 ##    S <- crossprod(solve(I - rho * w)) * sigma^2
     x <- MASS::mvrnorm(n = m, mu = mu, Sigma = S, ...)
     return(x)
@@ -150,7 +148,7 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' 
 #' @return The Moran coefficient, a numeric value.
 #'
-#' @details If any observations with no neighbors are found (i.e. \code{any(rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
+#' @details If any observations with no neighbors are found (i.e. \code{any(Matrix::rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
 #'
 #' @seealso \link[geostan]{moran_plot}, \link[geostan]{lisa}, \link[geostan]{aple}
 #' 
@@ -167,14 +165,14 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' Chun, Yongwan, and Daniel A. Griffith. Spatial statistics and geostatistics: theory and applications for geographic information science and technology. Sage, 2013.
 #' 
 #' Cliff, Andrew David, and J. Keith Ord. Spatial processes: models & applications. Taylor & Francis, 1981.
-#'
+#' @importFrom Matrix rowSums
 #' 
 mc <- function(x, w, digits = 3, warn = TRUE) {
     stopifnot(inherits(x, "numeric") | inherits(x, "integer"))
-    stopifnot(inherits(w, "matrix"))
+    stopifnot(inherits(w, "matrix") | inherits(w, "Matrix"))
     stopifnot(all(dim(w) == length(x)))
-    if (any(rowSums(w) == 0)) {
-        zero.idx <- which(rowSums(w) == 0)
+    if (any(Matrix::rowSums(w) == 0)) {
+        zero.idx <- which(Matrix::rowSums(w) == 0)
         if (warn) message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data.")
         x <- x[-zero.idx]
         w <- w[-zero.idx, -zero.idx]
@@ -182,7 +180,7 @@ mc <- function(x, w, digits = 3, warn = TRUE) {
     xbar <- mean(x)
     z <- x - xbar
     ztilde <- as.numeric(w %*% z)
-    A <- sum(rowSums(w))
+    A <- sum(Matrix::rowSums(w))
     n <- length(x)
     mc <- as.numeric( n/A * (z %*% ztilde) / (z %*% z))
     return(round(mc, digits = digits))
@@ -206,7 +204,7 @@ mc <- function(x, w, digits = 3, warn = TRUE) {
 #' @param lwd Width of the regression line. 
 #' @details For details on the symbol parameters see the documentation for \link[ggplot2]{geom_point}.
 #'
-#' If any observations with no neighbors are found (i.e. \code{any(rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
+#' If any observations with no neighbors are found (i.e. \code{any(Matrix::rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
 #' 
 #' @return Returns a \code{gg} plot, a scatter plot with \code{x} on the horizontal and its spatially lagged values on the vertical axis (i.e. a Moran plot).
 #'
@@ -226,12 +224,13 @@ mc <- function(x, w, digits = 3, warn = TRUE) {
 #'
 #' @import ggplot2
 #' @importFrom signs signs
+#' @importFrom Matrix rowSums
 moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 20, col = "darkred", size = 2, alpha = 1, lwd = 0.5) {
     stopifnot(inherits(x, "numeric") | inherits(x, "integer"))
-    stopifnot(inherits(w, "matrix"))
+    stopifnot(inherits(w, "matrix") | inherits(w, "Matrix"))
     stopifnot(all(dim(w) == length(x)))
-    if (any(rowSums(w) == 0)) {
-        zero.idx <- which(rowSums(w) == 0)
+    if (any(Matrix::rowSums(w) == 0)) {
+        zero.idx <- which(Matrix::rowSums(w) == 0)
         message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data.")
         x <- x[-zero.idx]
         w <- w[-zero.idx, -zero.idx]
@@ -275,7 +274,7 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
 #' @description A local indicator of spatial association (lisa).
 #'
 #' @param x Numeric vector of length `n`.
-#' @param w An `n x n` spatial connectivity matrix. See \link[geostan]{shape2mat}. If \code{w} is not row standardized (\code{all(rowSums(w) == 1)}), it will automatically be row-standardized.
+#' @param w An `n x n` spatial connectivity matrix. See \link[geostan]{shape2mat}. If \code{w} is not row standardized (\code{all(Matrix::rowSums(w) == 1)}), it will automatically be row-standardized.
 #' @param type Return the type of association also (High-High, Low-Low, High-Low, and Low-High)? Defaults to \code{FALSE}.
 #'
 #' @details
@@ -286,7 +285,7 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
 #' 
 #' @return If \code{type = FALSE} a numeric vector of lisa values for exploratory analysis of local spatial autocorrelation. If \code{type = TRUE}, a \code{data.frame} with columns \code{zi} (the lisa value) and \code{type}.
 #'
-#' @seealso \link[geostan]{moran_plot}, \link[geostan]{mc}, \link[geostan]{aple}
+#' @seealso \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{aple}}
 #'
 #' @source
 #'
@@ -306,18 +305,15 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
 #' ggplot(georgia, aes(fill = li)) +
 #'   geom_sf() +
 #'   scale_fill_gradient2()
-#' 
+#' @importFrom Matrix rowSums
 lisa <- function(x, w, type = FALSE) {
     stopifnot(length(x) == nrow(w) & length(x) == ncol(w))
-    if (any(rowSums(w) != 1)) {
-        message("Row standardizing w with: w <- w / rowSums(w)")
-        w <- w / rowSums(w)
-    }    
+    if (!all(round(Matrix::rowSums(w), 10) %in% c(0, 1))) w <- row_standardize(w)
     z <- scale(x)
     lag <- as.numeric(w %*% z)
     zi <- as.numeric(z * lag)
-    if (any(rowSums(w) == 0)) {
-        zero.idx <- which(rowSums(w) == 0)
+    if (any(Matrix::rowSums(w) == 0)) {
+        zero.idx <- which(Matrix::rowSums(w) == 0)
         zi[zero.idx] <- NA        
         message(length(zero.idx), " observations with no neighbors found. They will be converted to NA.")
     }     
@@ -337,55 +333,64 @@ lisa <- function(x, w, type = FALSE) {
 #' @param y Either a numeric vector or a \code{geostan_fit} model object (as returned from a call to one of the \code{geostan::stan_*} functions).
 #' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
 #' @param name The name to use on the plot labels; default to "y" or, if \code{y} is a \code{geostan_fit} object, to "Residuals".
-#' @param w An optional spatial connectivity matrix; if not provided, then a row-standardized adjacency matrix will be created using \code{shape2mat(shape, "W")}.
+#' @param w An optional spatial connectivity matrix; if not provided, then a row-standardized adjacency matrix will be created using \code{\link[geostan]{shape2mat}}.
 #' @param plot If \code{FALSE}, return a list of \code{gg} plots.
 #'
-#' @return A grid of spatial diagnostic plots including a Moran plot plus a map and histogram of \code{y}. If a fitted \code{geostan} model is provided, model residuals are plotted and mapped (i.e. \code{y = resid(fit)$mean}).
+#' @param ... Additional arguments passed to \code{\link[geostan]{residuals.geostan_fit}}. For binomail and Poisson models, this includes the option to view the outcome variable as a rate (the default) rather than a count; for \code{\link[geostan]{stan_car}} models with auto-Gaussian likelihood (`fit$family$family = "auto_gaussian"), the residuals will be detrended by default, but this can be changed using `detrend = FALSE`.
+#' @return A grid of spatial diagnostic plots: a map, a scatter Moran plot, and a histogram of \code{y}. If a fitted \code{geostan} model is provided, model residuals are plotted and mapped (i.e. \code{y = resid(fit)$mean}). If `plot = TRUE`, the `ggplots` are drawn using \code{\link[gridExtra]{grid.arrange}}; otherwise, they are returned in a list.
 #'
-#' @seealso \link[geostan]{me_diag}, \link[geostan]{mc}, \link[geostan]{moran_plot}, \link[geostan]{aple}
+#' @seealso \code{\link[geostan]{me_diag}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{aple}}
 #' 
 #' @export
 #' @importFrom gridExtra grid.arrange
+#' @importFrom signs signs
 #' @import ggplot2
 #'
 #' @examples
-#' \dontrun{
 #' library(sf)
 #' data(georgia)
 #' sp_diag(georgia$college, georgia)
-#' fit <- stan_glm(college ~ 1, data = georgia, refresh = 0)
+#'
+#' fit <- stan_glm(log(rate.male) ~ 1, data = georgia, chains = 1, iter = 500)
 #' sp_diag(fit, georgia)
-#' }
+#'
+#' cp <- prep_car_data(shape2mat(georgia))
+#' fit2 <- stan_car(log(rate.male) ~ 1, data = georgia, car_parts = cp, iter = 500, chains = 1)
+#' sp_diag(fit2, georgia)
+#' sp_diag(fit2, georgia, detrend = FALSE)
 #' 
 sp_diag <- function(y,
                    shape,
                    name = "y",
                    w = shape2mat(shape, "W"),
-                   plot = TRUE
+                   plot = TRUE,
+                   ...
                    ) {
     if (inherits(y, "geostan_fit")) {
-        y <- resid(y)$mean
+        y <- residuals(y, summary = TRUE, ...)$mean
         name <- "Residuals"
         }
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
     stopifnot(length(y) == nrow(shape))
     shape$y <- y
-    hist <- ggplot() +
+    hist.y <- ggplot() +
         geom_histogram(aes(y),
                        fill = "gray20",
                        col = "gray90")  +
+        scale_x_continuous(labels = signs::signs) +
         theme_classic() +
         labs(x = name)
     map.y <- ggplot(shape) +
         geom_sf(aes(fill = y),
                 lwd = 0.05,
                 col = "gray20") +
-        scale_fill_gradient2(name = name) +
+        scale_fill_gradient2(name = name,
+                             label = signs::signs) +
         theme_void()
     g.mc <- moran_plot(y, w, xlab = name)
     if (plot) {
-        return( gridExtra::grid.arrange(hist, g.mc, map.y, ncol = 3) )
-    } else return (list(hist, mc.y, map.y))
+        return( gridExtra::grid.arrange(hist.y, g.mc, map.y, ncol = 3) )
+    } else return (list(hist.y, g.mc, map.y))
  }
 
 
@@ -398,15 +403,16 @@ sp_diag <- function(y,
 #' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
 #' @param w An optional spatial connectivity matrix; if not provided, then a row-standardized adjacency matrix will be created using \code{shape2mat(shape, "W")}.
 #' @param probs Lower and upper quantiles of the credible interval to plot. 
-#' @param plot If \code{FALSE}, return a \code{data.frame} with the raw data values and posterior summary of the modeled variable.
+#' @param plot If \code{FALSE}, return a list of \code{ggplot}s and a \code{data.frame} with the raw data values alongside a posterior summary of the modeled variable.
 #' @param size Size of points and lines, passed to \code{geom_pointrange}.
 #' @param index Integer value; use this if you wish to identify observations with the largest `n=index` absolute Delta values; data on the top `n=index` observations ordered by absolute Delta value will be printed to the console and the plots will be labeled with the indices of the identified observations.
 #' 
 #' @return A grid of spatial diagnostic plots for measurement error (i.e. data) models comparing the raw observations to the posterior distribution of the true values (given the specified observations, standard errors, and model). The Moran scatter plot and map depict the difference between the posterior means and the raw observations (i.e. shrinkage). 
 #'
-#' @seealso \link[geostan]{sp_diag}, \link[geostan]{moran_plot}, \link[geostan]{mc}, \link[geostan]{aple}
+#' @seealso \code{\link[geostan]{sp_diag}}, \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{aple}}
 #' @export
 #' @importFrom gridExtra grid.arrange
+#' @importFrom signs signs
 #' @import ggplot2
 #'
 #' @source
@@ -450,8 +456,8 @@ me_diag <- function(fit,
                     size = 0.25,
                     index = 0
                     ) {
+    stopifnot(length(varname) == 1)    
     if (!varname %in% colnames(fit$data)) stop("varname is not found in colnames(fit$data). Provide the name of the variable as it appears in the model formula")
-    if (length(varname) != 1) stop("Provide the name of the variable as it appears in the model formula.")
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
     x.raw <- as.numeric(fit$data[,varname])
     probs = sort(probs)
@@ -471,88 +477,94 @@ me_diag <- function(fit,
         x.upr = x.upr
     )
     df$Delta <- x.mu - x.raw
-    if (plot) {
-        xlbl <- paste(varname, "(raw data)")
-        g.points <-  ggplot(df,
-                            aes(x = x.raw,
-                                y = x.mu,
-                                ymin = x.lwr,
-                                ymax = x.upr
-                                )
-                            ) +
-            geom_abline(
-                slope = 1,
-                intercept = 0,
-                lty = 2
-            ) +
-            geom_pointrange(
-                size = size
-            ) +
-            labs(
-                x = xlbl,
-                y = paste("Posterior Mean and", width, "C.I.")
-            ) +                
-            theme_classic()
-        if (!missing(w)) {
+    xlbl <- paste(varname, "(raw data)")
+    g.points <-  ggplot(df,
+                        aes(x = x.raw,
+                            y = x.mu,
+                            ymin = x.lwr,
+                            ymax = x.upr
+                            )
+                        ) +
+        geom_abline(
+            slope = 1,
+            intercept = 0,
+            lty = 2
+        ) +
+        geom_pointrange(
+            size = size
+        ) +
+        scale_x_continuous(labels = signs::signs) +
+        scale_y_continuous(labels = signs::signs) +
+        labs(
+            x = xlbl,
+            y = paste("Posterior Mean and", width, "C.I.")
+        ) +                
+        theme_classic()
+    if (!missing(w)) {
             g.mc <- moran_plot(df$Delta, w) +
                 labs(
                     x = expression(paste(Delta, ' (centered)'))
-                     )
-        } else {
+                )
+    } else {
             w <- shape2mat(shape, style = "W")
             g.mc <- moran_plot(df$Delta, w) +
                 labs(x = expression(paste(Delta, ' (centered)')))            
-        }
-        map.delta <- ggplot(shape) +
-            geom_sf(aes(fill = df$Delta),
-                    lwd = 0.05,
-                    col = "gray20") +
-            scale_fill_gradient2(name = bquote(Delta)) +
-            theme_void() +
-            theme(
-                legend.position = "bottom"
-            )
-        if (index) {            
-            message("Identifying the top ", index, " observations as ordered by their Delta values (Delta = posterior mean of x - raw x value):")
-            ordered.ids <- order(abs(df$Delta), decreasing = TRUE)[1:index]
-            print(df[ordered.ids, ])
-            df$ID <- NA
-            df$ID[ordered.ids] <- ordered.ids
-            g.points <- g.points +
-                geom_label(aes(label = df$ID),
-                           na.rm = TRUE,
-                           alpha = 0.9
-                           )
-            g.mc <- g.mc +
-                geom_label(aes(label = df$ID),
-                           alpha=0.9,
-                           na.rm = TRUE
-                           )
-            map.delta <- map.delta +
-                geom_sf(aes(col = !is.na(df$ID),
-                            fill = NULL),
-                        fill = alpha("white", 0)) +
-                scale_color_manual(
+    }
+    map.delta <- ggplot(shape) +
+        geom_sf(aes(fill = df$Delta),
+                lwd = 0.05,
+                col = "gray20") +
+        scale_fill_gradient2(name = bquote(Delta),
+                             label = signs::signs) +
+    theme_void() +
+    theme(
+        legend.position = "right"
+    )
+    if (index) {            
+        message("Identifying the top ", index, " observations as ordered by their Delta values (Delta = posterior mean of x - raw x value):")
+        ordered.ids <- order(abs(df$Delta), decreasing = TRUE)[1:index]
+        print(df[ordered.ids, ])
+        df$ID <- NA
+        df$ID[ordered.ids] <- ordered.ids
+        g.points <- g.points +
+            geom_label(aes(label = df$ID),
+                       na.rm = TRUE,
+                       alpha = 0.9
+                       )
+        g.mc <- g.mc +
+            geom_label(aes(label = df$ID),
+                       alpha=0.9,
+                       na.rm = TRUE
+                       )
+        map.delta <- map.delta +
+            geom_sf(aes(col = !is.na(df$ID),
+                        fill = NULL),
+                    fill = alpha("white", 0)) +
+            scale_color_manual(
                     breaks =  c(FALSE, TRUE),
                     values = c(NA, "black"),
                     guide = FALSE
-                    )
+            )
                     
-        }
+    }
+    if (plot) {
         return (gridExtra::grid.arrange(g.points, g.mc, map.delta, ncol = 3))
-    } else return(df)
+    } else {
+        res.list <- list(g.points, g.mc, map.delta, df)
+        return(res.list)
+    }
 }
 
 
 #' Extract eigenfunctions of a connectivity matrix for spatial filtering
 #'
 #' @export
-#' @param C A binary spatial weights matrix. See \link[geostan]{shape2mat} or \link[spdep]{nb2mat}.
+#' @param C A binary spatial weights matrix. See \code{\link[geostan]{shape2mat}}.
 #' @param nsa Logical. Default of \code{nsa = FALSE} excludes eigenvectors capturing negative spatial autocorrelation.
 #'  Setting \code{nsa = TRUE} will result in a candidate set of EVs that contains eigenvectors representing positive and negative SA.
 #' @param threshold Defaults to \code{threshold=0.2} to exclude eigenvectors representing spatial autocorrelation levels that are less than \code{threshold} times the maximum possible Moran coefficient achievable for the given spatial connectivity matrix. If \code{theshold = 0}, the eigenvector of constants (with eigenvalue of zero) will be dropped automatically.
 #' @param values Should eigenvalues be returned also? Defaults to \code{FALSE}.
-#' @details Returns a set of EVs limited to those with |MC| > \code{threshold} if \code{nsa = TRUE} or MC > \code{threshold} if \code{nsa = FALSE}, along with corresponding eigenvalues (optionally). Given a spatial connectivity matrix C, the function returns eigenvectors from a transformed spatial weights matrix.
+#' @details Returns a set of eigenvectors related to the Moran coefficient (MC), limited to those eigenvectors with |MC| > \code{threshold} if \code{nsa = TRUE} or MC > \code{threshold} if \code{nsa = FALSE}, optionally with corresponding eigenvalues. 
 #' @source
 #'
 #' Daniel Griffith and Yongwan Chun. 2014. "Spatial Autocorrelation and Spatial Filtering." in M. M. Fischer and P. Nijkamp (eds.), \emph{Handbook of Regional Science.} Springer.
@@ -570,16 +582,21 @@ me_diag <- function(fit,
 #' ggplot(georgia) +
 #'   geom_sf(aes(fill = EV[,1])) +
 #'   scale_fill_gradient2()
-#' 
+#' @importFrom Matrix isSymmetric t
 make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
-  if (!isSymmetric(C)) C <- (t(C) + C) / 2
+    if (!Matrix::isSymmetric(C)) {
+        message("Coercing C to be symmetric with: C <- (t(C) + C) / 2")
+        C <- (Matrix::t(C) + C) / 2
+    }
   N <- nrow(C)
-  M <- diag(N) - matrix(1, N, N)/N
+  M <- Matrix::Diagonal(N) - Matrix::Matrix(1, nrow = N, ncol = N)/N
   MCM <- M %*% C %*% M
   eigens <- eigen(MCM, symmetric = TRUE)
   if(nsa) {
     idx = abs(eigens$values/eigens$values[1]) >= threshold
-  } else idx <- eigens$values/eigens$values[1] >= threshold
+  } else {
+      idx <- eigens$values/eigens$values[1] >= threshold
+  }
   v <- round(eigens$values / eigens$values[1], 12)
   if (any(v == 0)) {
     rmdx <- which(v == 0)
@@ -594,18 +611,23 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
     return(EV)
 }
 
+
 #' Create spatial and space-time connectivity matrices
 #'
-#' @export
-#' @import spdep
-#' @description A wrapper function for a string of \link{spdep} (and other) functions required to convert spatial objects to spatial or spatio-temporal connectivity matrices.
+#' @description Creates sparse matrix representations of spatial connectivity structures
+#' 
 #' @param shape An object of class \code{sf}, \code{SpatialPolygons} or \code{SpatialPolygonsDataFrame}.
-#' @param style What kind of coding scheme should be used to create the spatial connectivity matrix? Defaults to "B" for binary; use "W" for row-standardized weights; "C" for globally standardized and "S" for the Tiefelsdorf et al.'s (1999) variance-stabilizing scheme. This is passed internally to \link[spdep]{nb2mat}.
-#' @param t Number of time periods. Currently only the binary coding scheme is available for space-time connectivity matrices.
-#' @param st.type For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and "contemp" (the default) for contemporaneous specification.
-#' @param zero.policy Are regions with zero neighbors allowed? Default \code{zero.policy = TRUE} (allowing regions to have zero neighbors). Also passed to \link[spdep]{nb2mat}.
-#' @param queen Passed to \link[spdep]{poly2nb} to set the contiguity condition. Defaults to \code{TRUE} so that a single shared boundary point between polygons is sufficient for them to be considered neighbors.
-#' @param snap Passed to \link[spdep]{poly2nb}; "boundary points less than ‘snap’ distance apart are considered to indicate contiguity."
+#' 
+#' @param style What kind of coding scheme should be used to create the spatial connectivity matrix? Defaults to "B" for binary; use "W" for row-standardized weights.
+#'
+#' @param queen Passed to \code{\link[spdep]{poly2nb}} to set the contiguity condition. Defaults to \code{TRUE} so that a single shared boundary point (rather than a shared border/line) between polygons is sufficient for them to be considered neighbors.
+#' 
+#' @param snap Passed to \code{\link[spdep]{poly2nb}}; "boundary points less than ‘snap’ distance apart are considered to indicate contiguity."
+#' 
+#' @param t Number of time periods. Only the binary coding scheme is available for space-time connectivity matrices.
+#' 
+#' @param st.style For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and "contemp" (the default) for contemporaneous specification (see Details).
+#' 
 #' 
 #' @return A spatial connectivity matrix
 #'
@@ -613,14 +635,13 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' 
 #' @details
 #'
-#' Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matrices (Ch. 4) and spatio-temporal connectivity matricies (Ch. 15).
+#' Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matrices (Ch. 4).
 #'
 #' The `lagged' space-time structure connects each observation to its own past (one period lagged) value and the past value of its neighbors. The `contemporaneous' specification links each observation to its neighbors and to its own in situ past (one period lagged) value (Griffith 2012, p. 23).
+#' 
 #' @source
 #'
 #' Griffith, D. A. (2012). Space, time, and space-time eigenvector filter specifications that account for autocorrelation. Estadística Espanola, 54(177), 7-34.
-#' 
-#' Griffith, D. A., Chun, Y., Li, B. (2020). Spatial Regression Analysis Using Eigenvector Spatial Filtering. Academic Press, Ch. 8.
 #'
 #' Haining, R. P., & Li, G. (2020). Regression Modelling Wih Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.
 #' 
@@ -632,41 +653,91 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' ## binary adjacency matrix
 #' C <- shape2mat(georgia, "B")
 #' ## row sums gives the numbers of neighbors per observation
-#' rowSums(C)
+#' Matrix::rowSums(C)
 #' diag(C)
 #'
 #' ## row-standardized matrix 
 #' W <- shape2mat(georgia, "W")
-#' rowSums(W)
+#' Matrix::rowSums(W)
 #' diag(W)
-#' 
-#' ## for space-time data
-#' ## if you have multiple years with same neighbors
+#'
+#' ## space-time matricies 
+#' ## for space-time eigenvector space-time filtering
+#' ## if you have multiple years with same neighbors,
 #' ## provide the geography (for a single year!) and number of years \code{t}
-#' ## defaults to the contemporaneous connectivity structure
 #' Cst <- shape2mat(georgia, t = 5)
+#' EVst <- make_EV(Cst)
 #' 
-shape2mat <- function(shape, style = c("B", "W", "C", "S"), t = 1, st.type = "contemp", zero.policy = TRUE, queen = TRUE, snap = sqrt(.Machine$double.eps)) {
-  style <- match.arg(style)
-  shape_class <- class(shape)
-  if (!any(c("sf", "SpatialPolygonsDataFrame", "SpatialPolygons") %in% shape_class)) stop("Shape must be of class SpatialPolygons, SpatialPolygonsDataFrame, or sf (simple features).")
-      w <- spdep::nb2mat(spdep::poly2nb(shape, queen = queen, snap = snap), style = style, zero.policy = zero.policy)
-  attributes(w)$dimnames <- NULL
-  if (t > 1) { 
-      if (style != "B") stop ("Only the binary coding scheme (style = 'B') has been implemented for space-time matrices, but you can row-standardize any matrix using: 'W = C / rowSums(C)' where C is a binary-coded connectivity matrix.")
+#' @importFrom Matrix sparseMatrix rowSums
+#' @importFrom spdep poly2nb
+#' @export
+#'
+shape2mat <- function(shape,
+                       style = c("B", "W"),
+                       queen = TRUE,
+                       snap = sqrt(.Machine$double.eps),
+                       t = 1,
+                       st.style = c("contemp", "lag"))
+{
+    style <- match.arg(style)
+    st.style <- match.arg(st.style)
+    nb <- spdep::poly2nb(shape, queen = queen, snap = snap)
+    ids <- 1:nrow(shape)
+    dims <- rep(length(ids), 2)
+    Ni <- unlist(lapply(nb, count_neighbors))
+    i <- rep(ids, times = Ni)
+    j <- do.call("c", nb)
+    j <- j[j>0]
+    stopifnot(length(i) == length(j))
+    C <- Matrix::sparseMatrix(i = i, j = j, dims = dims)
+    if (style == "W") C <- row_standardize(C, warn = FALSE)
+    if (t > 1) { 
+        if (style != "B") stop ("Only the binary coding scheme has been implemented for space-time matrices.")
       ## binary temporal connectivity matrix
-      s <- nrow(w)
+      s <- nrow(C)
       Ct <- matrix(0, nrow = t, ncol = t)
       for (i in 2:t) Ct[i, i-1] <- Ct[i-1, i] <- 1
-      if (st.type == "lag") w = kronecker(Ct, (w + diag(s)))
-      if (st.type == "contemp") {
+      if (st.style == "lag") C = kronecker(Ct, (C + diag(s)))
+      if (st.style == "contemp") {
           ## create identify matrices for space and time
           It <- diag(1, nrow = t)
           Is <- diag(1, nrow = s)
-          w <- kronecker(It, w) + kronecker(Ct, Is)
+          C <- kronecker(It, C) + kronecker(Ct, Is)
       }
-  }
-  return(w)
+  }    
+    return(C)
+}
+
+
+#' Used internally to count neights per element of an nb list; as in, `Ni <- unlist(lapply(nb, count_neighbors))`
+#' @param z an element from spdep's nb object
+#' @noRd 
+count_neighbors <- function(z) {
+    if (length(z) == 1 && z == 0) 0 else length(z)
+}
+
+#' Row-standardize a matrix; safe for zero row-sums.
+#'
+#' @param C A matrix
+#' @param warn Print `msg` if `warn = TRUE`.
+#' @param msg A warning message to print.
+#' @return A row-standardized matrix, W (i.e., all row sums equal 1, or zero).
+#' @examples
+#' A <- shape2mat(georgia)
+#' head(Matrix::summary(A))
+#' Matrix::rowSums(A)
+#' W <- row_standardize(A)
+#' head(Matrix::summary(W))
+#' Matrix::rowSums(W)
+#' @importFrom Matrix rowSums
+#' @export
+row_standardize <- function(C, warn = TRUE, msg = "Row standardizing connectivity matrix") {
+    stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
+    if (warn) message(msg)    
+    Ni <- Matrix::rowSums(C)
+    Ni[Ni == 0] <- 1
+    W <- C / Ni
+    return (W)
 }
 
 #' Student t family
@@ -696,9 +767,9 @@ auto_gaussian <- function() {
 #' WAIC
 #'
 #' @description Widely Application Information Criteria (WAIC) for model evaluation
-#' @export
-#' @param fit An \code{geostan_fit} object or any Stan model with a parameter named "log_lik", the pointwise log predictive likelihood
-#' @param pointwise Logical, should a vector of values for each observation be returned? 
+#' 
+#' @param fit An \code{geostan_fit} object or any Stan model with a parameter named "log_lik", the pointwise log likelihood of the observations.
+#' @param pointwise Logical (defaults to `FALSE`), should a vector of values for each observation be returned? 
 #' @param digits Round results to this many digits.
 #' @return A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density \code{Lpd}. If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
 #' 
@@ -711,6 +782,7 @@ auto_gaussian <- function() {
 #' fit <- stan_glm(college ~ 1, data = georgia)
 #' waic(fit)
 #' }
+#' @export
 waic <- function(fit, pointwise = FALSE, digits = 2) {
   ll <- as.matrix(fit, pars = "log_lik")
   nsamples <- nrow(ll)
@@ -732,13 +804,14 @@ waic <- function(fit, pointwise = FALSE, digits = 2) {
 #' @param C Connectivity matrix.
 #' 
 #' @source
+#' 
 #'  Chun, Yongwan and Griffith, Daniel A. (2013). Spatial statistics and geostatistics. Sage, p. 18.
 #' 
 #' @return Returns a numeric value.
-#'
 expected_mc <- function(X, C) {
+    C <- as.matrix(C)
     n = nrow(X)
-    k = ncol(X)
+    k = ncol(X)    
     under <- (n-k) * sum(rowSums(C))
     mc = -n * sum(diag( solve(t(X) %*% X) %*% t(X) %*% C %*% X )) / under
     return(as.numeric(mc))
@@ -746,11 +819,9 @@ expected_mc <- function(X, C) {
 
 #' Expected dimensions of an eigenvector spatial filter
 #'
-#' @description Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression.
-#' For \link[geostan]{stan_esf} the result can be
-#' used to set the hyper parameter \code{p0}, controlling the hyper-prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior.
-#' @export
-#' @importFrom stats model.matrix residuals lm
+#' @description Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression. This is used internally for \code{\link[geostan]{stan_esf}}; the result can be used to set the hyper parameter \code{p0}, controlling the prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior.
+#' 
+#' 
 #' @param formula Model formula.
 #' @param data The data used to fit the model; must be coercible to a dataframe for use in \code{model.matrix}.
 #' @param C An N x N binary connectivity matrix.
@@ -759,21 +830,24 @@ expected_mc <- function(X, C) {
 #' @details Following Chun et al. (2016), the expected number of eigenvectors required to remove residual spatial autocorrelation from a model
 #'  is an increasing function of the degree of spatial autocorrelation in the outcome variable and the number of links in the connectivity matrix.
 #'
-#' @seealso \link[geostan]{stan_esf}
+#' @seealso \code{\link[geostan]{stan_esf}}
 #' 
 #' @source
 #'
 #' Chun, Yongwan, Griffith, Daniel A., Lee, Mongyeon, and Sinha, Parmanand (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems 18(1): 67-85.
 #' 
-#' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. Spatial Statistics. \url{https://doi.org/10.1016/j.spasta.2020.100450}
+#' Donegan, C., Y. Chun and A. E. Hughes (2020). "Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors." Spatial Statistics. \url{https://doi.org/10.1016/j.spasta.2020.100450}
 #' 
+#' @importFrom stats model.matrix residuals lm
+#' @export
+#' @importFrom Matrix summary
 exp_pars <- function(formula, data, C) {
-  nlinks <- length(which(C != 0))
-  N <- nrow(C)
-    if (any(!C %in% c(0, 1))) {
-        C <- apply(C, 2, function(i) ifelse(i != 0, 1, 0))
-      }
-  M <- diag(N) - matrix(1, N, N)/N
+    nlinks <- nrow(Matrix::summary(C))
+    N <- nrow(C)
+    ## if (any(!C %in% c(0, 1))) {
+    ##     C <- apply(C, 2, function(i) ifelse(i != 0, 1, 0))
+    ## }
+  M <- Matrix::Diagonal(N) - Matrix::Matrix(1, nrow = N, ncol = N)/N
   MCM <- M %*% C %*% M
   eigens <- eigen(MCM, symmetric = TRUE)
   npos <- sum(eigens$values > 0)
@@ -796,43 +870,50 @@ exp_pars <- function(formula, data, C) {
 #' Edge list
 #'
 #' @description Creates a list of connected nodes following the graph representation of a spatial connectivity matrix.
-#' @export
-#' @param w A connectivity matrix where connection between two nodes is indicated by non-zero entries.
+#' 
+#' @param C A connectivity matrix where connection between two nodes is indicated by non-zero entries.
+#' @param unique_pairs_only By default, only unique pairs of nodes (i, j) will be included in the output.
 #' 
 #' @return
 #' 
-#' Returns a \code{data.frame} with three columns. The first two columns (\code{node1} and \code{node2}) contain the indices of connected pairs of nodes; only unique pairs of nodes are included. The third column (\code{weight}) contains the element \code{w[node1, node2]}.
+#' Returns a \code{data.frame} with three columns. The first two columns (\code{node1} and \code{node2}) contain the indices of connected pairs of nodes; only unique pairs of nodes are included (unless `unique_pairs_only = FALSE`). The third column (\code{weight}) contains the corresponding matrix element, \code{C[node1, node2]}.
 #'
-#' @details This is used internally for \link[geostan]{stan_icar} and it is also helpful for creating the scaling factor for BYM2 models fit with \code{stan_icar}.
+#' @details This is used internally for \code{\link[geostan]{stan_icar}} and it is also helpful for creating the scaling factor for BYM2 models fit with \code{\link[geostan]{stan_icar}}.
 #'
-#' @seealso \link[geostan]{shape2mat}, \link[geostan]{prep_icar_data}, \link[geostan]{stan_icar}
+#' @seealso \code{\link[geostan]{shape2mat}}, \code{\link[geostan]{prep_icar_data}}, \code{\link[geostan]{stan_icar}}
 #' @examples
 #' 
 #' data(sentencing)
 #' C <- shape2mat(sentencing)
 #' nbs <- edges(C)
 #' head(nbs)
-#' 
-edges <- function(w) {
-  lw <- apply(w, 1, function(r) {
-    which(r != 0)
-  })
-  all.edges <- lapply(1:length(lw), function(i) {
-    nbs <- lw[[i]]
-    if(length(nbs)) data.frame(node1 = i, node2 = nbs, weight = w[i, nbs])
-  })
-  all.edges <- do.call("rbind", all.edges)
-  edges <- all.edges[which(all.edges$node1 < all.edges$node2),]
-  return(edges)
+#'
+#' @importFrom Matrix summary
+#' @export
+edges <- function(C, unique_pairs_only = TRUE) {
+    stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
+    edges <- Matrix::summary(Matrix::Matrix(C))
+    names(edges)[1:2] <- c("node1", "node2")
+    if ("x" %in% names(edges)){
+        edges$x <- as.numeric(edges$x)
+        names(edges)[3] <- "weight"
+    } else {
+        edges$weight <- 1
+    }
+    edges <- edges[order(edges$node1, edges$node2), ]
+    if (unique_pairs_only) edges <- edges[which(edges$node1 < edges$node2),]
+    rownames(edges) <- NULL
+    class(edges) <- "data.frame"
+    return(edges)
 }
 
 #' Standard error of log(x)
 #'
 #' @description Transform the standard error of \code{x} to standard error of \code{log(x)}.
 #'
-#' @param x Estimated value of the variable \code{x}
+#' @param x An estimate
 #' @param se Standard error of \code{x}
-#' @param method \code{"delta"} method uses a Taylor series approximation; the default method \code{"mc"} uses a monte carlo method.
+#' @param method The \code{"delta"} method uses a Taylor series approximation; the default method, \code{"mc"}, uses a simple monte carlo method.
 #' @param nsim Number of draws to take if \code{method = "mc"}.
 #' @param bounds Lower and upper bounds for the variable, used in the monte carlo method. Must be a length-two numeric vector with lower bound greater than or equal to zero (i.e. \code{c(lower, upper)} as in default \code{bounds = c(0, Inf)}.
 #' @details The delta method returns \code{x^(-1) * se}. The monte carlo method is detailed in the examples section.
@@ -880,8 +961,8 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 5e3, bounds = c(0, I
 #'
 #' @description Given a symmetric n x n connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan.
 #' 
-#' @param C connectivity matrix
-#' @param inv_sqrt_scale_factor optional vector of scale factors for each connected portion of the graph structure. If not provided by the user it will be fixed to a vector of ones. 
+#' @param C Connectivity matrix
+#' @param scale_factor Optional vector of scale factors for each connected portion of the graph structure. If not provided by the user it will be fixed to a vector of ones. 
 #' 
 #' @importFrom spdep poly2nb n.comp.nb
 #' 
@@ -903,9 +984,9 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 5e3, bounds = c(0, I
 #'
 #' @details
 #'
-#' This is used internally to prepare data for \link[geostan]{stan_icar} models. It can also be helpful for fitting custom ICAR models outside of \code{geostan}. It relies on \link[spdep]{graph2nb} and \link[spdep]{n.comp.nb}.
+#' This is used internally to prepare data for \link[geostan]{stan_icar} models. It can also be helpful for fitting custom ICAR models outside of \code{geostan}. 
 #' 
-#' @seealso \link[geostan]{stan_icar}, \link[geostan]{edges}, \link[geostan]{shape2mat}
+#' @seealso \code{\link[geostan]{stan_icar}}, \code{\link[geostan]{edges}}, \code{\link[geostan]{shape2mat}}
 #'
 #' @examples
 #' 
@@ -915,14 +996,14 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 5e3, bounds = c(0, I
 #' 
 #' @export
 #' @importFrom spdep n.comp.nb graph2nb
-prep_icar_data <- function (C, inv_sqrt_scale_factor = NULL) {
+prep_icar_data <- function(C, scale_factor = NULL) {
   n <- nrow(C)
-  E <- edges(C)
+  E <- edges(C, unique_pairs_only = TRUE)
   G <- list(np = nrow(C), from = E$node1, to = E$node2, nedges = nrow(E))
   class(G) <- "Graph"
   nb2 <- spdep::n.comp.nb(spdep::graph2nb(G))
   k = nb2$nc
-  if (inherits(inv_sqrt_scale_factor, "NULL")) inv_sqrt_scale_factor <- array(rep(1, k), dim = k)
+  if (inherits(scale_factor, "NULL")) scale_factor <- array(rep(1, k), dim = k)
   group_idx = NULL
   for (j in 1:k) group_idx <- c(group_idx, which(nb2$comp.id == j))
   group_size <- NULL
@@ -937,7 +1018,7 @@ prep_icar_data <- function (C, inv_sqrt_scale_factor = NULL) {
     A = model.matrix(~ factor(ID))
     A <- as.matrix(A[,-1])
   } else {
-    A <- model.matrix(~ 0, data.frame(C))
+    A <- model.matrix(~ 0, data.frame(a=1:n))
   }
   l <- list(k = k, 
             group_size = array(group_size, dim = k), 
@@ -948,16 +1029,14 @@ prep_icar_data <- function (C, inv_sqrt_scale_factor = NULL) {
             group_idx = array(group_idx, dim = n), 
             m = m,
             A = A,
-            inv_sqrt_scale_factor = inv_sqrt_scale_factor, 
+            scale_factor = scale_factor, 
             comp_id = nb2$comp.id)
   return(l)
 }
 
 
-#' Prepare data for Stan CAR model
+#' Prepare data for a Stan CAR model
 #'
-#' @export
-#' @importFrom rstan extract_sparse_parts
 #' 
 #' @param A Binary adjacency matrix; for `style = DCAR`, provide a symmetric matrix of distances instead. The distance matrix should be sparse, meaning that most distances should be zero (usually obtained by setting some threshold distance beyond which all are zero).
 #' 
@@ -1006,16 +1085,23 @@ prep_icar_data <- function (C, inv_sqrt_scale_factor = NULL) {
 #'
 #' ## diagnostics
 #' sp_diag(fit, georgia)
-#' 
+#' @export
+#' @importFrom rstan extract_sparse_parts
+#' @importFrom Matrix isSymmetric Matrix rowSums summary
 prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), lambda = TRUE, cmat = TRUE, k = 1) {
     style = match.arg(style)
-    stopifnot(inherits(A, "matrix"))
-    if (style %in% c("ACAR", "WCAR")) stopifnot(all(A %in% c(1,0)))
+    stopifnot(inherits(A, "matrix") | inherits(A, "Matrix"))
+    stopifnot(all(Matrix::rowSums(A) > 0))
+    A <- Matrix::Matrix(A, sparse = TRUE)
     n <- nrow(A)
     if (style == "ACAR") {
-        Ni <- rowSums(A)
-        C <- matrix(0, nrow = n, ncol = n)
-        for (i in 1:n) for (j in 1:n) C[i,j] <- A[i,j ] * sqrt( Ni[j] ) / sqrt( Ni[i] )
+        Ni <- Matrix::rowSums(A)
+        A.idx <- Matrix::summary(A)
+        C <- Matrix::Matrix(0, nrow = n, ncol = n)        
+        for (m in 1:nrow(A.idx)) {
+            i <- A.idx[m, "i"]; j <- A.idx[m, "j"]
+            C[i,j] <- sqrt( Ni[j] ) / sqrt( Ni[i] )
+        }
         M_diag <- 1 / Ni
     }
     if (style == "DCAR") {
@@ -1024,17 +1110,21 @@ prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), lambda = TRUE, c
         max.dinv <- max(dinv)
         dinv <- dinv / max.dinv
         # conditional variance proportional to total d^-k
-        dinv.sums <- rowSums(dinv)
+        dinv.sums <- Matrix::rowSums(dinv)
         M_diag <- 1 / dinv.sums
         # C scaled by sqrt of ratio of total distances
-        C <- matrix(0, nrow = n, ncol = n)
-        for (i in 1:n) for (j in 1:n) C[i,j] <- dinv[i,j] * sqrt(dinv.sums[j] / dinv.sums[i])
+        dinv.idx <- Matrix::summary(dinv)
+        C <- Matrix::Matrix(0, nrow = n, ncol = n)        
+        for (m in 1:nrow(dinv.idx)) {
+            i <- A.idx[m, "i"]; j <- A.idx[m, "j"]
+            C[i,j] <- dinv[i,j] * sqrt(dinv.sums[j] / dinv.sums[i])
+        }
     }
     if (style == "WCAR") {
-        Ni <- rowSums(A)
+        Ni <- Matrix::rowSums(A)
         C <- A / Ni
-        M_diag <- 1 / Ni
-        stopifnot( isSymmetric.matrix(C %*% diag(M_diag), check.attributes = FALSE) )
+        M_diag <- 1 / Ni        
+        stopifnot( Matrix::isSymmetric(C %*% Matrix::Diagonal(x = M_diag), check.attributes = FALSE) )
         car.dl <- rstan::extract_sparse_parts(A)
         names(car.dl) <- paste0("Ax_", names(car.dl))
         car.dl$nAx_w <- length(car.dl$Ax_w)
@@ -1042,8 +1132,8 @@ prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), lambda = TRUE, c
         car.dl$nC <- 1
         car.dl$WCAR <- 1
     } else {
-        stopifnot( isSymmetric.matrix(C %*% diag(M_diag), check.attributes = FALSE) )
-        car.dl <- rstan::extract_sparse_parts(diag(n) - C)
+        stopifnot( Matrix::isSymmetric(C %*% Matrix::Diagonal(x = M_diag), check.attributes = FALSE) )        
+        car.dl <- rstan::extract_sparse_parts(Matrix::Diagonal(n) - C)
         names(car.dl) <- paste0("Ax_", names(car.dl))
         car.dl$nAx_w <- length(car.dl$Ax_w)        
         car.dl$Cidx <- which( car.dl$Ax_w != 1 )
@@ -1053,10 +1143,10 @@ prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), lambda = TRUE, c
     car.dl$Delta_inv <- 1 / M_diag
     car.dl$style <- style
     car.dl$log_det_Delta_inv = base::determinant(diag(car.dl$Delta_inv), log = TRUE)$modulus
-    car.dl$dim_C <- n
+    car.dl$n <- n
     if (lambda) {
-        MCM <- diag( 1 / sqrt(M_diag) ) %*% C %*% diag( sqrt(M_diag) )
-        stopifnot(isSymmetric.matrix(MCM, check.attributes = FALSE))
+        MCM <- Matrix::Diagonal(x = 1 / sqrt(M_diag)) %*% C %*% Matrix::Diagonal(x = sqrt(M_diag))
+        stopifnot(Matrix::isSymmetric(MCM, check.attributes = FALSE))
         lambda <- eigen(MCM)$values
         cat ("Range of permissible rho values: ", 1 / range(lambda), "\n")
         car.dl$lambda <- lambda
@@ -1064,7 +1154,6 @@ prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), lambda = TRUE, c
     if (cmat) car.dl$C <- C
     return (car.dl)
 }
-
 
 
 #' Download shapefiles
@@ -1094,56 +1183,5 @@ get_shp <- function(url, folder = "shape") {
 	download.file(url, destfile = tmp.dir)
 	unzip(tmp.dir, exdir = folder)
 	list.files(folder, full.names = TRUE)
-}
-
-#' Theil's inequality index
-#'
-#' @export
-#' 
-#' @md
-#' 
-#' @description Calculates Theil's entropy-based measure of inequality for a given set of disease incidence rates and populations at risk. 
-#'
-#' @param count Number of cases (e.g., disease incidence). 
-#' @param population Population size (population at risk).
-#' @param rate Incidence rates. If provided, case counts will be calculated automatically as `cases = rates * Population`#' 
-#' @param total If `TRUE`, the values will all be summed; if `FALSE`, then each area's contribution to total inequality will be returned.
-#' @return if `total = TRUE`, a scalar value; if `total = FALSE`, a vector of numeric values, where each value represents that area's contribution to total inequality.
-#' 
-#' @details
-#'
-#' Theil's index is a good index of inequality in disease and mortality burdens when multiple groups are being considered, as is typical of geospatial analysis. It provides a summary measure of inequality across a set of areal units, such as counties, that may be tracked over time. Also, it is interesting because it is additive, and thus admits of simple decompositions. 
-#'
-#' The index measures discrepancies between a population's share of the disease burden, `omega`, and their share of the population, `eta`. A situation of zero inequality would imply that each population's share of cases is equal to its population share, or, `omega=eta`. Each population's contribution to total inequality is calculated as:
-#' ```
-#'              T_i = omega_i * [log(omega_i/eta_i)],
-#' ```
-#' the log-ratio of case-share to population-share, weighted by their share of cases. Theil's index for all areas is the sum of each area's T_i:
-#' ```
-#'              T = sum_(i=1)^n T_i.
-#' ```
-#' Theil's T is thus a weighted mean of log-ratios of case shares to population shares, where each log-ratio (which we may describe as a raw inequality score) is weighted by its share of total cases. The index has a minimum of zero and a maximum of `log(N)`, where `N` is the number of units (e.g., number of counties).
-
-#' Theil's index is based on Shannon's information theory, he used it to study a variety of topics, including income inequality and racial segregation. Theil's index is often of great interest because it is additive across multiple scales, such as when the data has a nested structure to it (e.g., counties within states). The Texas Inequality Project provides introductions to, and examples of using, the Theil index (Conceicao and Ferreira, 2000). However, this `R` function is just a simple implementation for `flat' or non-nested data structures (e.g., a set of counties). 
-#'
-#' @source
-#'
-#' Conceicao, P. and P. Ferreira (2000). The young person's guide to the Theil Index: Suggesting intuitive interpretations and exploring analytical applications. University of Texas Inequality Project. UTIP Working Paper Number 14. Accessed May 1, 2021 from \url{https://utip.gov.utexas.edu/papers.html}
-#'
-#' Theil, Henri (1972). *Statistical Decomposition Analysis.* Amsterdan, The Netherlands and London, UK: North-Holland Publishing Company.
-#'
-#' Shannon, Claude E. and Weaver, Warren (1963). *The Mathematical Theory of Communication*. Urbana and Chicago, USA: University if Illinois Press.
-#'
-#' @examples
-#'
-#'
-theil <- function(count, population, rates, total = TRUE) {
-    if (missing(count)) count <- rates * population
-    omega = count / sum(count)
-    eta = population / sum( population )
-    T = omega * log (omega / eta)
-    T[is.na(T)] <- 0
-    if (total) T = sum( T )
-    return (Theil = T)
 }
 

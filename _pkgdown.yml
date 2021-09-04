@@ -22,7 +22,7 @@ reference:
   - n_eff
   - sp_diag
   - expected_mc
-  - theil
+  - row_standardize
 - title: "Models"
   desc: "Model fitting functions and methods"
 - contents:

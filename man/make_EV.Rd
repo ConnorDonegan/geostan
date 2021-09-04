@@ -10,7 +10,7 @@ Daniel Griffith and Yongwan Chun. 2014. "Spatial Autocorrelation and Spatial Fil
 make_EV(C, nsa = FALSE, threshold = 0.2, values = FALSE)
 }
 \arguments{
-\item{C}{A binary spatial weights matrix. See \link[geostan]{shape2mat} or \link[spdep]{nb2mat}.}
+\item{C}{A binary spatial weights matrix. See \code{\link[geostan]{shape2mat}}.}
 
 \item{nsa}{Logical. Default of \code{nsa = FALSE} excludes eigenvectors capturing negative spatial autocorrelation.
 Setting \code{nsa = TRUE} will result in a candidate set of EVs that contains eigenvectors representing positive and negative SA.}
@@ -26,7 +26,7 @@ A \code{data.frame} of eigenvectors for spatial filtering. If \code{values=TRUE}
 Extract eigenfunctions of a connectivity matrix for spatial filtering
 }
 \details{
-Returns a set of EVs limited to those with |MC| > \code{threshold} if \code{nsa = TRUE} or MC > \code{threshold} if \code{nsa = FALSE}, along with corresponding eigenvalues (optionally). Given a spatial connectivity matrix C, the function returns eigenvectors from a transformed spatial weights matrix.
+Returns a set of eigenvectors related to the Moran coefficient (MC), limited to those eigenvectors with |MC| > \code{threshold} if \code{nsa = TRUE} or MC > \code{threshold} if \code{nsa = FALSE}, optionally with corresponding eigenvalues.
 }
 \examples{
 
@@ -38,7 +38,6 @@ EV <- make_EV(C)
 ggplot(georgia) +
   geom_sf(aes(fill = EV[,1])) +
   scale_fill_gradient2()
-
 }
 \seealso{
 \link[geostan]{stan_esf}, \link[geostan]{mc}

@@ -135,26 +135,30 @@
     <p>Creates a list of connected nodes following the graph representation of a spatial connectivity matrix.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>edges</span><span class='op'>(</span><span class='va'>w</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>edges</span><span class='op'>(</span><span class='va'>C</span>, unique_pairs_only <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>w</th>
+      <th>C</th>
       <td><p>A connectivity matrix where connection between two nodes is indicated by non-zero entries.</p></td>
+    </tr>
+    <tr>
+      <th>unique_pairs_only</th>
+      <td><p>By default, only unique pairs of nodes (i, j) will be included in the output.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns a <code>data.frame</code> with three columns. The first two columns (<code>node1</code> and <code>node2</code>) contain the indices of connected pairs of nodes; only unique pairs of nodes are included. The third column (<code>weight</code>) contains the element <code>w[node1, node2]</code>.</p>
+    <p>Returns a <code>data.frame</code> with three columns. The first two columns (<code>node1</code> and <code>node2</code>) contain the indices of connected pairs of nodes; only unique pairs of nodes are included (unless `unique_pairs_only = FALSE`). The third column (<code>weight</code>) contains the corresponding matrix element, <code>C[node1, node2]</code>.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>This is used internally for <a href='stan_icar.html'>stan_icar</a> and it is also helpful for creating the scaling factor for BYM2 models fit with <code>stan_icar</code>.</p>
+    <p>This is used internally for <code><a href='stan_icar.html'>stan_icar</a></code> and it is also helpful for creating the scaling factor for BYM2 models fit with <code><a href='stan_icar.html'>stan_icar</a></code>.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><a href='shape2mat.html'>shape2mat</a>, <a href='prep_icar_data.html'>prep_icar_data</a>, <a href='stan_icar.html'>stan_icar</a></p></div>
+    <div class='dont-index'><p><code><a href='shape2mat.html'>shape2mat</a></code>, <code><a href='prep_icar_data.html'>prep_icar_data</a></code>, <code><a href='stan_icar.html'>stan_icar</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>

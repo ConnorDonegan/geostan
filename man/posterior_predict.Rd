@@ -26,8 +26,14 @@ A matrix of size `S x `N` containing samples from the posterior predictive distr
 Draw samples from the posterior predictive distribution of a fitted \code{geostan} model. Use the original data or new data, with or without the spatial component and other partial pooling terms.
 }
 \examples{
-\dontrun{
- 
-}
 
+ fit <- stan_glm(sents ~ offset(log(expected_sents)), data = sentencing, family = poisson())
+ yrep <- posterior_predict(fit, S = 100)
+ bayesplot::ppc_dens_overlay(y = sentencing$sents, yrep = yrep)
+
+ fit2 <- stan_glm(sents ~ offset(log(expected_sents)), re = ~ name, data = sentencing, family = poisson())
+ yrep <- posterior_predict(fit2, S = 100)
+ bayesplot::ppc_dens_overlay(y = sentencing$sents, yrep = yrep)
+ sp_diag(fit2, sentencing)
+ 
 }
