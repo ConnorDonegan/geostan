@@ -27,11 +27,18 @@ Draw samples from the posterior predictive distribution of a fitted \code{geosta
 }
 \examples{
 
- fit <- stan_glm(sents ~ offset(log(expected_sents)), data = sentencing, family = poisson())
+ fit <- stan_glm(sents ~ offset(log(expected_sents)),
+                 data = sentencing,
+                 family = poisson(),
+                 chains = 1)
  yrep <- posterior_predict(fit, S = 100)
  bayesplot::ppc_dens_overlay(y = sentencing$sents, yrep = yrep)
 
- fit2 <- stan_glm(sents ~ offset(log(expected_sents)), re = ~ name, data = sentencing, family = poisson())
+ fit2 <- stan_glm(sents ~ offset(log(expected_sents)),
+                  re = ~ name,
+                  data = sentencing,
+                  family = poisson(),
+                  chains = 1)
  yrep <- posterior_predict(fit2, S = 100)
  bayesplot::ppc_dens_overlay(y = sentencing$sents, yrep = yrep)
  sp_diag(fit2, sentencing)

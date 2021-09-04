@@ -130,7 +130,7 @@
 #'                             logit(theta) ~ MVGauss(Mu, Sigma)
 #'                             Sigma = (I - rho C)^-1 * M * tau^2
 #'```
-#' where outcome data `Y` are counts, `N` is the number of trials, and `theta` is the 'success' rate.
+#' where outcome data `Y` are counts, `N` is the number of trials, and `theta` is the 'success' rate. Note that the model formula should be structured as: `cbind(sucesses, failures) ~ x`, such that `trials = successes = failures`.
 #' 
 #' For fitted Binomial models, the \code{\link[geostan]{spatial}} method will return the parameter vector \code{phi}, equivalent to:
 #'```
@@ -183,8 +183,7 @@
 #' fit.car <- stan_car(sents ~ offset(log_e),
 #'                     family = poisson(),
 #'                     data = sentencing,
-#'                     car_parts = car.dl,
-#'                     refresh = 0
+#'                     car_parts = car.dl
 #' )
 #'
 #' # MCMC diagnostics

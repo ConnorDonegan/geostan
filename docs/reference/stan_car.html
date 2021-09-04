@@ -326,7 +326,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
                             Sigma = (I - rho C)^-1 * M * tau^2
 </pre>
 
-<p>where outcome data <code>Y</code> are counts, <code>N</code> is the number of trials, and <code>theta</code> is the 'success' rate.</p>
+<p>where outcome data <code>Y</code> are counts, <code>N</code> is the number of trials, and <code>theta</code> is the 'success' rate. Note that the model formula should be structured as: <code>cbind(sucesses, failures) ~ x</code>, such that <code>trials = successes = failures</code>.</p>
 <p>For fitted Binomial models, the <code><a href='spatial.html'>spatial</a></code> method will return the parameter vector <code>phi</code>, equivalent to:</p><pre>                            <span class='va'>phi</span> <span class='op'>=</span> <span class='fu'>logit</span><span class='op'>(</span><span class='va'>theta</span><span class='op'>)</span> <span class='op'>-</span> <span class='va'>Mu.</span>
 </pre>
 
@@ -349,8 +349,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <span class='va'>fit.car</span> <span class='op'>&lt;-</span> <span class='fu'>stan_car</span><span class='op'>(</span><span class='va'>sents</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/offset.html'>offset</a></span><span class='op'>(</span><span class='va'>log_e</span><span class='op'>)</span>,
                     family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span>,
                     data <span class='op'>=</span> <span class='va'>sentencing</span>,
-                    car_parts <span class='op'>=</span> <span class='va'>car.dl</span>,
-                    refresh <span class='op'>=</span> <span class='fl'>0</span>
+                    car_parts <span class='op'>=</span> <span class='va'>car.dl</span>
 <span class='op'>)</span>
 
 <span class='co'># MCMC diagnostics</span>
