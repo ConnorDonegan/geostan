@@ -347,17 +347,18 @@ lisa <- function(x, w, type = FALSE) {
 #' @import ggplot2
 #'
 #' @examples
-#' library(sf)
 #' data(georgia)
 #' sp_diag(georgia$college, georgia)
 #'
-#' fit <- stan_glm(log(rate.male) ~ 1, data = georgia, chains = 1, iter = 500)
+#' \dontrun{
+#' fit <- stan_glm(log(rate.male) ~ 1, data = georgia)
 #' sp_diag(fit, georgia)
 #'
 #' cp <- prep_car_data(shape2mat(georgia))
-#' fit2 <- stan_car(log(rate.male) ~ 1, data = georgia, car_parts = cp, iter = 500, chains = 1)
+#' fit2 <- stan_car(log(rate.male) ~ 1, data = georgia, car_parts = cp)
 #' sp_diag(fit2, georgia)
 #' sp_diag(fit2, georgia, detrend = FALSE)
+#' }
 #' 
 sp_diag <- function(y,
                    shape,

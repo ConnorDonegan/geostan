@@ -192,9 +192,9 @@
 #&gt; Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 #&gt; Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 #&gt; Chain 1: 
-#&gt; Chain 1:  Elapsed Time: 0.031796 seconds (Warm-up)
-#&gt; Chain 1:                0.031397 seconds (Sampling)
-#&gt; Chain 1:                0.063193 seconds (Total)
+#&gt; Chain 1:  Elapsed Time: 0.030669 seconds (Warm-up)
+#&gt; Chain 1:                0.030349 seconds (Sampling)
+#&gt; Chain 1:                0.061018 seconds (Total)
 #&gt; Chain 1: </div><div class='input'> <span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'>posterior_predict</span><span class='op'>(</span><span class='va'>fit</span>, S <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>
  <span class='fu'>bayesplot</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span>y <span class='op'>=</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span>, yrep <span class='op'>=</span> <span class='va'>yrep</span><span class='op'>)</span>
 </div><div class='img'><img src='posterior_predict-1.png' alt='' width='700' height='433' /></div><div class='input'>
@@ -221,9 +221,9 @@
 #&gt; Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 #&gt; Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 #&gt; Chain 1: 
-#&gt; Chain 1:  Elapsed Time: 0.243058 seconds (Warm-up)
-#&gt; Chain 1:                0.246206 seconds (Sampling)
-#&gt; Chain 1:                0.489264 seconds (Total)
+#&gt; Chain 1:  Elapsed Time: 0.237822 seconds (Warm-up)
+#&gt; Chain 1:                0.240475 seconds (Sampling)
+#&gt; Chain 1:                0.478297 seconds (Total)
 #&gt; Chain 1: </div><div class='input'> <span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'>posterior_predict</span><span class='op'>(</span><span class='va'>fit2</span>, S <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>
  <span class='fu'>bayesplot</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span>y <span class='op'>=</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span>, yrep <span class='op'>=</span> <span class='va'>yrep</span><span class='op'>)</span>
 </div><div class='img'><img src='posterior_predict-2.png' alt='' width='700' height='433' /></div><div class='input'> <span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit2</span>, <span class='va'>sentencing</span><span class='op'>)</span>
