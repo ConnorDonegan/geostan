@@ -180,10 +180,10 @@
 #&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt;  location     scale 
 #&gt; 0.1111811 3.0000000 
 #&gt; 
-#&gt; SAMPLING FOR MODEL 'glm' NOW (CHAIN 1).
+#&gt; SAMPLING FOR MODEL 'base' NOW (CHAIN 1).
 #&gt; Chain 1: 
-#&gt; Chain 1: Gradient evaluation took 2.2e-05 seconds
-#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.22 seconds.
+#&gt; Chain 1: Gradient evaluation took 1.4e-05 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.14 seconds.
 #&gt; Chain 1: Adjust your expectations accordingly!
 #&gt; Chain 1: 
 #&gt; Chain 1: 
@@ -192,9 +192,9 @@
 #&gt; Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 #&gt; Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 #&gt; Chain 1: 
-#&gt; Chain 1:  Elapsed Time: 0.035943 seconds (Warm-up)
-#&gt; Chain 1:                0.034059 seconds (Sampling)
-#&gt; Chain 1:                0.070002 seconds (Total)
+#&gt; Chain 1:  Elapsed Time: 0.031796 seconds (Warm-up)
+#&gt; Chain 1:                0.031397 seconds (Sampling)
+#&gt; Chain 1:                0.063193 seconds (Total)
 #&gt; Chain 1: </div><div class='input'> <span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'>posterior_predict</span><span class='op'>(</span><span class='va'>fit</span>, S <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>
  <span class='fu'>bayesplot</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span>y <span class='op'>=</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span>, yrep <span class='op'>=</span> <span class='va'>yrep</span><span class='op'>)</span>
 </div><div class='img'><img src='posterior_predict-1.png' alt='' width='700' height='433' /></div><div class='input'>
@@ -206,10 +206,10 @@
 </div><div class='output co'>#&gt; <span class='message'></span>
 #&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt;  location     scale 
 #&gt; 0.1111811 3.0000000 </div><div class='output co'>#&gt; <span class='message'></span>
-#&gt; <span class='message'>*Setting prior parameters for alpha_tau</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt;        df  location     scale 
-#&gt; 20.000000  0.000000  1.151035 
+#&gt; <span class='message'>*Setting prior parameters for alpha_tau</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt;       df location    scale 
+#&gt;       20        0        3 
 #&gt; 
-#&gt; SAMPLING FOR MODEL 'glm' NOW (CHAIN 1).
+#&gt; SAMPLING FOR MODEL 'base' NOW (CHAIN 1).
 #&gt; Chain 1: 
 #&gt; Chain 1: Gradient evaluation took 2e-05 seconds
 #&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.2 seconds.
@@ -221,16 +221,10 @@
 #&gt; Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 #&gt; Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 #&gt; Chain 1: 
-#&gt; Chain 1:  Elapsed Time: 0.268752 seconds (Warm-up)
-#&gt; Chain 1:                0.159168 seconds (Sampling)
-#&gt; Chain 1:                0.42792 seconds (Total)
-#&gt; Chain 1: </div><div class='output co'>#&gt; <span class='warning'>Warning: The largest R-hat is 1.06, indicating chains have not mixed.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#r-hat</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#bulk-ess</span></div><div class='output co'>#&gt; <span class='warning'>Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
-#&gt; <span class='warning'>Running the chains for more iterations may help. See</span>
-#&gt; <span class='warning'>http://mc-stan.org/misc/warnings.html#tail-ess</span></div><div class='input'> <span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'>posterior_predict</span><span class='op'>(</span><span class='va'>fit2</span>, S <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>
+#&gt; Chain 1:  Elapsed Time: 0.243058 seconds (Warm-up)
+#&gt; Chain 1:                0.246206 seconds (Sampling)
+#&gt; Chain 1:                0.489264 seconds (Total)
+#&gt; Chain 1: </div><div class='input'> <span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'>posterior_predict</span><span class='op'>(</span><span class='va'>fit2</span>, S <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>
  <span class='fu'>bayesplot</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span>y <span class='op'>=</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span>, yrep <span class='op'>=</span> <span class='va'>yrep</span><span class='op'>)</span>
 </div><div class='img'><img src='posterior_predict-2.png' alt='' width='700' height='433' /></div><div class='input'> <span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit2</span>, <span class='va'>sentencing</span><span class='op'>)</span>
 </div><div class='output co'>#&gt; <span class='message'>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></div><div class='output co'>#&gt; <span class='message'>`geom_smooth()` using formula 'y ~ x'</span></div><div class='img'><img src='posterior_predict-3.png' alt='' width='700' height='433' /></div><div class='input'> 

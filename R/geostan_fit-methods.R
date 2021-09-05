@@ -91,11 +91,6 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
     print(x$re$formula)
     pars <- c(pars, "alpha_tau")
   }
-  cat("Data models (ME): ")
-  if (inherits(x$ME, "list")) {
-      if ("se" %in% names(x$ME)) cat(paste(names(x$ME$se), sep = ", "))
-      if ("spatial" %in% names(x$ME)) cat("\nData model (prior): CAR (auto Gaussian)") else cat("\nData model (prior): Studen's t")
-  } else cat("none")
   cat("\nSpatial method (outcome): ", as.character(x$spatial$method), "\n")
   if (x$spatial$method == "CAR") pars <- c(pars, "car_rho", "car_scale")
   if (x$spatial$method == "BYM2") pars <- c(pars, "rho", "spatial_scale")
@@ -105,10 +100,22 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
   cat("Link function: ", x$family$link, "\n")
   cat("Residual Moran Coefficient: ", x$diagnostic["Residual_MC"], "\n")
   if (!is.na(x$diagnostic["WAIC"])) cat("WAIC: ", x$diagnostic["WAIC"], "\n")
-  cat("Observations: ", nrow(x$data), "\n")
+  cat("Observations: ", nrow(x$data), "\n")  
+  cat("Data models (ME): ")
+  if (x$ME$has_me) {
+      cat(paste(names(x$ME$se), sep = ", ")) 
+      if (x$ME$spatial_me) {
+          cat("\n Data model (ME prior): CAR (auto Gaussian)")
+      } else {
+          cat("\nData model (ME prior): Student's t")
+      }
+  } else {
+      cat("none")
+  }
   if (x$spatial$method == "ESF") {
     cat("RHS global shrinkage prior: ", round(x$priors$rhs["scale_global"], 2), "\n")
   }
+  cat("\n")
   print(x$stanfit, pars = pars, digits = digits, probs = probs, ...)
 }
 

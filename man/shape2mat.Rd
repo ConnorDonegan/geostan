@@ -50,12 +50,12 @@ data(georgia)
 C <- shape2mat(georgia, "B")
 ## row sums gives the numbers of neighbors per observation
 Matrix::rowSums(C)
-diag(C)
+head(Matrix::summary(C))
 
 ## row-standardized matrix 
 W <- shape2mat(georgia, "W")
 Matrix::rowSums(W)
-diag(W)
+head(Matrix::summary(W))
 
 ## space-time matricies 
 ## for space-time eigenvector space-time filtering

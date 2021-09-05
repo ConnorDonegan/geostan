@@ -17,15 +17,13 @@ test_that("Poisson CAR model works", {
     expect_geostan(fit)    
 })
 
-test_that("CAR accepts covariate ME, mixed (un-) bounded", {
+test_that("CAR accepts covariate ME", {
     data(georgia)
     SW(
         fit <- stan_car(log(rate.male) ~ insurance + ICE,
                         data = georgia,
                         ME = list(se = data.frame(insurance = georgia$insurance.se,
-                                                  ICE = georgia$ICE.se),
-                        bounded = c(1, 0),
-                        bounds = c(0, 100)
+                                                  ICE = georgia$ICE.se)
                         ),
                         car_parts = prep_car_data(shape2mat(georgia, "B")),                        
                         chains = 1,
@@ -45,7 +43,6 @@ test_that("CAR accepts covariate ME with WX, mixed ME-non-ME", {
                         data = georgia,
                         C = shape2mat(georgia),
                         ME = list(se = data.frame(insurance = georgia$insurance.se),
-                        bounded = 0,
                         bounds = c(0, 100)
                         ),        
                         chains = 1,

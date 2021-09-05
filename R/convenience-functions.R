@@ -654,13 +654,13 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' C <- shape2mat(georgia, "B")
 #' ## row sums gives the numbers of neighbors per observation
 #' Matrix::rowSums(C)
-#' diag(C)
+#' head(Matrix::summary(C))
 #'
 #' ## row-standardized matrix 
 #' W <- shape2mat(georgia, "W")
 #' Matrix::rowSums(W)
-#' diag(W)
-#'
+#' head(Matrix::summary(W))
+#' 
 #' ## space-time matricies 
 #' ## for space-time eigenvector space-time filtering
 #' ## if you have multiple years with same neighbors,
@@ -1080,11 +1080,10 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' ## get list of data for Stan
 #' cp <- prep_car_data(A, "WCAR")
 #'
+#' \dontrun{
 #' ## pass the data to stan_car
-#' fit = stan_car(ICE ~ 1, data = georgia, car_parts = cp)
-#'
-#' ## diagnostics
-#' sp_diag(fit, georgia)
+#' fit = stan_car(log(rate.male) ~ 1, data = georgia, car_parts = cp)
+#' }
 #' @export
 #' @importFrom rstan extract_sparse_parts
 #' @importFrom Matrix isSymmetric Matrix rowSums summary

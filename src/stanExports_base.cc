@@ -2,12 +2,12 @@
 
 #include <Rcpp.h>
 using namespace Rcpp ;
-#include "stanExports_glm.h"
+#include "stanExports_base.h"
 
-RCPP_MODULE(stan_fit4glm_mod) {
+RCPP_MODULE(stan_fit4base_mod) {
 
 
-    class_<rstan::stan_fit<stan_model, boost::random::ecuyer1988> >("rstantools_model_glm")
+    class_<rstan::stan_fit<stan_model, boost::random::ecuyer1988> >("rstantools_model_base")
 
     .constructor<SEXP,SEXP,SEXP>()
 

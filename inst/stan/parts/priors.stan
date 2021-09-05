@@ -20,6 +20,7 @@
   return z .* lambda_tilde * tau;
 }
 
+
 /**
  * Log probability density of the conditional autoregressive (CAR) model
  *
@@ -98,24 +99,21 @@ real wcar_normal_lpdf(vector y, vector mu,
 		- (1 / tau^2) * (ztDz - rho * ztAz));
 }
 
-
-/**
-  * Calculate eigenvalues of M^{-1/2}*C*M^{1/2} for CAR model
-  *
-  * @param C n by n connectivity matrix
-  * @param M_inv Inverse of conditional variances, from M in Sigma = (I - rho C)^-1 M.
-  *
-  * @return A n-length vector of eigenvalues
-  **/
-vector eMCM(matrix C, vector M_inv) {
-    int n = num_elements(M_inv);
-    vector[n] lambda;       
-    vector[n] invsqrtM;
-    vector[n] sqrtM;
-    for (i in 1:n) invsqrtM[i] = sqrt(M_inv[i]);
-    for (i in 1:n) sqrtM[i] = 1/sqrt(M_inv[i]);
-    lambda = eigenvalues_sym(diag_matrix(invsqrtM) * C * diag_matrix(sqrtM));
-    return (lambda);
+/** 
+ * Conditional Autoregressive Model
+ */
+real auto_normal_lpdf(vector y, vector mu,
+		      real tau, real rho,
+		      vector Ax_w, int[] Ax_v, int[] Ax_u,
+		      int[] Cidx,
+		      vector D_inv, real log_det_D_inv,
+		      vector lambda,
+		      int n, int WCAR) {
+  if (WCAR) {
+    return wcar_normal_lpdf(y | mu, tau, rho, Ax_w, Ax_v, Ax_u, D_inv, log_det_D_inv, lambda, n);
+  } else {
+    return car_normal_lpdf(y | mu, tau, rho, Ax_w, Ax_v, Ax_u, Cidx, D_inv, log_det_D_inv, lambda, n);
+      }
 }
 
 /**

@@ -55,12 +55,12 @@ If and when setting priors for \code{beta} manually, remember to include priors 
 
 \item{scale_factor}{For the BYM2 model, optional. If missing, this will be set to a vector of ones. See \code{Details}.}
 
-\item{ME}{To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$spatial = TRUE}, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
+\item{ME}{To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$car_parts} is provided, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
 \describe{
 
-\item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
-\item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
-\item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.}
+\item{se}{A dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
+
+\item{bounds}{An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to \code{c(-Inf, Inf)} (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.}
 
 \item{prior}{Provide parameter values for the prior distributions of the measurement error model(s). The spatial conditional autoregressive (CAR) and non-spatial student's t models both contain a location parameter (the mean) and a scale parameter, each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console.
 
@@ -68,11 +68,12 @@ To set these priors to custom values, provide a named list with items \code{loca
 
 The prior for the \code{scale} parameters is Student's t, and the default is \code{Student_t(10, 0, 40)}. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of \code{se}.
 
-For example, \code{ME$prior <- list(location = data.frame(location = c(0, 0), scale = c(100, 100)), scale = c(40, 40))}.}
+For example, \verb{ME$prior <- list(location = data.frame(location = c(0, 0), scale = c(100, 100))); ME$prior$scale <- c(40, 40)}.
 
-\item{spatial}{Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. For \code{stan_icar}, this defaults to \code{spatial = TRUE}; if \code{spatial = TRUE} you must provide \code{car_parts} (see below).}
+The CAR model also has a spatial autocorrelation parameter, \code{car_rho}, which is assigned a uniform prior distribution. You can set the boudaries of the prior with \code{ME$prior$car_rho <- c(lower_bound, upper_bound)}.
+}
 
-\item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data} (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}). Only required if \code{spatial=TRUE}.}
+\item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data}. If not provided, then a non-spatial Student's t model will be used instead of the CAR model.}
 }}
 
 \item{family}{The likelihood function for the outcome variable. Current options are \code{binomial(link = "logit")} and \code{poisson(link = "log")}.}

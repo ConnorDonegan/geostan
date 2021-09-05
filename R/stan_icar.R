@@ -20,25 +20,27 @@
 #' 
 #' @param scale_factor For the BYM2 model, optional. If missing, this will be set to a vector of ones. See `Details`.
 #' 
-#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$spatial = TRUE}, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
+#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$car_parts} is provided, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
 #' \describe{
 #' 
-#' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
-#' \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
-#' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.}
+#' \item{se}{A dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
 #' 
-#'  \item{prior}{Provide parameter values for the prior distributions of the measurement error model(s). The spatial conditional autoregressive (CAR) and non-spatial student's t models both contain a location parameter (the mean) and a scale parameter, each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console.
+#' \item{bounds}{An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to `c(-Inf, Inf)` (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.}
+#' 
+#'  \item{prior}{Provide parameter values for the prior distributions of the measurement error model(s). The spatial conditional autoregressive (CAR) and non-spatial student's t models both contain a location parameter (the mean) and a scale parameter, each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console. 
 #'
 #' To set these priors to custom values, provide a named list with items `location` and `scale` (you must provide both). The prior for the location parameter is Gaussian, the default being `Gauss(0, 100)`. To change these values, provide a `data.frame` with columns named `location` and `scale`. Provide prior specifications for each covariate in `se`; list the priors in the same order as the columns of `se`.
 #'
 #' The prior for the `scale` parameters is Student's t, and the default is `Student_t(10, 0, 40)`. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of `se`.
 #'
-#' For example, `ME$prior <- list(location = data.frame(location = c(0, 0), scale = c(100, 100)), scale = c(40, 40))`.}
-#' 
-#' \item{spatial}{Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. For \code{stan_icar}, this defaults to \code{spatial = TRUE}; if \code{spatial = TRUE} you must provide \code{car_parts} (see below).}
-#' 
-#' \item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data} (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}). Only required if \code{spatial=TRUE}.}
+#' For example, `ME$prior <- list(location = data.frame(location = c(0, 0), scale = c(100, 100))); ME$prior$scale <- c(40, 40)`.
+#'
+#' The CAR model also has a spatial autocorrelation parameter, `car_rho`, which is assigned a uniform prior distribution. You can set the boudaries of the prior with `ME$prior$car_rho <- c(lower_bound, upper_bound)`. 
 #' }
+#' 
+#' \item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data}. If not provided, then a non-spatial Student's t model will be used instead of the CAR model.}
+#' }
+#' 
 #' @param C Spatial connectivity matrix which will be used to construct an edge list for the ICAR model, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms or spatial measurement error (ME) models. It will automatically be row-standardized before calculating \code{slx} terms. \code{C} must be a binary symmetric \code{n x n} matrix.
 #' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{binomial(link = "logit")} and \code{poisson(link = "log")}.
@@ -357,7 +359,7 @@ stan_icar <- function(formula,
     dw_nonzero = length(W.list$w),
     dwx = dwx,
     wx_idx = wx_idx
-    )     
+    )    
     ## ICAR DATA [START] -------------
     iar.list <- prep_icar_data(C, scale_factor = scale_factor)
     if (!inherits(scale_factor, "NULL")) stopifnot(length(scale_factor) == iar.list$k)
@@ -365,6 +367,8 @@ stan_icar <- function(formula,
     standata <- c(standata, iar.list)
     standata$type <- match(type, c("icar", "bym", "bym2"))
     ## ICAR DATA [STOP] -------------
+    ## EMPTY PLACEHOLDERS
+    standata <- c(standata, empty_esf_data(n))
     ## ME MODEL -------------  
     me.list <- prep_me_data(ME, x_no_Wx)
     standata <- c(standata, me.list)  
@@ -381,16 +385,16 @@ stan_icar <- function(formula,
     if (!intercept_only) pars <- c(pars, 'beta')
     if (dwx) pars <- c(pars, 'gamma')
     if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
-    if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
-    if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
+    if (me.list$has_me) pars <- c(pars, "x_true", "mu_x_true", "sigma_x_true")
+    if (me.list$spatial_me) pars <- c(pars, "car_rho_x_true")
     priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
     if (me.list$has_me) priors_made_slim <- c(priors_made_slim, list(ME_location = me.list$ME_prior_mean, ME_scale = me.list$ME_prior_scale))
     print_priors(prior, priors_made_slim)    
     ## PARAMETERS TO KEEP with ICAR [STOP] -------------              
     ## CALL STAN -------------  
-    samples <- rstan::sampling(stanmodels$icar, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+    samples <- rstan::sampling(stanmodels$base, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
     ## OUTPUT -------------        
-    out <- clean_results(samples, pars, is_student, has_re, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
+    out <- clean_results(samples, pars, is_student, has_re, Wx, x_no_Wx, me.list$x_me_idx)
     out$data <- ModData
     out$family <- family
     out$formula <- formula
@@ -398,7 +402,8 @@ stan_icar <- function(formula,
     out$re <- re_list
     out$priors <- priors_made_slim
     out$x_center <- attributes(x_full)$`scaled:center`
-    if (!missing(ME)) out$ME <- ME    
+    out$ME <- list(has_me = me.list$has_me, spatial_me = me.list$spatial_me)
+    if (out$ME$has_me) out$ME <- c(out$ME, ME)
     ## ICAR OUTPUT [START] --------
     out$edges <- edges(C)       
     out$spatial <- data.frame(par = "phi", method = toupper(type))

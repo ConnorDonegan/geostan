@@ -67,8 +67,6 @@ test_that("GLM accepts covariate ME, multiple proportions", {
             insurance = georgia$insurance.se,
             college = georgia$college.se
             ),
-        spatial = FALSE,
-        bounded = c(1,1),
         bounds = c(0, 100)
         )
     SW(

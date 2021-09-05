@@ -16,29 +16,32 @@
 #' 
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' 
-#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. This implements the methodology introduced by Donegan et al. (2021). Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned an auto-Gaussian (CAR) model unless \code{spatial = FALSE}, in which case they are assinged the Student's t model. Elements of the list \code{ME} may include:
+#'@param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned an auto Gaussian (CAR) model, unless `ME$car_parts = FALSE` (then a non-spatial Student's t model will be used). Elements of the list \code{ME} may include:
 #' \describe{
-#' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
-#' \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default, if \code{bounded = TRUE}, the lower bound will be 0 and the upper bound 100, for percentages.}
-#' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.}
-#'
-#'  \item{prior}{Provide parameter values for the prior distributions of the measurement error model(s). The spatial conditional autoregressive (CAR) and non-spatial student's t models both contain a location parameter (the mean) and a scale parameter, each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console.
+#' 
+#' \item{se}{A dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
+#' 
+#' \item{bounds}{An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to `c(-Inf, Inf)` (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.}
+#' 
+#'  \item{prior}{Provide parameter values for the prior distributions of the measurement error model(s). The spatial conditional autoregressive (CAR) and non-spatial student's t models both contain a location parameter (the mean) and a scale parameter, each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console. 
 #'
 #' To set these priors to custom values, provide a named list with items `location` and `scale` (you must provide both). The prior for the location parameter is Gaussian, the default being `Gauss(0, 100)`. To change these values, provide a `data.frame` with columns named `location` and `scale`. Provide prior specifications for each covariate in `se`; list the priors in the same order as the columns of `se`.
 #'
 #' The prior for the `scale` parameters is Student's t, and the default is `Student_t(10, 0, 40)`. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of `se`.
 #'
-#' For example, `ME$prior <- list(location = data.frame(location = c(0, 0), scale = c(100, 100)), scale = c(40, 40))`.}
+#' For example, `ME$prior <- list(location = data.frame(location = c(0, 0), scale = c(100, 100))); ME$prior$scale <- c(40, 40)`.
+#'
+#' The CAR model also has a spatial autocorrelation parameter, `car_rho`, which is assigned a uniform prior distribution. You can set the boudaries of the prior with `ME$prior$car_rho <- c(lower_bound, upper_bound)`. 
+#' }
 #' 
-#' \item{spatial}{Logical value indicating whether an auto-Gaussian (conditional autoregressive (CAR)) model should be used for the covariates. For \code{stan_car}, defaults to \code{spatial = TRUE}.}
-#' \item{car_parts}{This argument is ignored for \code{stan_car}, because the user must always provide this information within the main function call. See the \code{car_parts} argument below. If any information is provided to \code{ME$car_parts}, it will be overwritten internally.}
+#' \item{car_parts}{By default, any ME models within `stan_car` will be spatial CAR models. Any data passed to `ME$car_parts` will be ignored. However, to use a non-spatial Student's t ME model instead, provide `ME$car_parts = FALSE`.}
 #' }
 #' 
 #' @param car_parts A list of data for the CAR model, as returned by \code{\link[geostan]{prep_car_data}} (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}).
 #' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{auto_gaussian()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}; if `family = gaussian()` is provided, it will automatically be converted to `auto_gaussian()`.
 #' 
-#' @param invert To calculate the log likelihood of the data \code{log_lik} and the posterior predictive distribution \code{yrep} with the auto-Gaussian model, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set \code{invert = FALSE}. Note, this is only used when \code{family = gaussian()}.
+#' @param invert To calculate the log likelihood of the data, \code{log_lik}, with the auto-Gaussian model, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set \code{invert = FALSE}. Note, this is only used when \code{family = gaussian()}. `log_lik` is required to calculate WAIC.
 #' 
 #' @param prior A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:
 #' \describe{
@@ -53,6 +56,10 @@
 #' \item{tau}{The scale parameter for (spatially *un*structured) random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(tau = c(df = 20, location = 0, scale = 20))`.}
 #'
 #' \item{car_scale}{Hyperprior parameters for the scale of the CAR model, \code{car_scale}. The scale is assigned a Student's t prior model; to set its parameter values, provide a length-three vector with the degrees of freedom, location, and scale parameters. E.g., \code{prior = list(car_scale = c(df = 15, location = 0, scale = 2))}.}
+#'
+#' \item{car_rho}{The spatial autocorrelation parameter in the CAR model, `rho`, is assigned a uniform prior distribution. By default, the prior will be uniform over all permissible values as determined by the eigenvalues of the connectivity matrix, `C`. You amy alter those limits by providing a numeric vector such as: `prior$car_rho = c(0, 1)`.
+#'
+#' The range of permissible values for `rho` is automatically printed to the `R` console by \code{\link[geostan]{prep_car_data}}. You may also identify the range of permissible values using the eigenvalues, `lambda`, returned by `prep_car_data` and the following code: `rho_limits = 1 / range(lambda)`. These limits are sensitive to the chosen specification (WCAR, ACAR, etc.) and connectivity matrix.}
 #' }
 #'
 #' @param centerx To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to \code{\link[base]{scale}}.
@@ -151,8 +158,8 @@
 #' \item{priors}{Prior specifications.}
 #' 
 #' \item{x_center}{If covariates are centered internally (i.e., `centerx` is not `FALSE`), then `x_centers` is the numeric vector of values on which the covariates were centered.}
-#'
 #' \item{spatial}{A data frame with the name of the spatial component parameter (either "phi" or, for auto Gaussian models, "trend") and method ("CAR")}
+#' \item{ME}{A list indicating if the object contains an ME model; if so, the user-provided ME list is also stored here.}
 #' \item{C}{Spatial connectivity matrix (in sparse matrix format).}
 #' }
 #' 
@@ -327,14 +334,19 @@ stan_car <- function(formula,
                                link = family$link,
                                offset = offset)
     ## CAR PRIORs [START] --------
-    if (!is.null(prior$car_scale)) {
-        priors_made$car_scale <- prior$car_scale
+    if (is.null(prior$car_scale)) {
+        priors_made$car_scale <- priors_made$sigma        
     } else {
-        priors_made$car_scale <- priors_made$sigma
+        priors_made$car_scale <- prior$car_scale
     }
-    lims <- 1 / range(car_parts$lambda)
-    names(lims) <- c("minimum", "maximum")
-    priors_made$car_rho <- lims        
+    if (is.null(prior$car_rho)) {
+        lims <- 1 / range(car_parts$lambda)
+        names(lims) <- c("minimum", "maximum")
+        priors_made$car_rho <- lims
+    } else {
+        stopifnot(length(as.numeric(prior$car_rho)) == 2)
+        priors_made$car_rho <- sort( prior$car_rho )
+    }
     ## CAR PRIORs [STOP] --------
     standata <- list(
         ## glm data -------------
@@ -349,9 +361,6 @@ stan_car <- function(formula,
         id = id_index$idx,
         alpha_prior = priors_made$intercept,
         beta_prior = t(priors_made$beta),
-        ## CAR SCALE ----
-        sigma_prior = priors_made$car_scale,
-        ## CAR SCALE ----
         alpha_tau_prior = priors_made$alpha_tau,
         t_nu_prior = priors_made$nu,
         family = family_int,
@@ -362,13 +371,19 @@ stan_car <- function(formula,
         W_u = as.array(W.list$u),
         dw_nonzero = length(W.list$w),
         dwx = dwx,
-        wx_idx = wx_idx
+        wx_idx = wx_idx,
+        ## CAR SCALE AND RHO LIMITS ----
+        sigma_prior = priors_made$car_scale,
+        car_rho_lims = priors_made$car_rho
+        ## CAR [STOP] ----        
     )
     ## CAR DATA [START] --------
-    if (invert) car_parts$C <- as.matrix(car_parts$C) else car_parts$C <- matrix(1, 1, 1)    
+    if (invert) car_parts$C <- as.matrix(car_parts$C) else car_parts$C <- matrix(1, 1, 1)
     standata <- c(standata, car_parts)
     # overwrites any user specified ME$car_parts
-    if ( !is.null(ME) ) ME$car_parts <- NULL
+    if ( !is.null(ME) ) {
+        if (is.logical(ME$car_parts) && !ME$car_parts) ME$car_parts <- NULL else ME$car_parts <- car_parts
+    }
     ## CAR DATA [STOP] --------
     ## ME MODEL -------------  
     me.list <- prep_me_data(ME, x_no_Wx)
@@ -386,8 +401,8 @@ stan_car <- function(formula,
     if (!intercept_only) pars <- c(pars, 'beta')
     if (dwx) pars <- c(pars, 'gamma')
     if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
-    if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
-    if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
+    if (me.list$has_me) pars <- c(pars, "x_true", "mu_x_true", "sigma_x_true")
+    if (me.list$spatial_me) pars <- c(pars, "car_rho_x_true")
     priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
     ## PARAMETERS TO KEEP, with CAR PARAMETERS [STOP] -------------                
     ## PRINT STUFF -------------
@@ -400,7 +415,7 @@ stan_car <- function(formula,
     ## CALL STAN -------------  
     samples <- rstan::sampling(stanmodels$car, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
     ## OUTPUT -------------
-    out <- clean_results(samples, pars, is_student, has_re, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
+    out <- clean_results(samples, pars, is_student, has_re, Wx, x_no_Wx, me.list$x_me_idx)
     out$data <- ModData
     out$family <- family
     out$formula <- formula
@@ -408,7 +423,8 @@ stan_car <- function(formula,
     out$re <- re_list
     out$priors <- priors_made_slim
     out$x_center <- attributes(x_full)$`scaled:center`
-    if (!missing(ME)) out$ME <- ME
+    out$ME <- list(has_me = me.list$has_me, spatial_me = me.list$spatial_me)
+    if (out$ME$has_me) out$ME <- c(out$ME, ME)
     if (family_int == 5) {
         out$spatial <- data.frame(par = "trend", method = "CAR") #!#
     } else {

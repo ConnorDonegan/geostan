@@ -182,15 +182,15 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>ME</th>
-      <td><p>To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. This implements the methodology introduced by Donegan et al. (2021). Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned an auto-Gaussian (CAR) model unless <code>spatial = FALSE</code>, in which case they are assinged the Student's t model. Elements of the list <code>ME</code> may include:</p><dl>
-<dt>se</dt><dd><p>a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
-<dt>bounded</dt><dd><p>If any variables in <code>se</code> are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default, if <code>bounded = TRUE</code>, the lower bound will be 0 and the upper bound 100, for percentages.</p></dd>
-<dt>bounds</dt><dd><p>A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.</p></dd>
+      <td><p>To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned an auto Gaussian (CAR) model, unless <code>ME$car_parts = FALSE</code> (then a non-spatial Student's t model will be used). Elements of the list <code>ME</code> may include:</p><dl>
 
-<dt>prior</dt><dd><p>Provide parameter values for the prior distributions of the measurement error model(s). The spatial conditional autoregressive (CAR) and non-spatial student's t models both contain a location parameter (the mean) and a scale parameter, each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console.To set these priors to custom values, provide a named list with items <code>location</code> and <code>scale</code> (you must provide both). The prior for the location parameter is Gaussian, the default being <code>Gauss(0, 100)</code>. To change these values, provide a <code>data.frame</code> with columns named <code>location</code> and <code>scale</code>. Provide prior specifications for each covariate in <code>se</code>; list the priors in the same order as the columns of <code>se</code>.The prior for the <code>scale</code> parameters is Student's t, and the default is <code>Student_t(10, 0, 40)</code>. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of <code>se</code>.For example, <code>ME$prior &lt;- list(location = data.frame(location = c(0, 0), scale = c(100, 100)), scale = c(40, 40))</code>.</p></dd>
+<dt>se</dt><dd><p>A dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
 
-<dt>spatial</dt><dd><p>Logical value indicating whether an auto-Gaussian (conditional autoregressive (CAR)) model should be used for the covariates. For <code>stan_car</code>, defaults to <code>spatial = TRUE</code>.</p></dd>
-<dt>car_parts</dt><dd><p>This argument is ignored for <code>stan_car</code>, because the user must always provide this information within the main function call. See the <code>car_parts</code> argument below. If any information is provided to <code>ME$car_parts</code>, it will be overwritten internally.</p></dd>
+<dt>bounds</dt><dd><p>An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to <code><a href='https://rdrr.io/r/base/c.html'>c(-Inf, Inf)</a></code> (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.</p></dd>
+
+<dt>prior</dt><dd><p>Provide parameter values for the prior distributions of the measurement error model(s). The spatial conditional autoregressive (CAR) and non-spatial student's t models both contain a location parameter (the mean) and a scale parameter, each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console.To set these priors to custom values, provide a named list with items <code>location</code> and <code>scale</code> (you must provide both). The prior for the location parameter is Gaussian, the default being <code>Gauss(0, 100)</code>. To change these values, provide a <code>data.frame</code> with columns named <code>location</code> and <code>scale</code>. Provide prior specifications for each covariate in <code>se</code>; list the priors in the same order as the columns of <code>se</code>.The prior for the <code>scale</code> parameters is Student's t, and the default is <code>Student_t(10, 0, 40)</code>. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of <code>se</code>.For example, <code>ME$prior &lt;- list(location = data.frame(location = c(0, 0), scale = c(100, 100))); ME$prior$scale &lt;- c(40, 40)</code>.The CAR model also has a spatial autocorrelation parameter, <code>car_rho</code>, which is assigned a uniform prior distribution. You can set the boudaries of the prior with <code>ME$prior$car_rho &lt;- c(lower_bound, upper_bound)</code>.</p></dd>
+
+<dt>car_parts</dt><dd><p>By default, any ME models within <code>stan_car</code> will be spatial CAR models. Any data passed to <code>ME$car_parts</code> will be ignored. However, to use a non-spatial Student's t ME model instead, provide <code>ME$car_parts = FALSE</code>.</p></dd>
 
 </dl></td>
     </tr>
@@ -200,7 +200,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>invert</th>
-      <td><p>To calculate the log likelihood of the data <code>log_lik</code> and the posterior predictive distribution <code>yrep</code> with the auto-Gaussian model, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set <code>invert = FALSE</code>. Note, this is only used when <code>family = gaussian()</code>.</p></td>
+      <td><p>To calculate the log likelihood of the data, <code>log_lik</code>, with the auto-Gaussian model, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set <code>invert = FALSE</code>. Note, this is only used when <code>family = gaussian()</code>. <code>log_lik</code> is required to calculate WAIC.</p></td>
     </tr>
     <tr>
       <th>prior</th>
@@ -212,6 +212,8 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <dt>tau</dt><dd><p>The scale parameter for (spatially <em>un</em>structured) random effects, or varying intercepts, terms. This scale parameter, <code>tau</code>, is assigned a half-Student's t prior. To set this, use, e.g., <code>prior = list(tau = c(df = 20, location = 0, scale = 20))</code>.</p></dd>
 
 <dt>car_scale</dt><dd><p>Hyperprior parameters for the scale of the CAR model, <code>car_scale</code>. The scale is assigned a Student's t prior model; to set its parameter values, provide a length-three vector with the degrees of freedom, location, and scale parameters. E.g., <code>prior = list(car_scale = c(df = 15, location = 0, scale = 2))</code>.</p></dd>
+
+<dt>car_rho</dt><dd><p>The spatial autocorrelation parameter in the CAR model, <code>rho</code>, is assigned a uniform prior distribution. By default, the prior will be uniform over all permissible values as determined by the eigenvalues of the connectivity matrix, <code>C</code>. You amy alter those limits by providing a numeric vector such as: <code>prior$car_rho = c(0, 1)</code>.The range of permissible values for <code>rho</code> is automatically printed to the <code>R</code> console by <code><a href='prep_car_data.html'>prep_car_data</a></code>. You may also identify the range of permissible values using the eigenvalues, <code>lambda</code>, returned by <code>prep_car_data</code> and the following code: <code>rho_limits = 1 / range(lambda)</code>. These limits are sensitive to the chosen specification (WCAR, ACAR, etc.) and connectivity matrix.</p></dd>
 
 </dl></td>
     </tr>
@@ -270,8 +272,8 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <dt>priors</dt><dd><p>Prior specifications.</p></dd>
 
 <dt>x_center</dt><dd><p>If covariates are centered internally (i.e., <code>centerx</code> is not <code>FALSE</code>), then <code>x_centers</code> is the numeric vector of values on which the covariates were centered.</p></dd>
-
 <dt>spatial</dt><dd><p>A data frame with the name of the spatial component parameter (either "phi" or, for auto Gaussian models, "trend") and method ("CAR")</p></dd>
+<dt>ME</dt><dd><p>A list indicating if the object contains an ME model; if so, the user-provided ME list is also stored here.</p></dd>
 <dt>C</dt><dd><p>Spatial connectivity matrix (in sparse matrix format).</p></dd>
 
 </dl>

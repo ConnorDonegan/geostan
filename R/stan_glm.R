@@ -13,27 +13,31 @@
 #'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
 #' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}, and the associated scale parameter is \code{alpha_tua}. That is, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}.
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
-#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$spatial = TRUE}, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
+#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$car_parts} is provided, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
 #' \describe{
 #' 
-#' \item{se}{a dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
-#' \item{bounded}{If any variables in \code{se} are bounded within some range (e.g. percentages ranging from zero to one hundred) provide a vector of zeros and ones indicating which columns are bounded. By default the lower bound will be 0 and the upper bound 100, for percentages.}
-#' \item{bounds}{A numeric vector of length two providing the upper and lower bounds, respectively, of any bounded variables.}
+#' \item{se}{A dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
 #' 
-#'  \item{prior}{Provide parameter values for the prior distributions of the measurement error model(s). The spatial conditional autoregressive (CAR) and non-spatial student's t models both contain a location parameter (the mean) and a scale parameter, each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console.
+#' \item{bounds}{An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to `c(-Inf, Inf)` (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.}
+#' 
+#'  \item{prior}{Provide parameter values for the prior distributions of the measurement error model(s). The spatial conditional autoregressive (CAR) and non-spatial student's t models both contain a location parameter (the mean) and a scale parameter, each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console. 
 #'
 #' To set these priors to custom values, provide a named list with items `location` and `scale` (you must provide both). The prior for the location parameter is Gaussian, the default being `Gauss(0, 100)`. To change these values, provide a `data.frame` with columns named `location` and `scale`. Provide prior specifications for each covariate in `se`; list the priors in the same order as the columns of `se`.
 #'
 #' The prior for the `scale` parameters is Student's t, and the default is `Student_t(10, 0, 40)`. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of `se`.
 #'
-#' For example, `ME$prior <- list(location = data.frame(location = c(0, 0), scale = c(100, 100)), scale = c(40, 40))`.}
+#' For example, `ME$prior <- list(location = data.frame(location = c(0, 0), scale = c(100, 100))); ME$prior$scale <- c(40, 40)`.
+#'
+#' The CAR model also has a spatial autocorrelation parameter, `car_rho`, which is assigned a uniform prior distribution. You can set the boudaries of the prior with `ME$prior$car_rho <- c(lower_bound, upper_bound)`. 
+#' }
 #' 
-#' \item{spatial}{Logical value indicating whether an auto Gaussian (i.e., conditional autoregressive (CAR)) model should be used for the covariates. For \code{stan_glm}, this defaults to \code{spatial = FALSE}. If \code{spatial = TRUE} you must provide \code{car_parts} (see below).}
-#' \item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data} (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}). Only required if \code{spatial=TRUE}.}
+#' \item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data}. If not provided, a non-spatial Student's t model will be used instead of the CAR model.}
 #'
 #' }
-#' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} or spatial measurement error (\code{ME}) terms; it will automatically be row-standardized before calculating \code{slx} terms.
+#' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} or spatial measurement error (\code{ME}) terms; it will automatically be row-standardized before calculating \code{slx} terms.  See \code{\link[geostan]{shape2mat}}.
+#' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{poisson(link = "log")}, \code{binomial(link = "logit")}, \code{student_t()}, and the default \code{gaussian()}.
+#' 
 #' @param prior A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:
 #' \describe{
 #' \item{intercept}{The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. \code{prior = list(intercept = c(location = 0, scale = 10))} to assign a Gaussian prior with mean zero and variance 10^2.}
@@ -148,6 +152,7 @@ stan_glm <- function(formula,
         stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
         stopifnot(all(dim(C) == nrow(data)))
     }
+    if (!missing(ME)) if (inherits(ME$car_parts$C, "Matrix") | inherits(ME$car_parts$C, "matrix")) C <- ME$car_parts$C
     a.zero <- as.array(0, dim = 1)
     tmpdf <- as.data.frame(data)
     mod.mat <- model.matrix(formula, tmpdf)
@@ -240,6 +245,8 @@ stan_glm <- function(formula,
     dwx = dwx,
     wx_idx = wx_idx
     )
+    ## EMPTY PLACEHOLDERS
+    standata <- c(standata, empty_icar_data(n), empty_esf_data(n))
     ## ME MODEL -------------  
     me.list <- prep_me_data(ME, x_no_Wx)
     standata <- c(standata, me.list)  
@@ -255,17 +262,16 @@ stan_glm <- function(formula,
     if (family$family %in% c("gaussian", "student_t")) pars <- c(pars, 'sigma')
     if (is_student) pars <- c(pars, "nu")
     if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
-    if (me.list$dx_me_unbounded) pars <- c(pars, "x_true_unbounded")
-    if (me.list$dx_me_bounded) pars <- c(pars, "x_true_bounded")
+    if (me.list$has_me) pars <- c(pars, "x_true", "mu_x_true", "sigma_x_true")
+    if (me.list$spatial_me) pars <- c(pars, "car_rho_x_true")
     priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
     if (me.list$has_me) priors_made_slim <- c(priors_made_slim, list(ME_location = me.list$ME_prior_mean, ME_scale = me.list$ME_prior_scale))
-    if (me.list$has_me && me.list$spatial) priors_made_slim <- c(priors_made_slim, list(ME_car_rho = me.list$ME_prior_car_rho))
+    if (me.list$has_me && me.list$spatial_me) priors_made_slim <- c(priors_made_slim, list(ME_car_rho = me.list$ME_prior_car_rho))
     print_priors(prior, priors_made_slim)
     ## CALL STAN -------------    
-    samples <- rstan::sampling(stanmodels$glm, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+    samples <- rstan::sampling(stanmodels$base, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
     ## OUTPUT -------------    
-    if (missing(C)) C <- NA
-    out <- clean_results(samples, pars, is_student, has_re, Wx, x_no_Wx, me.list$x_me_unbounded_idx, me.list$x_me_bounded_idx)
+    out <- clean_results(samples, pars, is_student, has_re, Wx, x_no_Wx, me.list$x_me_idx)
     out$data <- ModData
     out$family <- family
     out$formula <- formula
@@ -273,13 +279,14 @@ stan_glm <- function(formula,
     out$re <- re_list
     out$priors <- priors_made_slim
     out$x_center <- attributes(x_full)$`scaled:center`
-    if (!missing(ME)) out$ME <- ME
+    out$ME <- list(has_me = me.list$has_me, spatial_me = me.list$spatial_me)
+    if (out$ME$has_me) out$ME <- c(out$ME, ME)
     if (has_re) {
         out$spatial <- data.frame(par = "alpha_re", method = "Exchangeable")
     } else {
         out$spatial <- data.frame(par = "none", method = "none")
     }
-    if (inherits(C, "matrix") | inherits(C, "Matrix")) {
+    if (!missing(C) && (inherits(C, "matrix") | inherits(C, "Matrix"))) {
         R <- resid(out, summary = FALSE)
         out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )
     }        

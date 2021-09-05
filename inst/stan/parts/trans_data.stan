@@ -16,8 +16,8 @@
   is_auto_gaussian = family == 5;  
   has_sigma  =  family < 3;
   has_offset = sum(offset) != 0;
-  dx_all = dx_obs + dx_me_bounded + dx_me_unbounded;
-  has_me = (dx_all > dx_obs);
+  dx_all = dx_obs + dx_me;
+  has_me = dx_me > 0;
   if ((!has_me) && dwx) {
     for (i in 1:dwx) {
       WX[,i] = csr_matrix_times_vector(n, n, W_w, W_v, W_u,
