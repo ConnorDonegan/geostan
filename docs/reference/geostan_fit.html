@@ -47,7 +47,8 @@
 
 
 <meta property="og:title" content="geostan_fit methods — print.geostan_fit" />
-<meta property="og:description" content="Methods for fitted geostan models: extract residuals, fitted values, posterior predictive distribution or spatial component from a spatial regression model; extract samples from the posterior distribution; print regression results; plot posterior distributions." />
+<meta property="og:description" content="Methods for fitted geostan models: extract residuals, fitted values, posterior predictive distribution or spatial component from a spatial regression model; extract samples from the posterior distribution; print regression results; plot posterior distributions.
+Extracts the posterior distribution of the spatial component from a fitted geostan model" />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
@@ -133,6 +134,7 @@
 
     <div class="ref-description">
     <p>Methods for fitted geostan models: extract residuals, fitted values, posterior predictive distribution or spatial component from a spatial regression model; extract samples from the posterior distribution; print regression results; plot posterior distributions.</p>
+<p>Extracts the posterior distribution of the spatial component from a fitted geostan model</p>
     </div>
 
     <pre class="usage"><span class='co'># S3 method for geostan_fit</span>
@@ -156,8 +158,10 @@
 <span class='co'># S3 method for geostan_fit</span>
 <span class='fu'><a href='https://rdrr.io/r/stats/fitted.values.html'>fitted</a></span><span class='op'>(</span><span class='va'>object</span>, summary <span class='op'>=</span> <span class='cn'>TRUE</span>, rates <span class='op'>=</span> <span class='cn'>TRUE</span>, <span class='va'>...</span><span class='op'>)</span>
 
+<span class='fu'>spatial</span><span class='op'>(</span><span class='va'>object</span>, summary <span class='op'>=</span> <span class='cn'>TRUE</span>, <span class='va'>...</span><span class='op'>)</span>
+
 <span class='co'># S3 method for geostan_fit</span>
-<span class='fu'><a href='spatial.html'>spatial</a></span><span class='op'>(</span><span class='va'>object</span>, summary <span class='op'>=</span> <span class='cn'>TRUE</span>, <span class='va'>...</span><span class='op'>)</span></pre>
+<span class='fu'>spatial</span><span class='op'>(</span><span class='va'>object</span>, summary <span class='op'>=</span> <span class='cn'>TRUE</span>, <span class='va'>...</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -253,11 +257,20 @@
 <span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>sentencing</span><span class='op'>)</span>
 
 <span class='co'># county `random effects' </span>
-<span class='va'>sp</span> <span class='op'>=</span> <span class='fu'><a href='spatial.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
+<span class='va'>sp</span> <span class='op'>=</span> <span class='fu'>spatial</span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
+
+<span class='co'># posterior predictive distribution</span>
+<span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span><span class='op'>(</span><span class='va'>fit</span>, S <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>
+<span class='fu'>bayesplot</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span>, <span class='va'>yrep</span><span class='op'>)</span>
 
 <span class='co'># extract matrix of samples from posterior distribution of parameters</span>
 <span class='co'>## alpha_re are the unstructured area random effects</span>
-<span class='va'>S</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>as.matrix</a></span><span class='op'>(</span><span class='va'>fit</span>, pars <span class='op'>=</span> <span class='st'>"alpha_re"</span><span class='op'>)</span>
+<span class='va'>S.matrix</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/matrix.html'>as.matrix</a></span><span class='op'>(</span><span class='va'>fit</span>, pars <span class='op'>=</span> <span class='st'>"alpha_re"</span><span class='op'>)</span>
+
+<span class='co'># array of samples</span>
+<span class='va'>S.array</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/array.html'>as.array</a></span><span class='op'>(</span><span class='va'>fit</span>, pars <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"intercept"</span>, <span class='st'>"alpha_re"</span>, <span class='st'>"alpha_tau"</span><span class='op'>)</span><span class='op'>)</span>
+<span class='va'>S.monitor</span> <span class='op'>&lt;-</span> <span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/monitor.html'>monitor</a></span><span class='op'>(</span><span class='va'>S.array</span>, print <span class='op'>=</span> <span class='cn'>FALSE</span>, warmup <span class='op'>=</span> <span class='fl'>0</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>S.monitor</span><span class='op'>)</span>
 
 <span class='co'># extract data.frame of posterior samples</span>
 <span class='va'>S</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='va'>fit</span>, pars <span class='op'>=</span> <span class='st'>"alpha_re"</span><span class='op'>)</span>

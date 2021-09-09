@@ -294,7 +294,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <p>The auto-Gaussian model returns a spatial trend (autocorrelation) component which is calculated as follows (Cressie 2015, p. 564):</p><pre>                            trend = rho * C * (Y - Mu).
 </pre>
 
-<p>This term can be extracted from a fitted auto-Gaussian model using the <code><a href='spatial.html'>spatial</a></code> method.</p>
+<p>This term can be extracted from a fitted auto-Gaussian model using the <code><a href='print.geostan_fit.html'>spatial</a></code> method.</p>
 <p>When applied to a fitted auto-Gaussian model, the <code><a href='print.geostan_fit.html'>residuals.geostan_fit</a></code> method returns `de-trended' residuals, as follows:</p><pre>                            <span class='va'>residual</span> <span class='op'>=</span> <span class='va'>Y</span> <span class='op'>-</span> <span class='va'>Mu</span> <span class='op'>-</span> <span class='va'>trend.</span>
 </pre>
 
@@ -308,7 +308,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 </pre>
 
 <p>These models are most often used to calculate incidence rates (mortality rates, or disease incidence rates); the user provided offset should be, then, the natural logarithm of the denominator in the rates, e.g., log-population at risk.</p>
-<p>For Poisson models, the <code><a href='spatial.html'>spatial</a></code> method returns the parameter vector <code>phi</code>, which is the log-risk minus the intercept and any covariates:</p><pre>                           <span class='va'>phi</span> <span class='op'>=</span> <span class='va'>lambda</span> <span class='op'>-</span> <span class='va'>Mu.</span>
+<p>For Poisson models, the <code><a href='print.geostan_fit.html'>spatial</a></code> method returns the parameter vector <code>phi</code>, which is the log-risk minus the intercept and any covariates:</p><pre>                           <span class='va'>phi</span> <span class='op'>=</span> <span class='va'>lambda</span> <span class='op'>-</span> <span class='va'>Mu.</span>
 </pre>
 
 <p>This is equivalent to re-writing the model as:</p><pre>                            Y ~ Poisson(exp(offset + Mu + phi))
@@ -329,7 +329,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 </pre>
 
 <p>where outcome data <code>Y</code> are counts, <code>N</code> is the number of trials, and <code>theta</code> is the 'success' rate. Note that the model formula should be structured as: <code>cbind(sucesses, failures) ~ x</code>, such that <code>trials = successes = failures</code>.</p>
-<p>For fitted Binomial models, the <code><a href='spatial.html'>spatial</a></code> method will return the parameter vector <code>phi</code>, equivalent to:</p><pre>                            <span class='va'>phi</span> <span class='op'>=</span> <span class='fu'>logit</span><span class='op'>(</span><span class='va'>theta</span><span class='op'>)</span> <span class='op'>-</span> <span class='va'>Mu.</span>
+<p>For fitted Binomial models, the <code><a href='print.geostan_fit.html'>spatial</a></code> method will return the parameter vector <code>phi</code>, equivalent to:</p><pre>                            <span class='va'>phi</span> <span class='op'>=</span> <span class='fu'>logit</span><span class='op'>(</span><span class='va'>theta</span><span class='op'>)</span> <span class='op'>-</span> <span class='va'>Mu.</span>
 </pre>
 
 
@@ -370,7 +370,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>fit.car</span>, pars <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"car_scale"</span>, <span class='st'>"car_rho"</span><span class='op'>)</span><span class='op'>)</span>
 
 <span class='co'># map the spatial autocorrelation term, phi</span>
-<span class='va'>sp.trend</span> <span class='op'>&lt;-</span> <span class='fu'><a href='spatial.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit.car</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
+<span class='va'>sp.trend</span> <span class='op'>&lt;-</span> <span class='fu'><a href='print.geostan_fit.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit.car</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
 <span class='fu'><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>st_as_sf</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>sp.trend</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>

@@ -62,10 +62,19 @@
 #' # county `random effects' 
 #' sp = spatial(fit)
 #'
+#' # posterior predictive distribution
+#' yrep <- posterior_predict(fit, S = 100)
+#' bayesplot::ppc_dens_overlay(sentencing$sents, yrep)
+#'
 #' # extract matrix of samples from posterior distribution of parameters
 #' ## alpha_re are the unstructured area random effects
-#' S <- as.matrix(fit, pars = "alpha_re")
+#' S.matrix <- as.matrix(fit, pars = "alpha_re")
 #'
+#' # array of samples
+#' S.array <- as.array(fit, pars = c("intercept", "alpha_re", "alpha_tau"))
+#' S.monitor <- rstan::monitor(S.array, print = FALSE, warmup = 0)
+#' head(S.monitor)
+#' 
 #' # extract data.frame of posterior samples
 #' S <- as.data.frame(fit, pars = "alpha_re")
 #' }
@@ -208,11 +217,9 @@ fitted.geostan_fit <- function(object, summary = TRUE, rates = TRUE, ...) {
 #' Extract spatial component from a fitted geostan model
 #' 
 #' @description Extracts the posterior distribution of the spatial component from a fitted geostan model 
-#' @seealso \code{\link[geostan]{geostan_fit}}
-#' @param object Fitted geostan model
-#' @param summary should the posterior distribution be summarized? If \code{FALSE}, returns a matrix of samples; else a \code{data.frame} with summary statistics of the spatial filter at each observation.
-#' @param ... additional arguments
-#' @export 
+#' 
+#' @export
+#' @rdname geostan_fit
 spatial <- function(object, summary = TRUE, ...) {
     UseMethod("spatial", object)
 }

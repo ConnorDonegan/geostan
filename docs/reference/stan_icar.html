@@ -394,7 +394,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit.bym</span>, <span class='va'>sentencing</span><span class='op'>)</span>
 
 <span class='co'># map the smooth spatial term</span>
-<span class='va'>sp.trend</span> <span class='op'>&lt;-</span> <span class='fu'><a href='spatial.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit.bym</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
+<span class='va'>sp.trend</span> <span class='op'>&lt;-</span> <span class='fu'><a href='print.geostan_fit.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit.bym</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
 <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span> <span class='fu'><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>st_as_sf</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span> <span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>sp.trend</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>

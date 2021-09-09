@@ -8,6 +8,7 @@
 \alias{as.array.geostan_fit}
 \alias{residuals.geostan_fit}
 \alias{fitted.geostan_fit}
+\alias{spatial}
 \alias{spatial.geostan_fit}
 \title{geostan_fit methods}
 \usage{
@@ -24,6 +25,8 @@
 \method{residuals}{geostan_fit}(object, summary = TRUE, rates = TRUE, detrend = TRUE, ...)
 
 \method{fitted}{geostan_fit}(object, summary = TRUE, rates = TRUE, ...)
+
+spatial(object, summary = TRUE, ...)
 
 \method{spatial}{geostan_fit}(object, summary = TRUE, ...)
 }
@@ -59,6 +62,8 @@ Methods \code{residuals}, \code{fitted}, \code{spatial} return a matrix containi
 }
 \description{
 Methods for fitted geostan models: extract residuals, fitted values, posterior predictive distribution or spatial component from a spatial regression model; extract samples from the posterior distribution; print regression results; plot posterior distributions.
+
+Extracts the posterior distribution of the spatial component from a fitted geostan model
 }
 \examples{
 \dontrun{
@@ -98,9 +103,18 @@ sp_diag(fit, sentencing)
 # county `random effects' 
 sp = spatial(fit)
 
+# posterior predictive distribution
+yrep <- posterior_predict(fit, S = 100)
+bayesplot::ppc_dens_overlay(sentencing$sents, yrep)
+
 # extract matrix of samples from posterior distribution of parameters
 ## alpha_re are the unstructured area random effects
-S <- as.matrix(fit, pars = "alpha_re")
+S.matrix <- as.matrix(fit, pars = "alpha_re")
+
+# array of samples
+S.array <- as.array(fit, pars = c("intercept", "alpha_re", "alpha_tau"))
+S.monitor <- rstan::monitor(S.array, print = FALSE, warmup = 0)
+head(S.monitor)
 
 # extract data.frame of posterior samples
 S <- as.data.frame(fit, pars = "alpha_re")

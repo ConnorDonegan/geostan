@@ -270,13 +270,16 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
 
-    <p>Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters. <em>Journal of Geographical Systems</em>, 18(1), 67-85. <a href='10.1007/s10109-015-0225-3'>10.1007/s10109-015-0225-3</a></p>
+    <p>Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters. <em>Journal of Geographical Systems</em>, 18(1), 67-85. doi: <a href='https://doi.org/10.1007/s10109-015-0225-3'>10.1007/s10109-015-0225-3</a>
+.</p>
 <p>Dray, S., P. Legendre &amp; P. R. Peres-Neto (2006). Spatial modelling: a comprehensive framework for principal coordinate analysis of neighbour matrices (PCNM). <em>Ecological Modeling</em>, 196(3-4), 483-493.</p>
-<p>Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. <em>Spatial Statistics</em> 38. <a href='doi.org/10.1016/j.spasta.2020.100450'>doi.org/10.1016/j.spasta.2020.100450</a></p>
+<p>Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian estimation of spatial filters with Moran’s Eigenvectors and hierarchical shrinkage priors. <em>Spatial Statistics</em>. doi: <a href='https://doi.org/10.1016/j.spasta.2020.100450'>10.1016/j.spasta.2020.100450</a>
+.</p>
 <p>Griffith, Daniel A., and P. R. Peres-Neto (2006). Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses. <em>Ecology</em> 87(10), 2603-2613.</p>
 <p>Griffith, D., and Y. Chun (2014). Spatial autocorrelation and spatial filtering, Handbook of Regional Science. Fischer, MM and Nijkamp, P. eds.</p>
 <p>Griffith, D., Chun, Y. and Li, B. (2019). <em>Spatial Regression Analysis Using Eigenvector Spatial Filtering</em>. Elsevier.</p>
-<p>Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In <em>Electronic Journal of Statistics</em>, 11(2):5018-5051. <a href='https://projecteuclid.org/euclid.ejs/1513306866'>https://projecteuclid.org/euclid.ejs/1513306866</a></p>
+<p>Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In <em>Electronic Journal of Statistics</em>, 11(2):5018-5051. doi: <a href='https://doi.org/10.1214/17-EJS1337SI'>10.1214/17-EJS1337SI</a>
+.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl>
@@ -312,7 +315,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
                           <span class='va'>beta_ev</span> <span class='op'>~</span> <span class='fu'>horseshoe</span><span class='op'>(</span><span class='va'>.</span><span class='op'>)</span>
 </pre>
 
-<p>The <a href='spatial.html'>spatial</a> method will return <code>EV * beta</code>.</p>
+<p>The <a href='print.geostan_fit.html'>spatial</a> method will return <code>EV * beta</code>.</p>
 <p>The model can also be extended to the space-time domain; see <a href='shape2mat.html'>shape2mat</a> to specify a space-time connectivity matrix.</p>
 <p>The coefficients <code>beta_ev</code> are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the <code>threshold</code> argument). By default, <code>stan_esf</code> will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the <code>nsa</code> argument.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
@@ -357,7 +360,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <span class='fu'>bayesplot</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>yrep</span><span class='op'>)</span> 
 
 <span class='co'># map the spatial filter</span>
-<span class='va'>sp.filter</span> <span class='op'>&lt;-</span> <span class='fu'><a href='spatial.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit.esf</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
+<span class='va'>sp.filter</span> <span class='op'>&lt;-</span> <span class='fu'><a href='print.geostan_fit.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit.esf</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
 <span class='fu'><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>st_as_sf</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>sp.filter</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>

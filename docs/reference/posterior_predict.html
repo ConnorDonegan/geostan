@@ -180,10 +180,10 @@
 #&gt; <span class='message'>*Setting prior parameters for intercept</span></div><div class='output co'>#&gt; <span class='message'>Gaussian</span></div><div class='output co'>#&gt;  location     scale 
 #&gt; 0.1111811 3.0000000 
 #&gt; 
-#&gt; SAMPLING FOR MODEL 'base' NOW (CHAIN 1).
+#&gt; SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).
 #&gt; Chain 1: 
-#&gt; Chain 1: Gradient evaluation took 1.4e-05 seconds
-#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.14 seconds.
+#&gt; Chain 1: Gradient evaluation took 2.8e-05 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.28 seconds.
 #&gt; Chain 1: Adjust your expectations accordingly!
 #&gt; Chain 1: 
 #&gt; Chain 1: 
@@ -192,9 +192,9 @@
 #&gt; Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 #&gt; Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 #&gt; Chain 1: 
-#&gt; Chain 1:  Elapsed Time: 0.030669 seconds (Warm-up)
-#&gt; Chain 1:                0.030349 seconds (Sampling)
-#&gt; Chain 1:                0.061018 seconds (Total)
+#&gt; Chain 1:  Elapsed Time: 0.047379 seconds (Warm-up)
+#&gt; Chain 1:                0.03882 seconds (Sampling)
+#&gt; Chain 1:                0.086199 seconds (Total)
 #&gt; Chain 1: </div><div class='input'> <span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'>posterior_predict</span><span class='op'>(</span><span class='va'>fit</span>, S <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>
  <span class='fu'>bayesplot</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span>y <span class='op'>=</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span>, yrep <span class='op'>=</span> <span class='va'>yrep</span><span class='op'>)</span>
 </div><div class='img'><img src='posterior_predict-1.png' alt='' width='700' height='433' /></div><div class='input'>
@@ -209,10 +209,10 @@
 #&gt; <span class='message'>*Setting prior parameters for alpha_tau</span></div><div class='output co'>#&gt; <span class='message'>Student's t</span></div><div class='output co'>#&gt;       df location    scale 
 #&gt;       20        0        3 
 #&gt; 
-#&gt; SAMPLING FOR MODEL 'base' NOW (CHAIN 1).
+#&gt; SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).
 #&gt; Chain 1: 
-#&gt; Chain 1: Gradient evaluation took 2e-05 seconds
-#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.2 seconds.
+#&gt; Chain 1: Gradient evaluation took 2.4e-05 seconds
+#&gt; Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.24 seconds.
 #&gt; Chain 1: Adjust your expectations accordingly!
 #&gt; Chain 1: 
 #&gt; Chain 1: 
@@ -221,9 +221,9 @@
 #&gt; Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 #&gt; Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 #&gt; Chain 1: 
-#&gt; Chain 1:  Elapsed Time: 0.237822 seconds (Warm-up)
-#&gt; Chain 1:                0.240475 seconds (Sampling)
-#&gt; Chain 1:                0.478297 seconds (Total)
+#&gt; Chain 1:  Elapsed Time: 0.286937 seconds (Warm-up)
+#&gt; Chain 1:                0.290254 seconds (Sampling)
+#&gt; Chain 1:                0.577191 seconds (Total)
 #&gt; Chain 1: </div><div class='input'> <span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'>posterior_predict</span><span class='op'>(</span><span class='va'>fit2</span>, S <span class='op'>=</span> <span class='fl'>100</span><span class='op'>)</span>
  <span class='fu'>bayesplot</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span>y <span class='op'>=</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span>, yrep <span class='op'>=</span> <span class='va'>yrep</span><span class='op'>)</span>
 </div><div class='img'><img src='posterior_predict-2.png' alt='' width='700' height='433' /></div><div class='input'> <span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit2</span>, <span class='va'>sentencing</span><span class='op'>)</span>
