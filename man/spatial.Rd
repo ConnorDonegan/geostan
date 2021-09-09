@@ -17,5 +17,5 @@ spatial(object, summary = TRUE, ...)
 Extracts the posterior distribution of the spatial component from a fitted geostan model
 }
 \seealso{
-\link[geostan]{spatial.geostan_fit}
+\code{\link[geostan]{geostan_fit}}
 }

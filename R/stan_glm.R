@@ -269,7 +269,7 @@ stan_glm <- function(formula,
     if (me.list$has_me && me.list$spatial_me) priors_made_slim <- c(priors_made_slim, list(ME_car_rho = me.list$ME_prior_car_rho))
     print_priors(prior, priors_made_slim)
     ## CALL STAN -------------    
-    samples <- rstan::sampling(stanmodels$base, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+    samples <- rstan::sampling(stanmodels$foundation, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
     ## OUTPUT -------------    
     out <- clean_results(samples, pars, is_student, has_re, Wx, x_no_Wx, me.list$x_me_idx)
     out$data <- ModData

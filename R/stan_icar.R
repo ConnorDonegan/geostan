@@ -392,7 +392,7 @@ stan_icar <- function(formula,
     print_priors(prior, priors_made_slim)    
     ## PARAMETERS TO KEEP with ICAR [STOP] -------------              
     ## CALL STAN -------------  
-    samples <- rstan::sampling(stanmodels$base, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+    samples <- rstan::sampling(stanmodels$foundation, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
     ## OUTPUT -------------        
     out <- clean_results(samples, pars, is_student, has_re, Wx, x_no_Wx, me.list$x_me_idx)
     out$data <- ModData

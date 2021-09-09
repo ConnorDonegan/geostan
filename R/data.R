@@ -2,7 +2,7 @@
 #'
 #' @source
 #'
-#' Centers for Disease Control and Prevention, National Center for Health Statistics. Underlying Cause of Death 1999-2018 on CDC Wonder Online Database. 2020. Available online: \url{http://wonder.cdc.gov/ucd-iid10.html} (accessed on 19 October 2020).
+#' Centers for Disease Control and Prevention, National Center for Health Statistics. Underlying Cause of Death 1999-2018 on CDC Wonder Online Database. 2020. Available online: \url{http://wonder.cdc.gov} (accessed on 19 October 2020).
 #' 
 #' Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). ``Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure.'' *Int. J. Env. Res. and Public Health* 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: \url{https://github.com/ConnorDonegan/survey-HBM}.
 #'
@@ -55,7 +55,7 @@
 #' @source Donegan, Connor. "The Making of Florida's 'Criminal Class': Race, Modernity and the Convict Leasing Program." Florida Historical Quarterly 97.4 (2019): 408-434. \url{https://osf.io/2wj7s/}.
 #'
 #' Mullen, Lincoln A. and Bratt, Jordon. "USABoundaries: Historical and Contemporary Boundaries of the United States of America,"
-#'  Journal of Open Source Software 3, no. 23 (2018): 314, \url{https://doi.org/10.21105/joss.00314}.
+#'  Journal of Open Source Software 3, no. 23 (2018): 314, \doi{10.21105/joss.00314}.
 #'
 #' @description A spatial polygons data frame of historical 1910 county boundaries of Florida with aggregated state prison sentencing counts and census data.
 #'  Sentencing and population counts are aggregates over the period 1905-1910, where populations were interpolated linearly between decennial censuses of 1900 and 1910.

@@ -4,11 +4,11 @@
 \alias{stan_esf}
 \title{Spatial filtering}
 \source{
-Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters. \emph{Journal of Geographical Systems}, 18(1), 67-85. \url{10.1007/s10109-015-0225-3}
+Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters. \emph{Journal of Geographical Systems}, 18(1), 67-85. \doi{10.1007/s10109-015-0225-3}.
 
 Dray, S., P. Legendre & P. R. Peres-Neto (2006). Spatial modelling: a comprehensive framework for principal coordinate analysis of neighbour matrices (PCNM). \emph{Ecological Modeling}, 196(3-4), 483-493.
 
-Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors. \emph{Spatial Statistics} 38. \url{doi.org/10.1016/j.spasta.2020.100450}
+Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian estimation of spatial filters with Moran’s Eigenvectors and hierarchical shrinkage priors. \emph{Spatial Statistics}. \doi{10.1016/j.spasta.2020.100450}.
 
 Griffith, Daniel A., and P. R. Peres-Neto (2006). Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses. \emph{Ecology} 87(10), 2603-2613.
 
@@ -16,7 +16,7 @@ Griffith, D., and Y. Chun (2014). Spatial autocorrelation and spatial filtering,
 
 Griffith, D., Chun, Y. and Li, B. (2019). \emph{Spatial Regression Analysis Using Eigenvector Spatial Filtering}. Elsevier.
 
-Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In \emph{Electronic Journal of Statistics}, 11(2):5018-5051. \url{https://projecteuclid.org/euclid.ejs/1513306866}
+Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In \emph{Electronic Journal of Statistics}, 11(2):5018-5051. \doi{10.1214/17-EJS1337SI}.
 }
 \usage{
 stan_esf(

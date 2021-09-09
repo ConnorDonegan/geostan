@@ -208,11 +208,11 @@ fitted.geostan_fit <- function(object, summary = TRUE, rates = TRUE, ...) {
 #' Extract spatial component from a fitted geostan model
 #' 
 #' @description Extracts the posterior distribution of the spatial component from a fitted geostan model 
-#' @seealso \link[geostan]{spatial.geostan_fit}
+#' @seealso \code{\link[geostan]{geostan_fit}}
 #' @param object Fitted geostan model
 #' @param summary should the posterior distribution be summarized? If \code{FALSE}, returns a matrix of samples; else a \code{data.frame} with summary statistics of the spatial filter at each observation.
 #' @param ... additional arguments
-#' @export
+#' @export 
 spatial <- function(object, summary = TRUE, ...) {
     UseMethod("spatial", object)
 }
