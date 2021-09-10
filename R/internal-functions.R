@@ -1,3 +1,14 @@
+
+
+#' check data (x, w) dimensions and class for spatial autocorrelation measures
+#' @noRd
+check_sa_data <- function(x, w) {
+    stopifnot(inherits(x, "numeric") | inherits(x, "integer"))
+    stopifnot(inherits(w, "matrix") | inherits(w, "Matrix"))
+    stopifnot(all(dim(w) == length(x)))
+}
+
+
 #' Remove intercept from formula
 #' 
 #' @noRd
@@ -135,7 +146,7 @@ make_priors <- function(user_priors = NULL, y, x, rhs_scale_global, scaling_fact
     link <- match.arg(link)
     if (link == "identity") {
         scale.y <- sd(y)
-        alpha_scale <- max(4 * sd(y), 3)
+        alpha_scale <- max(4 * sd(y), 5)
         alpha_mean <- mean(y)
     }
   if (link == "log") {
@@ -143,7 +154,7 @@ make_priors <- function(user_priors = NULL, y, x, rhs_scale_global, scaling_fact
       y <- log(y / exp(offset))
       alpha_mean <- mean(y)
       scale.y <- sd(y)
-      alpha_scale <- max(4 * scale.y, 3)
+      alpha_scale <- max(4 * scale.y, 5)
   }
   if (link == "logit") {
       y <- y[,1] / (y[,1] + y[,2])
@@ -165,7 +176,7 @@ make_priors <- function(user_priors = NULL, y, x, rhs_scale_global, scaling_fact
       scalex[x_bin] <- scalex_bin
     }
     beta_scale <- scaling_factor * (scale.y / scalex)
-    for (i in 1:length(beta_scale)) beta_scale[i] <- max(beta_scale[i], 3)
+    for (i in 1:length(beta_scale)) beta_scale[i] <- max(beta_scale[i], 5)
     beta_location <- rep(0, times = ncol(x))
     priors$beta <- cbind(beta_location, beta_scale)
     dimnames(priors$beta)[[1]] <- dimnames(x)[[2]]
@@ -174,7 +185,7 @@ make_priors <- function(user_priors = NULL, y, x, rhs_scale_global, scaling_fact
       priors$beta <- matrix(0, nrow = 0, ncol = 2)
   }
   # the following will be ignored when when not needed (RE scale, resid scale, student T df)
-  priors$alpha_tau <- c(df = 20, location = 0, scale = max(scaling_factor * scale.y, 3))
+  priors$alpha_tau <- c(df = 10, location = 0, scale = max(scaling_factor * scale.y, 3))
   priors$sigma <- c(df = 10, location = 0, scale = max(scaling_factor * scale.y, 3))
   priors$nu <- c(alpha = 3, beta = 0.2)
   if(!missing(rhs_scale_global)) {

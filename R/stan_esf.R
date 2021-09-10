@@ -75,7 +75,7 @@
 #' @param ... Other arguments passed to \link[rstan]{sampling}. 
 #' @details
 #'
-#' Eigenvector spatial filtering (ESF) is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), drawing on the Piironen and Vehtari's (2017) regularized horseshoe prior.
+#' Eigenvector spatial filtering (ESF) is a method for spatial regression analysis. ESF is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), which uses Piironen and Vehtari's (2017) regularized horseshoe prior.
 #'
 #' ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \code{C}. The resulting eigenvectors, `EV`, are mutually orthogonal and uncorrelated map patterns. ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. The spatail filter is `EV * beta_ev`, where `beta_ev` is a vector of coefficients.
 #'

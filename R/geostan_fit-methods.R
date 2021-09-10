@@ -122,7 +122,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
       cat("none")
   }
   if (x$spatial$method == "ESF") {
-    cat("RHS global shrinkage prior: ", round(x$priors$rhs["scale_global"], 2), "\n")
+    cat("\nRHS global shrinkage prior: ", round(x$priors$rhs["scale_global"], 2), "\n")
   }
   cat("\n")
   print(x$stanfit, pars = pars, digits = digits, probs = probs, ...)
@@ -215,9 +215,6 @@ fitted.geostan_fit <- function(object, summary = TRUE, rates = TRUE, ...) {
 }
 
 #' Extract spatial component from a fitted geostan model
-#' 
-#' @description Extracts the posterior distribution of the spatial component from a fitted geostan model 
-#' 
 #' @export
 #' @rdname geostan_fit
 spatial <- function(object, summary = TRUE, ...) {

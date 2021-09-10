@@ -23,10 +23,10 @@ posterior_predict(object, S, summary = FALSE, width = 0.95, car_parts, seed)
 A matrix of size `S x `N` containing samples from the posterior predictive distribution, where `S` is the number of samples drawn and `N` is the number of observations. If `summary = TRUE`, a `data.frame` with `N` rows and `3` columns is returned (with column names `mu`, `lwr`, and `upr`).
 }
 \description{
-Draw samples from the posterior predictive distribution of a fitted \code{geostan} model. Use the original data or new data, with or without the spatial component and other partial pooling terms.
+Draw samples from the posterior predictive distribution of a fitted \code{geostan} model.
 }
 \examples{
-
+\dontrun{
  fit <- stan_glm(sents ~ offset(log(expected_sents)),
                  data = sentencing,
                  family = poisson(),
@@ -42,5 +42,5 @@ Draw samples from the posterior predictive distribution of a fitted \code{geosta
  yrep <- posterior_predict(fit2, S = 100)
  bayesplot::ppc_dens_overlay(y = sentencing$sents, yrep = yrep)
  sp_diag(fit2, sentencing)
- 
+ }
 }

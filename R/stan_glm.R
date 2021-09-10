@@ -44,7 +44,7 @@
 #' 
 #' \item{beta}{Regression coefficients are assigned Gaussian prior distributions. Provide a `data.frame` with two columns (location and scale).
 #'
-#' The order of variables must follow their order of appearance in the model `formula`; e.g., if the formula is `y ~ x1 + x2`, then providing `prior = list(beta = data.frame(location = c(0, 0), scale = c(1, 1))) will assign standard normal prior distributions to both coefficients.
+#' The order of variables must follow their order of appearance in the model `formula`; e.g., if the formula is `y ~ x1 + x2`, then providing `prior = list(beta = data.frame(location = c(0, 0), scale = c(1, 1)))` will assign standard normal prior distributions to both coefficients.
 #'
 #' Note that if you also use `slx` terms (spatially lagged covariates), then you have to provide priors for them; `slx` terms *precede* other terms in the model formula. For example, providing of `y ~ x1 + x2` with `slx = ~ x1 + x2` is the same as providing `formula = y ~ I(W \%*\% x1) + I(W \%*\% x2) + x1 + x2`, where `W` is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}).}
 #'
@@ -55,13 +55,13 @@
 #' \item{tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(tau = c(df = 20, location = 0, scale = 20))`.}
 #' }
 #' 
-#' @param centerx To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to \code{\link[base]{scale}}.
+#' @param centerx To center predictors on their mean values, use `centerx = TRUE`. If `centerx` is a numeric vector, predictors will be centered on the values provided. This argument is passed to \code{\link[base]{scale}}.
 #' 
 #' @param prior_only Draw samples from the prior distributions of parameters only. 
 #' @param chains Number of MCMC chains to estimate. 
 #' @param iter Number of samples per chain. 
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples; set \code{refresh=0} to silence this.
-#' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
+#' @param pars Specify any additional parameters you'd like stored from the Stan model.
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} except that \code{adapt_delta} is raised to \code{0.95} and \code{max_treedepth = 15}.
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' 
@@ -122,7 +122,7 @@
 #' # Spatial autocorrelation/residual diagnostics
 #' sp_diag(fit.pois, sentencing)
 #' 
-#' ## Posterior predictive check                                        
+#' ## Posterior predictive distribution                                       
 #' library(bayesplot)
 #' yrep <- posterior_predict(fit.pois, samples = 75)
 #' y <- sentencing$sents

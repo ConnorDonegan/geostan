@@ -1,7 +1,6 @@
-
 #' Draw samples from the posterior predictive distribution
 #'
-#' @description Draw samples from the posterior predictive distribution of a fitted \code{geostan} model. Use the original data or new data, with or without the spatial component and other partial pooling terms.
+#' @description Draw samples from the posterior predictive distribution of a fitted \code{geostan} model. 
 #' @export
 #' @param object A \code{geostan_fit} object.
 #' 
@@ -11,7 +10,7 @@
 #' 
 #' @param width Only used if \code{summary = TRUE}, to set the quantiles for the credible intervals. Defaults to `width = 0.95`.
 #'
-#' @param car_parts Data for CAR model specification; only required for \code{\link[geostan]{stan_car}} with `family = auto_gaussian()`.
+#' @param car_parts Data for CAR model specification; only required for \code{\link[geostan]{stan_car}} with `family = auto_gaussian()`. 
 #' 
 #' @param seed A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution. 
 #' 
@@ -19,7 +18,7 @@
 #'
 #' 
 #' @examples
-#' 
+#' \dontrun{
 #'  fit <- stan_glm(sents ~ offset(log(expected_sents)),
 #'                  data = sentencing,
 #'                  family = poisson(),
@@ -35,7 +34,7 @@
 #'  yrep <- posterior_predict(fit2, S = 100)
 #'  bayesplot::ppc_dens_overlay(y = sentencing$sents, yrep = yrep)
 #'  sp_diag(fit2, sentencing)
-#'  
+#'  }
 posterior_predict <- function(object, 
                 S,
                 summary = FALSE,
@@ -84,7 +83,7 @@ posterior_predict <- function(object,
 
 #' @importFrom Matrix Diagonal Matrix
 .pp_auto_gaussian <- function(mu, rho, tau, car_parts) {
-    I <- Matrix::Diagonal(car_parts$dim_C)
+    I <- Matrix::Diagonal(car_parts$n)
     M <- Matrix::Diagonal(x = 1 / car_parts$Delta_inv)
     C <- Matrix::Matrix(car_parts$C)
     t(sapply(1:nrow(mu), function(s) {

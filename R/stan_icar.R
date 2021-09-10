@@ -363,7 +363,6 @@ stan_icar <- function(formula,
     ## ICAR DATA [START] -------------
     iar.list <- prep_icar_data(C, scale_factor = scale_factor)
     if (!inherits(scale_factor, "NULL")) stopifnot(length(scale_factor) == iar.list$k)
-    iar.list$inv_sqrt_scale_factor <- 1 / sqrt( iar.list$scale_factor )
     standata <- c(standata, iar.list)
     standata$type <- match(type, c("icar", "bym", "bym2"))
     ## ICAR DATA [STOP] -------------

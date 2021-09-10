@@ -69,10 +69,8 @@ n_eff <- function(n, rho) {
 #'
 #' @importFrom Matrix t
 aple <- function(x, w, digits = 3) {
-    stopifnot(inherits(x, "numeric") | inherits(x, "integer"))
-    stopifnot(inherits(w, "matrix") | inherits(w, "Matrix"))
-    stopifnot(all(dim(w) == length(x)))    
-    if (any(Matrix::rowSums(w) != 1)) w <- row_standardize(w)
+    check_sa_data(x, w)
+    if(any(round(Matrix::rowSums(w), 10) != 1)) w <- row_standardize(w)
     z <- as.numeric(scale(x))
     n <- length(z)
     I <- diag(n)
@@ -105,7 +103,7 @@ aple <- function(x, w, digits = 3) {
 #'
 #' @details Calls \code{MASS::mvrnorm} internally to draw from the multivariate normal distribution. The covariance matrix is specified following the simultaneous autoregressive (SAR) model. 
 #'
-#' @seealso \code{\link[geostan]{aple}}, \code{\link[geostan]{shape2mat}}
+#' @seealso \code{\link[geostan]{aple}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{lisa}}, \code{\link[geostan]{shape2mat}}
 #' 
 #' @examples
 #' 
@@ -117,17 +115,11 @@ aple <- function(x, w, digits = 3) {
 #' @importFrom MASS mvrnorm
 #' 
 sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
-    stopifnot(inherits(w, "matrix") | inherits(w, "Matrix"))
-    stopifnot(ncol(w) == nrow(w))
+    check_sa_data(mu, w)
     stopifnot(all(round(Matrix::rowSums(w), 10) == 1))
     N <- nrow(w)
-    if (missing(mu)) {
-        mu <- rep(0, N)
-    } else {
-        if (length(mu) != N | !inherits(mu, "numeric")) stop("mu must be a numeric vector with length equal to nrow(W).")
-        }
-    if (!inherits(rho, "numeric") | !length(rho) %in% c(1, N) | any(rho > 1 | rho < -1)) stop("rho must be numeric value within range [-1, 1], or a k-length numeric vector where K=nrow(W).")
-    if (!inherits(sigma, "numeric") | !length(sigma) %in% c(1, N) | !all(sigma > 0)) stop("sigma must be a positive numeric value, or k-length numeric vector, with K=nrow(W).")
+    if (!inherits(rho, "numeric") || !length(rho) %in% c(1, N) || any(rho >= 1 || rho <= -1)) stop("rho must be numeric value within range (-1, 1), or a k-length numeric vector where K=nrow(W).")
+    if (!inherits(sigma, "numeric") || !length(sigma) %in% c(1, N) || !all(sigma > 0)) stop("sigma must be a positive numeric value, or k-length numeric vector, with K=nrow(W).")
     I <- diag(N)
     S <- sigma^2 * solve( (I - rho * Matrix::t(w)) %*% (I - rho * w) )
 ##    S <- crossprod(solve(I - rho * w)) * sigma^2
@@ -168,9 +160,7 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' @importFrom Matrix rowSums
 #' 
 mc <- function(x, w, digits = 3, warn = TRUE) {
-    stopifnot(inherits(x, "numeric") | inherits(x, "integer"))
-    stopifnot(inherits(w, "matrix") | inherits(w, "Matrix"))
-    stopifnot(all(dim(w) == length(x)))
+    check_sa_data(x, w)
     if (any(Matrix::rowSums(w) == 0)) {
         zero.idx <- which(Matrix::rowSums(w) == 0)
         if (warn) message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data.")
@@ -216,7 +206,6 @@ mc <- function(x, w, digits = 3, warn = TRUE) {
 #' 
 #' @examples
 #' 
-#' library(sf)
 #' data(georgia)
 #' x <- georgia$ICE
 #' w <- shape2mat(georgia, "W")
@@ -226,9 +215,7 @@ mc <- function(x, w, digits = 3, warn = TRUE) {
 #' @importFrom signs signs
 #' @importFrom Matrix rowSums
 moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 20, col = "darkred", size = 2, alpha = 1, lwd = 0.5) {
-    stopifnot(inherits(x, "numeric") | inherits(x, "integer"))
-    stopifnot(inherits(w, "matrix") | inherits(w, "Matrix"))
-    stopifnot(all(dim(w) == length(x)))
+    check_sa_data(x, w)
     if (any(Matrix::rowSums(w) == 0)) {
         zero.idx <- which(Matrix::rowSums(w) == 0)
         message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data.")
@@ -242,30 +229,31 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
                       xlag = xlag),
            aes(x = x, y = xlag)
            ) +
-    geom_hline(yintercept = mean(xlag),
-               lty = 3) +
-    geom_vline(xintercept = mean(x),
-               lty = 3) +
-    geom_point(
-        pch = 20,
-        colour = col,
-        size = size,
-        alpha = alpha,
-        aes(x = x,
-            y = xlag)
-    ) +
+        geom_hline(yintercept = mean(xlag),
+                   lty = 3) +
+        geom_vline(xintercept = mean(x),
+                   lty = 3) +
+        geom_point(
+            pch = 20,
+            colour = col,
+            size = size,
+            alpha = alpha,
+            aes(x = x,
+                y = xlag)
+        ) +
         geom_smooth(aes(x = x,
                         y = xlag),
-                method = "lm",
-                lwd = lwd,
-                col = "black",
-                se = FALSE) +
+                    method = "lm",
+                    formula = "y ~ x",
+                    lwd = lwd,
+                    col = "black",
+                    se = FALSE) +
         scale_x_continuous(labels = signs::signs) +
         scale_y_continuous(labels = signs::signs) +
         labs(x = xlab,
              y = ylab,
              subtitle = sub) +
-        theme_classic() 
+        theme_classic()        
 }
 
 #' Local Moran's I
@@ -289,7 +277,7 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
 #'
 #' @source
 #'
-#' Anselin, Luc. "Local indicators of spatial association—LISA." Geographical analysis 27, no. 2 (1995): 93-115.
+#' Anselin, Luc. "Local indicators of spatial association—LISA." Geographical Analysis 27, no. 2 (1995): 93-115.
 #'
 #' @examples
 #' 
@@ -307,7 +295,7 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
 #'   scale_fill_gradient2()
 #' @importFrom Matrix rowSums
 lisa <- function(x, w, type = FALSE) {
-    stopifnot(length(x) == nrow(w) & length(x) == ncol(w))
+    check_sa_data(x, w)
     if (!all(round(Matrix::rowSums(w), 10) %in% c(0, 1))) w <- row_standardize(w)
     z <- scale(x)
     lag <- as.numeric(w %*% z)
@@ -315,7 +303,7 @@ lisa <- function(x, w, type = FALSE) {
     if (any(Matrix::rowSums(w) == 0)) {
         zero.idx <- which(Matrix::rowSums(w) == 0)
         zi[zero.idx] <- NA        
-        message(length(zero.idx), " observations with no neighbors found. They will be converted to NA.")
+        message(length(zero.idx), " observations with no neighbors found. Their LISA values are being set to NA.")
     }     
     if (!type) return (zi)
     type <- ifelse(z > 0 & lag > 0, "HH",
@@ -563,7 +551,7 @@ me_diag <- function(fit,
 #' @param C A binary spatial weights matrix. See \code{\link[geostan]{shape2mat}}.
 #' @param nsa Logical. Default of \code{nsa = FALSE} excludes eigenvectors capturing negative spatial autocorrelation.
 #'  Setting \code{nsa = TRUE} will result in a candidate set of EVs that contains eigenvectors representing positive and negative SA.
-#' @param threshold Defaults to \code{threshold=0.2} to exclude eigenvectors representing spatial autocorrelation levels that are less than \code{threshold} times the maximum possible Moran coefficient achievable for the given spatial connectivity matrix. If \code{theshold = 0}, the eigenvector of constants (with eigenvalue of zero) will be dropped automatically.
+#' @param threshold Defaults to \code{threshold=0.2} to exclude eigenvectors representing spatial autocorrelation levels that are less than \code{threshold} times the maximum possible Moran coefficient achievable for the given spatial connectivity matrix. If \code{theshold = 0}, all eigenvectors will be returned (however, the eigenvector of constants (with eigenvalue of zero) will be dropped automatically).
 #' @param values Should eigenvalues be returned also? Defaults to \code{FALSE}.
 #' @details Returns a set of eigenvectors related to the Moran coefficient (MC), limited to those eigenvectors with |MC| > \code{threshold} if \code{nsa = TRUE} or MC > \code{threshold} if \code{nsa = FALSE}, optionally with corresponding eigenvalues. 
 #' @source
@@ -583,6 +571,11 @@ me_diag <- function(fit,
 #' ggplot(georgia) +
 #'   geom_sf(aes(fill = EV[,1])) +
 #'   scale_fill_gradient2()
+#'
+#' \dontrun{
+#' fit <- stan_esf(log(rate.male) ~ 1, data = georgia, EV = EV, C = C)
+#' sp_diag(fit, georgia)
+#' }
 #' @importFrom Matrix isSymmetric t
 make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
     if (!Matrix::isSymmetric(C)) {
@@ -663,11 +656,13 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' head(Matrix::summary(W))
 #' 
 #' ## space-time matricies 
-#' ## for space-time eigenvector space-time filtering
+#' ## for eigenvector space-time filtering
 #' ## if you have multiple years with same neighbors,
 #' ## provide the geography (for a single year!) and number of years \code{t}
 #' Cst <- shape2mat(georgia, t = 5)
+#' dim(Cst)
 #' EVst <- make_EV(Cst)
+#' dim(EVst)
 #' 
 #' @importFrom Matrix sparseMatrix rowSums
 #' @importFrom spdep poly2nb
@@ -710,7 +705,7 @@ shape2mat <- function(shape,
 }
 
 
-#' Used internally to count neights per element of an nb list; as in, `Ni <- unlist(lapply(nb, count_neighbors))`
+#' Used internally for shape2mat to count neighbs per element of an nb list; as in, `Ni <- unlist(lapply(nb, count_neighbors))`
 #' @param z an element from spdep's nb object
 #' @noRd 
 count_neighbors <- function(z) {
@@ -746,7 +741,11 @@ row_standardize <- function(C, warn = TRUE, msg = "Row standardizing connectivit
 #' @export
 #' @description create a family object for the Student t likelihood
 #' @return An object of class \code{family}
-#'
+#' @examples
+#' \dontrun{
+#' data(georgia)
+#' fit = stan_glm(log(rate.male) ~ 1, data = georgia, family = student_t())
+#' }
 student_t <- function() {
   family <- list(family = "student_t", link = 'identity')
   class(family) <- "family"
@@ -759,6 +758,11 @@ student_t <- function() {
 #' @description create a family object for the auto-Gaussian CAR specification
 #' @return An object of class \code{family}
 #' @seealso \code{\link[geostan]{stan_car}}
+#' @examples
+#' \dontrun{
+#' cp = prep_car_data(shape2mat(georgia))
+#' fit <- stan_car(log(rate.male) ~ 1, data = georgia, car_parts = cp, family = auto_gaussian())
+#' }
 auto_gaussian <- function() {
     family <- list(family = "auto_gaussian", link = "identity")
     class(family) <- "family"
@@ -767,7 +771,7 @@ auto_gaussian <- function() {
 
 #' WAIC
 #'
-#' @description Widely Application Information Criteria (WAIC) for model evaluation
+#' @description Widely Application Information Criteria (WAIC) for model comparison
 #' 
 #' @param fit An \code{geostan_fit} object or any Stan model with a parameter named "log_lik", the pointwise log likelihood of the observations.
 #' @param pointwise Logical (defaults to `FALSE`), should a vector of values for each observation be returned? 
@@ -783,6 +787,10 @@ auto_gaussian <- function() {
 #' fit <- stan_glm(college ~ 1, data = georgia)
 #' waic(fit)
 #' }
+#' @source
+#'
+#' Watanabe, S. (2010). Asymptotic equivalence of Bayes cross validation and widely application information criterion in singular learning theory. Journal of Machine Learning Research 11, 3571-3594.
+#' 
 #' @export
 waic <- function(fit, pointwise = FALSE, digits = 2) {
   ll <- as.matrix(fit, pars = "log_lik")
@@ -820,7 +828,7 @@ expected_mc <- function(X, C) {
 
 #' Expected dimensions of an eigenvector spatial filter
 #'
-#' @description Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression. This is used internally for \code{\link[geostan]{stan_esf}}; the result can be used to set the hyper parameter \code{p0}, controlling the prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior.
+#' @description Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression. This is used internally for \code{\link[geostan]{stan_esf}}; the result can be used to set the prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior. A smaller value of `p0` leads to a more sparse specification.
 #' 
 #' 
 #' @param formula Model formula.
@@ -835,37 +843,50 @@ expected_mc <- function(X, C) {
 #' 
 #' @source
 #'
-#' Chun, Yongwan, Griffith, Daniel A., Lee, Mongyeon, and Sinha, Parmanand (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems 18(1): 67-85. \doi{10.1007/s10109-015-0225-3}
+#' Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters. *Journal of Geographical Systems*, 18(1), 67-85. \doi{10.1007/s10109-015-0225-3}.
+#'
+#' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian estimation of spatial filters with Moran’s Eigenvectors and hierarchical shrinkage priors. *Spatial Statistics*. \doi{10.1016/j.spasta.2020.100450}.
+#'
+#' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In *Electronic Journal of Statistics*, 11(2):5018-5051. \doi{10.1214/17-EJS1337SI}.
 #' 
-#' Donegan, C., Y. Chun and A. E. Hughes (2020). "Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors." Spatial Statistics. \doi{10.1016/j.spasta.2020.100450}.
+#' @examples
+#'
+#' C <- shape2mat(georgia, "B")
+#' c(p0 = exp_pars(log(rate.male) ~ college, georgia, C))
+#' \dontrun{
+#'  fit <- stan_esf(log(rate.male) ~ college, data = georgia, p0 = p0, iter = 1e3)
+#' }
 #' 
 #' @importFrom stats model.matrix residuals lm
 #' @export
 #' @importFrom Matrix summary
 exp_pars <- function(formula, data, C) {
+    stopifnot(inherits(w, "matrix") | inherits(w, "Matrix"))
+##    C <- as(C, "ngCMatrix")
+    C <- Matrix::Matrix(C)
     nlinks <- nrow(Matrix::summary(C))
     N <- nrow(C)
     ## if (any(!C %in% c(0, 1))) {
     ##     C <- apply(C, 2, function(i) ifelse(i != 0, 1, 0))
     ## }
-  M <- Matrix::Diagonal(N) - Matrix::Matrix(1, nrow = N, ncol = N)/N
-  MCM <- M %*% C %*% M
-  eigens <- eigen(MCM, symmetric = TRUE)
-  npos <- sum(eigens$values > 0)
-  sa <- mc(residuals(lm(formula, data = data)), C)
-  X <- model.matrix(formula, data)
-  E_sa <- expected_mc(X, C)
-  Sigma_sa <- sqrt( 2 / nlinks )
-  z_sa <- (sa - E_sa) / Sigma_sa
-  if (z_sa < -.59) {
-    z_sa = -.59
-  warning("The moran coefficient indicates very strong negative spatial autocorrelation, which this formula for obtaining the expected no. of eigenvectors was not designed for.")
-  }
-  a <- (6.1808 * (z_sa + .6)^.1742) / npos^.1298
-  b <- 3.3534 / (z_sa + .6)^.1742
-  denom <- 1 + exp(2.148 - a + b)
-  candidates <- round(npos / denom)
-  return(candidates)
+    M <- Matrix::Diagonal(N) - Matrix::Matrix(1, nrow = N, ncol = N)/N
+    MCM <- M %*% C %*% M
+    eigens <- eigen(MCM, symmetric = TRUE)
+    npos <- sum(eigens$values > 0)
+    sa <- mc(residuals(lm(formula, data = data)), C)
+    X <- model.matrix(formula, data)
+    E_sa <- expected_mc(X, C)
+    Sigma_sa <- sqrt( 2 / nlinks )
+    z_sa <- (sa - E_sa) / Sigma_sa
+    if (z_sa < -.59) {
+        z_sa = -.59
+        warning("The moran coefficient indicates very strong negative spatial autocorrelation, which this formula for obtaining the expected no. of eigenvectors was not designed for.")
+    }
+    a <- (6.1808 * (z_sa + .6)^.1742) / npos^.1298
+    b <- 3.3534 / (z_sa + .6)^.1742
+    denom <- 1 + exp(2.148 - a + b)
+    candidates <- round(npos / denom)
+    return(candidates)
 }
 
 #' Edge list
@@ -889,6 +910,10 @@ exp_pars <- function(formula, data, C) {
 #' nbs <- edges(C)
 #' head(nbs)
 #'
+#' ## similar to:
+#' head(Matrix::summary(C))
+#' head(Matrix::summary(shape2mat(georgia, "W")))
+#' 
 #' @importFrom Matrix summary
 #' @export
 edges <- function(C, unique_pairs_only = TRUE) {
@@ -960,7 +985,7 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 5e3, bounds = c(0, I
 
 #' Prepare data for ICAR models
 #'
-#' @description Given a symmetric n x n connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan.
+#' @description Given a symmetric n x n connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan. This function may be used for building custom ICAR models in Stan. This is used internally by \code{\link[geostan]{stan_icar}}.
 #' 
 #' @param C Connectivity matrix
 #' @param scale_factor Optional vector of scale factors for each connected portion of the graph structure. If not provided by the user it will be fixed to a vector of ones. 
@@ -979,7 +1004,7 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 5e3, bounds = c(0, I
 #' \item{group_idx}{indices for each observation belonging each group, ordered by group.}
 #' \item{m}{number of disconnected regions requiring their own intercept.}
 #' \item{A}{n-by-m matrix of dummy variables for the component-specific intercepts.}
-#' \item{inv_sqrt_scale_factor}{k-length vector of ones. Placeholder for user-specified information.}
+#' \item{inv_sqrt_scale_factor}{By default, this will be a k-length vector of ones. Placeholder for user-specified information. If user provided `scale_factor`, then this will be `1/sqrt(scale_factor)`.}
 #' \item{comp_id}{n-length vector indicating the group membership of each observation.}
 #' }
 #'
@@ -987,13 +1012,25 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 5e3, bounds = c(0, I
 #'
 #' This is used internally to prepare data for \link[geostan]{stan_icar} models. It can also be helpful for fitting custom ICAR models outside of \code{geostan}. 
 #' 
-#' @seealso \code{\link[geostan]{stan_icar}}, \code{\link[geostan]{edges}}, \code{\link[geostan]{shape2mat}}
+#' @seealso \code{\link[geostan]{edges}}, \code{\link[geostan]{shape2mat}}, \code{\link[geostan]{stan_icar}}, \code{\link[geostan]{prep_car_data}}
 #'
 #' @examples
 #' 
 #' data(sentencing)
 #' C <- shape2mat(sentencing)
 #' icar.data.list <- prep_icar_data(C)
+#'
+#' @source
+#'
+#' Besag, Julian, Jeremy York, and Annie Mollié. 1991. “Bayesian Image Restoration, with Two Applications in Spatial Statistics.” Annals of the Institute of Statistical Mathematics 43 (1): 1–20.
+#' 
+#' Donegan, Connor. Flexible Functions for ICAR, BYM, and BYM2 Models in Stan. Code Repository. 2021. Available online: \url{https://github.com/ConnorDonegan/Stan-IAR} (accessed Sept. 10, 2021).
+#'
+#' Freni-Sterrantino, Anna, Massimo Ventrucci, and Håvard Rue. 2018. “A Note on Intrinsic Conditional Autoregressive Models for Disconnected Graphs.” Spatial and Spatio-Temporal Epidemiology 26: 25–34.
+#'
+#' Morris, Mitzi, Katherine Wheeler-Martin, Dan Simpson, Stephen J Mooney, Andrew Gelman, and Charles DiMaggio. 2019. “Bayesian Hierarchical Spatial Models: Implementing the Besag York Mollié Model in Stan.” Spatial and Spatio-Temporal Epidemiology 31: 100301.
+#'
+#' Riebler, Andrea, Sigrunn H Sørbye, Daniel Simpson, and Håvard Rue. 2016. “An Intuitive Bayesian Spatial Model for Disease Mapping That Accounts for Scaling.” Statistical Methods in Medical Research 25 (4): 1145–65.
 #' 
 #' @export
 #' @importFrom spdep n.comp.nb graph2nb
@@ -1004,6 +1041,9 @@ prep_icar_data <- function(C, scale_factor = NULL) {
   class(G) <- "Graph"
   nb2 <- spdep::n.comp.nb(spdep::graph2nb(G))
   k = nb2$nc
+  if (!inherits(scale_factor, "NULL")) {
+      if (length(scale_factor) != k) stop("scale_factor is of wrong length. Must have one value per fully connected graph component. See the documentation for `geostan::stan_icar` to learn how to create the scale_factor.")
+      }
   if (inherits(scale_factor, "NULL")) scale_factor <- array(rep(1, k), dim = k)
   group_idx = NULL
   for (j in 1:k) group_idx <- c(group_idx, which(nb2$comp.id == j))
@@ -1030,7 +1070,7 @@ prep_icar_data <- function(C, scale_factor = NULL) {
             group_idx = array(group_idx, dim = n), 
             m = m,
             A = A,
-            scale_factor = scale_factor, 
+            inv_sqrt_scale_factor = 1 / sqrt(scale_factor),
             comp_id = nb2$comp.id)
   return(l)
 }
@@ -1042,20 +1082,32 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' @param A Binary adjacency matrix; for `style = DCAR`, provide a symmetric matrix of distances instead. The distance matrix should be sparse, meaning that most distances should be zero (usually obtained by setting some threshold distance beyond which all are zero).
 #' 
 #' @param style Specification for the connectivity matrix (C) and conditional variances (M); one of "WCAR", "ACAR", or "DCAR".
+#'
+#' @param k For `style = DCAR`, distances will be raised to the -k power (d^-k).
+#'
+#' @param gamma For `style = DCAR`, distances will be offset by `gamma` before raising to the `-k`th power.
 #' 
 #' @param lambda If TRUE, return eigenvalues required for calculating the log determinant of the precision matrix and for determining the range of permissible values of rho. These will also be printed with a message if lambda = TRUE.
 #' 
-#' @param cmat Return the full matrix C if TRUE.
+#' @param cmat If `cmat = TRUE`, return the full matrix C (in sparse matrix format).
 #' 
-#' @param k For `style = DCAR`, distances will be raised to the -k power (d^-k).
 #' 
-#' @details The CAR model is N(Mu, Sigma), Sigma = (I - rho C)^-1 M.
+#' @details
+#' The CAR model is:
+#' ```
+#'   Normal(Mu, Sigma), Sigma = (I - rho * C)^-1 * D * tau^2,
+#' ```
+#' where `I` is the identity matrix, `rho` is a spatial autocorrelation parameter, `C` is a connectivity matrix, and `M = D * tau^2` is a diagonal matrix with conditional variances on the diagonal. `tau^2` is a (scalar) scale parameter.
 #'
-#' The DCAR specification is distance-based, and requires the user provide a distance matrix \code{d} in addition to adjacency matrix \code{A}. The WCAR specification uses row-standardized connectivity matrix and sets conditional variances proportional to the number of neighbors. The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188).
+#' In the WCAR specification, `C` is the row-standardized version of `A`. This means that the non-zero elements of `A` will be converted to `1/N_i` where `N_i` is the number of neighbors for the `i`th site (obtained using `Matrix::rowSums(A)`. The conditional variances, `M`, are also proportional to `1/N_i`. 
+#'
+#' The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188).
+#'
+#' The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For `A`, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of `A` will be converted to: `d_{ij} = (a_{ij} + gamma)^(-k)` (Cliff and Ord 1981, p. 144). Default values are `k=1` and `gamma=0`. Following Cressie (1993), these values will be standardized by the maximum `d_{ij}` value. The conditional variances will be proportional to the inverse of the row sums of the transformed distance matrix: `D_{ii} = (sum_i^N d_{ij})^(-1)`.
 #'
 #' For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 [1993]) and Haining and Li (2020).
 #'
-#' \code{stan_car} requires the user to provide the full C matrix (which is returned when cmat = TRUE).
+#' When using \code{\link[geostan]{stan_car}}, always use `cmat = TRUE` (the default). 
 #'
 #' @source
 #'
@@ -1080,15 +1132,23 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #'
 #' ## get list of data for Stan
 #' cp <- prep_car_data(A, "WCAR")
-#'
+#'  # range of permissible values for rho:
+#' 1 / range(cp$lambda)
+#' 
 #' \dontrun{
 #' ## pass the data to stan_car
 #' fit = stan_car(log(rate.male) ~ 1, data = georgia, car_parts = cp)
 #' }
+#'
+#' # or use the ACAR specification
+#' cp <- prep_car_data(A, "ACAR")
+#'  # range of permissible values for rho:
+#' 1 / range(cp$lambda)
 #' @export
+#' @md
 #' @importFrom rstan extract_sparse_parts
 #' @importFrom Matrix isSymmetric Matrix rowSums summary
-prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), lambda = TRUE, cmat = TRUE, k = 1) {
+prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), k = 1, gamma = 0, lambda = TRUE, cmat = TRUE) {
     style = match.arg(style)
     stopifnot(inherits(A, "matrix") | inherits(A, "Matrix"))
     stopifnot(all(Matrix::rowSums(A) > 0))
@@ -1106,7 +1166,7 @@ prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), lambda = TRUE, c
     }
     if (style == "DCAR") {
         dinv <- A
-        dinv[dinv>0] <- dinv[dinv>0]^(-k)
+        dinv[dinv>0] <- (dinv[dinv>0] + gamma)^(-k)
         max.dinv <- max(dinv)
         dinv <- dinv / max.dinv
         # conditional variance proportional to total d^-k

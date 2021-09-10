@@ -3,6 +3,9 @@
 \name{waic}
 \alias{waic}
 \title{WAIC}
+\source{
+Watanabe, S. (2010). Asymptotic equivalence of Bayes cross validation and widely application information criterion in singular learning theory. Journal of Machine Learning Research 11, 3571-3594.
+}
 \usage{
 waic(fit, pointwise = FALSE, digits = 2)
 }
@@ -17,7 +20,7 @@ waic(fit, pointwise = FALSE, digits = 2)
 A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density \code{Lpd}. If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
 }
 \description{
-Widely Application Information Criteria (WAIC) for model evaluation
+Widely Application Information Criteria (WAIC) for model comparison
 }
 \examples{
 

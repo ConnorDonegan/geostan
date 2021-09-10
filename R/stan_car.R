@@ -37,7 +37,7 @@
 #' \item{car_parts}{By default, any ME models within `stan_car` will be spatial CAR models. Any data passed to `ME$car_parts` will be ignored. However, to use a non-spatial Student's t ME model instead, provide `ME$car_parts = FALSE`.}
 #' }
 #' 
-#' @param car_parts A list of data for the CAR model, as returned by \code{\link[geostan]{prep_car_data}} (be sure to return the matrix \code{C}, by using the argument \code{cmat = TRUE}).
+#' @param car_parts A list of data for the CAR model, as returned by \code{\link[geostan]{prep_car_data}}.
 #' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{auto_gaussian()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}; if `family = gaussian()` is provided, it will automatically be converted to `auto_gaussian()`.
 #' 

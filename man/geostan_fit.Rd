@@ -62,8 +62,6 @@ Methods \code{residuals}, \code{fitted}, \code{spatial} return a matrix containi
 }
 \description{
 Methods for fitted geostan models: extract residuals, fitted values, posterior predictive distribution or spatial component from a spatial regression model; extract samples from the posterior distribution; print regression results; plot posterior distributions.
-
-Extracts the posterior distribution of the spatial component from a fitted geostan model
 }
 \examples{
 \dontrun{

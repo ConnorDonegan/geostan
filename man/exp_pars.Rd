@@ -4,9 +4,11 @@
 \alias{exp_pars}
 \title{Expected dimensions of an eigenvector spatial filter}
 \source{
-Chun, Yongwan, Griffith, Daniel A., Lee, Mongyeon, and Sinha, Parmanand (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems 18(1): 67-85. \doi{10.1007/s10109-015-0225-3}
+Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters. *Journal of Geographical Systems*, 18(1), 67-85. \doi{10.1007/s10109-015-0225-3}.
 
-Donegan, C., Y. Chun and A. E. Hughes (2020). "Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors." Spatial Statistics. \doi{10.1016/j.spasta.2020.100450}.
+Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian estimation of spatial filters with Moran’s Eigenvectors and hierarchical shrinkage priors. *Spatial Statistics*. \doi{10.1016/j.spasta.2020.100450}.
+
+Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In *Electronic Journal of Statistics*, 11(2):5018-5051. \doi{10.1214/17-EJS1337SI}.
 }
 \usage{
 exp_pars(formula, data, C)
@@ -22,11 +24,20 @@ exp_pars(formula, data, C)
 Returns a numeric value representing the expected number of eigenvectors required to estimate a spatial filter (i.e. number of non-zero or 'large' coefficients).
 }
 \description{
-Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression. This is used internally for \code{\link[geostan]{stan_esf}}; the result can be used to set the hyper parameter \code{p0}, controlling the prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior.
+Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression. This is used internally for \code{\link[geostan]{stan_esf}}; the result can be used to set the prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior. A smaller value of `p0` leads to a more sparse specification.
 }
 \details{
 Following Chun et al. (2016), the expected number of eigenvectors required to remove residual spatial autocorrelation from a model
  is an increasing function of the degree of spatial autocorrelation in the outcome variable and the number of links in the connectivity matrix.
+}
+\examples{
+
+C <- shape2mat(georgia, "B")
+c(p0 = exp_pars(log(rate.male) ~ college, georgia, C))
+\dontrun{
+ fit <- stan_esf(log(rate.male) ~ college, data = georgia, p0 = p0, iter = 1e3)
+}
+
 }
 \seealso{
 \code{\link[geostan]{stan_esf}}

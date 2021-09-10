@@ -27,6 +27,10 @@ C <- shape2mat(sentencing)
 nbs <- edges(C)
 head(nbs)
 
+## similar to:
+head(Matrix::summary(C))
+head(Matrix::summary(shape2mat(georgia, "W")))
+
 }
 \seealso{
 \code{\link[geostan]{shape2mat}}, \code{\link[geostan]{prep_icar_data}}, \code{\link[geostan]{stan_icar}}

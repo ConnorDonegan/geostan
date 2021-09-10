@@ -15,7 +15,7 @@ make_EV(C, nsa = FALSE, threshold = 0.2, values = FALSE)
 \item{nsa}{Logical. Default of \code{nsa = FALSE} excludes eigenvectors capturing negative spatial autocorrelation.
 Setting \code{nsa = TRUE} will result in a candidate set of EVs that contains eigenvectors representing positive and negative SA.}
 
-\item{threshold}{Defaults to \code{threshold=0.2} to exclude eigenvectors representing spatial autocorrelation levels that are less than \code{threshold} times the maximum possible Moran coefficient achievable for the given spatial connectivity matrix. If \code{theshold = 0}, the eigenvector of constants (with eigenvalue of zero) will be dropped automatically.}
+\item{threshold}{Defaults to \code{threshold=0.2} to exclude eigenvectors representing spatial autocorrelation levels that are less than \code{threshold} times the maximum possible Moran coefficient achievable for the given spatial connectivity matrix. If \code{theshold = 0}, all eigenvectors will be returned (however, the eigenvector of constants (with eigenvalue of zero) will be dropped automatically).}
 
 \item{values}{Should eigenvalues be returned also? Defaults to \code{FALSE}.}
 }
@@ -38,6 +38,11 @@ EV <- make_EV(C)
 ggplot(georgia) +
   geom_sf(aes(fill = EV[,1])) +
   scale_fill_gradient2()
+
+\dontrun{
+fit <- stan_esf(log(rate.male) ~ 1, data = georgia, EV = EV, C = C)
+sp_diag(fit, georgia)
+}
 }
 \seealso{
 \link[geostan]{stan_esf}, \link[geostan]{mc}

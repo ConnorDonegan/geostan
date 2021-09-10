@@ -51,7 +51,6 @@ If any observations with no neighbors are found (i.e. \code{any(Matrix::rowSums(
 }
 \examples{
 
-library(sf)
 data(georgia)
 x <- georgia$ICE
 w <- shape2mat(georgia, "W")

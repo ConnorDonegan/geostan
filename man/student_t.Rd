@@ -12,3 +12,9 @@ An object of class \code{family}
 \description{
 create a family object for the Student t likelihood
 }
+\examples{
+\dontrun{
+data(georgia)
+fit = stan_glm(log(rate.male) ~ 1, data = georgia, family = student_t())
+}
+}

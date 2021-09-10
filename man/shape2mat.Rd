@@ -58,11 +58,13 @@ Matrix::rowSums(W)
 head(Matrix::summary(W))
 
 ## space-time matricies 
-## for space-time eigenvector space-time filtering
+## for eigenvector space-time filtering
 ## if you have multiple years with same neighbors,
 ## provide the geography (for a single year!) and number of years \code{t}
 Cst <- shape2mat(georgia, t = 5)
+dim(Cst)
 EVst <- make_EV(Cst)
+dim(EVst)
 
 }
 \seealso{
