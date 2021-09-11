@@ -47,7 +47,7 @@
 
 
 <meta property="og:title" content="Expected dimensions of an eigenvector spatial filter — exp_pars" />
-<meta property="og:description" content="Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression. This is used internally for stan_esf; the result can be used to set the hyper parameter p0, controlling the prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior." />
+<meta property="og:description" content="Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression. This is used internally for stan_esf; the result can be used to set the prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior. A smaller value of `p0` leads to a more sparse specification." />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
@@ -132,7 +132,7 @@
     </div>
 
     <div class="ref-description">
-    <p>Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression. This is used internally for <code><a href='stan_esf.html'>stan_esf</a></code>; the result can be used to set the hyper parameter <code>p0</code>, controlling the prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior.</p>
+    <p>Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression. This is used internally for <code><a href='stan_esf.html'>stan_esf</a></code>; the result can be used to set the prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior. A smaller value of `p0` leads to a more sparse specification.</p>
     </div>
 
     <pre class="usage"><span class='fu'>exp_pars</span><span class='op'>(</span><span class='va'>formula</span>, <span class='va'>data</span>, <span class='va'>C</span><span class='op'>)</span></pre>
@@ -156,8 +156,11 @@
 
     <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
 
-    <p>Chun, Yongwan, Griffith, Daniel A., Lee, Mongyeon, and Sinha, Parmanand (2016). "Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters." Journal of Geographical Systems 18(1): 67-85. doi: <a href='https://doi.org/10.1007/s10109-015-0225-3'>10.1007/s10109-015-0225-3</a></p>
-<p>Donegan, C., Y. Chun and A. E. Hughes (2020). "Bayesian Estimation of Spatial Filters with Moran’s Eigenvectors and Hierarchical Shrinkage Priors." Spatial Statistics. doi: <a href='https://doi.org/10.1016/j.spasta.2020.100450'>10.1016/j.spasta.2020.100450</a>
+    <p>Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters. *Journal of Geographical Systems*, 18(1), 67-85. doi: <a href='https://doi.org/10.1007/s10109-015-0225-3'>10.1007/s10109-015-0225-3</a>
+.</p>
+<p>Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian estimation of spatial filters with Moran’s Eigenvectors and hierarchical shrinkage priors. *Spatial Statistics*. doi: <a href='https://doi.org/10.1016/j.spasta.2020.100450'>10.1016/j.spasta.2020.100450</a>
+.</p>
+<p>Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In *Electronic Journal of Statistics*, 11(2):5018-5051. doi: <a href='https://doi.org/10.1214/17-EJS1337SI'>10.1214/17-EJS1337SI</a>
 .</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
@@ -170,6 +173,16 @@
 
     <div class='dont-index'><p><code><a href='stan_esf.html'>stan_esf</a></code></p></div>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'>
+<span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='st'>"B"</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span>p0 <span class='op'>=</span> <span class='fu'>exp_pars</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>rate.male</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>college</span>, <span class='va'>georgia</span>, <span class='va'>C</span><span class='op'>)</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; p0 
+#&gt;  2 </div><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+ <span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_esf.html'>stan_esf</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>rate.male</span><span class='op'>)</span> <span class='op'>~</span> <span class='va'>college</span>, data <span class='op'>=</span> <span class='va'>georgia</span>, p0 <span class='op'>=</span> <span class='va'>p0</span>, iter <span class='op'>=</span> <span class='fl'>1e3</span><span class='op'>)</span>
+<span class='op'>}</span>
+
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

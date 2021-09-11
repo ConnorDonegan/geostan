@@ -228,12 +228,14 @@
 #&gt; 5 148 1 0.1428571
 #&gt; 6 159 1 0.1250000</div><div class='input'>
 <span class='co'>## space-time matricies </span>
-<span class='co'>## for space-time eigenvector space-time filtering</span>
+<span class='co'>## for eigenvector space-time filtering</span>
 <span class='co'>## if you have multiple years with same neighbors,</span>
 <span class='co'>## provide the geography (for a single year!) and number of years \code{t}</span>
 <span class='va'>Cst</span> <span class='op'>&lt;-</span> <span class='fu'>shape2mat</span><span class='op'>(</span><span class='va'>georgia</span>, t <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span>
-<span class='va'>EVst</span> <span class='op'>&lt;-</span> <span class='fu'><a href='make_EV.html'>make_EV</a></span><span class='op'>(</span><span class='va'>Cst</span><span class='op'>)</span>
-
+<span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span><span class='op'>(</span><span class='va'>Cst</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; [1] 795 795</div><div class='input'><span class='va'>EVst</span> <span class='op'>&lt;-</span> <span class='fu'><a href='make_EV.html'>make_EV</a></span><span class='op'>(</span><span class='va'>Cst</span><span class='op'>)</span>
+<span class='fu'><a href='https://rdrr.io/r/base/dim.html'>dim</a></span><span class='op'>(</span><span class='va'>EVst</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; [1] 795 208</div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

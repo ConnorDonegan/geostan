@@ -151,7 +151,7 @@
   iter <span class='op'>=</span> <span class='fl'>2000</span>,
   refresh <span class='op'>=</span> <span class='fl'>500</span>,
   pars <span class='op'>=</span> <span class='cn'>NULL</span>,
-  control <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>adapt_delta <span class='op'>=</span> <span class='fl'>0.9</span>, max_treedepth <span class='op'>=</span> <span class='fl'>13</span><span class='op'>)</span>,
+  control <span class='op'>=</span> <span class='cn'>NULL</span>,
   <span class='va'>...</span>
 <span class='op'>)</span></pre>
 
@@ -164,13 +164,22 @@
     </tr>
     <tr>
       <th>slx</th>
-      <td><p>Formula to specify any spatially-lagged covariates. As in, <code>~ x1 + x2</code> (the intercept term will be removed internally).
-These will be pre-multiplied by a row-standardized version of the user-provided spatial weights matrix and then added (prepended) to the design matrix.
-If and when setting priors for <code>beta</code> manually, remember to include priors for any SLX terms as well.</p></td>
+      <td><p>Formula to specify any spatially-lagged covariates. As in, <code>~ x1 + x2</code> (the intercept term will be removed internally).</p>
+<p>These will be pre-multiplied by a row-standardized version of the user-provided spatial weights matrix and then added (prepended) to the design matrix. For example, providing</p><pre><span class='fu'>stan_car</span><span class='op'>(</span><span class='va'>y</span> <span class='op'>~</span> <span class='va'>x1</span> <span class='op'>+</span> <span class='va'>x2</span>, slx <span class='op'>=</span> <span class='op'>~</span> <span class='va'>x1</span>, <span class='va'>...</span><span class='op'>)</span>
+</pre>
+
+<p>is the same as providing</p><pre><span class='fu'>stan_car</span><span class='op'>(</span><span class='va'>y</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/AsIs.html'>I</a></span><span class='op'>(</span><span class='va'>W</span> <span class='op'>%*%</span> <span class='va'>x1</span><span class='op'>)</span> <span class='op'>+</span> <span class='va'>x1</span> <span class='op'>+</span> <span class='va'>x2</span>, <span class='va'>...</span><span class='op'>)</span>
+</pre>
+
+<p>where <code>W</code> is a row-standardized spatial weights matrix (see <code><a href='shape2mat.html'>shape2mat</a></code>). When setting priors for <code>beta</code>, remember to include priors for any SLX terms as well.</p></td>
     </tr>
     <tr>
       <th>re</th>
-      <td><p>If the model includes a varying intercept term <code>alpha_re</code> specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re ~ N(0, alpha_tau)</code>, <code>alpha_tau ~ Student_t(d.f., location, scale)</code>. With the CAR model, any <code>alpha_re</code> term should be at a <em>different</em> level or scale than the observations; that is, at a different scale than the autocorrelation structure of the CAR model itself.</p></td>
+      <td><p>To include a varying intercept (or "random effects") term, <code>alpha_re</code>, specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re</code> is a vector of parameters added to the linear predictor of the model, and:</p><pre>       alpha_re ~ N(0, alpha_tau)
+       alpha_tau ~ Student_t(d.f., location, scale).
+</pre>
+
+<p>With the CAR model, any <code>alpha_re</code> term should be at a <em>different</em> level or scale than the observations; that is, at a different scale than the autocorrelation structure of the CAR model itself.</p></td>
     </tr>
     <tr>
       <th>data</th>
@@ -178,17 +187,36 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>car_parts</th>
-      <td><p>A list of data for the CAR model, as returned by <code><a href='prep_car_data.html'>prep_car_data</a></code> (be sure to return the matrix <code>C</code>, by using the argument <code>cmat = TRUE</code>).</p></td>
+      <td><p>A list of data for the CAR model, as returned by <code><a href='prep_car_data.html'>prep_car_data</a></code>.</p></td>
     </tr>
     <tr>
       <th>ME</th>
-      <td><p>To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned an auto Gaussian (CAR) model, unless <code>ME$car_parts = FALSE</code> (then a non-spatial Student's t model will be used). Elements of the list <code>ME</code> may include:</p><dl>
+      <td><p>To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. The ME models are designed for American Community Survey (ACS) estimates, <code>x</code>, and their standard errors, <code>se</code> (Donegan, Chun and Griffith 2021). The ME models have one of the the following two specifications, depending on the user input:</p><pre>       x ~ Gauss(x_true, se)
+       x_true ~ MVGauss(mu, Sigma)
+       Sigma = (I - rho * C)^(-1) M * sigma^2
+       mu ~ Gauss(0, 100)
+       tau ~ student_t(10, 0, 40)
+       rho ~ uniform(lower_bound, upper_bound)
+</pre>
 
-<dt>se</dt><dd><p>A dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
+<p>where the covariance matrix, <code>Sigma</code>, has the conditional autoregressive specification. If <code>ME$car_parts = FALSE</code>, then a non-spatial model will be used instead:</p><pre>       <span class='va'>x</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='va'>x_true</span>, <span class='va'>se</span><span class='op'>)</span>
+       <span class='va'>x_true</span> <span class='op'>~</span> <span class='fu'><a href='student_t.html'>student_t</a></span><span class='op'>(</span><span class='va'>df</span>, <span class='va'>mu</span>, <span class='va'>sigma</span><span class='op'>)</span>
+       <span class='va'>df</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/Special.html'>gamma</a></span><span class='op'>(</span><span class='fl'>3</span>, <span class='fl'>0.2</span><span class='op'>)</span>
+       <span class='va'>mu</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>100</span><span class='op'>)</span>
+       <span class='va'>sigma</span> <span class='op'>~</span> <span class='fu'><a href='student_t.html'>student_t</a></span><span class='op'>(</span><span class='fl'>10</span>, <span class='fl'>0</span>, <span class='fl'>40</span><span class='op'>)</span>
+</pre>
+
+<p>The target of inference is <code>x_true</code>, the actual values of the covariate during the period of the survey, and the observational error is the difference between the survey estimate and the unknown value that would have been obtained by a complete census. Elements of the list <code>ME</code> may include:</p><dl>
+
+<dt>se</dt><dd><p>A required dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
 
 <dt>bounds</dt><dd><p>An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to <code><a href='https://rdrr.io/r/base/c.html'>c(-Inf, Inf)</a></code> (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.</p></dd>
 
-<dt>prior</dt><dd><p>Provide parameter values for the prior distributions of the measurement error model(s). The spatial conditional autoregressive (CAR) and non-spatial student's t models both contain a location parameter (the mean) and a scale parameter, each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console.To set these priors to custom values, provide a named list with items <code>location</code> and <code>scale</code> (you must provide both). The prior for the location parameter is Gaussian, the default being <code>Gauss(0, 100)</code>. To change these values, provide a <code>data.frame</code> with columns named <code>location</code> and <code>scale</code>. Provide prior specifications for each covariate in <code>se</code>; list the priors in the same order as the columns of <code>se</code>.The prior for the <code>scale</code> parameters is Student's t, and the default is <code>Student_t(10, 0, 40)</code>. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of <code>se</code>.For example, <code>ME$prior &lt;- list(location = data.frame(location = c(0, 0), scale = c(100, 100))); ME$prior$scale &lt;- c(40, 40)</code>.The CAR model also has a spatial autocorrelation parameter, <code>car_rho</code>, which is assigned a uniform prior distribution. You can set the boudaries of the prior with <code>ME$prior$car_rho &lt;- c(lower_bound, upper_bound)</code>.</p></dd>
+<dt>prior</dt><dd><p>Optionally provide parameter values for the prior distributions of the measurement error model(s). The ME models contain a location parameter (mu) and a scale parameter (sigma), each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console. <br /> <br />The prior for the location parameter, mu, is Gaussian (the default being <code>Gauss(0, 100)</code>). You can alter this by providing a <code>data.frame</code> with columns named <code>location</code> and <code>scale</code>; provide values for each covariate in <code>se</code>. List the values in the same order as the columns of <code>se</code>. <br /> <br />The prior for the <code>scale</code> parameters is Student's t, and the default is <code>Student_t(10, 0, 40)</code>. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of <code>se</code>.<br /> <br />For example, if you are modeling two covariates with the ME models, you can add the priors for mu and sigma to an existing <code>ME</code> list like this:<pre><span class='va'>ME</span><span class='op'>$</span><span class='va'>prior</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>location <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>location <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>0</span><span class='op'>)</span>,
+                                          scale <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>10</span>, <span class='fl'>10</span><span class='op'>)</span><span class='op'>)</span>,
+                 scale <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>40</span>, <span class='fl'>40</span><span class='op'>)</span><span class='op'>)</span>
+</pre>Note that if a prior is provided, you must provide priors for both mu (location) and sigma (scale). <br /> <br />The CAR model also has a spatial autocorrelation parameter, <code>rho</code>, which is assigned a uniform prior distribution. You can set the boudaries of the prior with:<pre><span class='va'>ME</span><span class='op'>$</span><span class='va'>prior</span><span class='op'>$</span><span class='va'>car_rho</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>lower_bound</span>, <span class='va'>upper_bound</span><span class='op'>)</span>
+</pre>You must specify values that are within the permissible range of values for <code>rho</code>. This range is automatically printed to the console by <code><a href='prep_car_data.html'>prep_car_data</a></code>.</p></dd>
 
 <dt>car_parts</dt><dd><p>By default, any ME models within <code>stan_car</code> will be spatial CAR models. Any data passed to <code>ME$car_parts</code> will be ignored. However, to use a non-spatial Student's t ME model instead, provide <code>ME$car_parts = FALSE</code>.</p></dd>
 
@@ -200,26 +228,31 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>invert</th>
-      <td><p>To calculate the log likelihood of the data, <code>log_lik</code>, with the auto-Gaussian model, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set <code>invert = FALSE</code>. Note, this is only used when <code>family = gaussian()</code>. <code>log_lik</code> is required to calculate WAIC.</p></td>
+      <td><p>To calculate the log likelihood of the data, <code>log_lik</code>, with the auto-Gaussian model, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set <code>invert = FALSE</code>. Note, this is only used when <code>family = auto_gaussian()</code>. <code>log_lik</code> is required to calculate WAIC.</p></td>
     </tr>
     <tr>
       <th>prior</th>
-      <td><p>A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:</p><dl>
+      <td><p>A named list of parameters for prior distributions. If not provided, the default prior distributions will be assigned and printed to the console. User-defined priors can be assigned to the following parameters:</p><dl>
 <dt>intercept</dt><dd><p>The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. <code>prior = list(intercept = c(location = 0, scale = 10))</code> to assign a Gaussian prior with mean zero and variance 10^2.</p></dd>
 
-<dt>beta</dt><dd><p>Regression coefficients are assigned Gaussian prior distributions. Provide a <code>data.frame</code> with two columns (location and scale).The order of variables must follow their order of appearance in the model <code>formula</code>; e.g., if the formula is <code>y ~ x1 + x2</code>, then providing `prior = list(beta = data.frame(location = c(0, 0), scale = c(1, 1))) will assign standard normal prior distributions to both coefficients.Note that if you also use <code>slx</code> terms (spatially lagged covariates), then you have to provide priors for them; <code>slx</code> terms <em>precede</em> other terms in the model formula. For example, providing of <code>y ~ x1 + x2</code> with <code>slx = ~ x1 + x2</code> is the same as providing <code>formula = y ~ I(W \%*\% x1) + I(W \%*\% x2) + x1 + x2</code>, where <code>W</code> is a row-standardized spatial weights matrix (see <code><a href='shape2mat.html'>shape2mat</a></code>).</p></dd>
+<dt>beta</dt><dd><p>Regression coefficients are assigned Gaussian prior distributions. Provide a <code>data.frame</code> with two columns (location and scale).The order of variables must follow their order of appearance in the model <code>formula</code>; e.g., if the formula is <code>y ~ x1 + x2</code>, then providing<pre><span class='va'>prior</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>beta <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>location <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>2</span><span class='op'>)</span>,
+                                  scale <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>2</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
+</pre>will assign the following prior distributions:<pre>       <span class='va'>x1</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>1</span><span class='op'>)</span>
+       <span class='va'>x2</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='fl'>2</span>, <span class='fl'>2</span><span class='op'>)</span>
+</pre>Note that if you also use <code>slx</code> terms (spatially lagged covariates), then you have to provide priors for them. If your model specification is:<pre> <span class='fu'><a href='stan_glm.html'>stan_glm</a></span><span class='op'>(</span><span class='va'>y</span> <span class='op'>~</span> <span class='va'>x1</span> <span class='op'>+</span> <span class='va'>x2</span>, slx <span class='op'>=</span> <span class='op'>~</span> <span class='va'>x1</span>, <span class='va'>...</span><span class='op'>)</span>
+</pre>then the prior for beta must have three rows. Since slx terms are always <em>prepended</em> to the design matrix, the prior for the slx term will be listed first.</p></dd>
 
 <dt>tau</dt><dd><p>The scale parameter for (spatially <em>un</em>structured) random effects, or varying intercepts, terms. This scale parameter, <code>tau</code>, is assigned a half-Student's t prior. To set this, use, e.g., <code>prior = list(tau = c(df = 20, location = 0, scale = 20))</code>.</p></dd>
 
 <dt>car_scale</dt><dd><p>Hyperprior parameters for the scale of the CAR model, <code>car_scale</code>. The scale is assigned a Student's t prior model; to set its parameter values, provide a length-three vector with the degrees of freedom, location, and scale parameters. E.g., <code>prior = list(car_scale = c(df = 15, location = 0, scale = 2))</code>.</p></dd>
 
-<dt>car_rho</dt><dd><p>The spatial autocorrelation parameter in the CAR model, <code>rho</code>, is assigned a uniform prior distribution. By default, the prior will be uniform over all permissible values as determined by the eigenvalues of the connectivity matrix, <code>C</code>. You amy alter those limits by providing a numeric vector such as: <code>prior$car_rho = c(0, 1)</code>.The range of permissible values for <code>rho</code> is automatically printed to the <code>R</code> console by <code><a href='prep_car_data.html'>prep_car_data</a></code>. You may also identify the range of permissible values using the eigenvalues, <code>lambda</code>, returned by <code>prep_car_data</code> and the following code: <code>rho_limits = 1 / range(lambda)</code>. These limits are sensitive to the chosen specification (WCAR, ACAR, etc.) and connectivity matrix.</p></dd>
+<dt>car_rho</dt><dd><p>The spatial autocorrelation parameter in the CAR model, <code>rho</code>, is assigned a uniform prior distribution. By default, the prior will be uniform over all permissible values as determined by the eigenvalues of the connectivity matrix, <code>C</code>. You may alter those limits by providing a numeric vector such as: <code>prior$car_rho = c(0, 1)</code>.The range of permissible values for <code>rho</code> is automatically printed to the <code>R</code> console by <code><a href='prep_car_data.html'>prep_car_data</a></code>. You may also identify the range of permissible values using the eigenvalues, <code>lambda</code>, returned by <code>prep_car_data</code> and the following code: <code>rho_limits = 1 / range(lambda)</code>. These limits are sensitive to the chosen specification (WCAR, ACAR, etc.) and connectivity matrix.</p></dd>
 
 </dl></td>
     </tr>
     <tr>
       <th>centerx</th>
-      <td><p>To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to <code><a href='https://rdrr.io/r/base/scale.html'>scale</a></code>.</p></td>
+      <td><p>To center predictors on their mean values, use <code>centerx = TRUE</code>. If <code>centerx</code> is a numeric vector, predictors will be centered on the values provided. This argument is passed to <code><a href='https://rdrr.io/r/base/scale.html'>scale</a></code>.</p></td>
     </tr>
     <tr>
       <th>prior_only</th>
@@ -243,7 +276,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
     </tr>
     <tr>
       <th>control</th>
-      <td><p>A named list of parameters to control the sampler's behavior. See <code><a href='https://mc-stan.org/rstan/reference/stan.html'>stan</a></code> for details. The defaults are the same as <code><a href='https://mc-stan.org/rstan/reference/stan.html'>stan</a></code> except that <code>adapt_delta</code> is raised to <code>.9</code> and <code>max_treedepth = 15</code>.</p></td>
+      <td><p>A named list of parameters to control the sampler's behavior. See <code><a href='https://mc-stan.org/rstan/reference/stan.html'>stan</a></code> for details.</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -282,22 +315,23 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 
     <p>CAR models are discussed in Cressie and Wikle (2011, p. 184-88), Cressie (2015, Ch. 6-7), and Haining and Li (2020, p. 249-51).</p>
 <p>The Stan code for this implementation of the CAR model first introduced in Donegan et al. (2021, supplementary material) for models of small area survey data.</p>
-<p>Details and results depend on the <code>family</code> argument, as well as on the particular CAR specification chosen (see <a href='prep_car_data.html'>prep_car_data</a>).</p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a><code>family = gaussian()</code></h3>
+<p>Details and results depend on the <code>family</code> argument, as well as on the particular CAR specification chosen (see <a href='prep_car_data.html'>prep_car_data</a>).</p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a><code>family = aut_gaussian()</code></h3>
 
 
-<p>With <code>family = gaussian()</code> (referred to here as the auto-Gaussian model), the CAR model is specified as follows:</p><pre>                            Y ~ MVGauss(Mu, Sigma)
+<p>With <code>family = auto_gaussian()</code> (referred to here as the auto-Gaussian model), the CAR model is specified as follows:</p><pre>                            Y ~ MVGauss(Mu, Sigma)
                             Sigma = (I - rho C)^-1 * M * tau^2
 </pre>
 
-<p>where <code>Mu</code> is the mean vector (with intercept, covariates, etc.), <code>C</code> is a spatial connectivity matrix, and <code>M</code> is a known diagonal matrix with diagonal entries proportional to the conditional variances (see the <code>M_diagonal</code> argument). <code>C</code> and <code>M</code> are provided by <a href='prep_car_data.html'>prep_car_data</a>.</p>
-<p>The covariance matrix of the CAR model, <code>Sigma</code>, contains two parameters to estimate: <code>car_rho</code> (rho), which controls the degree of spatial autocorrelation, and the scale parameter, <code>car_scale</code> (tau). The range of permissible values for <code>rho</code> depends on the specification of <code>C</code> and <code>M</code>; for options, see <code><a href='prep_car_data.html'>prep_car_data</a></code> and Cressie and Wikle (2011, pp. 184-188).</p>
-<p>The auto-Gaussian model returns a spatial trend (autocorrelation) component which is calculated as follows (Cressie 2015, p. 564):</p><pre>                            trend = rho * C * (Y - Mu).
+<p>where <code>Mu</code> is the mean vector (with intercept, covariates, etc.), <code>C</code> is a spatial connectivity matrix, and <code>M</code> is a known diagonal matrix with diagonal entries proportional to the conditional variances. <code>C</code> and <code>M</code> are provided by <code><a href='prep_car_data.html'>prep_car_data</a></code>.</p>
+<p>The covariance matrix of the CAR model, <code>Sigma</code>, contains two parameters: <code>car_rho</code> (rho), which controls the degree of spatial autocorrelation, and the scale parameter, <code>car_scale</code> (tau). The range of permissible values for <code>rho</code> depends on the specification of <code>C</code> and <code>M</code>; for options, see <code><a href='prep_car_data.html'>prep_car_data</a></code> and Cressie and Wikle (2011, pp. 184-188).</p>
+<p>The auto-Gaussian model contains an implicit spatial trend (i.e., autocorrelation) component which is calculated as follows (Cressie 2015, p. 564):</p><pre>                            trend = rho * C * (Y - Mu).
 </pre>
 
 <p>This term can be extracted from a fitted auto-Gaussian model using the <code><a href='print.geostan_fit.html'>spatial</a></code> method.</p>
-<p>When applied to a fitted auto-Gaussian model, the <code><a href='print.geostan_fit.html'>residuals.geostan_fit</a></code> method returns `de-trended' residuals, as follows:</p><pre>                            <span class='va'>residual</span> <span class='op'>=</span> <span class='va'>Y</span> <span class='op'>-</span> <span class='va'>Mu</span> <span class='op'>-</span> <span class='va'>trend.</span>
+<p>When applied to a fitted auto-Gaussian model, the <code><a href='print.geostan_fit.html'>residuals.geostan_fit</a></code> method returns `de-trended' residuals by default. That is,</p><pre>                            <span class='va'>residual</span> <span class='op'>=</span> <span class='va'>Y</span> <span class='op'>-</span> <span class='va'>Mu</span> <span class='op'>-</span> <span class='va'>trend.</span>
 </pre>
 
+<p>To obtain "raw" residuals (<code>Y - Mu</code>), use <code><a href='https://rdrr.io/r/stats/residuals.html'>residuals(fit, detrend = FALSE)</a></code>.</p>
 
 <h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a><code>family = poisson()</code></h3>
 
@@ -307,11 +341,11 @@ If and when setting priors for <code>beta</code> manually, remember to include p
                             Sigma = (I - rho C)^-1 * M * tau^2
 </pre>
 
-<p>These models are most often used to calculate incidence rates (mortality rates, or disease incidence rates); the user provided offset should be, then, the natural logarithm of the denominator in the rates, e.g., log-population at risk.</p>
+<p>These models are most often used to calculate small area incidence rates (mortality or disease incidence rates); the user provided offset should be, then, the natural logarithm of the denominator in the rates, e.g., log-population at risk.</p>
 <p>For Poisson models, the <code><a href='print.geostan_fit.html'>spatial</a></code> method returns the parameter vector <code>phi</code>, which is the log-risk minus the intercept and any covariates:</p><pre>                           <span class='va'>phi</span> <span class='op'>=</span> <span class='va'>lambda</span> <span class='op'>-</span> <span class='va'>Mu.</span>
 </pre>
 
-<p>This is equivalent to re-writing the model as:</p><pre>                            Y ~ Poisson(exp(offset + Mu + phi))
+<p>This is the spatial autocorrelation component. This is equivalent to specifying the model as:</p><pre>                            Y ~ Poisson(exp(offset + Mu + phi))
                             phi ~ MVGauss(0, Sigma)
                             Sigma = (I - rho C)^-1 * M * tau^2.
 </pre>
@@ -362,7 +396,7 @@ If and when setting priors for <code>beta</code> manually, remember to include p
 <span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit.car</span>, <span class='va'>sentencing</span><span class='op'>)</span>
 
 <span class='co'># posterior predictive distribution</span>
-<span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span><span class='op'>(</span><span class='va'>fit.car</span>, samples <span class='op'>=</span> <span class='fl'>75</span><span class='op'>)</span>
+<span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span><span class='op'>(</span><span class='va'>fit.car</span>, S <span class='op'>=</span> <span class='fl'>75</span><span class='op'>)</span>
 <span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span>
 <span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>yrep</span><span class='op'>)</span>
 

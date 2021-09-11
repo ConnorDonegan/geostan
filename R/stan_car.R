@@ -9,29 +9,69 @@
 #' @param formula A model formula, following the R \code{\link[stats]{formula}} syntax. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
 #' 
 #' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
-#'  These will be pre-multiplied by a row-standardized version of the user-provided spatial weights matrix and then added (prepended) to the design matrix.
-#'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
 #' 
-#' @param re If the model includes a varying intercept term \code{alpha_re} specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}. With the CAR model, any \code{alpha_re} term should be at a *different* level or scale than the observations; that is, at a different scale than the autocorrelation structure of the CAR model itself.
+#'  These will be pre-multiplied by a row-standardized version of the user-provided spatial weights matrix and then added (prepended) to the design matrix. For example, providing
+#' ```
+#' stan_car(y ~ x1 + x2, slx = ~ x1, ...)
+#' ```
+#' is the same as providing
+#' ```
+#' stan_car(y ~ I(W %*% x1) + x1 + x2, ...)
+#' ```
+#' where `W` is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}). When setting priors for \code{beta}, remember to include priors for any SLX terms as well.
+#' 
+#' @param re To include a varying intercept (or "random effects") term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re} is a vector of parameters added to the linear predictor of the model, and:
+#' ```
+#'        alpha_re ~ N(0, alpha_tau)
+#'        alpha_tau ~ Student_t(d.f., location, scale).
+#' ```
+#' With the CAR model, any \code{alpha_re} term should be at a *different* level or scale than the observations; that is, at a different scale than the autocorrelation structure of the CAR model itself.
 #' 
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' 
-#'@param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned an auto Gaussian (CAR) model, unless `ME$car_parts = FALSE` (then a non-spatial Student's t model will be used). Elements of the list \code{ME} may include:
+#'@param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. The ME models are designed for American Community Survey (ACS) estimates, `x`, and their standard errors, `se` (Donegan, Chun and Griffith 2021). The ME models have one of the the following two specifications, depending on the user input:
+#' ```
+#'        x ~ Gauss(x_true, se)
+#'        x_true ~ MVGauss(mu, Sigma)
+#'        Sigma = (I - rho * C)^(-1) M * sigma^2
+#'        mu ~ Gauss(0, 100)
+#'        tau ~ student_t(10, 0, 40)
+#'        rho ~ uniform(lower_bound, upper_bound)
+#' ```
+#' where the covariance matrix, `Sigma`, has the conditional autoregressive specification. If `ME$car_parts = FALSE`, then a non-spatial model will be used instead:
+#' ```
+#'        x ~ Gauss(x_true, se)
+#'        x_true ~ student_t(df, mu, sigma)
+#'        df ~ gamma(3, 0.2)
+#'        mu ~ Gauss(0, 100)
+#'        sigma ~ student_t(10, 0, 40)
+#' ```
+#' The target of inference is `x_true`, the actual values of the covariate during the period of the survey, and the observational error is the difference between the survey estimate and the unknown value that would have been obtained by a complete census. Elements of the list \code{ME} may include:
 #' \describe{
 #' 
-#' \item{se}{A dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
+#' \item{se}{A required dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
 #' 
 #' \item{bounds}{An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to `c(-Inf, Inf)` (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.}
 #' 
-#'  \item{prior}{Provide parameter values for the prior distributions of the measurement error model(s). The spatial conditional autoregressive (CAR) and non-spatial student's t models both contain a location parameter (the mean) and a scale parameter, each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console. 
+#'  \item{prior}{Optionally provide parameter values for the prior distributions of the measurement error model(s). The ME models contain a location parameter (mu) and a scale parameter (sigma), each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console. \cr \cr
+#' 
+#' The prior for the location parameter, mu, is Gaussian (the default being `Gauss(0, 100)`). You can alter this by providing a `data.frame` with columns named `location` and `scale`; provide values for each covariate in `se`. List the values in the same order as the columns of `se`. \cr \cr
 #'
-#' To set these priors to custom values, provide a named list with items `location` and `scale` (you must provide both). The prior for the location parameter is Gaussian, the default being `Gauss(0, 100)`. To change these values, provide a `data.frame` with columns named `location` and `scale`. Provide prior specifications for each covariate in `se`; list the priors in the same order as the columns of `se`.
+#' The prior for the `scale` parameters is Student's t, and the default is `Student_t(10, 0, 40)`. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of `se`.\cr \cr
 #'
-#' The prior for the `scale` parameters is Student's t, and the default is `Student_t(10, 0, 40)`. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of `se`.
-#'
-#' For example, `ME$prior <- list(location = data.frame(location = c(0, 0), scale = c(100, 100))); ME$prior$scale <- c(40, 40)`.
-#'
-#' The CAR model also has a spatial autocorrelation parameter, `car_rho`, which is assigned a uniform prior distribution. You can set the boudaries of the prior with `ME$prior$car_rho <- c(lower_bound, upper_bound)`. 
+#' For example, if you are modeling two covariates with the ME models, you can add the priors for mu and sigma to an existing `ME` list like this:
+#' ```
+#' ME$prior <- list(location = data.frame(location = c(0, 0),
+#'                                           scale = c(10, 10)),
+#'                  scale = c(40, 40))
+#' ```
+#' Note that if a prior is provided, you must provide priors for both mu (location) and sigma (scale). \cr \cr
+#' 
+#' The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boudaries of the prior with:
+#' ```
+#' ME$prior$car_rho <- c(lower_bound, upper_bound)
+#' ```
+#'  You must specify values that are within the permissible range of values for `rho`. This range is automatically printed to the console by \code{\link[geostan]{prep_car_data}}.
 #' }
 #' 
 #' \item{car_parts}{By default, any ME models within `stan_car` will be spatial CAR models. Any data passed to `ME$car_parts` will be ignored. However, to use a non-spatial Student's t ME model instead, provide `ME$car_parts = FALSE`.}
@@ -41,66 +81,80 @@
 #' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{auto_gaussian()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}; if `family = gaussian()` is provided, it will automatically be converted to `auto_gaussian()`.
 #' 
-#' @param invert To calculate the log likelihood of the data, \code{log_lik}, with the auto-Gaussian model, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set \code{invert = FALSE}. Note, this is only used when \code{family = gaussian()}. `log_lik` is required to calculate WAIC.
+#' @param invert To calculate the log likelihood of the data, \code{log_lik}, with the auto-Gaussian model, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set \code{invert = FALSE}. Note, this is only used when \code{family = auto_gaussian()}. `log_lik` is required to calculate WAIC.
 #' 
-#' @param prior A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:
+#' @param prior A named list of parameters for prior distributions. If not provided, the default prior distributions will be assigned and printed to the console. User-defined priors can be assigned to the following parameters:
 #' \describe{
 #' \item{intercept}{The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. \code{prior = list(intercept = c(location = 0, scale = 10))} to assign a Gaussian prior with mean zero and variance 10^2.}
 #' 
-#' \item{beta}{Regression coefficients are assigned Gaussian prior distributions. Provide a `data.frame` with two columns (location and scale).
+#' \item{beta}{Regression coefficients are assigned Gaussian prior distributions. Provide a `data.frame` with two columns (location and scale). 
 #'
-#' The order of variables must follow their order of appearance in the model `formula`; e.g., if the formula is `y ~ x1 + x2`, then providing `prior = list(beta = data.frame(location = c(0, 0), scale = c(1, 1))) will assign standard normal prior distributions to both coefficients.
-#'
-#' Note that if you also use `slx` terms (spatially lagged covariates), then you have to provide priors for them; `slx` terms *precede* other terms in the model formula. For example, providing of `y ~ x1 + x2` with `slx = ~ x1 + x2` is the same as providing `formula = y ~ I(W \%*\% x1) + I(W \%*\% x2) + x1 + x2`, where `W` is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}).}
+#' The order of variables must follow their order of appearance in the model `formula`; e.g., if the formula is `y ~ x1 + x2`, then providing
+#' ```
+#' prior = list(beta = data.frame(location = c(0, 2),
+#'                                   scale = c(1, 2)))
+#' ```
+#' will assign the following prior distributions:
+#' ```
+#'        x1 ~ Gauss(0, 1)
+#'        x2 ~ Gauss(2, 2)
+#' ```
+#' Note that if you also use `slx` terms (spatially lagged covariates), then you have to provide priors for them. If your model specification is:
+#' ```
+#'  stan_glm(y ~ x1 + x2, slx = ~ x1, ...)
+#' ```
+#' then the prior for beta must have three rows. Since slx terms are always *prepended* to the design matrix, the prior for the slx term will be listed first.
+#' }
 #'
 #' \item{tau}{The scale parameter for (spatially *un*structured) random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(tau = c(df = 20, location = 0, scale = 20))`.}
 #'
 #' \item{car_scale}{Hyperprior parameters for the scale of the CAR model, \code{car_scale}. The scale is assigned a Student's t prior model; to set its parameter values, provide a length-three vector with the degrees of freedom, location, and scale parameters. E.g., \code{prior = list(car_scale = c(df = 15, location = 0, scale = 2))}.}
 #'
-#' \item{car_rho}{The spatial autocorrelation parameter in the CAR model, `rho`, is assigned a uniform prior distribution. By default, the prior will be uniform over all permissible values as determined by the eigenvalues of the connectivity matrix, `C`. You amy alter those limits by providing a numeric vector such as: `prior$car_rho = c(0, 1)`.
+#' \item{car_rho}{The spatial autocorrelation parameter in the CAR model, `rho`, is assigned a uniform prior distribution. By default, the prior will be uniform over all permissible values as determined by the eigenvalues of the connectivity matrix, `C`. You may alter those limits by providing a numeric vector such as: `prior$car_rho = c(0, 1)`.
 #'
 #' The range of permissible values for `rho` is automatically printed to the `R` console by \code{\link[geostan]{prep_car_data}}. You may also identify the range of permissible values using the eigenvalues, `lambda`, returned by `prep_car_data` and the following code: `rho_limits = 1 / range(lambda)`. These limits are sensitive to the chosen specification (WCAR, ACAR, etc.) and connectivity matrix.}
 #' }
 #'
-#' @param centerx To center predictors, provide either a logical value (TRUE, FALSE) or numeric-alike vector of length equal to the number of columns of ‘x’, where ‘numeric-alike’ means that ‘as.numeric(.)’ will be applied successfully if ‘is.numeric(.)’ is not true. Passed to \code{\link[base]{scale}}.
+#' @param centerx To center predictors on their mean values, use `centerx = TRUE`. If `centerx` is a numeric vector, predictors will be centered on the values provided. This argument is passed to \code{\link[base]{scale}}.
 #' 
 #' @param prior_only Logical value; if \code{TRUE}, draw samples only from the prior distributions of parameters.
 #' @param chains Number of MCMC chains to use. 
 #' @param iter Number of samples per chain. 
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Set \code{refresh=0} to silence this.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
-#' @param control A named list of parameters to control the sampler's behavior. See \code{\link[rstan]{stan}} for details. The defaults are the same as \code{\link[rstan]{stan}} except that \code{adapt_delta} is raised to \code{.9} and \code{max_treedepth = 15}.
+#' @param control A named list of parameters to control the sampler's behavior. See \code{\link[rstan]{stan}} for details. 
 #' 
 #' @param ... Other arguments passed to \code{\link[rstan]{sampling}}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first. 
 #' @details
 #'
-#' CAR models are discussed in Cressie and Wikle (2011, p. 184-88), Cressie (2015, Ch. 6-7), and Haining and Li (2020, p. 249-51).
+#' CAR models are discussed in Cressie and Wikle (2011, p. 184-88), Cressie (2015, Ch. 6-7), and Haining and Li (2020, p. 249-51). 
 #'
 #' The Stan code for this implementation of the CAR model first introduced in Donegan et al. (2021, supplementary material) for models of small area survey data.
 #' 
 #' Details and results depend on the \code{family} argument, as well as on the particular CAR specification chosen (see \link[geostan]{prep_car_data}).
 #' 
-#' ##  `family = gaussian()`
+#' ##  `family = aut_gaussian()`
 #'
-#' With \code{family = gaussian()} (referred to here as the auto-Gaussian model), the CAR model is specified as follows:
+#' With \code{family = auto_gaussian()} (referred to here as the auto-Gaussian model), the CAR model is specified as follows:
 #' ```
 #'                             Y ~ MVGauss(Mu, Sigma)
 #'                             Sigma = (I - rho C)^-1 * M * tau^2
 #' ```
-#' where \code{Mu} is the mean vector (with intercept, covariates, etc.), \code{C} is a spatial connectivity matrix, and \code{M} is a known diagonal matrix with diagonal entries proportional to the conditional variances (see the \code{M_diagonal} argument). `C` and `M` are provided by \link[geostan]{prep_car_data}.
+#' where \code{Mu} is the mean vector (with intercept, covariates, etc.), \code{C} is a spatial connectivity matrix, and \code{M} is a known diagonal matrix with diagonal entries proportional to the conditional variances. `C` and `M` are provided by \code{\link[geostan]{prep_car_data}}.
 #'
-#' The covariance matrix of the CAR model, \code{Sigma}, contains two parameters to estimate: \code{car_rho} (rho), which controls the degree of spatial autocorrelation, and the scale parameter, \code{car_scale} (tau). The range of permissible values for \code{rho} depends on the specification of \code{C} and \code{M}; for options, see \code{\link[geostan]{prep_car_data}} and Cressie and Wikle (2011, pp. 184-188).
+#' The covariance matrix of the CAR model, \code{Sigma}, contains two parameters: \code{car_rho} (rho), which controls the degree of spatial autocorrelation, and the scale parameter, \code{car_scale} (tau). The range of permissible values for \code{rho} depends on the specification of \code{C} and \code{M}; for options, see \code{\link[geostan]{prep_car_data}} and Cressie and Wikle (2011, pp. 184-188).
 #'
-#' The auto-Gaussian model returns a spatial trend (autocorrelation) component which is calculated as follows (Cressie 2015, p. 564):
+#' The auto-Gaussian model contains an implicit spatial trend (i.e., autocorrelation) component which is calculated as follows (Cressie 2015, p. 564):
 #' ```
 #'                             trend = rho * C * (Y - Mu).
 #' ```
 #' This term can be extracted from a fitted auto-Gaussian model using the \code{\link[geostan]{spatial}} method.
 #'
-#' When applied to a fitted auto-Gaussian model, the \code{\link[geostan]{residuals.geostan_fit}} method returns `de-trended' residuals, as follows:
+#' When applied to a fitted auto-Gaussian model, the \code{\link[geostan]{residuals.geostan_fit}} method returns `de-trended' residuals by default. That is,
 #' ```
 #'                             residual = Y - Mu - trend.
 #' ```
+#' To obtain "raw" residuals (`Y - Mu`), use `residuals(fit, detrend = FALSE)`.
 #' 
 #' ## `family = poisson()`
 #'
@@ -111,13 +165,13 @@
 #'                             lambda ~ MVGauss(Mu, Sigma)
 #'                             Sigma = (I - rho C)^-1 * M * tau^2
 #' ```
-#' These models are most often used to calculate incidence rates (mortality rates, or disease incidence rates); the user provided offset should be, then, the natural logarithm of the denominator in the rates, e.g., log-population at risk.
+#' These models are most often used to calculate small area incidence rates (mortality or disease incidence rates); the user provided offset should be, then, the natural logarithm of the denominator in the rates, e.g., log-population at risk.
 #' 
 #' For Poisson models, the \code{\link[geostan]{spatial}} method returns the parameter vector \code{phi}, which is the log-risk minus the intercept and any covariates:
 #'  ```
 #'                             phi = lambda - Mu.
 #' ```
-#' This is equivalent to re-writing the model as:
+#' This is the spatial autocorrelation component. This is equivalent to specifying the model as:
 #' ```
 #'                             Y ~ Poisson(exp(offset + Mu + phi))
 #'                             phi ~ MVGauss(0, Sigma)
@@ -201,7 +255,7 @@
 #' sp_diag(fit.car, sentencing)
 #' 
 #' # posterior predictive distribution
-#' yrep <- posterior_predict(fit.car, samples = 75)
+#' yrep <- posterior_predict(fit.car, S = 75)
 #' y <- sentencing$sents
 #' ppc_dens_overlay(y, yrep)
 #'
@@ -254,7 +308,7 @@ stan_car <- function(formula,
                      iter = 2e3,
                      refresh = 500,
                      pars = NULL,
-                     control = list(adapt_delta = 0.9, max_treedepth = 13),
+                     control = NULL,
                      ...
                      ) {
     stopifnot(inherits(formula, "formula"))
@@ -338,10 +392,11 @@ stan_car <- function(formula,
         priors_made$car_scale <- priors_made$sigma        
     } else {
         priors_made$car_scale <- prior$car_scale
+        names(priors_made$car_scale) <- c("lower_bound", "upper_bound")
     }
     if (is.null(prior$car_rho)) {
         lims <- 1 / range(car_parts$lambda)
-        names(lims) <- c("minimum", "maximum")
+        names(lims) <- c("lower_bound", "upper_bound")
         priors_made$car_rho <- lims
     } else {
         stopifnot(length(as.numeric(prior$car_rho)) == 2)
@@ -408,10 +463,8 @@ stan_car <- function(formula,
     ## PRINT STUFF -------------
     if (me.list$has_me) priors_made_slim <- c(priors_made_slim, list(ME_location = me.list$ME_prior_mean, ME_scale = me.list$ME_prior_scale))    
     print_priors(prior, priors_made_slim)
-    message("\n*Setting prior for car_rho (spatial autocorrelation parameter)\n",
-            "Uniform (1/lambda_min, 1/lambda_max)"
-            )
-    print(priors_made_slim$car_rho)
+ #   message("\n*Setting prior for car_rho (spatial autocorrelation parameter)\nUniform")
+  #  print(priors_made_slim$car_rho)
     ## CALL STAN -------------  
     samples <- rstan::sampling(stanmodels$car, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
     ## OUTPUT -------------

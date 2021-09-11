@@ -8,33 +8,75 @@
 #' @description Fit a generalized linear model.
 #' 
 #' @param formula A model formula, following the R \link[stats]{formula} syntax. Binomial models are specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
-#' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally); you must also provide \code{C} when including \code{slx}.
-#'  Specified covariates will be pre-multiplied by a row-standardized spatial weights matrix and then added (prepended) to the design matrix.
-#'  If and when setting priors for \code{beta} manually, remember to include priors for any SLX terms as well.
-#' @param re If the model includes a varying intercept term (or "spatially unstructured random effect") specify the grouping variable here using formula syntax, as in \code{~ ID}. The resulting random effects parameter returned is named \code{alpha_re}, and the associated scale parameter is \code{alpha_tua}. That is, \code{alpha_re ~ N(0, alpha_tau)}, \code{alpha_tau ~ Student_t(d.f., location, scale)}.
+#' 
+#' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
+#' 
+#'  These will be pre-multiplied by a row-standardized version of the user-provided spatial weights matrix and then added (prepended) to the design matrix. For example, providing
+#' ```
+#' stan_glm(y ~ x1 + x2, slx = ~ x1, ...)
+#' ```
+#' is the same as providing
+#' ```
+#' stan_glm(y ~ I(W %*% x1) + x1 + x2, ...)
+#' ```
+#' where `W` is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}). When setting priors for \code{beta}, remember to include priors for any SLX terms as well.
+#' 
+#' @param re To include a varying intercept (or "random effects") term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re} is a vector of parameters added to the linear predictor of the model, and:
+#' ```
+#'        alpha_re ~ N(0, alpha_tau)
+#'        alpha_tau ~ Student_t(d.f., location, scale).
+#' ```
+#' 
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
-#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. Errors are assigned a Gaussian probability distribution and the modeled (true) covariate vector is assigned a Student's t model or, if \code{ME$car_parts} is provided, an auto Gaussian (CAR) model. Elements of the list \code{ME} may include:
+#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. The ME models are designed for American Community Survey (ACS) estimates, `x`, and their standard errors, `se` (Donegan, Chun and Griffith 2021). The ME models have one of the the following two specifications, depending on the user input:
+#' ```
+#'        x ~ Gauss(x_true, se)
+#'        x_true ~ MVGauss(mu, Sigma)
+#'        Sigma = (I - rho * C)^(-1) M * sigma^2
+#'        mu ~ Gauss(0, 100)
+#'        tau ~ student_t(10, 0, 40)
+#'        rho ~ uniform(lower_bound, upper_bound)
+#' ```
+#' where the covariance matrix, `Sigma`, has the conditional autoregressive specification. If `ME$car_parts` is not provided by the user, then a non-spatial model will be used instead:
+#' ```
+#'        x ~ Gauss(x_true, se)
+#'        x_true ~ student_t(df, mu, sigma)
+#'        df ~ gamma(3, 0.2)
+#'        mu ~ Gauss(0, 100)
+#'        sigma ~ student_t(10, 0, 40)
+#' ```
+#' The target of inference is `x_true`, the actual values of the covariate during the period of the survey, and the observational error is the difference between the survey estimate and the unknown value that would have been obtained by a complete census. Elements of the list \code{ME} may include:
 #' \describe{
 #' 
-#' \item{se}{A dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
+#' \item{se}{A required dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
 #' 
 #' \item{bounds}{An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to `c(-Inf, Inf)` (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.}
 #' 
-#'  \item{prior}{Provide parameter values for the prior distributions of the measurement error model(s). The spatial conditional autoregressive (CAR) and non-spatial student's t models both contain a location parameter (the mean) and a scale parameter, each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console. 
+#'  \item{prior}{Optionally provide parameter values for the prior distributions of the measurement error model(s). The ME models contain a location parameter (mu) and a scale parameter (sigma), each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console. \cr \cr
+#' 
+#' The prior for the location parameter, mu, is Gaussian (the default being `Gauss(0, 100)`). You can alter this by providing a `data.frame` with columns named `location` and `scale`; provide values for each covariate in `se`. List the values in the same order as the columns of `se`. \cr \cr
 #'
-#' To set these priors to custom values, provide a named list with items `location` and `scale` (you must provide both). The prior for the location parameter is Gaussian, the default being `Gauss(0, 100)`. To change these values, provide a `data.frame` with columns named `location` and `scale`. Provide prior specifications for each covariate in `se`; list the priors in the same order as the columns of `se`.
+#' The prior for the `scale` parameters is Student's t, and the default is `Student_t(10, 0, 40)`. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of `se`.\cr \cr
 #'
-#' The prior for the `scale` parameters is Student's t, and the default is `Student_t(10, 0, 40)`. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of `se`.
-#'
-#' For example, `ME$prior <- list(location = data.frame(location = c(0, 0), scale = c(100, 100))); ME$prior$scale <- c(40, 40)`.
-#'
-#' The CAR model also has a spatial autocorrelation parameter, `car_rho`, which is assigned a uniform prior distribution. You can set the boudaries of the prior with `ME$prior$car_rho <- c(lower_bound, upper_bound)`. 
+#' For example, if you are modeling two covariates with the ME models, you can add the priors for mu and sigma to an existing `ME` list like this:
+#' ```
+#' ME$prior <- list(location = data.frame(location = c(0, 0),
+#'                                           scale = c(10, 10)),
+#'                  scale = c(40, 40))
+#' ```
+#' Note that if a prior is provided, you must provide priors for both mu (location) and sigma (scale). \cr \cr
+#' 
+#' The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boudaries of the prior with:
+#' ```
+#' ME$prior$car_rho <- c(lower_bound, upper_bound)
+#' ```
+#'  You must specify values that are within the permissible range of values for `rho`. This range is automatically printed to the console by \code{\link[geostan]{prep_car_data}}.
 #' }
 #' 
 #' \item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data}. If not provided, a non-spatial Student's t model will be used instead of the CAR model.}
-#'
 #' }
-#' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} or spatial measurement error (\code{ME}) terms; it will automatically be row-standardized before calculating \code{slx} terms.  See \code{\link[geostan]{shape2mat}}.
+#' 
+#' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will automatically be row-standardized before calculating \code{slx} terms.  See \code{\link[geostan]{shape2mat}}.
 #' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{poisson(link = "log")}, \code{binomial(link = "logit")}, \code{student_t()}, and the default \code{gaussian()}.
 #' 
@@ -42,15 +84,30 @@
 #' \describe{
 #' \item{intercept}{The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. \code{prior = list(intercept = c(location = 0, scale = 10))} to assign a Gaussian prior with mean zero and variance 10^2.}
 #' 
-#' \item{beta}{Regression coefficients are assigned Gaussian prior distributions. Provide a `data.frame` with two columns (location and scale).
+#' \item{beta}{Regression coefficients are assigned Gaussian prior distributions. Provide a `data.frame` with two columns (location and scale). 
 #'
-#' The order of variables must follow their order of appearance in the model `formula`; e.g., if the formula is `y ~ x1 + x2`, then providing `prior = list(beta = data.frame(location = c(0, 0), scale = c(1, 1)))` will assign standard normal prior distributions to both coefficients.
+#' The order of variables must follow their order of appearance in the model `formula`; e.g., if the formula is `y ~ x1 + x2`, then providing
+#' ```
+#' prior = list(beta = data.frame(location = c(0, 2),
+#'                                   scale = c(1, 2)))
+#' ```
+#' will assign the following prior distributions:
+#' ```
+#'        x1 ~ Gauss(0, 1)
+#'        x2 ~ Gauss(2, 2)
+#' ```
+#' Note that if you also use `slx` terms (spatially lagged covariates), then you have to provide priors for them. If your model specification is:
+#' ```
+#'  stan_glm(y ~ x1 + x2, slx = ~ x1, ...)
+#' ```
+#' then the prior for beta must have three rows. Since slx terms are always *prepended* to the design matrix, the prior for the slx term will be listed first.
+#' }
 #'
-#' Note that if you also use `slx` terms (spatially lagged covariates), then you have to provide priors for them; `slx` terms *precede* other terms in the model formula. For example, providing of `y ~ x1 + x2` with `slx = ~ x1 + x2` is the same as providing `formula = y ~ I(W \%*\% x1) + I(W \%*\% x2) + x1 + x2`, where `W` is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}).}
+#' \item{sigma}{The scale parameter, `sigma,` for `gaussian()` and `student_t()` models is assigned a half-Student's t prior distribution. Thus, provide values for the degrees of freedom, location, and scale parameters; e.g., `prior = list(sigma = c(df = 10, location = 0, scale = 5))` for a prior centered on zero with scale of 5 and 10 degrees of freedom. The half-Student's t prior for `sigma` is constrained to be positive.
+#' }
 #'
-#' \item{sigma}{The scale parameter for Gaussian and Student's t likelihood models is assigned a half-Student's t prior distribution. Thus, provide values for the degrees of freedom, location, and scale parameters; e.g., `prior = list(sigma = c(df = 10, location = 0, scale = 5))` for a prior centered on zero with scale of 5 and 10 degrees of freedom. The half-Student's t prior for `sigma` is constrained to be positive.}
-#'
-#' \item{nu}{The degrees of freedom for the Student's t likelihood model is assigned a gamma prior distribution. The default prior is `prior = list(nu = c(alpha = 3, beta = 0.2))`.}
+#' \item{nu}{`nu` is the degrees of freedom parameter in the Student's t likelihood (only used when `family = student_t()`). `nu` is assigned a gamma prior distribution. The default prior is `prior = list(nu = c(alpha = 3, beta = 0.2))`.
+#' }
 #'
 #' \item{tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(tau = c(df = 20, location = 0, scale = 20))`.}
 #' }
@@ -62,14 +119,14 @@
 #' @param iter Number of samples per chain. 
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples; set \code{refresh=0} to silence this.
 #' @param pars Specify any additional parameters you'd like stored from the Stan model.
-#' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. The defaults are the same \code{rstan::stan} except that \code{adapt_delta} is raised to \code{0.95} and \code{max_treedepth = 15}.
+#' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. 
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' 
 #' @details
 #'
 #' Fit a generalized linear model using the R formula interface. Default prior distributions are designed to be weakly informative relative to the data. Much of the functionality intended for spatial models, such as the ability to add spatially lagged covariates and observational error models, are also available in \code{stan_glm}. All of \code{geostan}'s spatial models build on top of the same Stan code used in \code{stan_glm}.
 #'
-#' Poisson models are often used to calculate incidence rates (mortality rates, or disease incidence rates) for administrative areas, like counties or census tracts; the user provided offset should be, in that case, the natural logarithm of the denominator, e.g., log-population at risk. If `Y` are counts of cases, and `P` are populations at risk, then the crude rates are `Y/P`, and the user should provide an offset value of `log(P)`. For such a case, disease incidence across the collection of areas could be modeled as:
+#' In spatial statistics, Poisson models are often used to calculate incidence rates (mortality rates, or disease incidence rates) for administrative areas like counties or census tracts; the user provided offset should be, in that case, the natural logarithm of the denominator, e.g., log-population at risk. If `Y` are counts of cases, and `P` are populations at risk, then the crude rates are `Y/P`, and the user should provide an offset value of `log(P)`. For such a case, disease incidence across the collection of areas could be modeled as:
 #' ```
 #'                           Y ~ Poisson(exp(offset + Mu))
 #'                           Mu = alpha + A
@@ -97,6 +154,10 @@
 #' }
 #' 
 #' @author Connor Donegan, \email{Connor.Donegan@UTDallas.edu}
+#'
+#' @source
+#'
+#' Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. *Int. J. Env. Res. and Public Health* 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: \url{https://github.com/ConnorDonegan/survey-HBM}.
 #' 
 #' @examples
 #' \dontrun{
@@ -142,7 +203,7 @@ stan_glm <- function(formula,
                      iter = 2e3, 
                      refresh = 1e3,
                      pars = NULL,
-                     control = list(adapt_delta = 0.95, max_treedepth = 12),
+                     control = NULL,
                      ...) {
     stopifnot(inherits(formula, "formula"))
     stopifnot(inherits(family, "family"))

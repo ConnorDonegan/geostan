@@ -47,7 +47,7 @@
 
 
 <meta property="og:title" content="WAIC — waic" />
-<meta property="og:description" content="Widely Application Information Criteria (WAIC) for model evaluation" />
+<meta property="og:description" content="Widely Application Information Criteria (WAIC) for model comparison" />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
@@ -132,7 +132,7 @@
     </div>
 
     <div class="ref-description">
-    <p>Widely Application Information Criteria (WAIC) for model evaluation</p>
+    <p>Widely Application Information Criteria (WAIC) for model comparison</p>
     </div>
 
     <pre class="usage"><span class='fu'>waic</span><span class='op'>(</span><span class='va'>fit</span>, pointwise <span class='op'>=</span> <span class='cn'>FALSE</span>, digits <span class='op'>=</span> <span class='fl'>2</span><span class='op'>)</span></pre>
@@ -154,6 +154,9 @@
     </tr>
     </table>
 
+    <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
+
+    <p>Watanabe, S. (2010). Asymptotic equivalence of Bayes cross validation and widely application information criterion in singular learning theory. Journal of Machine Learning Research 11, 3571-3594.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A vector of length 3 with <code>WAIC</code>, a rough measure of the effective number of parameters estimated by the model <code>Eff_pars</code>, and log predictive density <code>Lpd</code>. If <code>pointwise = TRUE</code>, results are returned in a <code>data.frame</code>.</p>

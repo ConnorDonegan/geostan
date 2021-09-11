@@ -306,9 +306,13 @@ print_priors <- function(user_priors, priors) {
               message("\n*Setting prior parameters for car_scale")
               message("Student's t")
               print(p)
-
           }
-  }  
+          if (nm == "car_rho") {
+              message("\n*Setting prior parameters for car_rho (autocorrelation parameter)")
+              message("Uniform")
+              print(p)
+          }
+      }  
   } 
 }
 

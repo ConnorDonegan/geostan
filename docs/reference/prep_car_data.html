@@ -138,9 +138,10 @@
     <pre class="usage"><span class='fu'>prep_car_data</span><span class='op'>(</span>
   <span class='va'>A</span>,
   style <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"WCAR"</span>, <span class='st'>"ACAR"</span>, <span class='st'>"DCAR"</span><span class='op'>)</span>,
+  k <span class='op'>=</span> <span class='fl'>1</span>,
+  gamma <span class='op'>=</span> <span class='fl'>0</span>,
   lambda <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  cmat <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  k <span class='op'>=</span> <span class='fl'>1</span>
+  cmat <span class='op'>=</span> <span class='cn'>TRUE</span>
 <span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
@@ -148,11 +149,19 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>A</th>
-      <td><p>Binary adjacency matrix; for `style = DCAR`, provide a symmetric matrix of distances instead. The distance matrix should be sparse, meaning that most distances should be zero (usually obtained by setting some threshold distance beyond which all are zero).</p></td>
+      <td><p>Binary adjacency matrix; for <code>style = DCAR</code>, provide a symmetric matrix of distances instead. The distance matrix should be sparse, meaning that most distances should be zero (usually obtained by setting some threshold distance beyond which all are zero).</p></td>
     </tr>
     <tr>
       <th>style</th>
       <td><p>Specification for the connectivity matrix (C) and conditional variances (M); one of "WCAR", "ACAR", or "DCAR".</p></td>
+    </tr>
+    <tr>
+      <th>k</th>
+      <td><p>For <code>style = DCAR</code>, distances will be raised to the -k power (d^-k).</p></td>
+    </tr>
+    <tr>
+      <th>gamma</th>
+      <td><p>For <code>style = DCAR</code>, distances will be offset by <code>gamma</code> before raising to the <code>-k</code>th power.</p></td>
     </tr>
     <tr>
       <th>lambda</th>
@@ -160,18 +169,14 @@
     </tr>
     <tr>
       <th>cmat</th>
-      <td><p>Return the full matrix C if TRUE.</p></td>
-    </tr>
-    <tr>
-      <th>k</th>
-      <td><p>For `style = DCAR`, distances will be raised to the -k power (d^-k).</p></td>
+      <td><p>If <code>cmat = TRUE</code>, return the full matrix C (in sparse matrix format).</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
 
     <p>Cliff A, Ord J (1981). Spatial Processes: Models and Applications. Pion.</p>
-<p>Cressie N (2015 [1993]). Statistics for Spatial Data. Revised edition. John Wiley &amp; Sons.</p>
+<p>Cressie N (2015 1993). Statistics for Spatial Data. Revised edition. John Wiley &amp; Sons.</p>
 <p>Cressie N, Perrin O, Thomas-Agnan C (2005). “Likelihood-based estimation for Gaussian MRFs.” Statistical Methodology, 2(1), 1–16.</p>
 <p>Cressie N, Wikle CK (2011). Statistics for Spatio-Temporal Data. John Wiley &amp; Sons.</p>
 <p>Haining RP, Li G (2020). Modelling Spatial and Spatio-Temporal Data: A Bayesian Approach. CRC Press.</p>
@@ -180,10 +185,15 @@
     <p>A list containing all of the data elements required by the Stan CAR model.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The CAR model is N(Mu, Sigma), Sigma = (I - rho C)^-1 M.</p>
-<p>The DCAR specification is distance-based, and requires the user provide a distance matrix <code>d</code> in addition to adjacency matrix <code>A</code>. The WCAR specification uses row-standardized connectivity matrix and sets conditional variances proportional to the number of neighbors. The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188).</p>
-<p>For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 [1993]) and Haining and Li (2020).</p>
-<p><code>stan_car</code> requires the user to provide the full C matrix (which is returned when cmat = TRUE).</p>
+    <p>The CAR model is:</p><pre>  Normal(Mu, Sigma), Sigma = (I - rho * C)^-1 * M * tau^2,
+</pre>
+
+<p>where <code>I</code> is the identity matrix, <code>rho</code> is a spatial autocorrelation parameter, <code>C</code> is a connectivity matrix, and <code>M * tau^2</code> is a diagonal matrix with conditional variances on the diagonal. <code>tau^2</code> is a (scalar) scale parameter.</p>
+<p>In the WCAR specification, <code>C</code> is the row-standardized version of <code>A</code>. This means that the non-zero elements of <code>A</code> will be converted to <code>1/N_i</code> where <code>N_i</code> is the number of neighbors for the <code>i</code>th site (obtained using <code><a href='https://rdrr.io/pkg/Matrix/man/colSums.html'>Matrix::rowSums(A)</a></code>. The conditional variances (on the diagonal of <code>M * tau^2</code>), are also proportional to <code>1/N_i</code>.</p>
+<p>The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188).</p>
+<p>The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For <code>A</code>, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of <code>A</code> will be converted to: <code>d_{ij} = (a_{ij} + gamma)^(-k)</code> (Cliff and Ord 1981, p. 144). Default values are <code>k=1</code> and <code>gamma=0</code>. Following Cressie (1993), these values will be standardized by the maximum <code>d_{ij}</code> value. The conditional variances will be proportional to the inverse of the row sums of the transformed distance matrix: <code>D_{ii} = (sum_i^N d_{ij})^(-1)</code>.</p>
+<p>For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 1993) and Haining and Li (2020).</p>
+<p>When using <code><a href='stan_car.html'>stan_car</a></code>, always use <code>cmat = TRUE</code> (the default).</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
@@ -194,12 +204,19 @@
 
 <span class='co'>## get list of data for Stan</span>
 <span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'>prep_car_data</span><span class='op'>(</span><span class='va'>A</span>, <span class='st'>"WCAR"</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; Range of permissible rho values:  -1.661134 1 </div><div class='input'>
+</div><div class='output co'>#&gt; Range of permissible rho values:  -1.661134 1 </div><div class='input'> <span class='co'># range of permissible values for rho:</span>
+<span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/range.html'>range</a></span><span class='op'>(</span><span class='va'>cp</span><span class='op'>$</span><span class='va'>lambda</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; [1] -1.661134  1.000000</div><div class='input'>
 <span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
 <span class='co'>## pass the data to stan_car</span>
 <span class='va'>fit</span> <span class='op'>=</span> <span class='fu'><a href='stan_car.html'>stan_car</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>rate.male</span><span class='op'>)</span> <span class='op'>~</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>georgia</span>, car_parts <span class='op'>=</span> <span class='va'>cp</span><span class='op'>)</span>
 <span class='op'>}</span>
-</div></pre>
+
+<span class='co'># or use the ACAR specification</span>
+<span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'>prep_car_data</span><span class='op'>(</span><span class='va'>A</span>, <span class='st'>"ACAR"</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; Range of permissible rho values:  -0.3283182 0.1634063 </div><div class='input'> <span class='co'># range of permissible values for rho:</span>
+<span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/range.html'>range</a></span><span class='op'>(</span><span class='va'>cp</span><span class='op'>$</span><span class='va'>lambda</span><span class='op'>)</span>
+</div><div class='output co'>#&gt; [1] -0.3283182  0.1634063</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

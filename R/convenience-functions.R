@@ -861,7 +861,7 @@ expected_mc <- function(X, C) {
 #' @export
 #' @importFrom Matrix summary
 exp_pars <- function(formula, data, C) {
-    stopifnot(inherits(w, "matrix") | inherits(w, "Matrix"))
+    stopifnot(inherits(C, "matrix") | inherits(C, "Matrix"))
 ##    C <- as(C, "ngCMatrix")
     C <- Matrix::Matrix(C)
     nlinks <- nrow(Matrix::summary(C))
@@ -1070,7 +1070,7 @@ prep_icar_data <- function(C, scale_factor = NULL) {
             group_idx = array(group_idx, dim = n), 
             m = m,
             A = A,
-            inv_sqrt_scale_factor = 1 / sqrt(scale_factor),
+            inv_sqrt_scale_factor = as.array(1 / sqrt(scale_factor)),
             comp_id = nb2$comp.id)
   return(l)
 }
@@ -1095,11 +1095,11 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' @details
 #' The CAR model is:
 #' ```
-#'   Normal(Mu, Sigma), Sigma = (I - rho * C)^-1 * D * tau^2,
+#'   Normal(Mu, Sigma), Sigma = (I - rho * C)^-1 * M * tau^2,
 #' ```
-#' where `I` is the identity matrix, `rho` is a spatial autocorrelation parameter, `C` is a connectivity matrix, and `M = D * tau^2` is a diagonal matrix with conditional variances on the diagonal. `tau^2` is a (scalar) scale parameter.
+#' where `I` is the identity matrix, `rho` is a spatial autocorrelation parameter, `C` is a connectivity matrix, and `M * tau^2` is a diagonal matrix with conditional variances on the diagonal. `tau^2` is a (scalar) scale parameter.
 #'
-#' In the WCAR specification, `C` is the row-standardized version of `A`. This means that the non-zero elements of `A` will be converted to `1/N_i` where `N_i` is the number of neighbors for the `i`th site (obtained using `Matrix::rowSums(A)`. The conditional variances, `M`, are also proportional to `1/N_i`. 
+#' In the WCAR specification, `C` is the row-standardized version of `A`. This means that the non-zero elements of `A` will be converted to `1/N_i` where `N_i` is the number of neighbors for the `i`th site (obtained using `Matrix::rowSums(A)`. The conditional variances (on the diagonal of `M * tau^2`), are also proportional to `1/N_i`. 
 #'
 #' The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188).
 #'

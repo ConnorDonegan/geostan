@@ -151,7 +151,7 @@ Setting <code>nsa = TRUE</code> will result in a candidate set of EVs that conta
     </tr>
     <tr>
       <th>threshold</th>
-      <td><p>Defaults to <code>threshold=0.2</code> to exclude eigenvectors representing spatial autocorrelation levels that are less than <code>threshold</code> times the maximum possible Moran coefficient achievable for the given spatial connectivity matrix. If <code>theshold = 0</code>, the eigenvector of constants (with eigenvalue of zero) will be dropped automatically.</p></td>
+      <td><p>Defaults to <code>threshold=0.2</code> to exclude eigenvectors representing spatial autocorrelation levels that are less than <code>threshold</code> times the maximum possible Moran coefficient achievable for the given spatial connectivity matrix. If <code>theshold = 0</code>, all eigenvectors will be returned (however, the eigenvector of constants (with eigenvalue of zero) will be dropped automatically).</p></td>
     </tr>
     <tr>
       <th>values</th>
@@ -182,7 +182,12 @@ Setting <code>nsa = TRUE</code> will result in a candidate set of EVs that conta
 <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>EV</span><span class='op'>[</span>,<span class='fl'>1</span><span class='op'>]</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span><span class='op'>)</span>
-</div><div class='img'><img src='make_EV-1.png' alt='' width='700' height='433' /></div></pre>
+</div><div class='img'><img src='make_EV-1.png' alt='' width='700' height='433' /></div><div class='input'>
+<span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_esf.html'>stan_esf</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>rate.male</span><span class='op'>)</span> <span class='op'>~</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>georgia</span>, EV <span class='op'>=</span> <span class='va'>EV</span>, C <span class='op'>=</span> <span class='va'>C</span><span class='op'>)</span>
+<span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>georgia</span><span class='op'>)</span>
+<span class='op'>}</span>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

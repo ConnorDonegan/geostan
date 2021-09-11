@@ -47,7 +47,7 @@
 
 
 <meta property="og:title" content="Prepare data for ICAR models — prep_icar_data" />
-<meta property="og:description" content="Given a symmetric n x n connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan." />
+<meta property="og:description" content="Given a symmetric n x n connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan. This function may be used for building custom ICAR models in Stan. This is used internally by stan_icar." />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
@@ -132,7 +132,7 @@
     </div>
 
     <div class="ref-description">
-    <p>Given a symmetric n x n connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan.</p>
+    <p>Given a symmetric n x n connectivity matrix, prepare data for intrinsic conditional autoregressive models in Stan. This function may be used for building custom ICAR models in Stan. This is used internally by <code><a href='stan_icar.html'>stan_icar</a></code>.</p>
     </div>
 
     <pre class="usage"><span class='fu'>prep_icar_data</span><span class='op'>(</span><span class='va'>C</span>, scale_factor <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
@@ -150,6 +150,13 @@
     </tr>
     </table>
 
+    <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
+
+    <p>Besag, Julian, Jeremy York, and Annie Mollié. 1991. “Bayesian Image Restoration, with Two Applications in Spatial Statistics.” Annals of the Institute of Statistical Mathematics 43 (1): 1–20.</p>
+<p>Donegan, Connor. Flexible Functions for ICAR, BYM, and BYM2 Models in Stan. Code Repository. 2021. Available online: <a href='https://github.com/ConnorDonegan/Stan-IAR'>https://github.com/ConnorDonegan/Stan-IAR</a> (accessed Sept. 10, 2021).</p>
+<p>Freni-Sterrantino, Anna, Massimo Ventrucci, and Håvard Rue. 2018. “A Note on Intrinsic Conditional Autoregressive Models for Disconnected Graphs.” Spatial and Spatio-Temporal Epidemiology 26: 25–34.</p>
+<p>Morris, Mitzi, Katherine Wheeler-Martin, Dan Simpson, Stephen J Mooney, Andrew Gelman, and Charles DiMaggio. 2019. “Bayesian Hierarchical Spatial Models: Implementing the Besag York Mollié Model in Stan.” Spatial and Spatio-Temporal Epidemiology 31: 100301.</p>
+<p>Riebler, Andrea, Sigrunn H Sørbye, Daniel Simpson, and Håvard Rue. 2016. “An Intuitive Bayesian Spatial Model for Disease Mapping That Accounts for Scaling.” Statistical Methods in Medical Research 25 (4): 1145–65.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>list of data to add to Stan data list:</p>
@@ -163,7 +170,7 @@
 <dt>group_idx</dt><dd><p>indices for each observation belonging each group, ordered by group.</p></dd>
 <dt>m</dt><dd><p>number of disconnected regions requiring their own intercept.</p></dd>
 <dt>A</dt><dd><p>n-by-m matrix of dummy variables for the component-specific intercepts.</p></dd>
-<dt>inv_sqrt_scale_factor</dt><dd><p>k-length vector of ones. Placeholder for user-specified information.</p></dd>
+<dt>inv_sqrt_scale_factor</dt><dd><p>By default, this will be a k-length vector of ones. Placeholder for user-specified information. If user provided `scale_factor`, then this will be `1/sqrt(scale_factor)`.</p></dd>
 <dt>comp_id</dt><dd><p>n-length vector indicating the group membership of each observation.</p></dd>
 
 </dl>
@@ -173,7 +180,7 @@
     <p>This is used internally to prepare data for <a href='stan_icar.html'>stan_icar</a> models. It can also be helpful for fitting custom ICAR models outside of <code>geostan</code>.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='stan_icar.html'>stan_icar</a></code>, <code><a href='edges.html'>edges</a></code>, <code><a href='shape2mat.html'>shape2mat</a></code></p></div>
+    <div class='dont-index'><p><code><a href='edges.html'>edges</a></code>, <code><a href='shape2mat.html'>shape2mat</a></code>, <code><a href='stan_icar.html'>stan_icar</a></code>, <code><a href='prep_car_data.html'>prep_car_data</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
