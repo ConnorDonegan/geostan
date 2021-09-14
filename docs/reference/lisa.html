@@ -105,6 +105,21 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation with **geostan**</a>
+    </li>
+    <li>
+      <a href="../articles/spatial-me-models.html">Working with American Community Survey data in geostan</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -135,7 +150,7 @@
     <p>A local indicator of spatial association (lisa).</p>
     </div>
 
-    <pre class="usage"><span class='fu'>lisa</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span>, type <span class='op'>=</span> <span class='cn'>FALSE</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>lisa</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span>, type <span class='op'>=</span> <span class='cn'>TRUE</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -178,8 +193,14 @@
 <span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>georgia</span><span class='op'>$</span><span class='va'>ICE</span>
 <span class='va'>li</span> <span class='op'>=</span> <span class='fu'>lisa</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='va'>li</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1]  0.2092411  0.5065799  1.2403225  1.9109174 -0.6925012  3.7233968</div><div class='input'>
-<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>li</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
+</div><div class='output co'>#&gt;           Li type
+#&gt; 1  0.2092411   LL
+#&gt; 2  0.5065799   LL
+#&gt; 3  1.2403225   HH
+#&gt; 4  1.9109174   HH
+#&gt; 5 -0.6925012   HL
+#&gt; 6  3.7233968   HH</div><div class='input'>
+<span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>li</span><span class='op'>$</span><span class='va'>Li</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
   <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span><span class='op'>)</span>
 </div><div class='img'><img src='lisa-1.png' alt='' width='700' height='433' /></div></pre>

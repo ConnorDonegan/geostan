@@ -290,11 +290,11 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
 #' li = lisa(x, w)
 #' head(li)
 #'
-#' ggplot(georgia, aes(fill = li)) +
+#' ggplot(georgia, aes(fill = li$Li)) +
 #'   geom_sf() +
 #'   scale_fill_gradient2()
 #' @importFrom Matrix rowSums
-lisa <- function(x, w, type = FALSE) {
+lisa <- function(x, w, type = TRUE) {
     check_sa_data(x, w)
     if (!all(round(Matrix::rowSums(w), 10) %in% c(0, 1))) w <- row_standardize(w)
     z <- scale(x)
@@ -311,7 +311,7 @@ lisa <- function(x, w, type = FALSE) {
          ifelse(z < 0 & lag < 0, "LL",
          ifelse(z>0 & lag < 0, "HL", NA
                 ))))
-    return (data.frame(zi = zi, type = type))
+    return (data.frame(Li = zi, type = type))
 }
 
 #' Spatial data diagnostics
@@ -321,8 +321,11 @@ lisa <- function(x, w, type = FALSE) {
 #' @param y Either a numeric vector or a \code{geostan_fit} model object (as returned from a call to one of the \code{geostan::stan_*} functions).
 #' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
 #' @param name The name to use on the plot labels; default to "y" or, if \code{y} is a \code{geostan_fit} object, to "Residuals".
-#' @param w An optional spatial connectivity matrix; if not provided, then a row-standardized adjacency matrix will be created using \code{\link[geostan]{shape2mat}}.
 #' @param plot If \code{FALSE}, return a list of \code{gg} plots.
+#' @param style Style of connectivity matrix; passed to \code{\link[geostan]{shape2mat}} and defaults to "W" for row-standardized.
+#' @param w An optional spatial connectivity matrix; if not provided, then a row-standardized adjacency matrix will be created using \code{\link[geostan]{shape2mat}}.
+#' 
+#' @param binwidth A function with a single argument, `y`, that will be passed to the `binwidth` argument in \code{\link[ggplot2]{geom_histogram}}. The default is to set the width of bins to `0.5 * mad(y)`.
 #'
 #' @param ... Additional arguments passed to \code{\link[geostan]{residuals.geostan_fit}}. For binomail and Poisson models, this includes the option to view the outcome variable as a rate (the default) rather than a count; for \code{\link[geostan]{stan_car}} models with auto-Gaussian likelihood (`fit$family$family = "auto_gaussian"), the residuals will be detrended by default, but this can be changed using `detrend = FALSE`.
 #' @return A grid of spatial diagnostic plots: a map, a scatter Moran plot, and a histogram of \code{y}. If a fitted \code{geostan} model is provided, model residuals are plotted and mapped (i.e. \code{y = resid(fit)$mean}). If `plot = TRUE`, the `ggplots` are drawn using \code{\link[gridExtra]{grid.arrange}}; otherwise, they are returned in a list.
@@ -332,12 +335,16 @@ lisa <- function(x, w, type = FALSE) {
 #' @export
 #' @importFrom gridExtra grid.arrange
 #' @importFrom signs signs
+#' @importFrom stats mad
 #' @import ggplot2
 #'
 #' @examples
 #' data(georgia)
 #' sp_diag(georgia$college, georgia)
 #'
+#' bin_fn <- function(y) mad(y)
+#' sp_diag(georgia$college, georgia, binwidth = bin_fn)
+#' 
 #' \dontrun{
 #' fit <- stan_glm(log(rate.male) ~ 1, data = georgia)
 #' sp_diag(fit, georgia)
@@ -351,8 +358,10 @@ lisa <- function(x, w, type = FALSE) {
 sp_diag <- function(y,
                    shape,
                    name = "y",
-                   w = shape2mat(shape, "W"),
                    plot = TRUE,
+                   style = c("W", "B"),
+                   w = shape2mat(shape, match.arg(style)),
+                   binwidth = function(y) 0.5 * mad(y),
                    ...
                    ) {
     if (inherits(y, "geostan_fit")) {
@@ -364,6 +373,8 @@ sp_diag <- function(y,
     shape$y <- y
     hist.y <- ggplot() +
         geom_histogram(aes(y),
+                       
+                       binwidth = binwidth(y),
                        fill = "gray20",
                        col = "gray90")  +
         scale_x_continuous(labels = signs::signs) +
@@ -376,7 +387,7 @@ sp_diag <- function(y,
         scale_fill_gradient2(name = name,
                              label = signs::signs) +
         theme_void()
-    g.mc <- moran_plot(y, w, xlab = name)
+    g.mc <- moran_plot(y, w, xlab = paste0(name, " (centered)"))
     if (plot) {
         return( gridExtra::grid.arrange(hist.y, g.mc, map.y, ncol = 3) )
     } else return (list(hist.y, g.mc, map.y))
@@ -395,6 +406,7 @@ sp_diag <- function(y,
 #' @param plot If \code{FALSE}, return a list of \code{ggplot}s and a \code{data.frame} with the raw data values alongside a posterior summary of the modeled variable.
 #' @param size Size of points and lines, passed to \code{geom_pointrange}.
 #' @param index Integer value; use this if you wish to identify observations with the largest `n=index` absolute Delta values; data on the top `n=index` observations ordered by absolute Delta value will be printed to the console and the plots will be labeled with the indices of the identified observations.
+#' @param style Passed to \code{\link[geostan]{shape2mat}}. If "W", a row-standardized connectivity matrix is used for the Moran plot; if "B", a binary weights matrix is used.
 #' 
 #' @return A grid of spatial diagnostic plots for measurement error (i.e. data) models comparing the raw observations to the posterior distribution of the true values (given the specified observations, standard errors, and model). The Moran scatter plot and map depict the difference between the posterior means and the raw observations (i.e. shrinkage). 
 #'
@@ -443,11 +455,13 @@ me_diag <- function(fit,
                     probs = c(0.025, 0.975),
                     plot = TRUE,
                     size = 0.25,
-                    index = 0
+                    index = 0,
+                    style = c("W", "B")
                     ) {
     stopifnot(length(varname) == 1)    
     if (!varname %in% colnames(fit$data)) stop("varname is not found in colnames(fit$data). Provide the name of the variable as it appears in the model formula")
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
+    style <- match.arg(style)
     x.raw <- as.numeric(fit$data[,varname])
     probs = sort(probs)
     width = paste0(100 * (probs[2] - probs[1]), "%")     
@@ -495,7 +509,7 @@ me_diag <- function(fit,
                     x = expression(paste(Delta, ' (centered)'))
                 )
     } else {
-            w <- shape2mat(shape, style = "W")
+            w <- shape2mat(shape, style = style)
             g.mc <- moran_plot(df$Delta, w) +
                 labs(x = expression(paste(Delta, ' (centered)')))            
     }
@@ -532,14 +546,14 @@ me_diag <- function(fit,
             scale_color_manual(
                     breaks =  c(FALSE, TRUE),
                     values = c(NA, "black"),
-                    guide = FALSE
+                    guide = "none"
             )
                     
     }
     if (plot) {
         return (gridExtra::grid.arrange(g.points, g.mc, map.delta, ncol = 3))
     } else {
-        res.list <- list(g.points, g.mc, map.delta, df)
+        res.list <- list(points = g.points, moran_plot = g.mc, map = map.delta, data = df)
         return(res.list)
     }
 }
@@ -1103,9 +1117,9 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #'
 #' The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188).
 #'
-#' The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For `A`, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of `A` will be converted to: `d_{ij} = (a_{ij} + gamma)^(-k)` (Cliff and Ord 1981, p. 144). Default values are `k=1` and `gamma=0`. Following Cressie (1993), these values will be standardized by the maximum `d_{ij}` value. The conditional variances will be proportional to the inverse of the row sums of the transformed distance matrix: `D_{ii} = (sum_i^N d_{ij})^(-1)`.
+#' The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For `A`, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of `A` will be converted to: `d_{ij} = (a_{ij} + gamma)^(-k)` (Cliff and Ord 1981, p. 144). Default values are `k=1` and `gamma=0`. Following Cressie (2015), these values will be standardized by the maximum `d_{ij}` value. The conditional variances will be proportional to the inverse of the row sums of the transformed distance matrix: `D_{ii} = (sum_i^N d_{ij})^(-1)`.
 #'
-#' For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 [1993]) and Haining and Li (2020).
+#' For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 \[1993\]) and Haining and Li (2020).
 #'
 #' When using \code{\link[geostan]{stan_car}}, always use `cmat = TRUE` (the default). 
 #'
@@ -1113,7 +1127,7 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #'
 #' Cliff A, Ord J (1981). Spatial Processes: Models and Applications. Pion.
 #'
-#' Cressie N (2015 [1993]). Statistics for Spatial Data. Revised edition. John Wiley & Sons.
+#' Cressie N (2015 \[1993\]). Statistics for Spatial Data. Revised edition. John Wiley & Sons.
 #' 
 #' Cressie N, Perrin O, Thomas-Agnan C (2005). “Likelihood-based estimation for Gaussian MRFs.” Statistical Methodology, 2(1), 1–16.
 #'

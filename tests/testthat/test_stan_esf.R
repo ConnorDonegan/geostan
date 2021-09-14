@@ -19,9 +19,9 @@ test_that('data types correct', {
     EV.l <- make_EV(A, values = TRUE)
     expect_is(EV.l, 'list')
     L <- lisa(EV[,10], A)
-    expect_is(L, 'numeric')
-    L.df <- lisa(EV[,10], A, type = TRUE)
-    expect_is(L.df, 'data.frame')
+    expect_is(L, 'data.frame')
+    L.df <- lisa(EV[,10], A, type = FALSE)
+    expect_is(L.df, 'numeric')
 })
 
 test_that("ESF model works", {

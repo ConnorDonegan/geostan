@@ -119,21 +119,6 @@ post_summary <- function(samples) {
     return (x)
 }
 
-#' Rename Stan model parameters
-#' 
-#' @noRd
-#' @param samples stan model object
-#' @param par original parameter name to search for; regular expression
-#' @param replacement new paramter name or names
-par_alias <- function(samples, par, replacement) {
-  found <- grep(par, names(samples))
-  if(length(found) != length(replacement)) message("replacement is of wrong length. Is of length ", length(replacement), ", must be ", length(found),
-                                                "\nAttempt to rename parameter ", par, " was allowed but may cause problems.")
-  names(samples@sim$samples[[1]])[ grep(par, names(samples@sim$samples[[1]])) ] <- replacement
-  names(samples)[ grep(par, names(samples)) ] <- replacement
-  return(samples)
-}
-
 #' logit
 #' @noRd
 #' @param p probability
@@ -234,7 +219,8 @@ clean_results <- function(samples, pars, is_student, has_re, Wx, x, x_me_idx) {
         x_names <- dimnames(x)[[2]]        
         for (i in seq_along(x_me_idx)) {
             x.id <- paste0("x_", rep(x_names[x_me_idx[i]], times = n), paste0("[", 1:n, "]"))
-            names(samples)[grep(paste0("x_true\\[", i, ","), names(samples))] <- x.id          
+            #names(samples)[grep(paste0("x_true\\[", i, ","), names(samples))] <- x.id #/#/          
+            samples <- par_alias(samples, paste0("^x_true\\[" , i, ","), x.id)
         }
     }   
     if ("sigma" %in% pars) samples <- par_alias(samples, "^sigma\\[1\\]", "sigma")
@@ -255,6 +241,22 @@ clean_results <- function(samples, pars, is_student, has_re, Wx, x, x_me_idx) {
     class(out) <- append("geostan_fit", class(out))
     return(out)
 }
+
+#' Rename Stan model parameters
+#' 
+#' @noRd
+#' @param samples stan model object
+#' @param par original parameter name to search for; regular expression
+#' @param replacement new paramter name or names
+par_alias <- function(samples, par, replacement) {
+  found <- grep(par, names(samples))
+  if(length(found) != length(replacement)) message("Attemping to rename parameter ", par, "; replacement is of wrong length. Is of length ", length(replacement), ", must be ", length(found))
+  chains <- length(samples@sim$samples)
+  for (i in 1:chains) names(samples@sim$samples[[i]])[ grep(par, names(samples@sim$samples[[i]])) ] <- replacement
+  names(samples)[ grep(par, names(samples)) ] <- replacement
+  return(samples)
+}
+
 
 #' Print priors that were set automatically
 #' 

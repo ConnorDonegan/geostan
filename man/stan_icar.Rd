@@ -69,13 +69,13 @@ Before using this term, read the \code{Details} section and the \code{type} argu
 
 \item{ME}{To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. The ME models are designed for American Community Survey (ACS) estimates, \code{x}, and their standard errors, \code{se} (Donegan, Chun and Griffith 2021). The ME models have one of the the following two specifications, depending on the user input:\preformatted{       x ~ Gauss(x_true, se)
        x_true ~ MVGauss(mu, Sigma)
-       Sigma = (I - rho * C)^(-1) M * sigma^2
+       Sigma = (I - rho * C)^(-1) M * tau^2
        mu ~ Gauss(0, 100)
        tau ~ student_t(10, 0, 40)
        rho ~ uniform(lower_bound, upper_bound)
 }
 
-where the covariance matrix, \code{Sigma}, has the conditional autoregressive specification. If \code{ME$car_parts = FALSE}, then a non-spatial model will be used instead:\preformatted{       x ~ Gauss(x_true, se)
+where the covariance matrix, \code{Sigma}, has the conditional autoregressive specification, and \code{tau} is the scale parameter. If \code{ME$car_parts = FALSE}, then a non-spatial model will be used instead:\preformatted{       x ~ Gauss(x_true, se)
        x_true ~ student_t(df, mu, sigma)
        df ~ gamma(3, 0.2)
        mu ~ Gauss(0, 100)
@@ -89,18 +89,18 @@ The target of inference is \code{x_true}, the actual values of the covariate dur
 
 \item{bounds}{An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to \code{c(-Inf, Inf)} (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.}
 
-\item{prior}{Optionally provide parameter values for the prior distributions of the measurement error model(s). The ME models contain a location parameter (mu) and a scale parameter (sigma), each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console. \cr \cr
+\item{prior}{Optionally provide parameter values for the prior distributions of the measurement error model(s). The ME models contain a location parameter (mu) and a scale parameter (tau or sigma), each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console. \cr \cr
 
 The prior for the location parameter, mu, is Gaussian (the default being \code{Gauss(0, 100)}). You can alter this by providing a \code{data.frame} with columns named \code{location} and \code{scale}; provide values for each covariate in \code{se}. List the values in the same order as the columns of \code{se}. \cr \cr
 
 The prior for the \code{scale} parameters is Student's t, and the default is \code{Student_t(10, 0, 40)}. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of \code{se}.\cr \cr
 
-For example, if you are modeling two covariates with the ME models, you can add the priors for mu and sigma to an existing \code{ME} list like this:\preformatted{ME$prior <- list(location = data.frame(location = c(0, 0),
+For example, if you are modeling two covariates with the ME models, you can add the priors to an existing \code{ME} list like this:\preformatted{ME$prior <- list(location = data.frame(location = c(0, 0),
                                           scale = c(10, 10)),
                  scale = c(40, 40))
 }
 
-Note that if a prior is provided, you must provide priors for both mu (location) and sigma (scale). \cr \cr
+Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). \cr \cr
 
 The CAR model also has a spatial autocorrelation parameter, \code{rho}, which is assigned a uniform prior distribution. You can set the boudaries of the prior with:\preformatted{ME$prior$car_rho <- c(lower_bound, upper_bound)
 }

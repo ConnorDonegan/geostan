@@ -1,8 +1,10 @@
 pandoc: '2.5'
 pkgdown: 1.6.1
 pkgdown_sha: ~
-articles: {}
-last_built: 2021-09-11T02:40Z
+articles:
+  measuring-sa: measuring-sa.html
+  spatial-me-models: spatial-me-models.html
+last_built: 2021-09-14T02:27Z
 urls:
   reference: https://connordonegan.github.io/geostan//reference
   article: https://connordonegan.github.io/geostan//articles

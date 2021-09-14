@@ -105,6 +105,21 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation with **geostan**</a>
+    </li>
+    <li>
+      <a href="../articles/spatial-me-models.html">Working with American Community Survey data in geostan</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -190,13 +205,13 @@
       <th>ME</th>
       <td><p>To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. The ME models are designed for American Community Survey (ACS) estimates, <code>x</code>, and their standard errors, <code>se</code> (Donegan, Chun and Griffith 2021). The ME models have one of the the following two specifications, depending on the user input:</p><pre>       x ~ Gauss(x_true, se)
        x_true ~ MVGauss(mu, Sigma)
-       Sigma = (I - rho * C)^(-1) M * sigma^2
+       Sigma = (I - rho * C)^(-1) M * tau^2
        mu ~ Gauss(0, 100)
        tau ~ student_t(10, 0, 40)
        rho ~ uniform(lower_bound, upper_bound)
 </pre>
 
-<p>where the covariance matrix, <code>Sigma</code>, has the conditional autoregressive specification. If <code>ME$car_parts</code> is not provided by the user, then a non-spatial model will be used instead:</p><pre>       <span class='va'>x</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='va'>x_true</span>, <span class='va'>se</span><span class='op'>)</span>
+<p>where the covariance matrix, <code>Sigma</code>, has the conditional autoregressive specification, and <code>tau</code> is the scale parameter. If <code>ME$car_parts</code> is not provided by the user, then a non-spatial model will be used instead:</p><pre>       <span class='va'>x</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='va'>x_true</span>, <span class='va'>se</span><span class='op'>)</span>
        <span class='va'>x_true</span> <span class='op'>~</span> <span class='fu'><a href='student_t.html'>student_t</a></span><span class='op'>(</span><span class='va'>df</span>, <span class='va'>mu</span>, <span class='va'>sigma</span><span class='op'>)</span>
        <span class='va'>df</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/Special.html'>gamma</a></span><span class='op'>(</span><span class='fl'>3</span>, <span class='fl'>0.2</span><span class='op'>)</span>
        <span class='va'>mu</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>100</span><span class='op'>)</span>
@@ -209,10 +224,10 @@
 
 <dt>bounds</dt><dd><p>An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to <code><a href='https://rdrr.io/r/base/c.html'>c(-Inf, Inf)</a></code> (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.</p></dd>
 
-<dt>prior</dt><dd><p>Optionally provide parameter values for the prior distributions of the measurement error model(s). The ME models contain a location parameter (mu) and a scale parameter (sigma), each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console. <br /> <br />The prior for the location parameter, mu, is Gaussian (the default being <code>Gauss(0, 100)</code>). You can alter this by providing a <code>data.frame</code> with columns named <code>location</code> and <code>scale</code>; provide values for each covariate in <code>se</code>. List the values in the same order as the columns of <code>se</code>. <br /> <br />The prior for the <code>scale</code> parameters is Student's t, and the default is <code>Student_t(10, 0, 40)</code>. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of <code>se</code>.<br /> <br />For example, if you are modeling two covariates with the ME models, you can add the priors for mu and sigma to an existing <code>ME</code> list like this:<pre><span class='va'>ME</span><span class='op'>$</span><span class='va'>prior</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>location <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>location <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>0</span><span class='op'>)</span>,
+<dt>prior</dt><dd><p>Optionally provide parameter values for the prior distributions of the measurement error model(s). The ME models contain a location parameter (mu) and a scale parameter (tau or sigma), each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console. <br /> <br />The prior for the location parameter, mu, is Gaussian (the default being <code>Gauss(0, 100)</code>). You can alter this by providing a <code>data.frame</code> with columns named <code>location</code> and <code>scale</code>; provide values for each covariate in <code>se</code>. List the values in the same order as the columns of <code>se</code>. <br /> <br />The prior for the <code>scale</code> parameters is Student's t, and the default is <code>Student_t(10, 0, 40)</code>. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of <code>se</code>.<br /> <br />For example, if you are modeling two covariates with the ME models, you can add the priors to an existing <code>ME</code> list like this:<pre><span class='va'>ME</span><span class='op'>$</span><span class='va'>prior</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>location <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>location <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>0</span><span class='op'>)</span>,
                                           scale <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>10</span>, <span class='fl'>10</span><span class='op'>)</span><span class='op'>)</span>,
                  scale <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>40</span>, <span class='fl'>40</span><span class='op'>)</span><span class='op'>)</span>
-</pre>Note that if a prior is provided, you must provide priors for both mu (location) and sigma (scale). <br /> <br />The CAR model also has a spatial autocorrelation parameter, <code>rho</code>, which is assigned a uniform prior distribution. You can set the boudaries of the prior with:<pre><span class='va'>ME</span><span class='op'>$</span><span class='va'>prior</span><span class='op'>$</span><span class='va'>car_rho</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>lower_bound</span>, <span class='va'>upper_bound</span><span class='op'>)</span>
+</pre>Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). <br /> <br />The CAR model also has a spatial autocorrelation parameter, <code>rho</code>, which is assigned a uniform prior distribution. You can set the boudaries of the prior with:<pre><span class='va'>ME</span><span class='op'>$</span><span class='va'>prior</span><span class='op'>$</span><span class='va'>car_rho</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>lower_bound</span>, <span class='va'>upper_bound</span><span class='op'>)</span>
 </pre>You must specify values that are within the permissible range of values for <code>rho</code>. This range is automatically printed to the console by <code><a href='prep_car_data.html'>prep_car_data</a></code>.</p></dd>
 
 <dt>car_parts</dt><dd><p>A list of data for the CAR model, as returned by <a href='prep_car_data.html'>prep_car_data</a>. If not provided, a non-spatial Student's t model will be used instead of the CAR model.</p></dd>
