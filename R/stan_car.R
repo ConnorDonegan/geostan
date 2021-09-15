@@ -69,7 +69,7 @@
 #' ```
 #' Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). \cr \cr
 #' 
-#' The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boudaries of the prior with:
+#' The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boundaries of the prior with:
 #' ```
 #' ME$prior$car_rho <- c(lower_bound, upper_bound)
 #' ```
@@ -83,7 +83,6 @@
 #' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{auto_gaussian()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}; if `family = gaussian()` is provided, it will automatically be converted to `auto_gaussian()`.
 #' 
-#' @param invert To calculate the log likelihood of the data, \code{log_lik}, with the auto-Gaussian model, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set \code{invert = FALSE}. Note, this is only used when \code{family = auto_gaussian()}. `log_lik` is required to calculate WAIC.
 #' 
 #' @param prior A named list of parameters for prior distributions. If not provided, the default prior distributions will be assigned and printed to the console. User-defined priors can be assigned to the following parameters:
 #' \describe{
@@ -302,11 +301,10 @@ stan_car <- function(formula,
                      car_parts,
                      ME = NULL,                     
                      family = gaussian(), 
-                     invert = TRUE, #!#
                      prior = NULL, 
                      centerx = FALSE,
                      prior_only = FALSE,
-                     chains = 5,
+                     chains = 4,
                      iter = 2e3,
                      refresh = 500,
                      pars = NULL,
@@ -435,7 +433,6 @@ stan_car <- function(formula,
         ## CAR [STOP] ----        
     )
     ## CAR DATA [START] --------
-    if (invert) car_parts$C <- as.matrix(car_parts$C) else car_parts$C <- matrix(1, 1, 1)
     standata <- c(standata, car_parts)
     # overwrites any user specified ME$car_parts
     if ( !is.null(ME) ) {
@@ -451,8 +448,7 @@ stan_car <- function(formula,
         standata$trials <- y[,1] + y[,2]
     }
     ## PARAMETERS TO KEEP, with CAR PARAMETERS [START] -------------            
-    pars <- c(pars, 'intercept', 'car_scale', 'car_rho', 'fitted')
-    if (invert) pars <- c(pars, 'log_lik')
+    pars <- c(pars, 'intercept', 'car_scale', 'car_rho', 'fitted', 'log_lik')
     if (family_int < 5) pars <- c(pars, 'phi') 
 ##    if (family_int == 5) pars <- c(pars, "trend")
     if (!intercept_only) pars <- c(pars, 'beta')

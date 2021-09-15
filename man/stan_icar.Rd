@@ -318,7 +318,7 @@ ggplot( st_as_sf(sentencing) ) +
 
 }
 \seealso{
-\link[geostan]{prep_icar_data}, \link[geostan]{shape2mat}, \link[geostan]{stan_car}, \link[geostan]{stan_esf}, \link[geostan]{stan_glm}
+\link[geostan]{shape2mat}, \link[geostan]{stan_car}, \link[geostan]{stan_esf}, \link[geostan]{stan_glm}, \link[geostan]{prep_icar_data}
 }
 \author{
 Connor Donegan, \email{Connor.Donegan@UTDallas.edu}

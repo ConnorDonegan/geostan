@@ -73,7 +73,7 @@
 #' ```
 #' Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). \cr \cr
 #' 
-#' The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boudaries of the prior with:
+#' The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boundaries of the prior with:
 #' ```
 #' ME$prior$car_rho <- c(lower_bound, upper_bound)
 #' ```
@@ -234,7 +234,7 @@
 #' 
 #' @author Connor Donegan, \email{Connor.Donegan@UTDallas.edu}
 #'
-#' @seealso \link[geostan]{prep_icar_data}, \link[geostan]{shape2mat}, \link[geostan]{stan_car}, \link[geostan]{stan_esf}, \link[geostan]{stan_glm}
+#' @seealso \link[geostan]{shape2mat}, \link[geostan]{stan_car}, \link[geostan]{stan_esf}, \link[geostan]{stan_glm}, \link[geostan]{prep_icar_data}
 #' 
 #' @source
 #'

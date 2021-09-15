@@ -113,10 +113,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation with **geostan**</a>
+      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation</a>
     </li>
     <li>
-      <a href="../articles/spatial-me-models.html">Working with American Community Survey data in geostan</a>
+      <a href="../articles/spatial-me-models.html">Working with American Community Survey data</a>
     </li>
   </ul>
 </li>
@@ -359,13 +359,13 @@
 </pre>
 
 <p>An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:</p><pre>                          <span class='va'>Y</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>Poisson</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='va'>offset</span> <span class='op'>+</span> <span class='va'>Mu</span><span class='op'>)</span><span class='op'>)</span>
-                          <span class='va'>Mu</span> <span class='op'>=</span> <span class='va'>alpha</span> <span class='op'>+</span> <span class='va'>A</span> <span class='op'>+</span> <span class='va'>EV</span> <span class='op'>*</span> <span class='va'>beta_ev</span>
+                          <span class='va'>Mu</span> <span class='op'>=</span> <span class='va'>alpha</span> <span class='op'>+</span> <span class='va'>EV</span> <span class='op'>*</span> <span class='va'>beta_ev</span> <span class='op'>+</span> <span class='va'>A</span>
                           <span class='va'>A</span> <span class='op'>~</span> <span class='fu'>Guass</span><span class='op'>(</span><span class='fl'>0</span>, <span class='va'>tau</span><span class='op'>)</span>
                           <span class='va'>tau</span> <span class='op'>~</span> <span class='fu'>student</span><span class='op'>(</span><span class='fl'>20</span>, <span class='fl'>0</span>, <span class='fl'>2</span><span class='op'>)</span>
                           <span class='va'>beta_ev</span> <span class='op'>~</span> <span class='fu'>horseshoe</span><span class='op'>(</span><span class='va'>.</span><span class='op'>)</span>
 </pre>
 
-<p>The <a href='print.geostan_fit.html'>spatial</a> method will return <code>EV * beta</code>.</p>
+<p>The <code><a href='print.geostan_fit.html'>spatial.geostan_fit</a></code> method will return <code>EV * beta</code>.</p>
 <p>The model can also be extended to the space-time domain; see <a href='shape2mat.html'>shape2mat</a> to specify a space-time connectivity matrix.</p>
 <p>The coefficients <code>beta_ev</code> are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the <code>threshold</code> argument). By default, <code>stan_esf</code> will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the <code>nsa</code> argument.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>

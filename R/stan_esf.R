@@ -76,7 +76,7 @@
 #' ```
 #' Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). \cr \cr
 #' 
-#' The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boudaries of the prior with:
+#' The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boundaries of the prior with:
 #' ```
 #' ME$prior$car_rho <- c(lower_bound, upper_bound)
 #' ```
@@ -135,9 +135,9 @@
 #' @param ... Other arguments passed to \link[rstan]{sampling}. 
 #' @details
 #'
-#' Eigenvector spatial filtering (ESF) is a method for spatial regression analysis. ESF is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), which uses Piironen and Vehtari's (2017) regularized horseshoe prior.
+#' Eigenvector spatial filtering (ESF) is a method for spatial regression analysis. ESF is extensively covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), which uses Piironen and Vehtari's (2017) regularized horseshoe prior.
 #'
-#' ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \code{C}. The resulting eigenvectors, `EV`, are mutually orthogonal and uncorrelated map patterns. ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. The spatail filter is `EV * beta_ev`, where `beta_ev` is a vector of coefficients.
+#' ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \code{C}. The resulting eigenvectors, `EV`, are mutually orthogonal and uncorrelated map patterns. ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. The spatial filter is `EV * beta_ev`, where `beta_ev` is a vector of coefficients.
 #'
 #' ESF decomposes the data into a global mean, `alpha`, global patterns contributed by covariates, `X * beta`, spatial trends, `EV * beta_ev`, and residual variation. Thus, for `family=gaussian()`,
 #' 
@@ -147,13 +147,13 @@
 #' An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:
 #' ```
 #'                           Y ~ Poisson(exp(offset + Mu))
-#'                           Mu = alpha + A + EV * beta_ev
+#'                           Mu = alpha + EV * beta_ev + A
 #'                           A ~ Guass(0, tau)
 #'                           tau ~ student(20, 0, 2)
 #'                           beta_ev ~ horseshoe(.)
 #' ```
 #' 
-#' The \link[geostan]{spatial} method will return `EV * beta`.
+#' The \code{\link[geostan]{spatial.geostan_fit}} method will return `EV * beta`.
 #'
 #' The model can also be extended to the space-time domain; see \link[geostan]{shape2mat} to specify a space-time connectivity matrix. 
 #' 

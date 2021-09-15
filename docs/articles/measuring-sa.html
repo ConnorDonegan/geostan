@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Measuring and visualizaing spatial autocorrelation with **geostan** • geostan</title>
+<title>Measuring and visualizaing spatial autocorrelation • geostan</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -17,7 +17,7 @@
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="../pkgdown.css" rel="stylesheet">
-<script src="../pkgdown.js"></script><meta property="og:title" content="Measuring and visualizaing spatial autocorrelation with **geostan**">
+<script src="../pkgdown.js"></script><meta property="og:title" content="Measuring and visualizaing spatial autocorrelation">
 <meta property="og:description" content="geostan">
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -67,10 +67,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation with **geostan**</a>
+      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation</a>
     </li>
     <li>
-      <a href="../articles/spatial-me-models.html">Working with American Community Survey data in geostan</a>
+      <a href="../articles/spatial-me-models.html">Working with American Community Survey data</a>
     </li>
   </ul>
 </li>
@@ -95,8 +95,7 @@
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Measuring and visualizaing spatial autocorrelation with <strong>geostan</strong>
-</h1>
+      <h1 data-toc-skip>Measuring and visualizaing spatial autocorrelation</h1>
                         <h4 class="author">Connor Donegan</h4>
             
             <h4 class="date">September 13, 2021</h4>
@@ -127,7 +126,8 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="va">georgia</span>, name <span class="op">=</span> <span class="st">"College (%)"</span><span class="op">)</span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;"></p>
-<p>The map shows that the contrast between the greater Atlanta metropolitan area and the rural counties is the predominant spatial pattern. Because the population is highly concentrated around metropolitan Atlanta, it helps to compare the mean of the variable (which is just 18%):</p>
+<p>The Moran plot is a visualization of the degree of spatial autocorrelation (SA): on the horizontal axis are the <code>college</code> estimates while the vertical axis represents the mean neighboring value. The Moran coefficient, an index of SA, is printed at the top (MC=0.42) <span class="citation">(Chun and Griffith <a href="#ref-chun_2013">2013</a>)</span>.</p>
+<p>The map shows that the contrast between the greater Atlanta metropolitan area and the rural counties is a prominent, if not the predominant, spatial pattern. It may help to compare the mean of the variable (which is just 18%):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span><span class="op">)</span>
 <span class="co">#&gt; [1] 18.1956</span></code></pre></div>
@@ -135,7 +135,6 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/stats/weighted.mean.html">weighted.mean</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, w <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">population</span><span class="op">)</span>
 <span class="co">#&gt; [1] 30.66856</span></code></pre></div>
-<p>The Moran plot is a visualization of the degree of spatial autocorrelation (SA): on the horizontal axis are the <code>college</code> estimates while the vertical axis represents the mean neighboring value. The Moran coefficient, an index of SA, is printed at the top (MC=0.42) <span class="citation">(Chun and Griffith <a href="#ref-chun_2013">2013</a>)</span>.</p>
 </div>
 <div id="understanding-the-moran-scatter-plot" class="section level2">
 <h2 class="hasAnchor">
@@ -187,7 +186,7 @@
 <a href="#local-indicators-of-spatial-association" class="anchor"></a>Local Indicators of Spatial Association</h2>
 <p>The <code>lisa</code> function calculates “local indicators of spatial association” <span class="citation">(Anselin <a href="#ref-anselin_1995">1995</a>)</span>. LISA values are closely related to the Moran plot. If instead of centering <code>college</code>, we had converted it to z-scores by both centering and dividing by the standard deviation of <code>college</code>, the LISA value would be equal to the product of the z-scores and their spatial lag, <span class="math inline">\(L_i = z_i * \tilde{z}_i\)</span>. The <code>lisa</code> function returns the LISA values and indicates which quadrant of the Moran plot the point is found:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">Li</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lisa.html">lisa</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="va">C</span>, type <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">Li</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lisa.html">lisa</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="va">C</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">Li</span><span class="op">)</span>
 <span class="co">#&gt;            Li type</span>
 <span class="co">#&gt; 1  0.17326473   LL</span>
@@ -213,7 +212,7 @@
 <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>nominal_n <span class="op">=</span> <span class="va">n</span>, rho <span class="op">=</span> <span class="va">rho</span>, ESS <span class="op">=</span> <span class="va">ess</span><span class="op">)</span>
 <span class="co">#&gt; nominal_n       rho       ESS </span>
 <span class="co">#&gt; 159.00000   0.71800  21.69292</span></code></pre></div>
-<p>This tells us that, given the degree of SA in the ICE estimates, our nominal sample size of 159 observations has about the same information content as 22 independent observations. This should provide some idea as to why it is so perilous to use conventional (non-spatial) statistical methods with spatial data. The odds of observing a strong correlation between any arbitrary pair of spatially patterned variables tend to be far greater than conventional methods report. Returning to our qualitative assessment of the map patterns, it should be clear enough that any variable showing a general metropolitan-rural pattern is liable to appear correlated with the ICE.</p>
+<p>This tells us that, given the degree of SA in the ICE estimates, our nominal sample size of 159 observations has about the same information content as 22 independent observations. This should provide some idea as to why it is so perilous to use conventional (non-spatial) statistical methods with spatial data. The odds of observing a strong correlation between any arbitrary pair of spatially patterned variables can be far greater than conventional methods report. Returning to our qualitative assessment of the map patterns, it should be clear enough that any variable showing a general metropolitan-rural pattern is liable to appear correlated with the ICE.</p>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2 class="hasAnchor">

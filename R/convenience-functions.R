@@ -271,7 +271,7 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
 #'
 #' An above-average value (i.e. positive z-value) with positive mean spatial lag indicates local positive spatial autocorrelation and is designated type "High-High"; a low value surrounded by high values indicates negative spatial autocorrelation and is designated type "Low-High", and so on.
 #' 
-#' @return If \code{type = FALSE} a numeric vector of lisa values for exploratory analysis of local spatial autocorrelation. If \code{type = TRUE}, a \code{data.frame} with columns \code{zi} (the lisa value) and \code{type}.
+#' @return If \code{type = FALSE} a numeric vector of lisa values for exploratory analysis of local spatial autocorrelation. If \code{type = TRUE}, a \code{data.frame} with columns \code{Li} (the lisa value) and \code{type}.
 #'
 #' @seealso \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{aple}}
 #'
@@ -327,15 +327,14 @@ lisa <- function(x, w, type = TRUE) {
 #' 
 #' @param binwidth A function with a single argument that will be passed to the `binwidth` argument in \code{\link[ggplot2]{geom_histogram}}. The default is to set the width of bins to `0.5 * sd(x)`.
 #'
-#' @param ... Additional arguments passed to \code{\link[geostan]{residuals.geostan_fit}}. For binomail and Poisson models, this includes the option to view the outcome variable as a rate (the default) rather than a count; for \code{\link[geostan]{stan_car}} models with auto-Gaussian likelihood (`fit$family$family = "auto_gaussian"), the residuals will be detrended by default, but this can be changed using `detrend = FALSE`.
+#' @param ... Additional arguments passed to \code{\link[geostan]{residuals.geostan_fit}}. For binomial and Poisson models, this includes the option to view the outcome variable as a rate (the default) rather than a count; for \code{\link[geostan]{stan_car}} models with auto-Gaussian likelihood (`fit$family$family = "auto_gaussian"), the residuals will be detrended by default, but this can be changed using `detrend = FALSE`.
 #' 
-#' @return A grid of spatial diagnostic plots. When provided with a numberic vector, this function plots a histogram, Moran scatter plot, and map. When provided with a fitted `geostan` model, the function returns a histogram of residuals, a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals, and a map of the mean posterior residuals (means of the marginal distributions).
+#' @return A grid of spatial diagnostic plots. When provided with a numeric vector, this function plots a histogram, Moran scatter plot, and map. When provided with a fitted `geostan` model, the function returns a histogram of residuals, a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals, and a map of the mean posterior residuals (means of the marginal distributions).
 #'
 #' If `plot = TRUE`, the `ggplots` are drawn using \code{\link[gridExtra]{grid.arrange}}; otherwise, they are returned in a list. For the `geostan_fit` method, the underlying data for the Moran coefficient will also be returned if `plot = FALSE`.
 #'
 #' @seealso \code{\link[geostan]{me_diag}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{aple}}
 #' 
-#' @export
 #'
 #' @examples
 #' data(georgia)
@@ -355,7 +354,8 @@ lisa <- function(x, w, type = TRUE) {
 #' }
 #'
 #' @importFrom stats sd
-#' 
+#' @export
+#' @md
 sp_diag <- function(y,
                    shape,
                    name = "y",
@@ -370,7 +370,8 @@ sp_diag <- function(y,
 }
 
 #' @export
-#' @param fit A fitted `geostan` model (class `geostan_fit`).
+#' @md
+#' @param y A fitted `geostan` model (class `geostan_fit`).
 #' @method sp_diag geostan_fit
 #' @rdname sp_diag
 #' @importFrom sf st_as_sf
@@ -378,7 +379,7 @@ sp_diag <- function(y,
 #' @importFrom signs signs
 #' @importFrom stats sd
 #' @import ggplot2
-sp_diag.geostan_fit <- function(fit,
+sp_diag.geostan_fit <- function(y,
                             shape,
                             name = "Residual",
                             plot = TRUE,
@@ -386,7 +387,7 @@ sp_diag.geostan_fit <- function(fit,
                             w = shape2mat(shape, match.arg(style)),
                             binwidth = function(x) 0.5 * stats::sd(x),
                             ...) {
-    marginal_residual <- residuals(fit, summary = TRUE, ...)$mean
+    marginal_residual <- residuals(y, summary = TRUE, ...)$mean
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
     hist.y <- ggplot() +
         geom_histogram(aes(marginal_residual),                       
@@ -396,15 +397,14 @@ sp_diag.geostan_fit <- function(fit,
         scale_x_continuous(labels = signs::signs) +
         theme_classic() +
         labs(x = name)
-    shape$MR <- marginal_residual
     map.y <- ggplot(shape) +
-        geom_sf(aes(fill = MR),
+        geom_sf(aes(fill = marginal_residual),
                 lwd = 0.05,
                 col = "gray20") +
         scale_fill_gradient2(name = name,
                              label = signs::signs) +
         theme_void()   
-    R <- residuals(fit, summary = FALSE)
+    R <- residuals(y, summary = FALSE)
     R.mc <- apply(R, 1, mc, w = w)
     if (length(unique(R.mc)) == 1) {
         g.mc <- moran_plot(R[1,], w, xlab = name)
@@ -476,7 +476,7 @@ sp_diag.numeric <- function(y,
 #' 
 #' @param fit A \code{geostan_fit} model object as returned from a call to one of the \code{geostan::stan_*} functions.
 #' @param varname Name of the modeled variable (a character string, as it appears in the model formula).
-#' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
+#' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf}.
 #' @param probs Lower and upper quantiles of the credible interval to plot. 
 #' @param plot If \code{FALSE}, return a list of \code{ggplot}s and a \code{data.frame} with the raw data values alongside a posterior summary of the modeled variable.
 #' @param size Size of points and lines, passed to \code{geom_pointrange}.
@@ -487,7 +487,7 @@ sp_diag.numeric <- function(y,
 #'
 #' @param binwidth A function with a single argument that will be passed to the `binwidth` argument in \code{\link[ggplot2]{geom_histogram}}. The default is to set the width of bins to `0.5 * sd(x)`.
 #' 
-#' @return A grid of spatial diagnostic plots for measurement error models comparing the raw observations to the posterior distribution of the true values (given the specified observations, standard errors, and model). A histogram of Moran coefficient values for the posterior distribution of Delta values: `delta_i = z_i - x_i`, where `z_i` is the survey estimate and `x_i` is the modeled true value. The map depict the posterior mean of the Delta values. (That is, the histogram is from the joint distribution of Delta; the map shows means from the marginal distributions.)
+#' @return A grid of spatial diagnostic plots for measurement error models comparing the raw observations to the posterior distribution of the true values. Includes a point-interval plot, a histogram of Moran coefficient values for the posterior distribution of Delta values (`Delta = z - x`, where `z` are the survey estimates and `x` are the modeled true values), and a map of the posterior mean of the Delta values. 
 #'
 #' @seealso \code{\link[geostan]{sp_diag}}, \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{aple}}
 #' 
@@ -524,6 +524,7 @@ sp_diag.numeric <- function(y,
 #' }
 #'
 #' @export
+#' @md
 #' @importFrom sf st_as_sf
 #' @importFrom gridExtra grid.arrange
 #' @importFrom signs signs
@@ -632,11 +633,10 @@ me_diag <- function(fit,
     if (plot) {
         return (gridExtra::grid.arrange(g.points, g.mc, map.delta, ncol = 3))
     } else {
-        res.list <- list(points = g.points, moran_plot = g.mc, map = map.delta, data = df)
+        res.list <- list(point_interval = g.points, mc_plot = g.mc, delta_map = map.delta, delta_data = df, mc_data = D.mc)
         return(res.list)
     }
 }
-
 
 #' Extract eigenfunctions of a connectivity matrix for spatial filtering
 #'

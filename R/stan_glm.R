@@ -68,7 +68,7 @@
 #' ```
 #' Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). \cr \cr
 #' 
-#' The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boudaries of the prior with:
+#' The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boundaries of the prior with:
 #' ```
 #' ME$prior$car_rho <- c(lower_bound, upper_bound)
 #' ```
@@ -135,7 +135,7 @@
 #'                           A ~ Guass(0, tau)
 #'                           tau ~ student(20, 0, 2),
 #' ```
-#' where `alpha` is the mean log-risk (incidence rate) and `A` is a vector of (so-called) random effects, which enable partial pooling of information across observations. See the example section of this documenet for a demonstration. 
+#' where `alpha` is the mean log-risk (incidence rate) and `A` is a vector of (so-called) random effects, which enable partial pooling of information across observations. See the example section of this document for a demonstration. 
 #'
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 

@@ -113,10 +113,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation with **geostan**</a>
+      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation</a>
     </li>
     <li>
-      <a href="../articles/spatial-me-models.html">Working with American Community Survey data in geostan</a>
+      <a href="../articles/spatial-me-models.html">Working with American Community Survey data</a>
     </li>
   </ul>
 </li>
@@ -176,7 +176,7 @@
     </tr>
     <tr>
       <th>shape</th>
-      <td><p>An object of class <code>sf</code> or another spatial object coercible to <code>sf</code> with <code><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>sf::st_as_sf</a></code> such as <code>SpatialPolygonsDataFrame</code>.</p></td>
+      <td><p>An object of class <code>sf</code> or another spatial object coercible to <code>sf</code> with <code><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>sf::st_as_sf</a></code>.</p></td>
     </tr>
     <tr>
       <th>probs</th>
@@ -192,11 +192,11 @@
     </tr>
     <tr>
       <th>index</th>
-      <td><p>Integer value; use this if you wish to identify observations with the largest `n=index` absolute Delta values; data on the top `n=index` observations ordered by absolute Delta value will be printed to the console and the plots will be labeled with the indices of the identified observations.</p></td>
+      <td><p>Integer value; use this if you wish to identify observations with the largest <code>n=index</code> absolute Delta values; data on the top <code>n=index</code> observations ordered by absolute Delta value will be printed to the console and the plots will be labeled with the indices of the identified observations.</p></td>
     </tr>
     <tr>
       <th>style</th>
-      <td><p>Style of connectivity matrix; if `w` is not provided, `style` is passed to <code><a href='shape2mat.html'>shape2mat</a></code> and defaults to "W" for row-standardized.</p></td>
+      <td><p>Style of connectivity matrix; if <code>w</code> is not provided, <code>style</code> is passed to <code><a href='shape2mat.html'>shape2mat</a></code> and defaults to "W" for row-standardized.</p></td>
     </tr>
     <tr>
       <th>w</th>
@@ -204,16 +204,16 @@
     </tr>
     <tr>
       <th>binwidth</th>
-      <td><p>A function with a single argument that will be passed to the `binwidth` argument in <code><a href='https://ggplot2.tidyverse.org/reference/geom_histogram.html'>geom_histogram</a></code>. The default is to set the width of bins to `0.5 * sd(x)`.</p></td>
+      <td><p>A function with a single argument that will be passed to the <code>binwidth</code> argument in <code><a href='https://ggplot2.tidyverse.org/reference/geom_histogram.html'>geom_histogram</a></code>. The default is to set the width of bins to <code>0.5 * sd(x)</code>.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
 
-    <p>Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). ``Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure.'' *Int. J. Env. Res. and Public Health* 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: <a href='https://github.com/ConnorDonegan/survey-HBM'>https://github.com/ConnorDonegan/survey-HBM</a>.</p>
+    <p>Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). ``Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure.'' <em>Int. J. Env. Res. and Public Health</em> 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: <a href='https://github.com/ConnorDonegan/survey-HBM'>https://github.com/ConnorDonegan/survey-HBM</a>.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A grid of spatial diagnostic plots for measurement error models comparing the raw observations to the posterior distribution of the true values (given the specified observations, standard errors, and model). A histogram of Moran coefficient values for the posterior distribution of Delta values: `delta_i = z_i - x_i`, where `z_i` is the survey estimate and `x_i` is the modeled true value. The map depict the posterior mean of the Delta values. (That is, the histogram is from the joint distribution of Delta; the map shows means from the marginal distributions.)</p>
+    <p>A grid of spatial diagnostic plots for measurement error models comparing the raw observations to the posterior distribution of the true values. Includes a point-interval plot, a histogram of Moran coefficient values for the posterior distribution of Delta values (<code>Delta = z - x</code>, where <code>z</code> are the survey estimates and <code>x</code> are the modeled true values), and a map of the posterior mean of the Delta values.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='sp_diag.html'>sp_diag</a></code>, <code><a href='moran_plot.html'>moran_plot</a></code>, <code><a href='mc.html'>mc</a></code>, <code><a href='aple.html'>aple</a></code></p></div>

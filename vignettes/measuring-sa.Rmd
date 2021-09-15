@@ -1,5 +1,5 @@
 ---
-title: "Measuring and visualizaing spatial autocorrelation with **geostan**"
+title: "Measuring and visualizing spatial autocorrelation"
 author: Connor Donegan
 date: September 13, 2021
 output: 
@@ -8,7 +8,7 @@ output:
 header-includes:
    - \usepackage{amsmath}
 vignette: >
-  %\VignetteIndexEntry{Measuring and visualizaing spatial autocorrelation with **geostan**}
+  %\VignetteIndexEntry{Measuring and visualizaing spatial autocorrelation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: bib.bib
@@ -48,7 +48,9 @@ If we pass these estimates and the simple features object to `sp_diag` function,
 sp_diag(georgia$college, georgia, name = "College (%)")
 ```
 
-The map shows that the contrast between the greater Atlanta metropolitan area and the rural counties is the predominant spatial pattern. Because the population is highly concentrated around metropolitan Atlanta, it helps to compare the mean of the variable (which is just 18%):
+The Moran plot is a visualization of the degree of spatial autocorrelation (SA): on the horizontal axis are the `college` estimates while the vertical axis represents the mean neighboring value. The Moran coefficient, an index of SA, is printed at the top (MC=0.42) [@chun_2013]. 
+
+The map shows that the contrast between the greater Atlanta metropolitan area and the rural counties is a prominent, if not the predominant, spatial pattern. It may help to compare the mean of the variable (which is just 18%):
 
 ```{r}
 mean(georgia$college)
@@ -57,8 +59,6 @@ with a population-weighted mean (30%):
 ```{r}
 weighted.mean(georgia$college, w = georgia$population)
 ```
-
-The Moran plot is a visualization of the degree of spatial autocorrelation (SA): on the horizontal axis are the `college` estimates while the vertical axis represents the mean neighboring value. The Moran coefficient, an index of SA, is printed at the top (MC=0.42) [@chun_2013]. 
 
 ## Understanding the Moran scatter plot
 
@@ -108,10 +108,10 @@ The quadrants of the Moran plot are helpful for classifying observations. The fi
 The `lisa` function calculates "local indicators of spatial association" [@anselin_1995]. LISA values are closely related to the Moran plot. If instead of centering `college`, we had converted it to z-scores by both centering and dividing by the standard deviation of `college`, the LISA value would be equal to the product of the z-scores and their spatial lag, $L_i = z_i * \tilde{z}_i$. The `lisa` function returns the LISA values and indicates which quadrant of the Moran plot the point is found:
 
 ```{r}
-Li <- lisa(georgia$college, C, type = TRUE)
+Li <- lisa(georgia$college, C)
 head(Li)
 ```
-"HH" indicates a high value surrounded by high values; "LL" is a low surrounded by low values, and so on. LISA's can be particularly helpful for identifying observations that don't conform to the expectation of positive spatial autocorrelation, which is embedded in many models. Its worth nothing that each of the LISA values (also known as local Moran's I) contribute to the Moran coefficient:
+"HH" indicates a high value surrounded by high values; "LL" is a low surrounded by low values, and so on. LISAs can be particularly helpful for identifying observations that don't conform to the expectation of positive spatial autocorrelation, which is embedded in many models. Its worth nothing that each of the LISA values (also known as local Moran's I) contribute to the Moran coefficient:
 ```{r}
 c(mc(georgia$college, C), mean(Li$Li))
 ```
@@ -128,7 +128,7 @@ n <- nrow(georgia)
 ess <- n_eff(rho = rho, n = n)
 c(nominal_n = n, rho = rho, ESS = ess)
 ```
-This tells us that, given the degree of SA in the ICE estimates, our nominal sample size of 159 observations has about the same information content as 22 independent observations. This should provide some idea as to why it is so perilous to use conventional (non-spatial) statistical methods with spatial data. The odds of observing a strong correlation between any arbitrary pair of spatially patterned variables tend to be far greater than conventional methods report. Returning to our qualitative assessment of the map patterns, it should be clear enough that any variable showing a general metropolitan-rural pattern is liable to appear correlated with the ICE.
+This tells us that, given the degree of SA in the ICE estimates, our nominal sample size of 159 observations has about the same information content as 22 independent observations. This should provide some idea as to why it is so perilous to use conventional (non-spatial) statistical methods with spatial data. The odds of observing a strong correlation between any arbitrary pair of spatially patterned variables can be far greater than conventional methods report. Returning to our qualitative assessment of the map patterns, it should be clear enough that any variable showing a general metropolitan-rural pattern is liable to appear correlated with the ICE.
  
 
 ## References

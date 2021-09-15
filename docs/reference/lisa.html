@@ -113,10 +113,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation with **geostan**</a>
+      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation</a>
     </li>
     <li>
-      <a href="../articles/spatial-me-models.html">Working with American Community Survey data in geostan</a>
+      <a href="../articles/spatial-me-models.html">Working with American Community Survey data</a>
     </li>
   </ul>
 </li>
@@ -174,7 +174,7 @@
     <p>Anselin, Luc. "Local indicators of spatial association—LISA." Geographical Analysis 27, no. 2 (1995): 93-115.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>If <code>type = FALSE</code> a numeric vector of lisa values for exploratory analysis of local spatial autocorrelation. If <code>type = TRUE</code>, a <code>data.frame</code> with columns <code>zi</code> (the lisa value) and <code>type</code>.</p>
+    <p>If <code>type = FALSE</code> a numeric vector of lisa values for exploratory analysis of local spatial autocorrelation. If <code>type = TRUE</code>, a <code>data.frame</code> with columns <code>Li</code> (the lisa value) and <code>type</code>.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>The values will be standardized with <code>z = scale(x)</code> first and <code>w</code> will be row-standardized if needed. The LISA values are the product of each <code>z</code> value with their respective mean surrounding value <code>lagz = w %*% z</code>; <code>lisa = z * lagz</code>. These are for exploratory analysis and model diagnostics. The function uses Equation 7 from Anselin (1995).</p>

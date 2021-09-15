@@ -24,7 +24,7 @@
 #'  \item{hisp}{Percent Hispanic/Latino, ACS 2018 five-year estimate}
 #'  \item{ai}{Percent American Indian, ACS 2018 five-year estimate}
 #'  \item{deaths.male}{Male deaths, 55-64 yo, 2014-2018}
-#'  \item{pop.at.risk.male}{Population estimate, males, 55-64 yo, years 2014-2018 (total), ACS 2018 five-year estimtae}
+#'  \item{pop.at.risk.male}{Population estimate, males, 55-64 yo, years 2014-2018 (total), ACS 2018 five-year estimate}
 #'  \item{pop.at.risk.male.se}{Standard error of the pop.at.risk.male estimate}
 #'  \item{deaths.female}{Female deaths, 55-64 yo, 2014-2018}
 #'  \item{pop.at.risk.female}{Population estimate, females, 55-64 yo, years 2014-2018 (total), ACS 2018 five-year estimate}

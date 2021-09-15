@@ -113,10 +113,10 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation with **geostan**</a>
+      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation</a>
     </li>
     <li>
-      <a href="../articles/spatial-me-models.html">Working with American Community Survey data in geostan</a>
+      <a href="../articles/spatial-me-models.html">Working with American Community Survey data</a>
     </li>
   </ul>
 </li>
@@ -206,7 +206,7 @@
     </tr>
     <tr>
       <th>style</th>
-      <td><p>Style of connectivity matrix; if `w` is not provided, `style` is passed to <code><a href='shape2mat.html'>shape2mat</a></code> and defaults to "W" for row-standardized.</p></td>
+      <td><p>Style of connectivity matrix; if <code>w</code> is not provided, <code>style</code> is passed to <code><a href='shape2mat.html'>shape2mat</a></code> and defaults to "W" for row-standardized.</p></td>
     </tr>
     <tr>
       <th>w</th>
@@ -214,22 +214,22 @@
     </tr>
     <tr>
       <th>binwidth</th>
-      <td><p>A function with a single argument that will be passed to the `binwidth` argument in <code><a href='https://ggplot2.tidyverse.org/reference/geom_histogram.html'>geom_histogram</a></code>. The default is to set the width of bins to `0.5 * sd(x)`.</p></td>
+      <td><p>A function with a single argument that will be passed to the <code>binwidth</code> argument in <code><a href='https://ggplot2.tidyverse.org/reference/geom_histogram.html'>geom_histogram</a></code>. The default is to set the width of bins to <code>0.5 * sd(x)</code>.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Additional arguments passed to <code><a href='print.geostan_fit.html'>residuals.geostan_fit</a></code>. For binomail and Poisson models, this includes the option to view the outcome variable as a rate (the default) rather than a count; for <code><a href='stan_car.html'>stan_car</a></code> models with auto-Gaussian likelihood (`fit$family$family = "auto_gaussian"), the residuals will be detrended by default, but this can be changed using `detrend = FALSE`.</p></td>
+      <td><p>Additional arguments passed to <code><a href='print.geostan_fit.html'>residuals.geostan_fit</a></code>. For binomail and Poisson models, this includes the option to view the outcome variable as a rate (the default) rather than a count; for <code><a href='stan_car.html'>stan_car</a></code> models with auto-Gaussian likelihood (<code>fit$family$family = "auto_gaussian"), the residuals will be detrended by default, but this can be changed using </code>detrend = FALSE`.</p></td>
     </tr>
     <tr>
       <th>fit</th>
-      <td><p>A fitted `geostan` model (class `geostan_fit`).</p></td>
+      <td><p>A fitted <code>geostan</code> model (class <code>geostan_fit</code>).</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A grid of spatial diagnostic plots. When provided with a numberic vector, this function plots a histogram, Moran scatter plot, and map. When provided with a fitted `geostan` model, the function returns a histogram of residuals, a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals, and a map of the mean posterior residuals (means of the marginal distributions).</p>
-<p>If `plot = TRUE`, the `ggplots` are drawn using <code><a href='https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html'>grid.arrange</a></code>; otherwise, they are returned in a list. For the `geostan_fit` method, the underlying data for the Moran coefficient will also be returned if `plot = FALSE`.</p>
+    <p>A grid of spatial diagnostic plots. When provided with a numeric vector, this function plots a histogram, Moran scatter plot, and map. When provided with a fitted <code>geostan</code> model, the function returns a histogram of residuals, a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals, and a map of the mean posterior residuals (means of the marginal distributions).</p>
+<p>If <code>plot = TRUE</code>, the <code>ggplots</code> are drawn using <code><a href='https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html'>grid.arrange</a></code>; otherwise, they are returned in a list. For the <code>geostan_fit</code> method, the underlying data for the Moran coefficient will also be returned if <code>plot = FALSE</code>.</p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><code><a href='me_diag.html'>me_diag</a></code>, <code><a href='mc.html'>mc</a></code>, <code><a href='moran_plot.html'>moran_plot</a></code>, <code><a href='aple.html'>aple</a></code></p></div>

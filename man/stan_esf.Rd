@@ -200,13 +200,13 @@ ESF decomposes the data into a global mean, \code{alpha}, global patterns contri
 }
 
 An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:\preformatted{                          Y ~ Poisson(exp(offset + Mu))
-                          Mu = alpha + A + EV * beta_ev
+                          Mu = alpha + EV * beta_ev + A
                           A ~ Guass(0, tau)
                           tau ~ student(20, 0, 2)
                           beta_ev ~ horseshoe(.)
 }
 
-The \link[geostan]{spatial} method will return \code{EV * beta}.
+The \code{\link[geostan]{spatial.geostan_fit}} method will return \code{EV * beta}.
 
 The model can also be extended to the space-time domain; see \link[geostan]{shape2mat} to specify a space-time connectivity matrix.
 

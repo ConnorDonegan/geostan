@@ -52,8 +52,9 @@ parameters {
 
 transformed parameters {
   // ESF
-  vector[dev] beta_ev;  
-  real error_scale[dev ? 1 : 0];
+  vector[dev] beta_ev;
+  vector[dev ? n : 0] esf;  
+  real error_scale[dev ? 1 : 0];  
   // ICAR
   vector[type ? n : 0] phi;
   vector[type > 1 ? n : 0] theta;
@@ -85,7 +86,8 @@ transformed parameters {
       error_scale[1] = 1;
     }
     beta_ev = rhs_prior(dev, z, aux1_global[1], aux2_global[1], aux1_local, aux2_local, caux[1], scale_global, slab_scale, error_scale[1]);
-  fitted += EV * beta_ev;
+    esf = EV * beta_ev;
+    fitted += esf;
   }
 #include parts/trans_params_expression.stan
 }
@@ -116,10 +118,8 @@ model {
 }
 
 generated quantities {
-  vector[dev ? n : 0] esf;
 #include parts/gen_quants_declaration.stan
   for (i in 1:n) {
-    if (dev) esf[i] = EV[i] * beta_ev;
 #include parts/gen_quants_expression_in_loop.stan      
   }
 }

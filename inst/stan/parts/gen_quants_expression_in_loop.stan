@@ -9,5 +9,4 @@
   }
   if (is_binomial) {
      log_lik[i] = binomial_lpmf(y_int[i] | trials[i], fitted[i]); 
-  }  
-
+  }

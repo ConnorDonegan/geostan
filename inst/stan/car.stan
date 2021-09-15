@@ -4,9 +4,7 @@ functions {
 
 data {
 #include parts/data.stan
-  int<lower=0, upper=1> invert;
   real car_rho_lims[2];
-  matrix<lower=0>[invert ? n : 1, invert ? n : 1] C;  
 }
 
 transformed data {
@@ -75,16 +73,20 @@ model {
 }
 
 generated quantities {
-  matrix[invert ? n : 0, invert ? n : 0] S;
   vector[is_auto_gaussian ? 0 : n] phi;
 #include parts/gen_quants_declaration.stan
-  if (!is_auto_gaussian) phi = log_lambda - log_lambda_mu;  
+  if (is_auto_gaussian) {
+    log_lik[1] = auto_normal_lpdf(y |
+				  fitted, car_scale, car_rho,
+				  Ax_w, Ax_v, Ax_u,
+				  Cidx,
+				  Delta_inv, log_det_Delta_inv,
+				  lambda, n, WCAR);    
+  }   else {
+    phi = log_lambda - log_lambda_mu;
+  }
   for (i in 1:n) {
 #include parts/gen_quants_expression_in_loop.stan
   }
-  if (invert * is_auto_gaussian) {
-    S = car_scale^2 * diag_post_multiply(inverse(diag_matrix(rep_vector(1, n)) - car_rho * C), 1.0 ./ Delta_inv);      
-    log_lik[1] = multi_normal_lpdf(y | fitted, S);
-  } 
 }
 
