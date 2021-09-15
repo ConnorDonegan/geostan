@@ -31,6 +31,8 @@
   //  priors for x_true 
   vector[dx_me] prior_mux_true_location;
   vector[dx_me] prior_mux_true_scale;
+  vector[dx_me] prior_sigmax_true_df;
+  vector[dx_me] prior_sigmax_true_location;
   vector[dx_me] prior_sigmax_true_scale;
   real ME_prior_car_rho[2];
   // data for auto-Guassian [ME] models

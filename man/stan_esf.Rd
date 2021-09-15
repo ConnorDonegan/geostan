@@ -98,11 +98,13 @@ The target of inference is \code{x_true}, the actual values of the covariate dur
 
 The prior for the location parameter, mu, is Gaussian (the default being \code{Gauss(0, 100)}). You can alter this by providing a \code{data.frame} with columns named \code{location} and \code{scale}; provide values for each covariate in \code{se}. List the values in the same order as the columns of \code{se}. \cr \cr
 
-The prior for the location parameter, mu, is Gaussian (the default being \code{Gauss(0, 100)}). You can alter this by providing a \code{data.frame} with columns named \code{location} and \code{scale}; provide values for each covariate in \code{se}. List the values in the same order as the columns of \code{se}. \cr \cr
+The prior for the \code{scale} parameters is Student's t, and the default is \code{Student_t(10, 0, 40)}. You can alter this by providing a \code{data.frame} with columns named \code{df}, \code{location} and \code{scale}; provide values for each covariate in \code{se}. List the values in the same order as the columns of \code{se}. \cr \cr
 
 For example, if you are modeling two covariates with the ME models, you can add the priors to an existing \code{ME} list like this:\preformatted{ME$prior <- list(location = data.frame(location = c(0, 0),
                                           scale = c(10, 10)),
-                 scale = c(40, 40))
+                 scale    = data.frame(df  c(10, 10),
+                                       location = c(0, 0),
+                                       scale = c(10, 10)), 
 }
 
 Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). \cr \cr

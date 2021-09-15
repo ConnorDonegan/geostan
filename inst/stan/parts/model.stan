@@ -25,7 +25,7 @@
       }
     }
       target += normal_lpdf(mu_x_true | prior_mux_true_location, prior_mux_true_scale);
-      target += student_t_lpdf(sigma_x_true | 10, 0, prior_sigmax_true_scale);
+      target += student_t_lpdf(sigma_x_true | prior_sigmax_true_df, prior_sigmax_true_location, prior_sigmax_true_scale);
 }
 // partial pooling of observations across all groups/geographies (varying intercept)
   if (has_re) {

@@ -48,7 +48,7 @@ $$\text{ICE} = \text{Proportion Rich} - \text{Proportion Poor,}$$
 where "rich" and "poor" are defined as the top and bottom quintiles of the US household income distribution ($< \$20,000$ and $>= \$120,000$), respectively. It ranges from -1, for an entirely impoverished population, to 1, for an entirely wealthy population. 
 
 ```{r fig.width = 7}
-sp_diag(georgia$ICE, georgia, name = "ICE")
+sp_diag(georgia$ICE, georgia, name = "ICE", style = "B")
 ```
 
 In this vignette, we will examine the ICE standard errors and build a probability model for the actual ICE values. The purpose of the vignette is provide a guide to critically evaluating both your data and the ME model.
@@ -111,7 +111,7 @@ The parameters $\mu$, $\rho$, and $\tau$ all require prior probability distribut
 \end{split}
 \end{equation}
 
-The default prior for $\rho$ is uniform across its entire support (determined by the extreme eigenvalues of $C$). When setting custom prior parameters for $\mu$, users provide a location and scale parameter for the Normal distribution. For $\tau$, the prior is fixed as Student's t with 10 degrees of freedom and mean zero; however, users can provide the scale parameter as a numeric vector.
+The default prior for $\rho$ is uniform across its entire support (determined by the extreme eigenvalues of $C$). When setting custom prior parameters for $\mu$, users provide a location and scale parameter for the Normal distribution. For $\tau$, the prior is fixed as Student's t with 10 degrees of freedom and mean zero; however, users can replace the scale parameter of 40 with 
 
 ## ME models in **geostan** 
 
@@ -145,7 +145,9 @@ As indicated, **geostan** will use its default priors if none are provided. The 
 ```{r}
 ME$prior <- list(location = data.frame(location = 0,
                                        scale = 0.5),
-                 scale = 1
+                 scale = data.frame(df = 10,
+                                    location = 0,
+                                    scale = 1)
 )
 ```
 
@@ -172,11 +174,13 @@ Note that `prior_only = TRUE` will prevent `stan_glm` from considering the outco
 me_diag(fit, 'ICE', georgia, style = "B")
 ```
 
-The point-interval plot on the left hand side of the panel shows the ACS estimates on the horizontal axis against a summary of the posterior distribution on the vertical axis. This provides an indication of 1) the amount of uncertainty present in each $x_i$, and 2) the degree to which the posterior probability distribution for $x_i$ has shifted away from the raw survey estimates ($\delta_i$). The middle and right panels, respectively, contain a Moran plot and map of the differences between the posterior means and the raw values. (The small negative MC value is what we hope to see: it is a product of spatial smoothing.)
+The point-interval plot on the left hand side of the panel shows the ACS estimates on the horizontal axis against a summary of the posterior distribution on the vertical axis. This provides an indication of 1) the amount of uncertainty present in each $x_i$, and 2) the degree to which the mean of the posterior probability distribution for $x_i$ may differ from the raw survey estimates ($\delta_i$). 
 
-From the point-interval plot, we can see a few of the counties with very low ICE estimates have posterior distributions that have shifted slightly towards the mean. However, notice that the model still places substantial probability on values of the ICE that are *more* extreme than the raw ACS estimates. 
+Because we have a joint probability distribution for $\delta_i$, we also have a probability distribution for any function of $\delta_i$. If we can calculate the Moran coefficient (MC, an index of spatial autocorrelation) for each sample from the posterior distribution of $\delta_i$, we get a probability distribution for the MC. The middle panel is a histogram of those MC values, with the average of the distribution printed at the top. The final panel is a map of the posterior mean for each $\delta_i$ value.
 
-Large $\delta_i$ values can provide a warning that your data may be of particularly low quality; strong social or spatial patterns in $\delta_i$, on the other hand, should prompt you to ask further questions about the adequacy of the model.
+From the point-interval plot, we can see that a few of the counties with low ICE estimates have posterior distributions that have shifted slightly towards the mean. However, notice that the model still places substantial probability on values of the ICE that are *more* extreme than the raw ACS estimates. The MC histogram is centered on zero; that's acceptable but, ideally, this should be centered on a small negative value, indicating balanced spatial smoothing. 
+
+Large $|\delta_i|$ values can provide a warning that your data may be of particularly low quality; strong social or spatial patterns in $\delta_i$, on the other hand, should prompt you to ask further questions about the adequacy of the model.
 
 ### Looking closer
 
@@ -206,7 +210,7 @@ ggplot() +
 Most are minuscule, but a few are not. We can follow up on this information by examining demographic information on the counties with the largest $\delta_i$:
 
 ```{r}
-georgia[c(91, 105, 90, 39, 143), c("white", "black", "ai", "ICE", "ICE.se", "college", "college.se")]
+georgia[c(91, 105, 90, 39, 143), c("NAME", "white", "black", "ai", "ICE", "ICE.se", "college", "college.se")]
 ```
 
 We can see that these are low-income areas with fairly large Black and Hispanic/Latinx populations and large standard errors on their ICE estimates. The somewhat large $\delta_i$ values for Clinch County and others are a result of the combination of unreliable estimates (large standard errors) while also being local outliers. 
@@ -218,6 +222,14 @@ plot(fit, pars = "x_ICE[91]")
 ```
 
 In this case, these $\delta_i$ values are not reason for serious concern. 
+
+If the `ME` list doesn't have a slot with `car_parts`, it will automatically use a non-spatial Student's t model instead of the CAR model. 
+
+```{r fig.width = 7}
+ME$car_parts <- NULL
+fit_nsp <- stan_glm(log(rate.male) ~ ICE, data = georgia, ME = ME, prior_only = TRUE)
+me_diag(fit_nsp, 'ICE', georgia)
+```
 
 ## Working with MCMC samples from ME models
 

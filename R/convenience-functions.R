@@ -309,7 +309,7 @@ lisa <- function(x, w, type = TRUE) {
     type <- ifelse(z > 0 & lag > 0, "HH",
          ifelse(z < 0 & lag > 0, "LH",
          ifelse(z < 0 & lag < 0, "LL",
-         ifelse(z>0 & lag < 0, "HL", NA
+         ifelse(z > 0 & lag < 0, "HL", NA
                 ))))
     return (data.frame(Li = zi, type = type))
 }
@@ -318,25 +318,24 @@ lisa <- function(x, w, type = TRUE) {
 #'
 #' @description Visual diagnostics for areal data and model residuals
 #' 
-#' @param y Either a numeric vector or a \code{geostan_fit} model object (as returned from a call to one of the \code{geostan::stan_*} functions).
+#' @param y A numeric vector.
 #' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
 #' @param name The name to use on the plot labels; default to "y" or, if \code{y} is a \code{geostan_fit} object, to "Residuals".
 #' @param plot If \code{FALSE}, return a list of \code{gg} plots.
-#' @param style Style of connectivity matrix; passed to \code{\link[geostan]{shape2mat}} and defaults to "W" for row-standardized.
-#' @param w An optional spatial connectivity matrix; if not provided, then a row-standardized adjacency matrix will be created using \code{\link[geostan]{shape2mat}}.
+#' @param style Style of connectivity matrix; if `w` is not provided, `style` is passed to \code{\link[geostan]{shape2mat}} and defaults to "W" for row-standardized.
+#' @param w An optional spatial connectivity matrix; if not provided, one will be created using \code{\link[geostan]{shape2mat}}.
 #' 
-#' @param binwidth A function with a single argument, `y`, that will be passed to the `binwidth` argument in \code{\link[ggplot2]{geom_histogram}}. The default is to set the width of bins to `0.5 * mad(y)`.
+#' @param binwidth A function with a single argument that will be passed to the `binwidth` argument in \code{\link[ggplot2]{geom_histogram}}. The default is to set the width of bins to `0.5 * sd(x)`.
 #'
 #' @param ... Additional arguments passed to \code{\link[geostan]{residuals.geostan_fit}}. For binomail and Poisson models, this includes the option to view the outcome variable as a rate (the default) rather than a count; for \code{\link[geostan]{stan_car}} models with auto-Gaussian likelihood (`fit$family$family = "auto_gaussian"), the residuals will be detrended by default, but this can be changed using `detrend = FALSE`.
-#' @return A grid of spatial diagnostic plots: a map, a scatter Moran plot, and a histogram of \code{y}. If a fitted \code{geostan} model is provided, model residuals are plotted and mapped (i.e. \code{y = resid(fit)$mean}). If `plot = TRUE`, the `ggplots` are drawn using \code{\link[gridExtra]{grid.arrange}}; otherwise, they are returned in a list.
+#' 
+#' @return A grid of spatial diagnostic plots. When provided with a numberic vector, this function plots a histogram, Moran scatter plot, and map. When provided with a fitted `geostan` model, the function returns a histogram of residuals, a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals, and a map of the mean posterior residuals (means of the marginal distributions).
+#'
+#' If `plot = TRUE`, the `ggplots` are drawn using \code{\link[gridExtra]{grid.arrange}}; otherwise, they are returned in a list. For the `geostan_fit` method, the underlying data for the Moran coefficient will also be returned if `plot = FALSE`.
 #'
 #' @seealso \code{\link[geostan]{me_diag}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{aple}}
 #' 
 #' @export
-#' @importFrom gridExtra grid.arrange
-#' @importFrom signs signs
-#' @importFrom stats mad
-#' @import ggplot2
 #'
 #' @examples
 #' data(georgia)
@@ -354,6 +353,8 @@ lisa <- function(x, w, type = TRUE) {
 #' sp_diag(fit2, georgia)
 #' sp_diag(fit2, georgia, detrend = FALSE)
 #' }
+#'
+#' @importFrom stats sd
 #' 
 sp_diag <- function(y,
                    shape,
@@ -361,19 +362,94 @@ sp_diag <- function(y,
                    plot = TRUE,
                    style = c("W", "B"),
                    w = shape2mat(shape, match.arg(style)),
-                   binwidth = function(y) 0.5 * mad(y),
+                   binwidth = function(x) 0.5 * sd(x),
                    ...
                    ) {
-    if (inherits(y, "geostan_fit")) {
-        y <- residuals(y, summary = TRUE, ...)$mean
-        name <- "Residuals"
+    if (inherits(y, "integer")) y <- as.numeric(y)
+    UseMethod("sp_diag", y)
+}
+
+#' @export
+#' @param fit A fitted `geostan` model (class `geostan_fit`).
+#' @method sp_diag geostan_fit
+#' @rdname sp_diag
+#' @importFrom sf st_as_sf
+#' @importFrom gridExtra grid.arrange
+#' @importFrom signs signs
+#' @importFrom stats sd
+#' @import ggplot2
+sp_diag.geostan_fit <- function(fit,
+                            shape,
+                            name = "Residual",
+                            plot = TRUE,
+                            style = c("W", "B"),
+                            w = shape2mat(shape, match.arg(style)),
+                            binwidth = function(x) 0.5 * stats::sd(x),
+                            ...) {
+    marginal_residual <- residuals(fit, summary = TRUE, ...)$mean
+    if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
+    hist.y <- ggplot() +
+        geom_histogram(aes(marginal_residual),                       
+                       binwidth = binwidth(marginal_residual),
+                       fill = "gray20",
+                       col = "gray90")  +
+        scale_x_continuous(labels = signs::signs) +
+        theme_classic() +
+        labs(x = name)
+    shape$MR <- marginal_residual
+    map.y <- ggplot(shape) +
+        geom_sf(aes(fill = MR),
+                lwd = 0.05,
+                col = "gray20") +
+        scale_fill_gradient2(name = name,
+                             label = signs::signs) +
+        theme_void()   
+    R <- residuals(fit, summary = FALSE)
+    R.mc <- apply(R, 1, mc, w = w)
+    if (length(unique(R.mc)) == 1) {
+        g.mc <- moran_plot(R[1,], w, xlab = name)
+    } else {
+        R.mc.mu <- mean(R.mc)
+        g.mc <- ggplot() +
+            geom_histogram(aes(R.mc),
+                                        #     binwidth = binwidth(as.numeric(R.mc)),
+                           fill = "gray20",
+                           col = "gray90") +
+            scale_x_continuous(labels = signs::signs) +
+            theme_classic() +
+            labs(
+                x = "Residual MC",
+                subtitle = paste0("MC (mean) = ", round(R.mc.mu, 2)))
+    }
+    if (plot) {
+        return( gridExtra::grid.arrange(hist.y, g.mc, map.y, ncol = 3) )
+    } else {        
+        return (list(residual_histogram = hist.y, mc_plot = g.mc, residual_map = map.y, mc_data = R.mc))
         }
+ }
+
+
+#' @export
+#' @method sp_diag numeric
+#' @rdname sp_diag
+#' @importFrom sf st_as_sf
+#' @importFrom gridExtra grid.arrange
+#' @importFrom signs signs
+#' @importFrom stats sd
+#' @import ggplot2
+sp_diag.numeric <- function(y,
+                            shape,
+                            name = "Residual",
+                            plot = TRUE,
+                            style = c("W", "B"),
+                            w = shape2mat(shape, match.arg(style)),
+                            binwidth = function(x) 0.5 * stats::sd(x),
+                            ...) {
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
     stopifnot(length(y) == nrow(shape))
     shape$y <- y
     hist.y <- ggplot() +
         geom_histogram(aes(y),
-                       
                        binwidth = binwidth(y),
                        fill = "gray20",
                        col = "gray90")  +
@@ -387,10 +463,10 @@ sp_diag <- function(y,
         scale_fill_gradient2(name = name,
                              label = signs::signs) +
         theme_void()
-    g.mc <- moran_plot(y, w, xlab = paste0(name, " (centered)"))
+    g.mc <- moran_plot(y, w, xlab = name)
     if (plot) {
         return( gridExtra::grid.arrange(hist.y, g.mc, map.y, ncol = 3) )
-    } else return (list(hist.y, g.mc, map.y))
+    } else return (list(residual_histogram = hist.y, mc_plot = g.mc, residual_map = map.y))
  }
 
 
@@ -401,21 +477,20 @@ sp_diag <- function(y,
 #' @param fit A \code{geostan_fit} model object as returned from a call to one of the \code{geostan::stan_*} functions.
 #' @param varname Name of the modeled variable (a character string, as it appears in the model formula).
 #' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
-#' @param w An optional spatial connectivity matrix; if not provided, then a row-standardized adjacency matrix will be created using \code{shape2mat(shape, "W")}.
 #' @param probs Lower and upper quantiles of the credible interval to plot. 
 #' @param plot If \code{FALSE}, return a list of \code{ggplot}s and a \code{data.frame} with the raw data values alongside a posterior summary of the modeled variable.
 #' @param size Size of points and lines, passed to \code{geom_pointrange}.
 #' @param index Integer value; use this if you wish to identify observations with the largest `n=index` absolute Delta values; data on the top `n=index` observations ordered by absolute Delta value will be printed to the console and the plots will be labeled with the indices of the identified observations.
-#' @param style Passed to \code{\link[geostan]{shape2mat}}. If "W", a row-standardized connectivity matrix is used for the Moran plot; if "B", a binary weights matrix is used.
 #' 
-#' @return A grid of spatial diagnostic plots for measurement error (i.e. data) models comparing the raw observations to the posterior distribution of the true values (given the specified observations, standard errors, and model). The Moran scatter plot and map depict the difference between the posterior means and the raw observations (i.e. shrinkage). 
+#' @param style Style of connectivity matrix; if `w` is not provided, `style` is passed to \code{\link[geostan]{shape2mat}} and defaults to "W" for row-standardized.
+#' @param w An optional spatial connectivity matrix; if not provided, one will be created using \code{\link[geostan]{shape2mat}}.
+#'
+#' @param binwidth A function with a single argument that will be passed to the `binwidth` argument in \code{\link[ggplot2]{geom_histogram}}. The default is to set the width of bins to `0.5 * sd(x)`.
+#' 
+#' @return A grid of spatial diagnostic plots for measurement error models comparing the raw observations to the posterior distribution of the true values (given the specified observations, standard errors, and model). A histogram of Moran coefficient values for the posterior distribution of Delta values: `delta_i = z_i - x_i`, where `z_i` is the survey estimate and `x_i` is the modeled true value. The map depict the posterior mean of the Delta values. (That is, the histogram is from the joint distribution of Delta; the map shows means from the marginal distributions.)
 #'
 #' @seealso \code{\link[geostan]{sp_diag}}, \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{aple}}
-#' @export
-#' @importFrom gridExtra grid.arrange
-#' @importFrom signs signs
-#' @import ggplot2
-#'
+#' 
 #' @source
 #'
 #' Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). ``Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure.'' *Int. J. Env. Res. and Public Health* 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: \url{https://github.com/ConnorDonegan/survey-HBM}.
@@ -443,25 +518,31 @@ sp_diag <- function(y,
 #'                 )
 #' ## see ME diagnostics
 #' me_diag(fit, "ICE", georgia)
-#' ## see index values for the largest delta values
+#' ## see index values for the largest (absolute) delta values
 #'  ## (differences between raw estimate and the posterior mean)
 #' me_diag(fit, "ICE", georgia, index = 3)
 #' }
-#' 
+#'
+#' @export
+#' @importFrom sf st_as_sf
+#' @importFrom gridExtra grid.arrange
+#' @importFrom signs signs
+#' @import ggplot2
+#' @importFrom stats sd
 me_diag <- function(fit,
                     varname,                    
                     shape,
-                    w,
                     probs = c(0.025, 0.975),
                     plot = TRUE,
                     size = 0.25,
                     index = 0,
-                    style = c("W", "B")
+                    style = c("W", "B"),
+                    w = shape2mat(shape, match.arg(style)),
+                    binwidth = function(x) 0.5 * sd(x)
                     ) {
     stopifnot(length(varname) == 1)    
     if (!varname %in% colnames(fit$data)) stop("varname is not found in colnames(fit$data). Provide the name of the variable as it appears in the model formula")
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
-    style <- match.arg(style)
     x.raw <- as.numeric(fit$data[,varname])
     probs = sort(probs)
     width = paste0(100 * (probs[2] - probs[1]), "%")     
@@ -479,7 +560,6 @@ me_diag <- function(fit,
         x.lwr = x.lwr,
         x.upr = x.upr
     )
-    df$Delta <- x.mu - x.raw
     xlbl <- paste(varname, "(raw data)")
     g.points <-  ggplot(df,
                         aes(x = x.raw,
@@ -503,21 +583,25 @@ me_diag <- function(fit,
             y = paste("Posterior Mean and", width, "C.I.")
         ) +                
         theme_classic()
-    if (!missing(w)) {
-            g.mc <- moran_plot(df$Delta, w) +
-                labs(
-                    x = expression(paste(Delta, ' (centered)'))
-                )
-    } else {
-            w <- shape2mat(shape, style = style)
-            g.mc <- moran_plot(df$Delta, w) +
-                labs(x = expression(paste(Delta, ' (centered)')))            
-    }
+    delta.mat <- t(apply(x.samples, 1, .resid, y = x.raw))
+    df$Delta <- apply(delta.mat, 2, mean)
+    D.mc <- apply(delta.mat, 1, mc, w = w)
+    D.mc.mu <- mean(D.mc)
+    g.mc <- ggplot() +
+        geom_histogram(aes(D.mc),
+                       binwidth = binwidth(as.numeric(D.mc)),
+                       fill = "gray20",
+                       col = "gray90") +
+        scale_x_continuous(labels = signs::signs) +
+        theme_classic() +
+        labs(
+            x = expression(paste('MC (', Delta, ')')),
+            subtitle = paste0("Mean MC = ", round(D.mc.mu, 2)))    
     map.delta <- ggplot(shape) +
         geom_sf(aes(fill = df$Delta),
                 lwd = 0.05,
                 col = "gray20") +
-        scale_fill_gradient2(name = bquote(Delta),
+        scale_fill_gradient2(name = bquote(hat(Delta)),
                              label = signs::signs) +
     theme_void() +
     theme(
@@ -533,11 +617,6 @@ me_diag <- function(fit,
             geom_label(aes(label = df$ID),
                        na.rm = TRUE,
                        alpha = 0.9
-                       )
-        g.mc <- g.mc +
-            geom_label(aes(label = df$ID),
-                       alpha=0.9,
-                       na.rm = TRUE
                        )
         map.delta <- map.delta +
             geom_sf(aes(col = !is.na(df$ID),

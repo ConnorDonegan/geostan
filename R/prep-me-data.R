@@ -102,10 +102,14 @@ me_priors <- function(ME, me.list) {
         pl$prior_mux_true_location   <- ME$prior$location$location
         pl$prior_mux_true_scale      <- ME$prior$location$scale
     }
-    if (inherits(ME$prior$scale, "NULL")) {    
-        pl$prior_sigmax_true_scale   <- rep(40, times = me.list$dx_me)        
+    if (inherits(ME$prior$scale, "NULL")) {
+        pl$prior_sigmax_true_df       <- rep(10, times = me.list$dx_me)
+        pl$prior_sigmax_true_location <- rep(0, times = me.list$dx_me)
+        pl$prior_sigmax_true_scale    <- rep(40, times = me.list$dx_me)        
     } else {
-        pl$prior_sigmax_true_scale   <- ME$prior$scale
+        pl$prior_sigmax_true_df       <- ME$prior$scale$df
+        pl$prior_sigmax_true_location <- ME$prior$scale$location
+        pl$prior_sigmax_true_scale    <- ME$prior$scale$scale
     }
     if (me.list$spatial_me) {
         if (inherits(ME$prior$car_rho, "NULL")) {
@@ -119,7 +123,7 @@ me_priors <- function(ME, me.list) {
     pl <- lapply(pl, as.array)
     pl$ME_prior_mean <- as.data.frame(cbind(location = pl$prior_mux_true_location, scale = pl$prior_mux_true_scale))
     rownames(pl$ME_prior_mean) <- names(ME$se)
-    pl$ME_prior_scale <- as.data.frame(cbind(df = 10, location = 0, scale = pl$prior_sigmax_true_scale))
+    pl$ME_prior_scale <- as.data.frame(cbind(df =  pl$prior_sigmax_true_df, location = pl$prior_sigmax_true_location, scale = pl$prior_sigmax_true_scale))
     row.names(pl$ME_prior_scale) <- names(ME$se)
     if (me.list$has_me) print_me_priors(pl, me.list)
     return(pl)        

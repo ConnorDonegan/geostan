@@ -116,7 +116,7 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/">sf</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org">tidyverse</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="st">"georgia"</span><span class="op">)</span></code></pre></div>
 <p>This vignette uses the <code>georgia</code> data set from the <strong>geostan</strong> package. This is a simple features (<code>sf</code>) object with estimates of county population characteristics from the American Community Survey (ACS) for the five year period spanning 2014-2018. Their corresponding standard errors are also here. The column <code>college</code> contains ACS estimates for the percent of the population age 25 and older that has obtained a college degree or higher; the standard errors of the survey estimates are in the column named <code>college.se</code>.</p>
 </div>
@@ -135,7 +135,6 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/stats/weighted.mean.html">weighted.mean</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, w <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">population</span><span class="op">)</span>
 <span class="co">#&gt; [1] 30.66856</span></code></pre></div>
-<p>(An unavoidable feature of county-level data is that rural counties are far more homogeneous than urban counties; urban areas like Atlanta are highly polarized both socially and spatially, which complicates any simple narrative about rural-urban divisions by educational attainment.)</p>
 <p>The Moran plot is a visualization of the degree of spatial autocorrelation (SA): on the horizontal axis are the <code>college</code> estimates while the vertical axis represents the mean neighboring value. The Moran coefficient, an index of SA, is printed at the top (MC=0.42) <span class="citation">(Chun and Griffith <a href="#ref-chun_2013">2013</a>)</span>.</p>
 </div>
 <div id="understanding-the-moran-scatter-plot" class="section level2">
@@ -150,18 +149,18 @@
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">college</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span><span class="op">)</span>
 <span class="va">spatial_lag</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">C</span> <span class="op">%*%</span> <span class="va">x</span><span class="op">)</span>
-<span class="fu">ggplot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">geom_point</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span><span class="va">x</span>, <span class="va">spatial_lag</span><span class="op">)</span>,
+<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">spatial_lag</span><span class="op">)</span>,
              col <span class="op">=</span> <span class="st">"darkred"</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">geom_hline</span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">geom_vline</span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">geom_smooth</span><span class="op">(</span>
-    <span class="fu">aes</span><span class="op">(</span><span class="va">x</span>, <span class="va">spatial_lag</span><span class="op">)</span>,
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth</a></span><span class="op">(</span>
+    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">spatial_lag</span><span class="op">)</span>,
     se <span class="op">=</span> <span class="cn">FALSE</span>,
     col <span class="op">=</span> <span class="st">"black"</span>,
     method <span class="op">=</span> <span class="st">"lm"</span>,
     <span class="op">)</span> <span class="op">+</span>
-  <span class="fu">theme_classic</span><span class="op">(</span><span class="op">)</span>
+  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_classic</a></span><span class="op">(</span><span class="op">)</span>
 <span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-6-1.png" width="336" style="display: block; margin: auto;"> Similarly, we can calculate the Moran coefficient using <code>mc</code>:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">

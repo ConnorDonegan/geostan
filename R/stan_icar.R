@@ -61,13 +61,15 @@
 #' 
 #' The prior for the location parameter, mu, is Gaussian (the default being `Gauss(0, 100)`). You can alter this by providing a `data.frame` with columns named `location` and `scale`; provide values for each covariate in `se`. List the values in the same order as the columns of `se`. \cr \cr
 #'
-#' The prior for the `scale` parameters is Student's t, and the default is `Student_t(10, 0, 40)`. The degrees of freedom (10) and mean (zero) are fixed, but you can alter the scale by providing a vector of values in the same order as the columns of `se`.\cr \cr
+#' The prior for the `scale` parameters is Student's t, and the default is `Student_t(10, 0, 40)`. You can alter this by providing a `data.frame` with columns named `df`, `location` and `scale`; provide values for each covariate in `se`. List the values in the same order as the columns of `se`. \cr \cr
 #'
 #' For example, if you are modeling two covariates with the ME models, you can add the priors to an existing `ME` list like this:
 #' ```
 #' ME$prior <- list(location = data.frame(location = c(0, 0),
 #'                                           scale = c(10, 10)),
-#'                  scale = c(40, 40))
+#'                  scale    = data.frame(df  c(10, 10),
+#'                                        location = c(0, 0),
+#'                                        scale = c(10, 10)), 
 #' ```
 #' Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). \cr \cr
 #' 
