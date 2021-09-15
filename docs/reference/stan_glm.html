@@ -113,7 +113,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation</a>
+      <a href="../articles/measuring-sa.html">Measuring and visualizing spatial autocorrelation</a>
     </li>
     <li>
       <a href="../articles/spatial-me-models.html">Working with American Community Survey data</a>
@@ -229,7 +229,7 @@
                  scale    = data.frame(df  c(10, 10),
                                        location = c(0, 0),
                                        scale = c(10, 10)), 
-</pre>Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). <br /> <br />The CAR model also has a spatial autocorrelation parameter, <code>rho</code>, which is assigned a uniform prior distribution. You can set the boudaries of the prior with:<pre><span class='va'>ME</span><span class='op'>$</span><span class='va'>prior</span><span class='op'>$</span><span class='va'>car_rho</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>lower_bound</span>, <span class='va'>upper_bound</span><span class='op'>)</span>
+</pre>Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). <br /> <br />The CAR model also has a spatial autocorrelation parameter, <code>rho</code>, which is assigned a uniform prior distribution. You can set the boundaries of the prior with:<pre><span class='va'>ME</span><span class='op'>$</span><span class='va'>prior</span><span class='op'>$</span><span class='va'>car_rho</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>lower_bound</span>, <span class='va'>upper_bound</span><span class='op'>)</span>
 </pre>You must specify values that are within the permissible range of values for <code>rho</code>. This range is automatically printed to the console by <code><a href='prep_car_data.html'>prep_car_data</a></code>.</p></dd>
 
 <dt>car_parts</dt><dd><p>A list of data for the CAR model, as returned by <a href='prep_car_data.html'>prep_car_data</a>. If not provided, a non-spatial Student's t model will be used instead of the CAR model.</p></dd>
@@ -325,7 +325,7 @@
                           tau ~ student(20, 0, 2),
 </pre>
 
-<p>where <code>alpha</code> is the mean log-risk (incidence rate) and <code>A</code> is a vector of (so-called) random effects, which enable partial pooling of information across observations. See the example section of this documenet for a demonstration.</p>
+<p>where <code>alpha</code> is the mean log-risk (incidence rate) and <code>A</code> is a vector of (so-called) random effects, which enable partial pooling of information across observations. See the example section of this document for a demonstration.</p>
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>Connor Donegan, <a href='mailto:Connor.Donegan@UTDallas.edu'>Connor.Donegan@UTDallas.edu</a></p>

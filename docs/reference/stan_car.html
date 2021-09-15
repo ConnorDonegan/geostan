@@ -113,7 +113,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation</a>
+      <a href="../articles/measuring-sa.html">Measuring and visualizing spatial autocorrelation</a>
     </li>
     <li>
       <a href="../articles/spatial-me-models.html">Working with American Community Survey data</a>
@@ -158,7 +158,6 @@
   <span class='va'>car_parts</span>,
   ME <span class='op'>=</span> <span class='cn'>NULL</span>,
   family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>gaussian</a></span><span class='op'>(</span><span class='op'>)</span>,
-  invert <span class='op'>=</span> <span class='cn'>TRUE</span>,
   prior <span class='op'>=</span> <span class='cn'>NULL</span>,
   centerx <span class='op'>=</span> <span class='cn'>FALSE</span>,
   prior_only <span class='op'>=</span> <span class='cn'>FALSE</span>,
@@ -232,7 +231,7 @@
                  scale    = data.frame(df  c(10, 10),
                                        location = c(0, 0),
                                        scale = c(10, 10)), 
-</pre>Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). <br /> <br />The CAR model also has a spatial autocorrelation parameter, <code>rho</code>, which is assigned a uniform prior distribution. You can set the boudaries of the prior with:<pre><span class='va'>ME</span><span class='op'>$</span><span class='va'>prior</span><span class='op'>$</span><span class='va'>car_rho</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>lower_bound</span>, <span class='va'>upper_bound</span><span class='op'>)</span>
+</pre>Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). <br /> <br />The CAR model also has a spatial autocorrelation parameter, <code>rho</code>, which is assigned a uniform prior distribution. You can set the boundaries of the prior with:<pre><span class='va'>ME</span><span class='op'>$</span><span class='va'>prior</span><span class='op'>$</span><span class='va'>car_rho</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>lower_bound</span>, <span class='va'>upper_bound</span><span class='op'>)</span>
 </pre>You must specify values that are within the permissible range of values for <code>rho</code>. This range is automatically printed to the console by <code><a href='prep_car_data.html'>prep_car_data</a></code>.</p></dd>
 
 <dt>car_parts</dt><dd><p>By default, any ME models within <code>stan_car</code> will be spatial CAR models. Any data passed to <code>ME$car_parts</code> will be ignored. However, to use a non-spatial Student's t ME model instead, provide <code>ME$car_parts = FALSE</code>.</p></dd>
@@ -242,10 +241,6 @@
     <tr>
       <th>family</th>
       <td><p>The likelihood function for the outcome variable. Current options are <code><a href='auto_gaussian.html'>auto_gaussian()</a></code>, <code><a href='https://rdrr.io/r/stats/family.html'>binomial(link = "logit")</a></code>, and <code><a href='https://rdrr.io/r/stats/family.html'>poisson(link = "log")</a></code>; if <code>family = gaussian()</code> is provided, it will automatically be converted to <code><a href='auto_gaussian.html'>auto_gaussian()</a></code>.</p></td>
-    </tr>
-    <tr>
-      <th>invert</th>
-      <td><p>To calculate the log likelihood of the data, <code>log_lik</code>, with the auto-Gaussian model, the precision matrix needs to be inverted. This can be costly for large data sets---the inversion needs to be completed once per posterior sample. To avoid the computational cost, set <code>invert = FALSE</code>. Note, this is only used when <code>family = auto_gaussian()</code>. <code>log_lik</code> is required to calculate WAIC.</p></td>
     </tr>
     <tr>
       <th>prior</th>

@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   measuring-sa: measuring-sa.html
   spatial-me-models: spatial-me-models.html
-last_built: 2021-09-15T16:35Z
+last_built: 2021-09-15T17:36Z
 urls:
   reference: https://connordonegan.github.io/geostan//reference
   article: https://connordonegan.github.io/geostan//articles

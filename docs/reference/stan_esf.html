@@ -113,7 +113,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
     <li>
-      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation</a>
+      <a href="../articles/measuring-sa.html">Measuring and visualizing spatial autocorrelation</a>
     </li>
     <li>
       <a href="../articles/spatial-me-models.html">Working with American Community Survey data</a>
@@ -246,7 +246,7 @@
                  scale    = data.frame(df  c(10, 10),
                                        location = c(0, 0),
                                        scale = c(10, 10)), 
-</pre>Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). <br /> <br />The CAR model also has a spatial autocorrelation parameter, <code>rho</code>, which is assigned a uniform prior distribution. You can set the boudaries of the prior with:<pre><span class='va'>ME</span><span class='op'>$</span><span class='va'>prior</span><span class='op'>$</span><span class='va'>car_rho</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>lower_bound</span>, <span class='va'>upper_bound</span><span class='op'>)</span>
+</pre>Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). <br /> <br />The CAR model also has a spatial autocorrelation parameter, <code>rho</code>, which is assigned a uniform prior distribution. You can set the boundaries of the prior with:<pre><span class='va'>ME</span><span class='op'>$</span><span class='va'>prior</span><span class='op'>$</span><span class='va'>car_rho</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>lower_bound</span>, <span class='va'>upper_bound</span><span class='op'>)</span>
 </pre>You must specify values that are within the permissible range of values for <code>rho</code>. This range is automatically printed to the console by <code><a href='prep_car_data.html'>prep_car_data</a></code>.</p></dd>
 
 <dt>car_parts</dt><dd><p>A list of data for the CAR model, as returned by <a href='prep_car_data.html'>prep_car_data</a>. If not provided, a non-spatial Student's t model will be used instead of the CAR model.</p></dd>
@@ -353,8 +353,8 @@
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Eigenvector spatial filtering (ESF) is a method for spatial regression analysis. ESF is extensivly covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), which uses Piironen and Vehtari's (2017) regularized horseshoe prior.</p>
-<p>ESF models take the spectral decomposition of a transformed spatial connectivity matrix, <code>C</code>. The resulting eigenvectors, <code>EV</code>, are mutually orthogonal and uncorrelated map patterns. ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. The spatail filter is <code>EV * beta_ev</code>, where <code>beta_ev</code> is a vector of coefficients.</p>
+    <p>Eigenvector spatial filtering (ESF) is a method for spatial regression analysis. ESF is extensively covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), which uses Piironen and Vehtari's (2017) regularized horseshoe prior.</p>
+<p>ESF models take the spectral decomposition of a transformed spatial connectivity matrix, <code>C</code>. The resulting eigenvectors, <code>EV</code>, are mutually orthogonal and uncorrelated map patterns. ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. The spatial filter is <code>EV * beta_ev</code>, where <code>beta_ev</code> is a vector of coefficients.</p>
 <p>ESF decomposes the data into a global mean, <code>alpha</code>, global patterns contributed by covariates, <code>X * beta</code>, spatial trends, <code>EV * beta_ev</code>, and residual variation. Thus, for <code>family=gaussian()</code>,</p><pre>                         Y ~ Gauss(alpha + X * beta + EV * beta_ev, sigma).
 </pre>
 

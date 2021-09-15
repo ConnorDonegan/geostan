@@ -8,7 +8,7 @@ output:
 header-includes:
    - \usepackage{amsmath}
 vignette: >
-  %\VignetteIndexEntry{Measuring and visualizaing spatial autocorrelation}
+  %\VignetteIndexEntry{Measuring and visualizing spatial autocorrelation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: bib.bib

@@ -67,7 +67,7 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/measuring-sa.html">Measuring and visualizaing spatial autocorrelation</a>
+      <a href="../articles/measuring-sa.html">Measuring and visualizing spatial autocorrelation</a>
     </li>
     <li>
       <a href="../articles/spatial-me-models.html">Working with American Community Survey data</a>
@@ -241,8 +241,8 @@
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).
 ## Chain 1: 
-## Chain 1: Gradient evaluation took 0.000128 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.28 seconds.
+## Chain 1: Gradient evaluation took 0.00011 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.1 seconds.
 ## Chain 1: Adjust your expectations accordingly!
 ## Chain 1: 
 ## Chain 1: 
@@ -251,15 +251,15 @@
 ## Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 1: 
-## Chain 1:  Elapsed Time: 1.94243 seconds (Warm-up)
-## Chain 1:                1.40378 seconds (Sampling)
-## Chain 1:                3.34621 seconds (Total)
+## Chain 1:  Elapsed Time: 1.69634 seconds (Warm-up)
+## Chain 1:                1.25593 seconds (Sampling)
+## Chain 1:                2.95227 seconds (Total)
 ## Chain 1: 
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 2).
 ## Chain 2: 
-## Chain 2: Gradient evaluation took 9.7e-05 seconds
-## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.97 seconds.
+## Chain 2: Gradient evaluation took 9.2e-05 seconds
+## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.92 seconds.
 ## Chain 2: Adjust your expectations accordingly!
 ## Chain 2: 
 ## Chain 2: 
@@ -268,15 +268,15 @@
 ## Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 2: 
-## Chain 2:  Elapsed Time: 1.74461 seconds (Warm-up)
-## Chain 2:                1.35053 seconds (Sampling)
-## Chain 2:                3.09514 seconds (Total)
+## Chain 2:  Elapsed Time: 2.08338 seconds (Warm-up)
+## Chain 2:                1.27103 seconds (Sampling)
+## Chain 2:                3.35441 seconds (Total)
 ## Chain 2: 
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 3).
 ## Chain 3: 
-## Chain 3: Gradient evaluation took 0.000195 seconds
-## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 1.95 seconds.
+## Chain 3: Gradient evaluation took 0.000156 seconds
+## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 1.56 seconds.
 ## Chain 3: Adjust your expectations accordingly!
 ## Chain 3: 
 ## Chain 3: 
@@ -285,9 +285,9 @@
 ## Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 3: 
-## Chain 3:  Elapsed Time: 1.67892 seconds (Warm-up)
-## Chain 3:                1.35888 seconds (Sampling)
-## Chain 3:                3.0378 seconds (Total)
+## Chain 3:  Elapsed Time: 1.42627 seconds (Warm-up)
+## Chain 3:                1.2687 seconds (Sampling)
+## Chain 3:                2.69498 seconds (Total)
 ## Chain 3: 
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 4).
@@ -302,9 +302,9 @@
 ## Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 4: 
-## Chain 4:  Elapsed Time: 2.1817 seconds (Warm-up)
-## Chain 4:                1.88015 seconds (Sampling)
-## Chain 4:                4.06185 seconds (Total)
+## Chain 4:  Elapsed Time: 2.18335 seconds (Warm-up)
+## Chain 4:                1.2762 seconds (Sampling)
+## Chain 4:                3.45955 seconds (Total)
 ## Chain 4:</code></pre>
 <p>Note that <code>prior_only = TRUE</code> will prevent <code>stan_glm</code> from considering the outcome, <code><a href="https://rdrr.io/r/base/Log.html">log(rate.male)</a></code>; for the sake of convenience and simplicity, the entire ME model for covariates is treated as part of the “prior” by <code>prior_only</code>, though this is certainly an abuse of terms.</p>
 </div>
@@ -334,23 +334,23 @@
 <code class="sourceCode R"><span class="fu"><a href="../reference/me_diag.html">me_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">'ICE'</span>, <span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"B"</span>, index <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
 <pre><code>## Identifying the top 5 observations as ordered by their Delta values (Delta = posterior mean of x - raw x value):</code></pre>
 <pre><code>##                 x.raw       x.mu      x.lwr      x.upr       Delta
-## x_ICE[105] -0.3412494 -0.3073438 -0.3897280 -0.2264739 -0.03390556
-## x_ICE[91]  -0.4016787 -0.3693109 -0.4514833 -0.2848195 -0.03236772
-## x_ICE[90]  -0.2798395 -0.2554413 -0.3287639 -0.1830606 -0.02439825
-## x_ICE[39]  -0.3236583 -0.2995256 -0.3845555 -0.2150487 -0.02413262
-## x_ICE[143] -0.2395249 -0.2204030 -0.2910495 -0.1512202 -0.01912193</code></pre>
+## x_ICE[105] -0.3412494 -0.3074585 -0.3886741 -0.2280645 -0.03379087
+## x_ICE[91]  -0.4016787 -0.3681795 -0.4519202 -0.2804109 -0.03349911
+## x_ICE[90]  -0.2798395 -0.2549918 -0.3263494 -0.1823005 -0.02484776
+## x_ICE[39]  -0.3236583 -0.2996288 -0.3827870 -0.2189241 -0.02402942
+## x_ICE[143] -0.2395249 -0.2209912 -0.2911431 -0.1506921 -0.01853372</code></pre>
 <p><img src="spatial-me-models_files/figure-html/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>Or, we can have <code>me_diag</code> return results as raw data (it will also return a list of ggplots):</p>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">delta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/me_diag.html">me_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">'ICE'</span>, <span class="va">georgia</span>, plot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">$</span><span class="va">delta_data</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">delta</span><span class="op">)</span></code></pre></div>
 <pre><code>##                x.raw        x.mu       x.lwr        x.upr         Delta
-## x_ICE[1] -0.24576780 -0.23637305 -0.28961508 -0.183235030 -0.0093947482
-## x_ICE[2] -0.27540984 -0.26736386 -0.32243533 -0.210552885 -0.0080459755
-## x_ICE[3] -0.01856313 -0.01810744 -0.03387243 -0.002219431 -0.0004556939
-## x_ICE[4]  0.05059098  0.05048771  0.04243778  0.058330835  0.0001032714
-## x_ICE[5]  0.14701110  0.14426554  0.12364462  0.164118971  0.0027455601
-## x_ICE[6]  0.16649112  0.16627201  0.15803402  0.174606440  0.0002191082</code></pre>
+## x_ICE[1] -0.24576780 -0.23658624 -0.29111703 -0.182086776 -9.181558e-03
+## x_ICE[2] -0.27540984 -0.26762744 -0.32001833 -0.214554525 -7.782399e-03
+## x_ICE[3] -0.01856313 -0.01817385 -0.03302257 -0.003606928 -3.892844e-04
+## x_ICE[4]  0.05059098  0.05053484  0.04278755  0.058073927  5.614694e-05
+## x_ICE[5]  0.14701110  0.14427000  0.12337386  0.164478072  2.741104e-03
+## x_ICE[6]  0.16649112  0.16620307  0.15799991  0.174764228  2.880497e-04</code></pre>
 <p>Lets scale these by the MAD of the ICE:</p>
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">scaled_delta</span> <span class="op">&lt;-</span> <span class="va">delta</span><span class="op">$</span><span class="va">Delta</span> <span class="op">/</span> <span class="va">mad.ice</span>
@@ -421,8 +421,8 @@
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).
 ## Chain 1: 
-## Chain 1: Gradient evaluation took 7.2e-05 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.72 seconds.
+## Chain 1: Gradient evaluation took 7.3e-05 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.73 seconds.
 ## Chain 1: Adjust your expectations accordingly!
 ## Chain 1: 
 ## Chain 1: 
@@ -431,15 +431,15 @@
 ## Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 1: 
-## Chain 1:  Elapsed Time: 1.00393 seconds (Warm-up)
-## Chain 1:                0.828333 seconds (Sampling)
-## Chain 1:                1.83227 seconds (Total)
+## Chain 1:  Elapsed Time: 0.896355 seconds (Warm-up)
+## Chain 1:                0.785391 seconds (Sampling)
+## Chain 1:                1.68175 seconds (Total)
 ## Chain 1: 
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 2).
 ## Chain 2: 
-## Chain 2: Gradient evaluation took 6.9e-05 seconds
-## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.69 seconds.
+## Chain 2: Gradient evaluation took 6.2e-05 seconds
+## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.62 seconds.
 ## Chain 2: Adjust your expectations accordingly!
 ## Chain 2: 
 ## Chain 2: 
@@ -448,15 +448,15 @@
 ## Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 2: 
-## Chain 2:  Elapsed Time: 0.848042 seconds (Warm-up)
-## Chain 2:                0.77141 seconds (Sampling)
-## Chain 2:                1.61945 seconds (Total)
+## Chain 2:  Elapsed Time: 0.959664 seconds (Warm-up)
+## Chain 2:                0.790935 seconds (Sampling)
+## Chain 2:                1.7506 seconds (Total)
 ## Chain 2: 
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 3).
 ## Chain 3: 
-## Chain 3: Gradient evaluation took 6.8e-05 seconds
-## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.68 seconds.
+## Chain 3: Gradient evaluation took 6.4e-05 seconds
+## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.64 seconds.
 ## Chain 3: Adjust your expectations accordingly!
 ## Chain 3: 
 ## Chain 3: 
@@ -465,15 +465,15 @@
 ## Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 3: 
-## Chain 3:  Elapsed Time: 0.87885 seconds (Warm-up)
-## Chain 3:                0.825712 seconds (Sampling)
-## Chain 3:                1.70456 seconds (Total)
+## Chain 3:  Elapsed Time: 0.871377 seconds (Warm-up)
+## Chain 3:                0.788824 seconds (Sampling)
+## Chain 3:                1.6602 seconds (Total)
 ## Chain 3: 
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 4).
 ## Chain 4: 
-## Chain 4: Gradient evaluation took 6.9e-05 seconds
-## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.69 seconds.
+## Chain 4: Gradient evaluation took 6.8e-05 seconds
+## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.68 seconds.
 ## Chain 4: Adjust your expectations accordingly!
 ## Chain 4: 
 ## Chain 4: 
@@ -482,9 +482,9 @@
 ## Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 4: 
-## Chain 4:  Elapsed Time: 0.958 seconds (Warm-up)
-## Chain 4:                0.818458 seconds (Sampling)
-## Chain 4:                1.77646 seconds (Total)
+## Chain 4:  Elapsed Time: 0.992924 seconds (Warm-up)
+## Chain 4:                1.26058 seconds (Sampling)
+## Chain 4:                2.2535 seconds (Total)
 ## Chain 4:</code></pre>
 <div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/me_diag.html">me_diag</a></span><span class="op">(</span><span class="va">fit_nsp</span>, <span class="st">'ICE'</span>, <span class="va">georgia</span><span class="op">)</span></code></pre></div>
@@ -501,7 +501,7 @@
 <pre><code>## [1] 4000    1</code></pre>
 <div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">mu.x</span><span class="op">)</span></code></pre></div>
-<pre><code>## [1] -0.1285171</code></pre>
+<pre><code>## [1] -0.1276645</code></pre>
 <p>We can visualize these using <code>plot</code>:</p>
 <div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html">plot</a></span><span class="op">(</span><span class="va">fit</span>, pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"mu_x_true"</span>, <span class="st">"car_rho_x_true"</span>, <span class="st">"sigma_x_true"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
@@ -517,7 +517,7 @@
 <code class="sourceCode R"><span class="va">x.mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2</span>, <span class="va">mean</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">x.mu</span><span class="op">)</span></code></pre></div>
 <pre><code>##    x_ICE[1]    x_ICE[2]    x_ICE[3]    x_ICE[4]    x_ICE[5]    x_ICE[6] 
-## -0.23637305 -0.26736386 -0.01810744  0.05048771  0.14426554  0.16627201</code></pre>
+## -0.23658624 -0.26762744 -0.01817385  0.05053484  0.14427000  0.16620307</code></pre>
 <p>With a matrix of samples, we can also ask questions of the joint probability distribution by applying summary functions to each row (as each row of the matrix of samples is a draw from the joint distribution of parameters), which results in a vector of samples. Those samples can be summarized again (e.g., by their mean) or visualized. Here is the probability distribution for the amount of spatial autocorrelation in <span class="math inline">\(\boldsymbol x\)</span>, the true ICE values, as indexed by the Moran coefficient:</p>
 <div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">x.mc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">1</span>, <span class="va">mc</span>, w <span class="op">=</span> <span class="va">C</span><span class="op">)</span>

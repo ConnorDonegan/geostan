@@ -104,7 +104,7 @@ For example, if you are modeling two covariates with the ME models, you can add 
 
 Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). \cr \cr
 
-The CAR model also has a spatial autocorrelation parameter, \code{rho}, which is assigned a uniform prior distribution. You can set the boudaries of the prior with:\preformatted{ME$prior$car_rho <- c(lower_bound, upper_bound)
+The CAR model also has a spatial autocorrelation parameter, \code{rho}, which is assigned a uniform prior distribution. You can set the boundaries of the prior with:\preformatted{ME$prior$car_rho <- c(lower_bound, upper_bound)
 }
 
 You must specify values that are within the permissible range of values for \code{rho}. This range is automatically printed to the console by \code{\link[geostan]{prep_car_data}}.
