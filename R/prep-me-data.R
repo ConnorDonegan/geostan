@@ -40,31 +40,29 @@ prep_me_data <- function(ME, x) { # for x pass in x_no_Wx !
         me.list <- c(me.list, pl)
         return(me.list)
     }
-    stopifnot(inherits(ME, "list"))
-    stopifnot(inherits(ME$se, "data.frame"))
-    if (!all(names(ME$se) %in% names(x.df))) stop("All column names in ME$se must be found in the model matrix (from model.matrix(formula, data)). This error may occur if you've included some kind of data transformation in your model formula, such as a logarithm or polynomial.")
+    check_me_data(ME, x.df)    
     if (length(ME$bounds)) {
         if(length(ME$bounds) != 2 | !inherits(ME$bounds, "numeric")) stop("ME$bounds must be numeric vector of length 2.")
         bounds <- ME$bounds        
     } else {
         bounds <- c(-Inf, Inf)
     }           
-                                        # gather any/all variables without ME
+    # gather any/all variables without ME
     x_obs_idx <- as.array( which( !names(x.df) %in% names(ME$se) )) 
     x_obs <- as.data.frame(x.df[, x_obs_idx])
     dx_obs <- ncol(x_obs)
-                                        # gather ME variables
+    # gather ME variables
     x_me_idx <- as.array(which(names(x.df) %in% names(ME$se)))
     x_me <- as.data.frame(x.df[,x_me_idx])
     dx_me <- ncol(x_me)
     sigma_me <- ME$se 
     if (any(x_me < bounds[1]) || any(x_me > bounds[2])) stop("In ME: bounded variable has elements outside of user-provided bounds (", bounds[1], ", ", bounds[2], ")")
-                                        # handle unused parts
+    # handle unused parts
     if (!dx_obs) {
         x_obs <- model.matrix(~ 0, x.df) 
         x_obs_idx <- a.zero()
     }
-                                        # return items in data list ready for Stan: with ME model for covariates
+    # return items in data list ready for Stan: with ME model for covariates
     me.list <- list(
         dx_obs = dx_obs,
         dx_me = dx_me,
@@ -81,8 +79,7 @@ prep_me_data <- function(ME, x) { # for x pass in x_no_Wx !
         me.list$spatial_me <- FALSE        
         me.list <- c(me.list, car_parts_shell(n))
     } else {        
-        if(!inherits(ME$car_parts, "list")) stop("car_parts must be a list of data for the CAR model. See ?prep_car_data.")
-        if(!all(c("nC", "Cidx", "nAx_w", "Ax_w", "Ax_v", "Ax_u", "Delta_inv", "log_det_Delta_inv", "C", "lambda", "WCAR") %in% names(ME$car_parts))) stop("car_parts is missing at least one required part. See ?prep_car_data. Did you use cmat = TRUE and lambda = TRUE?")
+        check_car_parts(ME$car_parts)
         me.list$spatial_me <- TRUE
         me.list <- c(me.list, ME$car_parts)
     }
@@ -125,30 +122,44 @@ me_priors <- function(ME, me.list) {
     rownames(pl$ME_prior_mean) <- names(ME$se)
     pl$ME_prior_scale <- as.data.frame(cbind(df =  pl$prior_sigmax_true_df, location = pl$prior_sigmax_true_location, scale = pl$prior_sigmax_true_scale))
     row.names(pl$ME_prior_scale) <- names(ME$se)
-    if (me.list$has_me) print_me_priors(pl, me.list)
+    if (me.list$has_me) print_me_priors(pl, ME)
     return(pl)        
 }
 
 print_me_priors <- function(pl, ME) {
+    if (inherits(ME$prior, "list")) {
+        if (all(c("location", "scale", "car_rho") %in% names(ME$prior))) {
+            return ()
+        }
+    }    
     message("----\n",
-            "*Setting prior parameters for measurement error models\n"
+            "*Setting prior parameters for measurement error models"
             )
-    message(
+    if (inherits(ME$prior$location, "NULL")) {
+        message(
             "*Location (mean)\n",
             "Gaussian"
         )
         print(pl$ME_prior_mean)
-    message(
-        "\n*Scale\n",
-        "Student's t"
-    )
-    print(pl$ME_prior_scale)    
-    if (pl$spatial_me) {
+    }
+    if (inherits(ME$prior$scale, "NULL")) {
         message(
-            "\n*CAR spatial autocorrelation parameter (rho)\n",
+            "*Scale\n",
+            "Student's t"
+        )
+        print(pl$ME_prior_scale)
+    }
+    if (pl$spatial_me) {
+        if (inherits(ME$prior$car_rho, "NULL")) {
+        message(
+            "*CAR spatial autocorrelation parameter (rho)\n",
             "Uniform"
         )
         print(pl$ME_prior_car_rho)
+        }
     }
     message("----")
 }
+
+
+

@@ -67,7 +67,6 @@
 #'                                        location = c(0, 0),
 #'                                        scale = c(10, 10)), 
 #' ```
-#' Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). \cr \cr
 #' 
 #' The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boundaries of the prior with:
 #' ```
@@ -292,6 +291,24 @@
 #'    legend.key.height = unit(0.35, "cm"),
 #'    legend.key.width = unit(1.5, "cm")
 #'  )
+#'
+#' ## DCAR
+#' A <- shape2mat(georgia, "B")
+#' D <- sf::st_distance(sf::st_centroid(georgia))
+#' A <- D * A
+#' cp <- prep_car_data(A, "DCAR", k = 1)
+#'
+#' # view distance against inverse distance: (A+gamma)^(-k) / max(C)
+#' plot(as.numeric(A),
+#'     as.numeric(cp$C)
+#'     )
+#'
+#' fit <- stan_car(log(rate.male) ~ 1,
+#'                data = georgia,
+#'                car = cp,
+#'                cores = 5)
+#'
+#' me_diag(fit, georgia)
 #' }
 #' 
 stan_car <- function(formula,
@@ -316,10 +333,8 @@ stan_car <- function(formula,
     stopifnot(family$family %in% c("gaussian", "auto_gaussian", "poisson", "binomial"))
     if (family$family == "gaussian") family <- auto_gaussian()
     stopifnot(!missing(data))
-    stopifnot(inherits(car_parts, "list"))    
+    check_car_parts(car_parts)
     stopifnot(length(car_parts$Delta_inv) == nrow(data))
-    stopifnot(all(c("Ax_w", "Ax_v", "Ax_u", "nAx_w", "Cidx", "nC", "Delta_inv", "log_det_Delta_inv", "WCAR", "lambda", "C")  %in% names(car_parts)))
-    stopifnot(inherits(car_parts$C, "Matrix") | inherits(car_parts$C, "matrix"))    
     C <- car_parts$C        
     a.zero <- as.array(0, dim = 1)
     tmpdf <- as.data.frame(data)
@@ -458,11 +473,9 @@ stan_car <- function(formula,
     if (me.list$spatial_me) pars <- c(pars, "car_rho_x_true")
     priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
     ## PARAMETERS TO KEEP, with CAR PARAMETERS [STOP] -------------                
-    ## PRINT STUFF -------------
+    ## PRINT PRIORS -------------
     if (me.list$has_me) priors_made_slim <- c(priors_made_slim, list(ME_location = me.list$ME_prior_mean, ME_scale = me.list$ME_prior_scale))    
     print_priors(prior, priors_made_slim)
- #   message("\n*Setting prior for car_rho (spatial autocorrelation parameter)\nUniform")
-  #  print(priors_made_slim$car_rho)
     ## CALL STAN -------------  
     samples <- rstan::sampling(stanmodels$car, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
     ## OUTPUT -------------

@@ -597,7 +597,7 @@ me_diag <- function(fit,
         theme_classic() +
         labs(
             x = expression(paste('MC (', Delta, ')')),
-            subtitle = paste0("Mean MC = ", round(D.mc.mu, 2)))    
+            subtitle = paste0("Mean MC = ", round(D.mc.mu, 3)))    
     map.delta <- ggplot(shape) +
         geom_sf(aes(fill = df$Delta),
                 lwd = 0.05,
@@ -1266,7 +1266,7 @@ prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), k = 1, gamma = 0
         dinv.sums <- Matrix::rowSums(dinv)
         M_diag <- 1 / dinv.sums
         # C scaled by sqrt of ratio of total distances
-        dinv.idx <- Matrix::summary(dinv)
+        A.idx <- Matrix::summary(dinv)
         C <- Matrix::Matrix(0, nrow = n, ncol = n)        
         for (m in 1:nrow(dinv.idx)) {
             i <- A.idx[m, "i"]; j <- A.idx[m, "j"]

@@ -71,7 +71,6 @@
 #'                                        location = c(0, 0),
 #'                                        scale = c(10, 10)), 
 #' ```
-#' Note that if a prior is provided, you must provide priors for both location (mu) and scale (tau or sigma). \cr \cr
 #' 
 #' The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boundaries of the prior with:
 #' ```

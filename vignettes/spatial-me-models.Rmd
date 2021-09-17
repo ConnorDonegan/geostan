@@ -111,7 +111,7 @@ The parameters $\mu$, $\rho$, and $\tau$ all require prior probability distribut
 \end{split}
 \end{equation}
 
-The default prior for $\rho$ is uniform across its entire support (determined by the extreme eigenvalues of $C$). When setting custom prior parameters for $\mu$, users provide a location and scale parameter for the Normal distribution. For $\tau$, the prior is fixed as Student's t with 10 degrees of freedom and mean zero; however, users can replace the scale parameter of 40 with 
+The default prior for $\rho$ is uniform across its entire support (determined by the extreme eigenvalues of $C$). 
 
 ## ME models in **geostan** 
 
@@ -177,11 +177,11 @@ me_diag(fit, 'ICE', georgia, style = "B")
 
 The point-interval plot on the left hand side of the panel shows the ACS estimates on the horizontal axis against a summary of the posterior distribution on the vertical axis. This provides an indication of 1) the amount of uncertainty present in each $x_i$, and 2) the degree to which the mean of the posterior probability distribution for $x_i$ may differ from the raw survey estimates ($\delta_i$). 
 
-Because we have a joint probability distribution for $\delta_i$, we also have a probability distribution for any function of $\delta_i$. If we can calculate the Moran coefficient (MC, an index of spatial autocorrelation) for each sample from the posterior distribution of $\delta_i$, we get a probability distribution for the MC. The middle panel is a histogram of those MC values, with the average of the distribution printed at the top. The final panel is a map of the posterior mean for each $\delta_i$ value.
+Because we have a joint probability distribution for $\delta_i$, we also have a probability distribution for any function of $\delta_i$. To examine spatial autocorrelation, we calculate the Moran coefficient (MC, an index of spatial autocorrelation) for each sample from the posterior distribution of $\delta_i$. The middle panel is a histogram of those MC values, with the mean of the samples printed at the top. The final panel is a map of the posterior mean for each $\delta_i$ value.
 
 From the point-interval plot, we can see that a few of the counties with low ICE estimates have posterior distributions that have shifted slightly towards the mean. However, notice that the model still places substantial probability on values of the ICE that are *more* extreme than the raw ACS estimates. The MC histogram is centered on zero; that's acceptable but, ideally, this should be centered on a small negative value, indicating balanced spatial smoothing. 
 
-Large $|\delta_i|$ values can provide a warning that your data may be of particularly low quality; strong social or spatial patterns in $\delta_i$, on the other hand, should prompt you to ask further questions about the adequacy of the model.
+Large $|\delta_i|$ values can provide a warning that your data may be of low quality; strong social or spatial patterns in $\delta_i$, on the other hand, should prompt you to ask further questions about the adequacy of the model.
 
 ### Looking closer
 
@@ -191,7 +191,7 @@ To look more closely at the model results, we can have `me_diag` return the inde
 me_diag(fit, 'ICE', georgia, style = "B", index = 5)
 ```
 
-Or, we can have `me_diag` return results as raw data (it will also return a list of ggplots):
+Or, we can have `me_diag` return results as raw data (it will also return a list of `ggplots`):
 ```{r}
 delta <- me_diag(fit, 'ICE', georgia, plot = FALSE)$delta_data
 head(delta)
@@ -214,23 +214,24 @@ Most are minuscule, but a few are not. We can follow up on this information by e
 georgia[c(91, 105, 90, 39, 143), c("NAME", "population", "white", "black", "hisp", "ai", "ICE", "ICE.se", "college", "college.se")]
 ```
 
-We can see that these areas are low population with low income, few college grads, and fairly high percent Black populations; they also have large standard errors on their ICE estimates. The somewhat large $\delta_i$ values for these counties are a result of the combination of unreliable estimates (large standard errors) while also being local outliers. 
-
+We can see that these are low population areas that also have low income, few college grads, and fairly high percent Black populations; crucially, they have large standard errors on their ICE estimates. The somewhat large $\delta_i$ values for these counties are a result of the combination of fairly unreliable estimates (large standard errors) while also being local outliers. 
 Notice that the ACS estimate for the ICE in Clinch County is $-0.40$ (SE = 0.048), implying a 95\% margin of error ranging from -0.5 to -0.3 (quite a wide range). Here is our probability distribution for the ICE in Clinch County:
 
 ```{r}
 plot(fit, pars = "x_ICE[91]")
 ```
 
-In this case, these $\delta_i$ values are not reason for serious concern. 
+### Non-spatial ME models
 
 If the `ME` list doesn't have a slot with `car_parts`, **geostan** will automatically use a non-spatial Student's t model instead of the CAR model. We can see how this results in more obviously patterned $\hat{\delta_i}$:
 
 ```{r fig.width = 7}
 ME$car_parts <- NULL
-fit_nsp <- stan_glm(log(rate.male) ~ ICE, data = georgia, ME = ME, prior_only = TRUE)
+ # refresh = 0 stops Stan from printing MCMC status updates
+fit_nsp <- stan_glm(log(rate.male) ~ ICE, data = georgia, ME = ME, prior_only = TRUE, refresh = 0)
 me_diag(fit_nsp, 'ICE', georgia)
 ```
+
 
 ### Working with MCMC samples from ME models
 
@@ -279,7 +280,6 @@ fit <- stan_glm(log(rate.male) ~ ICE, data = georgia, ME = ME)
 ```
 
 The ME model will automatically be added to the Bayesian regression analysis, so that the parameters are all modeled jointly with the covariate. This means that our observational uncertainty will be propagated throughout the model. 
-
 
 ## References
 

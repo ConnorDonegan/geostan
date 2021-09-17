@@ -1,12 +1,5 @@
 
 
-#' check data (x, w) dimensions and class for spatial autocorrelation measures
-#' @noRd
-check_sa_data <- function(x, w) {
-    stopifnot(inherits(x, "numeric") | inherits(x, "integer"))
-    stopifnot(inherits(w, "matrix") | inherits(w, "Matrix"))
-    stopifnot(all(dim(w) == length(x)))
-}
 
 
 #' Remove intercept from formula
@@ -257,7 +250,6 @@ par_alias <- function(samples, par, replacement) {
   return(samples)
 }
 
-
 #' Print priors that were set automatically
 #' 
 #' @noRd
@@ -319,6 +311,9 @@ print_priors <- function(user_priors, priors) {
 }
 
 
+a.zero <- function() array(0, dim = 1)
+a.n.zeros <- function(n) array(0, dim = c(0, n))
+vec.n.zeros <- function(n) rep(0, n)
 
 #' return empty car_parts list
 #' @noRd
@@ -338,10 +333,6 @@ car_parts_shell <- function(n) {
       WCAR = 0
     )
 }
-
-a.zero <- function() array(0, dim = 1)
-a.n.zeros <- function(n) array(0, dim = c(0, n))
-vec.n.zeros <- function(n) rep(0, n)
 
 #' @noRd
 empty_icar_data <- function(n) {
