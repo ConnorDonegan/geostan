@@ -33,7 +33,7 @@
 #' 
 #' @param scale_factor For the BYM2 model, optional. If missing, this will be set to a vector of ones. See `Details`.
 #' 
-#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. The ME models are designed for American Community Survey (ACS) estimates, `x`, and their standard errors, `se` (Donegan, Chun and Griffith 2021). The ME models have one of the the following two specifications, depending on the user input:
+#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. The ME models are designed for American Community Survey (ACS) estimates, `x`, and their standard errors, `se`. The ME models have one of the the following two specifications, depending on the user input:
 #' ```
 #'        x ~ Gauss(x_true, se)
 #'        x_true ~ MVGauss(mu, Sigma)
@@ -447,8 +447,14 @@ stan_icar <- function(formula,
     if (!intercept_only) pars <- c(pars, 'beta')
     if (dwx) pars <- c(pars, 'gamma')
     if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
-    if (me.list$has_me) pars <- c(pars, "x_true", "mu_x_true", "sigma_x_true")
-    if (me.list$spatial_me) pars <- c(pars, "car_rho_x_true")
+    if (me.list$has_me) {
+        pars <- c(pars, "x_true", "mu_x_true", "sigma_x_true")
+        if (me.list$spatial_me) {
+            pars <- c(pars, "car_rho_x_true")
+        } else {
+            pars <- c(pars, "nu_x_true")
+        }
+    }
     priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
     if (me.list$has_me) priors_made_slim <- c(priors_made_slim, list(ME_location = me.list$ME_prior_mean, ME_scale = me.list$ME_prior_scale))
     print_priors(prior, priors_made_slim)    
