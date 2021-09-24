@@ -4,7 +4,7 @@
 \alias{student_t}
 \title{Student t family}
 \usage{
-student_t()
+student_t(df = 10, location = 0, scale, variable = NULL)
 }
 \value{
 An object of class \code{family}

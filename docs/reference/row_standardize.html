@@ -53,6 +53,8 @@
 
 
 
+
+
 <!-- mathjax -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script>
@@ -74,9 +76,15 @@
 </script>
 
 
+  
+
+  
+
   </head>
 
   <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -90,19 +98,13 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
@@ -150,7 +152,7 @@
     <p>Row-standardize a matrix; safe for zero row-sums.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>row_standardize</span><span class='op'>(</span><span class='va'>C</span>, warn <span class='op'>=</span> <span class='cn'>TRUE</span>, msg <span class='op'>=</span> <span class='st'>"Row standardizing connectivity matrix"</span><span class='op'>)</span></pre>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>row_standardize</span><span class='op'>(</span><span class='va'>C</span>, warn <span class='op'>=</span> <span class='cn'>TRUE</span>, msg <span class='op'>=</span> <span class='st'>"Row standardizing connectivity matrix"</span><span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -174,37 +176,42 @@
     <p>A row-standardized matrix, W (i.e., all row sums equal 1, or zero).</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='va'>A</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='fu'>Matrix</span><span class='fu'>::</span><span class='fu'>summary</span><span class='op'>(</span><span class='va'>A</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; 159 x 159 sparse Matrix of class "ngCMatrix", with 860 entries 
-#&gt;     i j
-#&gt; 1  23 1
-#&gt; 2  58 1
-#&gt; 3  59 1
-#&gt; 4 131 1
-#&gt; 5 148 1
-#&gt; 6 159 1</div><div class='input'><span class='fu'>Matrix</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/Matrix/man/colSums.html'>rowSums</a></span><span class='op'>(</span><span class='va'>A</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;   [1]  6  5  6  5  3  5  7  4  5  5  5  7  6  4  5  4  7  7  4  5  7  6  6  6  4
-#&gt;  [26]  5  6  3  8  6  5  7  3  3  8  6  6  7  5  8  8  5  6  6  5  4  5  6  7  5
-#&gt;  [51]  2  7  6  5  3  1  3  7  6  2  5  5  8  6  7  7  5  6  4  4  6  4  6 10  8
-#&gt;  [76]  7  7  6  6  3  6 10  6  6  5  2  6  5  4  7  4  8  5  4  5  4  4  7  6  6
-#&gt; [101]  6  5  4  4  6  8  4  6  6  4  5  4  4  4  9  3  4  7  7  4  3  7  4  6  4
-#&gt; [126]  5  7  6  4  4  5  6  5  5  6  6  7  5  6  5  4  7  6  5  7  3  3  7  3  7
-#&gt; [151]  5  6  5  4  6  3  5  7  8</div><div class='input'><span class='va'>W</span> <span class='op'>&lt;-</span> <span class='fu'>row_standardize</span><span class='op'>(</span><span class='va'>A</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='message'>Row standardizing connectivity matrix</span></div><div class='input'><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='fu'>Matrix</span><span class='fu'>::</span><span class='fu'>summary</span><span class='op'>(</span><span class='va'>W</span><span class='op'>)</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; 159 x 159 sparse Matrix of class "dgCMatrix", with 860 entries 
-#&gt;     i j         x
-#&gt; 1  23 1 0.1666667
-#&gt; 2  58 1 0.1428571
-#&gt; 3  59 1 0.1666667
-#&gt; 4 131 1 0.2000000
-#&gt; 5 148 1 0.1428571
-#&gt; 6 159 1 0.1250000</div><div class='input'><span class='fu'>Matrix</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/Matrix/man/colSums.html'>rowSums</a></span><span class='op'>(</span><span class='va'>W</span><span class='op'>)</span>
-</div><div class='output co'>#&gt;   [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-#&gt;  [38] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-#&gt;  [75] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-#&gt; [112] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-#&gt; [149] 1 1 1 1 1 1 1 1 1 1 1</div></pre>
+    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='r-in'><span class='va'>A</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='fu'>Matrix</span><span class='fu'>::</span><span class='fu'>summary</span><span class='op'>(</span><span class='va'>A</span><span class='op'>)</span><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 159 x 159 sparse Matrix of class "ngCMatrix", with 860 entries </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>     i j</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 1  23 1</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 2  58 1</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 3  59 1</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 4 131 1</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 5 148 1</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 6 159 1</span>
+<span class='r-in'><span class='fu'>Matrix</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/Matrix/man/colSums.html'>rowSums</a></span><span class='op'>(</span><span class='va'>A</span><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   [1]  6  5  6  5  3  5  7  4  5  5  5  7  6  4  5  4  7  7  4  5  7  6  6  6  4</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  [26]  5  6  3  8  6  5  7  3  3  8  6  6  7  5  8  8  5  6  6  5  4  5  6  7  5</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  [51]  2  7  6  5  3  1  3  7  6  2  5  5  8  6  7  7  5  6  4  4  6  4  6 10  8</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  [76]  7  7  6  6  3  6 10  6  6  5  2  6  5  4  7  4  8  5  4  5  4  4  7  6  6</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [101]  6  5  4  4  6  8  4  6  6  4  5  4  4  4  9  3  4  7  7  4  3  7  4  6  4</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [126]  5  7  6  4  4  5  6  5  5  6  6  7  5  6  5  4  7  6  5  7  3  3  7  3  7</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [151]  5  6  5  4  6  3  5  7  8</span>
+<span class='r-in'><span class='va'>W</span> <span class='op'>&lt;-</span> <span class='fu'>row_standardize</span><span class='op'>(</span><span class='va'>A</span><span class='op'>)</span></span>
+<span class='r-msg co'><span class='r-pr'>#&gt;</span> Row standardizing connectivity matrix</span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/head.html'>head</a></span><span class='op'>(</span><span class='fu'>Matrix</span><span class='fu'>::</span><span class='fu'>summary</span><span class='op'>(</span><span class='va'>W</span><span class='op'>)</span><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 159 x 159 sparse Matrix of class "dgCMatrix", with 860 entries </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>     i j         x</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 1  23 1 0.1666667</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 2  58 1 0.1428571</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 3  59 1 0.1666667</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 4 131 1 0.2000000</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 5 148 1 0.1428571</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> 6 159 1 0.1250000</span>
+<span class='r-in'><span class='fu'>Matrix</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/Matrix/man/colSums.html'>rowSums</a></span><span class='op'>(</span><span class='va'>W</span><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>   [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  [38] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span>  [75] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [112] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [149] 1 1 1 1 1 1 1 1 1 1 1</span>
+</code></pre></div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -216,11 +223,11 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Connor Donegan.</p>
+  <p><p>Developed by Connor Donegan.</p></p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 1.6.1.9001.</p></p>
 </div>
 
       </footer>
@@ -228,6 +235,8 @@
 
   
 
+
+  
 
   </body>
 </html>

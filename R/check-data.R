@@ -2,7 +2,7 @@
 check_me_data <- function(ME, x.df) {    
     stopifnot(inherits(ME, "list"))
     stopifnot(inherits(ME$se, "data.frame"))
-    if (!all(names(ME$se) %in% names(x.df))) stop("All column names in ME$se must be found in the model matrix (from model.matrix(formula, data)). This error may occur if you've included some kind of data transformation in your model formula, such as a logarithm or polynomial.")
+    if (!all(names(ME$se) %in% names(x.df))) stop("All column names in ME$se must be found in the model matrix (from model.matrix(formula, data)).")
 }
 
 check_car_parts <- function(car_parts) {

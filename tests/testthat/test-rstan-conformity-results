@@ -1,0 +1,25 @@
+# Results from tests/testthat/test-rstan-conformity 
+# Run date: 2021-09-20
+
+
+# Context: geostan results equal Rstan results for log-linear Poisson model
+# intercept geostan: -3.809 rstan: -3.809 
+# beta geostan: -0.02 rstan: -0.02 
+# alpha_tau geostan: 0.162 rstan: 0.162
+
+# Context: geostan results equal Rstan results for binomial model
+# intercept geostan: -4.14 rstan: -4.141 
+# beta[1] geostan: -0.007 rstan: -0.006 
+# beta[2] geostan: -1.272 rstan: -1.277 
+# alpha_tau geostan: 0.127 rstan: 0.127
+
+
+
+
+# Context: geostan results equal Rstan results for ME model
+# intercept geostan: -4.382 rstan: -4.382 
+# beta geostan: -1.624 rstan: -1.626 
+# sigma geostan: 0.168 rstan: 0.168 
+# nu_x_true geostan: 10.705 rstan: 10.607 
+# mu_x_true geostan: -0.142 rstan: -0.142 
+# sigma_x_true geostan: 0.106 rstan: 0.106

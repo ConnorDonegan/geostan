@@ -32,6 +32,8 @@
 </script>
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -44,18 +46,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
@@ -77,7 +73,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/ConnorDonegan/geostan/">
+  <a href="https://github.com/ConnorDonegan/geostan/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -96,11 +92,11 @@
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Measuring and visualizing spatial autocorrelation</h1>
-                        <h4 class="author">Connor Donegan</h4>
+                        <h4 data-toc-skip class="author">Connor Donegan</h4>
             
-            <h4 class="date">September 13, 2021</h4>
+            <h4 data-toc-skip class="date">September 13, 2021</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/ConnorDonegan/geostan/blob/master/vignettes/measuring-sa.Rmd"><code>vignettes/measuring-sa.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ConnorDonegan/geostan/blob/master/vignettes/measuring-sa.Rmd" class="external-link"><code>vignettes/measuring-sa.Rmd</code></a></small>
       <div class="hidden name"><code>measuring-sa.Rmd</code></div>
 
     </div>
@@ -110,84 +106,59 @@
 <p>This vignette walks through exploratory spatial analysis functionality in the <strong>geostan</strong> package, which includes methods for measuring and visualizing spatial autocorrelation.</p>
 <div id="getting-started" class="section level2">
 <h2 class="hasAnchor">
-<a href="#getting-started" class="anchor"></a>Getting started</h2>
+<a href="#getting-started" class="anchor" aria-hidden="true"></a>Getting started</h2>
 <p>From the R console, load the <strong>geostan</strong>, <strong>sf</strong>, and <strong>tidyverse</strong> packages.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/">sf</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org">ggplot2</a></span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="st">"georgia"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"georgia"</span><span class="op">)</span></code></pre></div>
 <p>This vignette uses the <code>georgia</code> data set from the <strong>geostan</strong> package. This is a simple features (<code>sf</code>) object with estimates of county population characteristics from the American Community Survey (ACS) for the five year period spanning 2014-2018. Their corresponding standard errors are also here. The column <code>college</code> contains ACS estimates for the percent of the population age 25 and older that has obtained a college degree or higher; the standard errors of the survey estimates are in the column named <code>college.se</code>.</p>
 </div>
 <div id="spatial-diagnostic-summary" class="section level2">
 <h2 class="hasAnchor">
-<a href="#spatial-diagnostic-summary" class="anchor"></a>Spatial diagnostic summary</h2>
+<a href="#spatial-diagnostic-summary" class="anchor" aria-hidden="true"></a>Spatial diagnostic summary</h2>
 <p>If we pass these estimates and the simple features object to <code>sp_diag</code> function, it returns a histogram, Moran scatter plot, and map of the estimates:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="va">georgia</span>, name <span class="op">=</span> <span class="st">"College (%)"</span><span class="op">)</span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;"></p>
-<p>The Moran plot is a visualization of the degree of spatial autocorrelation (SA): on the horizontal axis are the <code>college</code> estimates while the vertical axis represents the mean neighboring value. The Moran coefficient, an index of SA, is printed at the top (MC=0.42) <span class="citation">(Chun and Griffith <a href="#ref-chun_2013">2013</a>)</span>.</p>
+<p>The Moran plot is a visualization of the degree of spatial autocorrelation (SA): on the horizontal axis are the <code>college</code> estimates while the vertical axis represents the mean neighboring value. The Moran coefficient, an index of SA, is printed at the top (MC=0.42) The expected value of the MC under no spatial autocorrelation is <span class="math inline">\(-1/(n-1)\)</span> <span class="citation">(Chun and Griffith <a href="#ref-chun_2013">2013</a>)</span>.</p>
 <p>The map shows that the contrast between the greater Atlanta metropolitan area and the rural counties is a prominent, if not the predominant, spatial pattern. It may help to compare the mean of the variable (which is just 18%):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span><span class="op">)</span>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span><span class="op">)</span>
 <span class="co">#&gt; [1] 18.1956</span></code></pre></div>
 <p>with a population-weighted mean (30%):</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/stats/weighted.mean.html">weighted.mean</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, w <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">population</span><span class="op">)</span>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/stats/weighted.mean.html" class="external-link">weighted.mean</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, w <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">population</span><span class="op">)</span>
 <span class="co">#&gt; [1] 30.66856</span></code></pre></div>
 </div>
-<div id="understanding-the-moran-scatter-plot" class="section level2">
+<div id="the-moran-scatter-plot" class="section level2">
 <h2 class="hasAnchor">
-<a href="#understanding-the-moran-scatter-plot" class="anchor"></a>Understanding the Moran scatter plot</h2>
+<a href="#the-moran-scatter-plot" class="anchor" aria-hidden="true"></a>The Moran scatter plot</h2>
 <p>We can create the Moran plot ourselves using the <code>moran_plot</code> function and a spatial connectivity matrix. The <code>shape2mat</code> function takes a spatial object (simple features or spatial polygons) and creates a sparse matrix representation of the neighborhood structure: counties are considered ‘neighbors’ if their borders touch each other.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> To reproduce the Moran plot given by <code>sp_diag</code>, we need to provide a row-standardized spatial weights matrix. We do this be setting the second argument, <code>style</code>, to “W”.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"W"</span><span class="op">)</span>
 <span class="fu"><a href="../reference/moran_plot.html">moran_plot</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="va">C</span><span class="op">)</span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-5-1.png" width="336" style="display: block; margin: auto;"></p>
-<p>For the sake of transparency and instruction, we can also create a Moran scatter plot manually. Again, the spatial lag term, <span class="math inline">\(\tilde{x}\)</span>, is the average of surrounding values: <span class="math inline">\(\tilde{x} = \sum_j^n c_{ij} x_j\)</span>. This is equal to the matrix-vector product, <span class="math inline">\(C x\)</span>, which we calculate in <strong>R</strong> using <code><a href="https://rdrr.io/r/base/matmult.html">%*%</a></code>, for matrix multiplication:</p>
+<p>Similarly, we can calculate the Moran coefficient using <code>mc</code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">college</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span><span class="op">)</span>
-<span class="va">spatial_lag</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span><span class="op">(</span><span class="va">C</span> <span class="op">%*%</span> <span class="va">x</span><span class="op">)</span>
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">spatial_lag</span><span class="op">)</span>,
-             col <span class="op">=</span> <span class="st">"darkred"</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_smooth.html">geom_smooth</a></span><span class="op">(</span>
-    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">spatial_lag</span><span class="op">)</span>,
-    se <span class="op">=</span> <span class="cn">FALSE</span>,
-    col <span class="op">=</span> <span class="st">"black"</span>,
-    method <span class="op">=</span> <span class="st">"lm"</span>,
-    <span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_classic</a></span><span class="op">(</span><span class="op">)</span>
-<span class="co">#&gt; `geom_smooth()` using formula 'y ~ x'</span></code></pre></div>
-<p><img src="measuring-sa_files/figure-html/unnamed-chunk-6-1.png" width="336" style="display: block; margin: auto;"> Similarly, we can calculate the Moran coefficient using <code>mc</code>:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/mc.html">mc</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="va">C</span><span class="op">)</span>
 <span class="co">#&gt; [1] 0.422</span></code></pre></div>
-<p>Under particular conditions (the variable has been centered by subtracting its own mean from each value, and a row-standardized weights matrix is used), the Moran coefficient is equivalent to the slope of the regression line on the Moran plot:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">spatial_lag</span> <span class="op">~</span> <span class="va">x</span><span class="op">)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Call:</span>
-<span class="co">#&gt; lm(formula = spatial_lag ~ x)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Coefficients:</span>
-<span class="co">#&gt; (Intercept)            x  </span>
-<span class="co">#&gt;    -0.05638      0.42161</span></code></pre></div>
+<p>Under particular conditions (the variable has been centered by subtracting its own mean from each value, and a row-standardized weights matrix is used), the Moran coefficient is equivalent to the slope of the regression line on the Moran plot.</p>
 <p>If we use a binary spatial weights matrix, the vertical axis will show the <em>sum</em> of surrounding values:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/moran_plot.html">moran_plot</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<p><img src="measuring-sa_files/figure-html/unnamed-chunk-9-1.png" width="336" style="display: block; margin: auto;"> While positive and negative neighboring values still cancel out as previously, using a binary matrix means that counties with more neighbors contribute more to the MC. This makes sense—a county with eight neighbors that have similar values as itself should contribute more to a measure of autocorrelation than a county neighbored by just two or three similar values.</p>
+<p><img src="measuring-sa_files/figure-html/unnamed-chunk-7-1.png" width="336" style="display: block; margin: auto;"></p>
+<p>While positive and negative neighboring values still cancel out as previously, using a binary matrix means that counties with more neighbors contribute more to the MC.</p>
 <p>The quadrants of the Moran plot are helpful for classifying observations. The first (top right) quadrant represents counties with above-average values that are also surrounded by above-average values; the third (bottom left) quadrant contains low values surrounded by low values. Points in these quadrants contribute <em>positively</em> to the MC, and they represent positive spatial autocorrelation. The second (top left) and fourth quadrants represent <em>negative</em> spatial autocorrelation since they contain spatial outliers—high (or low) values surrounded by dissimilar values.</p>
 </div>
 <div id="local-indicators-of-spatial-association" class="section level2">
 <h2 class="hasAnchor">
-<a href="#local-indicators-of-spatial-association" class="anchor"></a>Local Indicators of Spatial Association</h2>
-<p>The <code>lisa</code> function calculates “local indicators of spatial association” <span class="citation">(Anselin <a href="#ref-anselin_1995">1995</a>)</span>. LISA values are closely related to the Moran plot. If instead of centering <code>college</code>, we had converted it to z-scores by both centering and dividing by the standard deviation of <code>college</code>, the LISA value would be equal to the product of the z-scores and their spatial lag, <span class="math inline">\(L_i = z_i * \tilde{z}_i\)</span>. The <code>lisa</code> function returns the LISA values and indicates which quadrant of the Moran plot the point is found:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<a href="#local-indicators-of-spatial-association" class="anchor" aria-hidden="true"></a>Local Indicators of Spatial Association</h2>
+<p>The <code>lisa</code> function calculates “local indicators of spatial association” <span class="citation">(Anselin <a href="#ref-anselin_1995">1995</a>)</span>. LISA values are closely related to the Moran plot. If we were to provide standardized values (z-scores) on the Moran plot, the LISA value would be equal to the product of each z-scores and their spatially lagged value. The <code>lisa</code> function returns the LISA values and indicates which quadrant of the Moran plot the point is found:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">Li</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lisa.html">lisa</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="va">C</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">Li</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Li</span><span class="op">)</span>
 <span class="co">#&gt;            Li type</span>
 <span class="co">#&gt; 1  0.17326473   LL</span>
 <span class="co">#&gt; 2  0.06529153   LL</span>
@@ -196,27 +167,27 @@
 <span class="co">#&gt; 5 -0.40938420   HL</span>
 <span class="co">#&gt; 6  4.60294163   HH</span></code></pre></div>
 <p>“HH” indicates a high value surrounded by high values; “LL” is a low surrounded by low values, and so on. LISAs can be particularly helpful for identifying observations that don’t conform to the expectation of positive spatial autocorrelation, which is embedded in many models. Its worth nothing that each of the LISA values (also known as local Moran’s I) contribute to the Moran coefficient:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="../reference/mc.html">mc</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="va">C</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">Li</span><span class="op">$</span><span class="va">Li</span><span class="op">)</span><span class="op">)</span>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="../reference/mc.html">mc</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="va">C</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">Li</span><span class="op">$</span><span class="va">Li</span><span class="op">)</span><span class="op">)</span>
 <span class="co">#&gt; [1] 0.4220000 0.4189617</span></code></pre></div>
 </div>
 <div id="effective-sample-size" class="section level2">
 <h2 class="hasAnchor">
-<a href="#effective-sample-size" class="anchor"></a>Effective sample size</h2>
-<p>We have examined spatial patterns in the data using an abstract index of SA (the Moran coefficient), LISAs, and by qualitative, visual analysis of the map. We can also consider what these spatial patterns mean in terms of the information content of our data; that is, the impact that spatial autocorrelation might have on the amount ‘evidence’ that can be garnered from this data in an analysis. We might talk of this as “effective sample size” (ESS). Intuitively, evidence tends to increase with the variety of conditions under which a phenomena has been observed; so the amount of variation in data is related to the amount of information it contains.</p>
+<a href="#effective-sample-size" class="anchor" aria-hidden="true"></a>Effective sample size</h2>
+<p>We can also consider what these spatial patterns mean in terms of the information content of our data; that is, the impact that spatial autocorrelation might have on the amount evidence that can be garnered from this data in an analysis. This is often described as effective sample size (ESS).</p>
 <p>The <code>n_eff</code> function provides an approximate measure of ESS for spatially autocorrelated data. Based on the simultaneous autoregressive (SAR) model <span class="citation">(Griffith <a href="#ref-griffith_2005">2005</a>)</span>, it requires a value of the SA parameter, <span class="math inline">\(\rho\)</span>, from the SAR model and the number of observations in our data set. We can get a rough measure of ESS for our ICE data using the following code:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">rho</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aple.html">aple</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">ICE</span>, <span class="va">C</span><span class="op">)</span>
-<span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
+<span class="va">n</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
 <span class="va">ess</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/n_eff.html">n_eff</a></span><span class="op">(</span>rho <span class="op">=</span> <span class="va">rho</span>, n <span class="op">=</span> <span class="va">n</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>nominal_n <span class="op">=</span> <span class="va">n</span>, rho <span class="op">=</span> <span class="va">rho</span>, ESS <span class="op">=</span> <span class="va">ess</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>nominal_n <span class="op">=</span> <span class="va">n</span>, rho <span class="op">=</span> <span class="va">rho</span>, ESS <span class="op">=</span> <span class="va">ess</span><span class="op">)</span>
 <span class="co">#&gt; nominal_n       rho       ESS </span>
 <span class="co">#&gt; 159.00000   0.71800  21.69292</span></code></pre></div>
-<p>This tells us that, given the degree of SA in the ICE estimates, our nominal sample size of 159 observations has about the same information content as 22 independent observations. This should provide some idea as to why it is so perilous to use conventional (non-spatial) statistical methods with spatial data. The odds of observing a strong correlation between any arbitrary pair of spatially patterned variables can be far greater than conventional methods report. Returning to our qualitative assessment of the map patterns, it should be clear enough that any variable showing a general metropolitan-rural pattern is liable to appear correlated with the ICE.</p>
+<p>This tells us that, given the degree of SA in the ICE estimates, our nominal sample size of 159 observations has about the same information content as 22 independent observations. This should provide some idea as to why it is so perilous to use conventional (non-spatial) statistical methods with spatial data. The odds of observing a strong correlation between any arbitrary pair of spatially patterned variables can be far greater than conventional methods report.</p>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2 class="hasAnchor">
-<a href="#references" class="anchor"></a>References</h2>
+<a href="#references" class="anchor" aria-hidden="true"></a>References</h2>
 <div id="refs" class="references">
 <div id="ref-anselin_1995">
 <p>Anselin, Luc. 1995. “Local Indicators of Spatial Association—Lisa.” <em>Georgaphical Analysis</em> 27 (2): 93–115.</p>
@@ -232,7 +203,7 @@
 <div class="footnotes">
 <hr>
 <ol>
-<li id="fn1"><p>For the most part, users do not need to know anything about sparse matrix objects to work with them. Objects from the <strong>Matrix</strong> package can typically be treated like objects of class “matrix”. Sometimes, however, you may need to make an explicit call the the <strong>Matrix</strong> package to access its methods. For example, <code><a href="https://rdrr.io/r/base/colSums.html">colSums(C)</a></code> will produce an error, but <code><a href="https://rdrr.io/pkg/Matrix/man/colSums.html">Matrix::colSums(C)</a></code> will work as expected.<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn1"><p>For the most part, users do not need to know anything about sparse matrix objects to work with them. Objects from the <strong>Matrix</strong> package can typically be treated like objects of class “matrix”. Sometimes, however, you may need to make an explicit call the the <strong>Matrix</strong> package to access its methods. For example, <code>colSums(C)</code> will produce an error, but <code>Matrix::colSums(C)</code> will work as expected.<a href="#fnref1" class="footnote-back">↩</a></p></li>
 </ol>
 </div>
   </div>
@@ -248,11 +219,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Connor Donegan.</p>
+  <p></p>
+<p>Developed by Connor Donegan.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link external-link">pkgdown</a> 1.6.1.9001.</p>
 </div>
 
       </footer>
@@ -260,6 +233,8 @@
 
   
 
+
+  
 
   </body>
 </html>

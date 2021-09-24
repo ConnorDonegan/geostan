@@ -21,7 +21,7 @@ data {
   // ESF 
   int<lower=0> dev; // number of eigenvectors : now included in parts/data.stan
   matrix[n, dev] EV; // the eigenvectors : now included in parts/data.stan
-  real<lower=0> scale_global;  // horseshoe parameters
+  real<lower=0> global_scale;  // horseshoe parameters
   real<lower=0> slab_scale;
   real<lower=0> slab_df;
 }
@@ -85,7 +85,7 @@ transformed parameters {
     } else {
       error_scale[1] = 1;
     }
-    beta_ev = rhs_prior(dev, z, aux1_global[1], aux2_global[1], aux1_local, aux2_local, caux[1], scale_global, slab_scale, error_scale[1]);
+    beta_ev = rhs_prior(dev, z, aux1_global[1], aux2_global[1], aux1_local, aux2_local, caux[1], global_scale, slab_scale, error_scale[1]);
     esf = EV * beta_ev;
     fitted += esf;
   }
@@ -104,7 +104,7 @@ model {
     }
     target += std_normal_lpdf(spatial_scale[1]);
     phi_tilde ~ icar_normal(spatial_scale[1], node1, node2, k, group_size, group_idx, has_theta);
-    if (m) target += normal_lpdf(alpha_phi | 0, alpha_prior[2]);
+    if (m) target += normal_lpdf(alpha_phi | 0, prior_alpha[2]);
   }
   // ESF
   if (dev) {

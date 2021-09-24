@@ -28,13 +28,15 @@
     // covariates observed with uncertainty, and standard errors
   vector[n] x_me[dx_me];
   vector<lower=0>[n] sigma_me[dx_me];
-  //  priors for x_true 
+  //  priors for x_true
+  vector[dx_me] prior_nux_true_alpha;
+  vector[dx_me] prior_nux_true_beta;
   vector[dx_me] prior_mux_true_location;
   vector[dx_me] prior_mux_true_scale;
   vector[dx_me] prior_sigmax_true_df;
   vector[dx_me] prior_sigmax_true_location;
   vector[dx_me] prior_sigmax_true_scale;
-  real ME_prior_car_rho[2];
+  vector[2] prior_rhox_true;
   // data for auto-Guassian [ME] models
   int<lower=0,upper=1> spatial_me;
   int<lower=0,upper=1> WCAR;
@@ -53,12 +55,14 @@
   int<lower=0> n_ids; // number of units
   int<lower=0,upper=n_ids> id[n]; // identifier for the observational units associated with the varying intercepts
 // priors
-  vector[2] alpha_prior; // prior on the intercept
-  int<lower=0> dbeta_prior;  
-  row_vector[dbeta_prior] beta_prior[2]; // coefficient priors, with any SLX terms listed first; 
-  vector[3] alpha_tau_prior; // prior on standard deviation of varying intercepts
-  vector[2] t_nu_prior;
-  vector[3] sigma_prior;
+  vector[2] prior_alpha; // prior on the intercept
+  int<lower=0> dbeta_prior;
+  vector[dbeta_prior] prior_beta_location; // coefficient priors, with any SLX terms listed first; 
+  vector<lower=0>[dbeta_prior] prior_beta_scale;
+//row_vector[dbeta_prior] beta_prior[2]; 
+  vector[3] prior_alpha_tau; // prior on standard deviation of varying intercepts
+  vector[2] prior_t_nu;
+  vector[3] prior_sigma;
   // outcome 
   vector[n] y;
   int<lower=0> y_int[n];

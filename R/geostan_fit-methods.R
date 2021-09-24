@@ -122,7 +122,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
       cat("none")
   }
   if (x$spatial$method == "ESF") {
-    cat("\nRHS global shrinkage prior: ", round(x$priors$rhs["scale_global"], 2), "\n")
+    cat("\nHorseshoe global shrinkage prior: ", round(x$priors$beta_ev$global_scale, 2), "\n")
   }
   cat("\n")
   print(x$stanfit, pars = pars, digits = digits, probs = probs, ...)

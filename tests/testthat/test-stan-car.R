@@ -43,12 +43,25 @@ test_that("CAR accepts covariate ME with WX, mixed ME-non-ME", {
                         data = georgia,
                         C = shape2mat(georgia),
                         ME = list(se = data.frame(insurance = georgia$insurance.se),
-                        bounds = c(0, 100)
+                                  bounds = c(0, 100)
                         ),        
                         chains = 1,
                         iter = iter,
                         refresh = refresh)
     )
     expect_geostan(fit)
+})
+
+test_that("DCAR example runs", {
+    A <- shape2mat(georgia, "B")
+    D <- sf::st_distance(sf::st_centroid(georgia))
+    A <- D * A
+    cp <- prep_car_data(A, "DCAR", k = 1)
+    fit <- stan_car(log(rate.male) ~ college,
+                    data = georgia,
+                    car = cp,
+                    iter = iter,
+                    chains = 1)
+     expect_geostan(fit)
 })
 

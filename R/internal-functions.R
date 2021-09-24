@@ -118,9 +118,10 @@ post_summary <- function(samples) {
 logit <- function(p) log(p/(1-p))
 
 #' Build list of priors
+#' 
 #' @importFrom stats sd
 #' @noRd
-make_priors <- function(user_priors = NULL, y, x, rhs_scale_global, scaling_factor = 2, link = c("identity", "log", "logit"), EV, offset) {
+make_priors <- function(user_priors = NULL, y, x, hs_global_scale, scaling_factor = 2, link = c("identity", "log", "logit"), EV, offset) {
     link <- match.arg(link)
     if (link == "identity") {
         scale.y <- sd(y)
@@ -140,8 +141,8 @@ make_priors <- function(user_priors = NULL, y, x, rhs_scale_global, scaling_fact
       scale.y <- sd(y)
       alpha_scale <- 5
   }
-  alpha <- c(location = alpha_mean, scale = alpha_scale)
-  priors <- list(intercept = alpha)
+    priors <- list()
+    priors$intercept <- normal(location = alpha_mean, scale = alpha_scale)
   if (ncol(x)) {
     scalex <- vector(mode = "numeric", length = ncol(x))
     nxvals <- apply(x, 2, FUN = function(x) length(unique(x)))
@@ -156,30 +157,20 @@ make_priors <- function(user_priors = NULL, y, x, rhs_scale_global, scaling_fact
     beta_scale <- scaling_factor * (scale.y / scalex)
     for (i in 1:length(beta_scale)) beta_scale[i] <- max(beta_scale[i], 5)
     beta_location <- rep(0, times = ncol(x))
-    priors$beta <- cbind(beta_location, beta_scale)
-    dimnames(priors$beta)[[1]] <- dimnames(x)[[2]]
-    stopifnot(ncol(x) == nrow(priors$beta))      
+    priors$beta <- normal(location = beta_location, scale = beta_scale, variable = colnames(x))
   } else {
-      priors$beta <- matrix(0, nrow = 0, ncol = 2)
+      priors$beta <- normal(location = 0, scale = 1)
   }
-  # the following will be ignored when when not needed (RE scale, resid scale, student T df)
-  priors$alpha_tau <- c(df = 10, location = 0, scale = max(scaling_factor * scale.y, 3))
-  priors$sigma <- c(df = 10, location = 0, scale = max(scaling_factor * scale.y, 3))
-  priors$nu <- c(alpha = 3, beta = 0.2)
-  if(!missing(rhs_scale_global)) {
+  priors$alpha_tau <- student_t(df = 10, location = 0, scale = max(scaling_factor * scale.y, 3))
+  priors$sigma <- student_t(df = 10, location = 0, scale = max(scaling_factor * scale.y, 3))
+  priors$nu <- gamma(alpha = 3, beta = 0.2)
+  if(!missing(hs_global_scale)) {
       scale_ev <- sd(EV[,1])
-      priors$rhs = c(slab_df = 15, slab_scale = 0.5 * (scale.y / scale_ev), scale_global = rhs_scale_global)
-      }
+      priors$beta_ev = hs(global_scale = hs_global_scale, slab_df = 15, slab_scale = 0.5 * (scale.y / scale_ev))
+  }
   for (i in seq_along(priors)) {
       par.name <- names(priors)[i]
       if(!is.null(user_priors[[par.name]])) {
-          if (par.name == "beta") {
-              beta_prior <- user_priors[[par.name]]
-              if (ncol(x) == 1 &
-                  inherits(beta_prior, "numeric")
-                  ) user_priors[[par.name]] <- beta_prior <- as.data.frame(matrix(beta_prior, ncol = 2))                  
-              stopifnot(ncol(x) == nrow(beta_prior))      
-          }          
           priors[[i]] <- user_priors[[par.name]]
       }      
   }
@@ -212,7 +203,6 @@ clean_results <- function(samples, pars, is_student, has_re, Wx, x, x_me_idx) {
         x_names <- dimnames(x)[[2]]        
         for (i in seq_along(x_me_idx)) {
             x.id <- paste0("x_", rep(x_names[x_me_idx[i]], times = n), paste0("[", 1:n, "]"))
-            #names(samples)[grep(paste0("x_true\\[", i, ","), names(samples))] <- x.id #/#/          
             samples <- par_alias(samples, paste0("^x_true\\[" , i, ","), x.id)
         }
     }   
@@ -262,48 +252,37 @@ print_priors <- function(user_priors, priors) {
       u.p. <- user_priors[[nm]]
       if (is.null(u.p.)) {          
           p <- priors[[nm]]
-          if (nm == "beta") {
-              message("\n*Setting prior parameters for ", nm)              
-              message("Gaussian")
-              colnames(p) <- c("Location", "Scale")
-              print(p, row.names = FALSE)
-          }          
           if (nm == "intercept") {
               message("\n*Setting prior parameters for ", nm)              
-              message("Gaussian")
+              #message("Gaussian")
               print(p)
-          }
+          }          
+          if (nm == "beta") {
+              message("\n*Setting prior parameters for ", nm)              
+              print(p)
+          }          
           if (nm == "sigma") {
               message("\n*Setting prior parameters for ", nm)              
-              message("Student's t")
               print(p)
           }
           if (nm == "nu") {
               message("\n*Setting prior parameters for ", nm)              
-              message("Gamma")
-              message("alpha: ", p[1])
-              message("beta: ", p[2])
+              print(p)
           }
           if (nm == "alpha_tau") {
               message("\n*Setting prior parameters for ", nm)              
-              message("Student's t")
               print(p)
           }
-          if (nm == "rhs") {
-              message("\n*Setting prior parameters for eigenvector coefficients")              
-              message("Regularized horseshoe (RHS) prior parameters:")
-              message("Global shrinkage prior (scale_global): ", p["scale_global"])
-              message("Slab degrees of freedom: ", p["slab_df"])
-              message("Slab scale: ", p["slab_scale"])
+          if (nm == "beta_ev") {
+              message("\n*Setting prior for eigenvector coefficients")              
+              print(p)
           }
           if (nm == "car_scale") {
-              message("\n*Setting prior parameters for car_scale")
-              message("Student's t")
+              message("\n*Setting prior for CAR scale parameter (car_scale)")
               print(p)
           }
           if (nm == "car_rho") {
-              message("\n*Setting prior parameters for car_rho (autocorrelation parameter)")
-              message("Uniform")
+              message("\n*Setting prior for CAR spatial autocorrelation parameter (rho)")
               print(p)
           }
       }  
@@ -358,8 +337,8 @@ empty_esf_data <- function(n) {
     list(
         dev = 0,
         EV = model.matrix(~ 0 , data.frame(a=1:n)),
-        scale_global = 0,
+        global_scale = 0,
         slab_scale = 0,
-        slab_df = 0
+        slab_df = 0        
     )
 }

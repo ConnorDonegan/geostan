@@ -439,7 +439,7 @@ sp_diag.geostan_fit <- function(y,
 #' @import ggplot2
 sp_diag.numeric <- function(y,
                             shape,
-                            name = "Residual",
+                            name = "y",
                             plot = TRUE,
                             style = c("W", "B"),
                             w = shape2mat(shape, match.arg(style)),
@@ -1183,7 +1183,8 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' @param lambda If TRUE, return eigenvalues required for calculating the log determinant of the precision matrix and for determining the range of permissible values of rho. These will also be printed with a message if lambda = TRUE.
 #' 
 #' @param cmat If `cmat = TRUE`, return the full matrix C (in sparse matrix format).
-#' 
+#'
+#' @param stan_fn Two computational methods are available for CAR models using \code{\link[geostan]{stan_car}}: \code{car\_normal\_lpdf} and \code{wcar\_normal\_lpdf}. For WCAR models, either method will work but \code{wcar\_normal\_lpdf} is faster. To force use \code{car\_normal\_lpdf} when `style = 'WCAR'`, provide `stan_fn = "car_normal_lpdf"`. 
 #' 
 #' @details
 #' The CAR model is:
@@ -1196,11 +1197,11 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #'
 #' The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188).
 #'
-#' The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For `A`, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of `A` will be converted to: `d_{ij} = (a_{ij} + gamma)^(-k)` (Cliff and Ord 1981, p. 144). Default values are `k=1` and `gamma=0`. Following Cressie (2015), these values will be standardized by the maximum `d_{ij}` value. The conditional variances will be proportional to the inverse of the row sums of the transformed distance matrix: `D_{ii} = (sum_i^N d_{ij})^(-1)`.
+#' The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For `A`, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of `A` will be converted to: `d_{ij} = (a_{ij} + gamma)^(-k)` (Cliff and Ord 1981, p. 144). Default values are `k=1` and `gamma=0`. Following Cressie (2015), these values will be standardized by the maximum `d_{ij}` value. The conditional variances will be proportional to the inverse of the row sums of the transformed distance matrix: `M_{ii} = (sum_i^N d_{ij})^(-1)`.
 #'
 #' For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 \[1993\]) and Haining and Li (2020).
 #'
-#' When using \code{\link[geostan]{stan_car}}, always use `cmat = TRUE` (the default). 
+#' When using \code{\link[geostan]{stan_car}}, always use `cmat = TRUE` (the default).
 #'
 #' @source
 #'
@@ -1225,7 +1226,6 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #'
 #' ## get list of data for Stan
 #' cp <- prep_car_data(A, "WCAR")
-#'  # range of permissible values for rho:
 #' 1 / range(cp$lambda)
 #' 
 #' \dontrun{
@@ -1233,16 +1233,22 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' fit = stan_car(log(rate.male) ~ 1, data = georgia, car_parts = cp)
 #' }
 #'
-#' # or use the ACAR specification
+#' # ACAR specification
 #' cp <- prep_car_data(A, "ACAR")
-#'  # range of permissible values for rho:
-#' 1 / range(cp$lambda)
+#'
+#' ## DCAR specification (inverse-distance based)
+#' A <- shape2mat(georgia, "B")
+#' D <- sf::st_distance(sf::st_centroid(georgia))
+#' A <- D * A
+#' cp <- prep_car_data(A, "DCAR", k = 1)
+#' 
 #' @export
 #' @md
 #' @importFrom rstan extract_sparse_parts
 #' @importFrom Matrix isSymmetric Matrix rowSums summary
-prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), k = 1, gamma = 0, lambda = TRUE, cmat = TRUE) {
+prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), k = 1, gamma = 0, lambda = TRUE, cmat = TRUE, stan_fn = ifelse(style == "WCAR", "wcar_normal_lpdf", "car_normal_lpdf")) {
     style = match.arg(style)
+    if (style != "WCAR" & stan_fn == "wcar_normal_lpdf") stop("wcar_normal_lpdf only works with style = 'WCAR'.")
     stopifnot(inherits(A, "matrix") | inherits(A, "Matrix"))
     stopifnot(all(Matrix::rowSums(A) > 0))
     A <- Matrix::Matrix(A, sparse = TRUE)
@@ -1268,7 +1274,7 @@ prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), k = 1, gamma = 0
         # C scaled by sqrt of ratio of total distances
         A.idx <- Matrix::summary(dinv)
         C <- Matrix::Matrix(0, nrow = n, ncol = n)        
-        for (m in 1:nrow(dinv.idx)) {
+        for (m in 1:nrow(A.idx)) {
             i <- A.idx[m, "i"]; j <- A.idx[m, "j"]
             C[i,j] <- dinv[i,j] * sqrt(dinv.sums[j] / dinv.sums[i])
         }
@@ -1276,14 +1282,16 @@ prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), k = 1, gamma = 0
     if (style == "WCAR") {
         Ni <- Matrix::rowSums(A)
         C <- A / Ni
-        M_diag <- 1 / Ni        
+        M_diag <- 1 / Ni
+    }
+    if (stan_fn == "wcar_normal_lpdf") {       
         stopifnot( Matrix::isSymmetric(C %*% Matrix::Diagonal(x = M_diag), check.attributes = FALSE) )
         car.dl <- rstan::extract_sparse_parts(A)
         names(car.dl) <- paste0("Ax_", names(car.dl))
         car.dl$nAx_w <- length(car.dl$Ax_w)
         car.dl$Cidx <- array(0, dim = 1)
         car.dl$nC <- 1
-        car.dl$WCAR <- 1
+        car.dl$WCAR <- 1            
     } else {
         stopifnot( Matrix::isSymmetric(C %*% Matrix::Diagonal(x = M_diag), check.attributes = FALSE) )        
         car.dl <- rstan::extract_sparse_parts(Matrix::Diagonal(n) - C)

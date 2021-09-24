@@ -3,18 +3,15 @@ context("SA indices")
 test_that("SA indices produce the same results as spdep when expected", {
                                        
     skip_on_cran()
-    skip_if_not_installed("spdep")
-    skip_if_not_installed("spatialreg")
-    library(spdep)
- #   library(spatialreg)
+#    skip_if_not_installed("spatialreg")
     d=10
     t=0.0001
     data(georgia)
     W <- shape2mat(georgia, style = "W")
     C <- shape2mat(georgia, style = "B")
     nb <- spdep::poly2nb(georgia)
-    lw.W <- nb2listw(nb, style = "W")    
-    lw.C <- nb2listw(nb, style = "B")
+    lw.W <- spdep::nb2listw(nb, style = "W")    
+    lw.C <- spdep::nb2listw(nb, style = "B")
     x <- sim_sar(w=W, rho = 0.7)
     n <- length(x)
     ## test moran coefficient, binary matrix C

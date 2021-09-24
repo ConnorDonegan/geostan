@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
 <script src="pkgdown.js"></script><meta property="og:title" content="R package for Bayesian spatial modeling">
-<meta property="og:description" content="Under development. For Bayesian inference with spatial data, provides exploratory analysis tools, multiple spatial model specifications, spatial model diagnostics, and special methods for inference with small area survey data (e.g., the America Community Survey (ACS)). Models are pre-specified using the Stan programming language, a platform for Bayesian inference using Markov chain Monte Carlo (MCMC). References: Carpenter et al. (2017) &lt;doi:10.18637/jss.v076.i01&gt;; Donegan et al. (2020) &lt;doi:10.1016/j.spasta.2020.100450&gt;; Donegan et al. (2021) &lt;doi:10.3390/ijerph18136856&gt;; Morris (2019) &lt;doi:10.1016/j.sste.2019.100301&gt;.">
+<meta property="og:description" content="Under development. For Bayesian inference with spatial data, provides exploratory analysis tools, multiple spatial model specifications, spatial model diagnostics, and special methods for inference with small area survey data (e.g., the America Community Survey (ACS)). Models are pre-specified using the Stan programming language, a platform for Bayesian inference using Markov chain Monte Carlo (MCMC). References: Carpenter et al. (2017) &lt;doi:10.18637/jss.v076.i01&gt;; Donegan, Chun and Hughes (2020) &lt;doi:10.1016/j.spasta.2020.100450&gt;; Donegan, Chun and Griffith (2021) &lt;doi:10.3390/ijerph18136856&gt;; Morris et al. (2019) &lt;doi:10.1016/j.sste.2019.100301&gt;.">
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -32,6 +32,8 @@
 </script>
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-home">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -44,18 +46,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="reference/index.html">Reference</a>
 </li>
@@ -96,29 +92,29 @@
   <div class="contents col-md-9">
 <div id="geostan-" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
-<a href="#geostan-" class="anchor"></a>geostan <img src="reference/figures/logo.png" align="right" width="160">
+<a href="#geostan-" class="anchor" aria-hidden="true"></a>geostan <img src="reference/figures/logo.png" align="right" width="160">
 </h1></div>
 <p>The <strong>geostan</strong> R package provides a user-friendly interface to hierarchical Bayesian models (HBMs) for areal data. It is designed for relative ease of use and developed with a particular emphasis on spatial epidemiology and survey data for public health. All of the models are built with the Stan programming language, but users only need to be familiar with the R language.</p>
 <p><strong>The package and website are still under development.</strong></p>
 <hr>
 <div id="spatial-analysis-tools" class="section level3">
 <h3 class="hasAnchor">
-<a href="#spatial-analysis-tools" class="anchor"></a>Spatial analysis tools</h3>
+<a href="#spatial-analysis-tools" class="anchor" aria-hidden="true"></a>Spatial analysis tools</h3>
 <p>Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics.</p>
 </div>
 <div id="disease-mapping-and-spatial-regression" class="section level3">
 <h3 class="hasAnchor">
-<a href="#disease-mapping-and-spatial-regression" class="anchor"></a>Disease mapping and spatial regression</h3>
+<a href="#disease-mapping-and-spatial-regression" class="anchor" aria-hidden="true"></a>Disease mapping and spatial regression</h3>
 <p>Model small-area incidence rates with mortality or disease data recorded across areal units like counties or census tracts.</p>
 </div>
 <div id="observational-error-models" class="section level3">
 <h3 class="hasAnchor">
-<a href="#observational-error-models" class="anchor"></a>Observational error models</h3>
+<a href="#observational-error-models" class="anchor" aria-hidden="true"></a>Observational error models</h3>
 <p>Incorporate information on data quality into any <strong>geostan</strong> model. Built specifically for American Community Survey (ACS) data.</p>
 </div>
 <div id="the-rstan-ecosystem" class="section level3">
 <h3 class="hasAnchor">
-<a href="#the-rstan-ecosystem" class="anchor"></a>The RStan ecosystem</h3>
+<a href="#the-rstan-ecosystem" class="anchor" aria-hidden="true"></a>The RStan ecosystem</h3>
 <p>Compatible with a suite of high-quality R packages for Bayesian inference and model evaluation.</p>
 </div>
 </div>
@@ -126,37 +122,44 @@
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="links">
-<h2>Links</h2>
+<h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
 <li>Browse source code at <br><a href="https://github.com/ConnorDonegan/geostan/">https://​github.com/​ConnorDonegan/​geostan/​</a>
 </li>
 </ul>
 </div>
+
 <div class="license">
-<h2>License</h2>
+<h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>
 <li><small>GPL (&gt;= 3)</small></li>
 </ul>
 </div>
+
+
 <div class="developers">
-<h2>Developers</h2>
+<h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Connor Donegan <br><small class="roles"> Author, maintainer </small>  </li>
-<li><a href="authors.html">All authors...</a></li>
+<li><a href="authors.html">More on authors...</a></li>
 </ul>
 </div>
+
+
 
   </div>
 </div>
 
 
       <footer><div class="copyright">
-  <p>Developed by Connor Donegan.</p>
+  <p></p>
+<p>Developed by Connor Donegan.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 1.6.1.9001.</p>
 </div>
 
       </footer>
@@ -164,6 +167,8 @@
 
   
 
+
+  
 
   </body>
 </html>

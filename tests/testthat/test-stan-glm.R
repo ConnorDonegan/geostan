@@ -45,7 +45,6 @@ test_that("GLM works with covariate ME: spatial data model", {
     A <- shape2mat(georgia, "B")
     ME <- list(
         se = data.frame(ICE = georgia$ICE.se),
-        spatial = TRUE,
         car_parts = prep_car_data(A)
         )
     SW(
@@ -84,13 +83,16 @@ test_that("GLM accepts covariate ME, multiple proportions", {
 test_that("Set priors for GLM", {
     data(georgia)
     SW(
-        fit <- stan_glm(deaths.male ~ offset(log(pop.at.risk.male)) + insurance + college,
+        fit <- stan_glm(log(rate.male) ~ insurance + college,
                         data = georgia,
                         chains = 1,
-                        family = poisson(),
-                        prior = list(beta = data.frame(location = c(0,0),
-                                                       scale = c(10,10)),
-                                     intercept = c(0, 10)
+                        family = student_t(),
+                        prior = list(
+                            nu = gamma(3, 0.1),
+                            beta = normal(location = c(0,0),
+                                                   scale = c(10,10)),
+                                     intercept = normal(0, 10),
+                                     sigma = student_t(10, 0, 5)
                                      ),
                     iter = iter,
                     refresh = refresh,
@@ -100,21 +102,5 @@ test_that("Set priors for GLM", {
     expect_geostan(fit)
 })
 
-test_that("Set length-2 vector prior for 1 beta in GLM", {
-    data(georgia)
-    SW(
-        fit <- stan_glm(deaths.male ~ offset(log(pop.at.risk.male)) + insurance,
-                        data = georgia,
-                        chains = 1,
-                        family = poisson(),
-                        prior = list(beta = c(0, 10),
-                                     intercept = c(0, 10)
-                                     ),
-                    iter = iter,
-                    refresh = refresh,
-                    init_r = 0.1
-                    )
-    )
-    expect_geostan(fit)
-})
+
 

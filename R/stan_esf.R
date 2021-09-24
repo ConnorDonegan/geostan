@@ -1,23 +1,10 @@
 #' Spatial filtering
 #'
-#' @export
-#'
-#' @md
-#' 
 #' @description Fit a spatial regression model using eigenvector spatial filtering (ESF).
 #' 
-#' @param formula A model formula, following the R \link[stats]{formula} syntax. Binomial models are specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
-#' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
-#' 
-#'  These will be pre-multiplied by a row-standardized version of the user-provided spatial weights matrix and then added (prepended) to the design matrix. For example, providing
-#' ```
-#' stan_esf(y ~ x1 + x2, slx = ~ x1, ...)
-#' ```
-#' is the same as providing
-#' ```
-#' stan_esf(y ~ I(W %*% x1) + x1 + x2, ...)
-#' ```
-#' where `W` is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}). When setting priors for \code{beta}, remember to include priors for any SLX terms as well.
+#' @param formula A model formula, following the R \code{\link[stats]{formula}} syntax. Binomial models are specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
+#'
+#' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally). When setting priors for \code{beta}, remember to include priors for any SLX terms. 
 #' 
 #' @param re To include a varying intercept (or "random effects") term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re} is a vector of parameters added to the linear predictor of the model, and:
 #' ```
@@ -25,18 +12,112 @@
 #'        alpha_tau ~ Student_t(d.f., location, scale).
 #' ```
 #' 
-#' @param C Spatial connectivity matrix which will be used to calculate eigenvectors, if `EV` is not provided by the user. Typically, the binary connectivity matrix is best for calculating eigenvectors (i.e., using `C = shape2mat(shape, style = "B")` rather than `style = "W"`). This matrix will also be used to calculate residual spatial autocorrelation and any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms. See \code{\link[geostan]{shape2mat}}.
+#' @param C Spatial connectivity matrix which will be used to calculate eigenvectors, if `EV` is not provided by the user. Typically, the binary connectivity matrix is best for calculating eigenvectors (i.e., using `C = shape2mat(shape, style = "B")`). This matrix will also be used to calculate residual spatial autocorrelation and any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms. See \code{\link[geostan]{shape2mat}}.
 #'
 #' @param nsa Include eigenvectors representing negative spatial autocorrelation? Defaults to \code{nsa = FALSE}. This is ignored if \code{EV} is provided.
 #' 
 #' @param threshold Eigenvectors with standardized Moran coefficient values below this `threshold` value will be excluded from the candidate set of eigenvectors, `EV`. This defaults to \code{threshold = 0.25}, and is ignored if \code{EV} is provided. 
 #' 
-#' @param EV A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial. With connectivity matrix `C`, you can create `EV` using `EV = make_EV(C)`. If `EV` is provided, still also provide a spatial weights matrix \code{C} for other purposes.  See \code{\link[geostan]{make_EV}} and \code{\link[geostan]{shape2mat}}.
+#' @param EV A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial (see \code{\link[geostan]{make_EV}}). If `EV` is provided, still also provide a spatial weights matrix \code{C} for other purposes; `threshold` and `nsa` are ignored for user provided `EV`.
 #' 
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
+#'
+#' @param family The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{student_t()} and \code{poisson(link = "log")}, and \code{binomial(link = "logit")}.
+#'
+#' @param prior A named list of parameters for prior distributions (see \code{\link[geostan]{priors}}):  \describe{
 #' 
-#'@param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. The ME models are designed for American Community Survey (ACS) estimates, `x`, and their standard errors, `se`. The ME models have one of the the following two specifications, depending on the user input:
-#'  ```
+#' \item{intercept}{The intercept is assigned a Gaussian prior distribution (see \code{\link[geostan]{normal}}}.
+#' 
+#' \item{beta}{Regression coefficients are assigned Gaussian prior distributions. Variables must follow their order of appearance in the model `formula`. Note that if you also use `slx` terms (spatially lagged covariates), and you use custom priors for `beta`, then you have to provide priors for the slx terms. Since slx terms are *prepended* to the design matrix, the prior for the slx term will be listed first.
+#' }
+#'
+#' \item{sigma}{For `family = gaussian()` and `family = student_t()` models, the scale parameter, `sigma`, is assigned a (half-) Student's t prior distribution. The half-Student's t prior for `sigma` is constrained to be positive.}
+#'
+#' \item{nu}{`nu` is the degrees of freedom parameter in the Student's t likelihood (only used when `family = student_t()`). `nu` is assigned a gamma prior distribution. The default prior is `prior = list(nu = gamma(alpha = 3, beta = 0.2))`. }
+#'
+#' \item{tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(tau = student_t(df = 20, location = 0, scale = 20))`.}
+#'
+#' \item{beta_ev}{The eigenvector coefficients are assigned the horseshoe prior (Piironen and Vehtari, 2017), parameterized by `global_scale` (to control overall prior sparsity), plus the degrees of freedom and scale of a Student's t model for any large coefficients (see \code{\link[geostan]{priors}}). To allow the spatial filter to account for a greater amount of spatial autocorrelation (i.e., if you find the residuals contain spatial autocorrelation), increase the global scale parameter (to a maximum of `global_scale = 1`).}
+#' }
+#' 
+#'
+#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list of priors. See the Details section below for more information. Elements of the \code{ME} list may include:
+#' \describe{
+#' 
+#' \item{se}{A required dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
+#' 
+#' \item{bounds}{An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to `c(-Inf, Inf)` (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.}
+#'
+#' \item{car_parts}{A list of data for the CAR model, as returned by \code{\link[geostan]{prep_car_data}}. If not provided, a non-spatial Student's t model will be used instead of the CAR model.}
+#' 
+#'  \item{prior}{Optionally provide a named list of prior distributions for the measurement error model(s) (see \code{\link[geostan]{priors}}). If none are provided, default priors will be assigned and printed to the console. \describe{
+#' 
+#'  \item{df}{If using a non-spatial ME model, the degrees of freedom for the Student's t model is assigned a gamma prior with default parameters of `gamma(alpha = 3, beta = 0.2)`. Provide values for each covariate in `se`, listing the values in the same order as the columns of `se`.}
+#'
+#'  \item{car_rho}{The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boundaries of the prior with: `ME$prior$car_rho <- uniform(lower_bound, upper_bound)`. You must specify values that are within the permissible range of values for `rho`. This range is automatically printed to the console by \code{\link[geostan]{prep_car_data}}.}
+#' 
+#'   \item{location}{The prior for the location parameter, mu, is Gaussian (the default being `normal(location = 0, scale = 100)`). To adjust the prior distributions, provide values for each covariate in `se`, listing the values in the same order as the columns of `se`.}
+#' 
+#'  \item{scale}{The prior for the `scale` parameters is Student's t, and the default is `student_t(df = 10, location = 0, scale = 40)`. To adjust, provide values for each covariate in `se`, listing the values in the same order as the columns of `se`.}
+#' }
+#' }
+#' }
+#'
+#' 
+#' @param centerx To center predictors on their mean values, use `centerx = TRUE`. If `centerx` is a numeric vector, predictors will be centered on the values provided. This argument is passed to \code{\link[base]{scale}}.
+#' 
+#' @param prior_only Draw samples from the prior distributions of parameters only.
+#' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
+#' @param iter Number of samples per chain. Default \code{iter = 2000}.
+#' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.
+#' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
+#' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. 
+#' 
+#' @param ... Other arguments passed to \link[rstan]{sampling}. 
+#' @details
+#'
+#' Eigenvector spatial filtering (ESF) is a method for spatial regression analysis. ESF is extensively covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), which uses Piironen and Vehtari's (2017) regularized horseshoe prior.
+#'
+#' ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \code{C}. The resulting eigenvectors, `EV`, are mutually orthogonal and uncorrelated map patterns. The spatial filter is `EV * beta_ev`, where `beta_ev` is a vector of coefficients.
+#'
+#' ESF decomposes the data into a global mean, `alpha`, global patterns contributed by covariates, `X * beta`, spatial trends, `EV * beta_ev`, and residual variation. Thus, for `family=gaussian()`,
+#' 
+#' ```
+#'         Y ~ Gauss(alpha + X * beta + EV * beta_ev, sigma).
+#'```
+#' An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:
+#' ```
+#'         Y ~ Poisson(exp(offset + Mu))
+#'         Mu = alpha + EV * beta_ev + A
+#'         A ~ Guass(0, tau)
+#'         tau ~ student(20, 0, 2)
+#'         beta_ev ~ horseshoe(.)
+#' ```
+#' 
+#' The \code{\link[geostan]{spatial.geostan_fit}} method will return `EV * beta`.
+#'
+#' The model can also be extended to the space-time domain; see \link[geostan]{shape2mat} to specify a space-time connectivity matrix. 
+#' 
+#' The coefficients \code{beta_ev} are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the \code{threshold} argument). By default, \code{stan_esf} will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the \code{nsa} argument.
+#'
+#' ### Spatially lagged covariates (SLX)
+#' 
+#' The `slx` argument is a convenience function for including SLX terms. For example,
+#' ```
+#' stan_glm(y ~ x1 + x2, slx = ~ x1, ...)
+#' ```
+#' is a shortcut for
+#' ```
+#' stan_glm(y ~ I(W %*% x1) + x1 + x2, ...)
+#' ```
+#' where `W` is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}). SLX terms will always be *prepended* to the design matrix, as above, which is important to know when setting prior distributions for regression coefficients.
+#'
+#' For measurement error (ME) models, the SLX argument is the only way to include spatially lagged covariates since the SLX term needs to be re-calculated on each iteration of the MCMC algorithm.
+#' 
+#' ### Measurement error (ME) models
+#' 
+#' The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. With estimates, `x`, and their standard errors, `se`, the ME models have one of the the following two specifications, depending on the user input:
+#' ```
 #'        x ~ Gauss(x_true, se)
 #'        x_true ~ MVGauss(mu, Sigma)
 #'        Sigma = (I - rho * C)^(-1) M * tau^2
@@ -52,111 +133,7 @@
 #'        mu ~ Gauss(0, 100)
 #'        sigma ~ student_t(10, 0, 40)
 #' ```
-#' The target of inference is `x_true`, the actual values of the covariate during the period of the survey, and the observational error is the difference between the survey estimate and the unknown value that would have been obtained by a complete census. Elements of the list \code{ME} may include:
-#' 
-#' \describe{
-#' 
-#' \item{se}{A required dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
-#' 
-#' \item{bounds}{An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to `c(-Inf, Inf)` (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.}
-#' 
-#'  \item{prior}{Optionally provide parameter values for the prior distributions of the measurement error model(s). The ME models contain a location parameter (mu) and a scale parameter (tau or sigma), each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console. \cr \cr
-#' 
-#' The prior for the location parameter, mu, is Gaussian (the default being `Gauss(0, 100)`). You can alter this by providing a `data.frame` with columns named `location` and `scale`; provide values for each covariate in `se`. List the values in the same order as the columns of `se`. \cr \cr
-#'
-#' The prior for the `scale` parameters is Student's t, and the default is `Student_t(10, 0, 40)`. You can alter this by providing a `data.frame` with columns named `df`, `location` and `scale`; provide values for each covariate in `se`. List the values in the same order as the columns of `se`. \cr \cr
-#'
-#' For example, if you are modeling two covariates with the ME models, you can add the priors to an existing `ME` list like this:
-#' ```
-#' ME$prior <- list(location = data.frame(location = c(0, 0),
-#'                                           scale = c(10, 10)),
-#'                  scale    = data.frame(df  c(10, 10),
-#'                                        location = c(0, 0),
-#'                                        scale = c(10, 10)), 
-#' ```
-#' 
-#' The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boundaries of the prior with:
-#' ```
-#' ME$prior$car_rho <- c(lower_bound, upper_bound)
-#' ```
-#'  You must specify values that are within the permissible range of values for `rho`. This range is automatically printed to the console by \code{\link[geostan]{prep_car_data}}.
-#' }
-#' 
-#' \item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data}. If not provided, a non-spatial Student's t model will be used instead of the CAR model.}
-#' }
-#' 
-#' @param family The likelihood function for the outcome variable. Current options are \code{family = gaussian()}, \code{student_t()} and \code{poisson(link = "log")}, and \code{binomial(link = "logit")}.
-#' 
-#' @param p0 Optional; number of eigenvector coefficients expected to be far from zero. If this and \code{prior_rhs} are missing, Chun et al.'s (2016) formula will be used to fill this in using \code{\link[geostan]{exp_pars}}. The value of \code{p0} is used to control the prior degree of sparsity in the model.
-#'
-#' @param prior A named list of parameters for prior distributions. User-defined priors can be assigned to the following parameters:
-#' \describe{
-#' \item{intercept}{The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. \code{prior = list(intercept = c(location = 0, scale = 10))} to assign a Gaussian prior with mean zero and variance 10^2.}
-#' 
-#' \item{beta}{Regression coefficients are assigned Gaussian prior distributions. Provide a `data.frame` with two columns (location and scale). 
-#'
-#' The order of variables must follow their order of appearance in the model `formula`; e.g., if the formula is `y ~ x1 + x2`, then providing
-#' ```
-#' prior = list(beta = data.frame(location = c(0, 2),
-#'                                   scale = c(1, 2)))
-#' ```
-#' will assign the following prior distributions:
-#' ```
-#'        x1 ~ Gauss(0, 1)
-#'        x2 ~ Gauss(2, 2)
-#' ```
-#' Note that if you also use `slx` terms (spatially lagged covariates), then you have to provide priors for them. If your model specification is:
-#' ```
-#'  stan_glm(y ~ x1 + x2, slx = ~ x1, ...)
-#' ```
-#' then the prior for beta must have three rows. Since slx terms are always *prepended* to the design matrix, the prior for the slx term will be listed first.
-#' }
-#'
-#' \item{sigma}{The scale parameter, `sigma,` for `gaussian()` and `student_t()` models is assigned a half-Student's t prior distribution. Thus, provide values for the degrees of freedom, location, and scale parameters; e.g., `prior = list(sigma = c(df = 10, location = 0, scale = 5))` for a prior centered on zero with scale of 5 and 10 degrees of freedom. The half-Student's t prior for `sigma` is constrained to be positive.
-#' }
-#'
-#' \item{nu}{The degrees of freedom for the Student's t likelihood model is assigned a gamma prior distribution. The default prior is `prior = list(nu = c(alpha = 3, beta = 0.2))`.}
-#'
-#' \item{tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(tau = c(df = 20, location = 0, scale = 20))`.}
-#'
-#' \item{rhs}{This is for controlling the regularized horseshoe (RHS) prior, which is assigned to the eigenvector coefficients. Provide a *named* vector of length three. The RHS prior has two parts to consider. First is the 'slab' that is used to regularize large coefficient estimates; this is a zero-mean Student's t model, the user provides the degrees of freedom and scale parameters. The second component is the global shrinkage parameter, controlling the degree of shrinkage; provide a value nearer to zero if you wish to make the model more sparse. To allow the spatial filter to account for a greater amount of spatial autocorrelation (i.e., if you find the residuals contain spatial autocorrelation), increase the global scale parameter up to one. E.g., \code{prior = list(rhs = c(slab_df = 15, slab_scale = 5, scale_global = 1))}.}
-#' }
-#' 
-#' @param centerx To center predictors on their mean values, use `centerx = TRUE`. If `centerx` is a numeric vector, predictors will be centered on the values provided. This argument is passed to \code{\link[base]{scale}}.
-#' 
-#' @param prior_only Draw samples from the prior distributions of parameters only.
-#' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
-#' @param iter Number of samples per chain. Default \code{iter = 2000}.
-#' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.
-#' @param pars Optional; specify any additional parameters you'd like stored from the Stan model. Parameters from the RHS priors include \code{tau} (the global shrinkage parameter) and \code{lambda} (the local shrinkage parameter).
-#' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. 
-#' 
-#' @param ... Other arguments passed to \link[rstan]{sampling}. 
-#' @details
-#'
-#' Eigenvector spatial filtering (ESF) is a method for spatial regression analysis. ESF is extensively covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), which uses Piironen and Vehtari's (2017) regularized horseshoe prior.
-#'
-#' ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \code{C}. The resulting eigenvectors, `EV`, are mutually orthogonal and uncorrelated map patterns. ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. The spatial filter is `EV * beta_ev`, where `beta_ev` is a vector of coefficients.
-#'
-#' ESF decomposes the data into a global mean, `alpha`, global patterns contributed by covariates, `X * beta`, spatial trends, `EV * beta_ev`, and residual variation. Thus, for `family=gaussian()`,
-#' 
-#' ```
-#'                          Y ~ Gauss(alpha + X * beta + EV * beta_ev, sigma).
-#'```
-#' An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:
-#' ```
-#'                           Y ~ Poisson(exp(offset + Mu))
-#'                           Mu = alpha + EV * beta_ev + A
-#'                           A ~ Guass(0, tau)
-#'                           tau ~ student(20, 0, 2)
-#'                           beta_ev ~ horseshoe(.)
-#' ```
-#' 
-#' The \code{\link[geostan]{spatial.geostan_fit}} method will return `EV * beta`.
-#'
-#' The model can also be extended to the space-time domain; see \link[geostan]{shape2mat} to specify a space-time connectivity matrix. 
-#' 
-#' The coefficients \code{beta_ev} are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the \code{threshold} argument). By default, \code{stan_esf} will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the \code{nsa} argument.
+#' The observational error is the difference between the survey estimate and `x_true`, the actual value of the variable during the period of the survey.
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
@@ -268,21 +245,25 @@
 #'
 #' } 
 #'
+#' @export
+#' @md
+#' @importFrom rstan extract_sparse_parts
+#' 
 stan_esf <- function(formula,
                      slx,
                      re,
                      data,
                      C,
-                     nsa = FALSE,
-                     threshold = 0.25,                     
                      EV = make_EV(C, nsa = nsa, threshold = threshold),
-                     ME = NULL,
+                     nsa = FALSE,
+                     threshold = 0.25,
                      family = gaussian(),
-                     p0,
-                     prior = NULL,
+                     prior = NULL,                     
+                     ME = NULL,
                      centerx = FALSE,
                      prior_only = FALSE,
-                     chains = 4, iter = 2e3, refresh = 500, pars = NULL,
+                     chains = 4, iter = 2e3, refresh = 500,
+                     pars = NULL,
                      control = NULL,
                      ...) {
     stopifnot(inherits(formula, "formula"))
@@ -301,13 +282,13 @@ stan_esf <- function(formula,
     if (nrow(mod.mat) < nrow(tmpdf)) stop("There are missing (NA) values in your data.")  
     n <- nrow(mod.mat)
     family_int <- family_2_int(family)
+    is_student <- family$family == "student_t"    
     intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0) 
     if (intercept_only) {
         if (!missing(slx)) {
             stop("You provided a spatial lag of X (slx) term for an intercept only model. Did you intend to include a covariate?")
         }
         x_full <- x_no_Wx <- model.matrix(~ 0, data = tmpdf) 
-        dbeta_prior <- 0
         slx <- " "
         W.list <- list(w = 1, v = 1, u = 1)
         dwx <- 0
@@ -331,7 +312,6 @@ stan_esf <- function(formula,
           wx_idx <- as.array( which(paste0("w.", colnames(x_no_Wx)) %in% colnames(Wx)), dim = dwx )
           x_full <- cbind(Wx, x_no_Wx)
       }
-      dbeta_prior <- ncol(x_full) 
   }
     ModData <- make_data(formula, tmpdf, x_full)
     frame <- model.frame(formula, tmpdf)
@@ -354,63 +334,51 @@ stan_esf <- function(formula,
         id_index <- to_index(id)
         re_list <- list(formula = re, data = id_index)
   }   
+    standata <- list(
+  ## glm data -------------
+        family = family_int,
+        prior_only = prior_only,    
+        y = y,
+        y_int = y_int,
+        trials = rep(0, length(y)),
+        n = n,
+        offset = offset,
+        has_re = has_re,
+        n_ids = n_ids,
+        id = id_index$idx,
+        ## slx data -------------
+        W_w = as.array(W.list$w),
+        W_v = as.array(W.list$v),
+        W_u = as.array(W.list$u),
+        dw_nonzero = length(W.list$w),
+        dwx = dwx,
+        wx_idx = wx_idx
+    )
     ## PRIORS with RHS-ESF [START] -------------
-    if (family$family %in% c("poisson", "binomial")) rhs_scale_global = 1
+    if (family$family %in% c("poisson", "binomial")) hs_global_scale = 1
     if (family$family %in% c("gaussian", "student_t")) {
-      # if no prior is provided at all for the rhs:
-        if (is.null(prior$rhs)) {
-            if (missing(p0)) {
-                p0 <- exp_pars(formula = formula, data = tmpdf, C = C)
-                if(p0 >= ncol(EV)) p0 <- ncol(EV) - 0.1
-            }
-            rhs_scale_global <- min(1, p0/(dev-p0) / sqrt(n))
-        }
+        ## default value of global_scale
+        p0 <- exp_pars(formula = formula, data = tmpdf, C = C)
+        if(p0 >= ncol(EV)) p0 <- ncol(EV) - 0.1
+        hs_global_scale <- min(1, p0/(dev-p0) / sqrt(n))
     }
-    if (!is.null(prior$rhs)) {
-        stopifnot(all(c("slab_df", "slab_scale", "scale_global") %in% names(prior$rhs)))
-        rhs_scale_global <- as.numeric(prior$rhs["scale_global"])
-    }
-    is_student <- family$family == "student_t"
     priors_made <- make_priors(user_priors = prior,
                                y = y,
                                x = x_full,
-                               rhs_scale_global = rhs_scale_global,
+                               hs_global_scale = hs_global_scale,
                                EV = EV,                               
                                link = family$link,
                                offset = offset)
-    ## PRIORS with RHS-ESF [STOP] -------------
-    standata <- list(
-  ## glm data -------------
-    y = y,
-    y_int = y_int,
-    trials = rep(0, length(y)),
-    n = n,
-    dbeta_prior = dbeta_prior,
-    offset = offset,
-    has_re = has_re,
-    n_ids = n_ids,
-    id = id_index$idx,
-    alpha_prior = priors_made$intercept,
-    beta_prior = t(priors_made$beta), 
-    sigma_prior = priors_made$sigma,
-    alpha_tau_prior = priors_made$alpha_tau,
-    t_nu_prior = priors_made$nu,
-    family = family_int,
-    prior_only = prior_only,    
-  ## slx data -------------
-    W_w = as.array(W.list$w),
-    W_v = as.array(W.list$v),
-    W_u = as.array(W.list$u),
-    dw_nonzero = length(W.list$w),
-    dwx = dwx,
-    wx_idx = wx_idx,    
-  ## esf data -------------
-    dev = dev,
-    EV = EV,
-    slab_df = priors_made$rhs["slab_df"],
-    slab_scale = priors_made$rhs["slab_scale"],    
-    scale_global = priors_made$rhs["scale_global"]
+    standata <- append_priors(standata, priors_made)
+    esf_dl <- list(
+        dev = dev,
+        EV = EV,
+        global_scale = priors_made$beta_ev$global_scale,
+        slab_df = priors_made$beta_ev$slab_df,
+        slab_scale = priors_made$beta_ev$slab_scale
     )
+    standata <- c(standata, esf_dl)
+    ## PRIORS with RHS-ESF [END] -------------
     ## EMPTY PLACEHOLDERS
     standata <- c(standata, empty_icar_data(n))
     ## ME MODEL STUFF -------------  
@@ -436,9 +404,16 @@ stan_esf <- function(formula,
             pars <- c(pars, "nu_x_true")
         }
      }
-    priors_made_slim <- priors_made[which(names(priors_made) %in% c(pars, "rhs"))]
-    if (me.list$has_me) priors_made_slim <- c(priors_made_slim, list(ME_location = me.list$ME_prior_mean, ME_scale = me.list$ME_prior_scale))    
-    print_priors(prior, priors_made_slim)
+    priors_made_slim <- priors_made[which(names(priors_made) %in% c(pars, "beta_ev"))]
+    if (me.list$has_me) {
+        if (me.list$spatial_me) {
+            priors_made_slim <- c(priors_made_slim, list(ME_car_rho = me.list$ME_prior_car_rho))
+        } else {
+            priors_made_slim <- c(priors_made_slim, list(ME_df = me.list$ME_prior_df))
+        }        
+        priors_made_slim <- c(priors_made_slim, list(ME_location = me.list$ME_prior_mean, ME_scale = me.list$ME_prior_scale))
+        }
+    print_priors(prior, priors_made_slim)    
     ## CALL STAN -------------    
     samples <- rstan::sampling(stanmodels$foundation, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
     ## OUTPUT -------------    

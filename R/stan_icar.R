@@ -1,116 +1,64 @@
 #' Intrinsic autoregressive models
 #'
-#' @export
-#'
-#' @md
-#' 
 #' @description The intrinsic conditional auto-regressive (ICAR) model for spatial count data. Options include the BYM model, the BYM2 model, and a solo ICAR term. 
 #' 
 #' @param formula A model formula, following the R \link[stats]{formula} syntax. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
 #' 
-#' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally).
-#' 
-#'  These will be pre-multiplied by a row-standardized version of the user-provided spatial weights matrix and then added (prepended) to the design matrix. For example, providing
-#' ```
-#' stan_icar(y ~ x1 + x2, slx = ~ x1, ...)
-#' ```
-#' is the same as providing
-#' ```
-#' stan_icar(y ~ I(W %*% x1) + x1 + x2, ...)
-#' ```
-#' where `W` is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}). When setting priors for \code{beta}, remember to include priors for any SLX terms as well.
+#' @param slx Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally). When setting priors for \code{beta}, remember to include priors for any SLX terms. 
 #' 
 #' @param re To include a varying intercept (or "random effects") term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re} is a vector of parameters added to the linear predictor of the model, and:
 #' ```
 #'        alpha_re ~ N(0, alpha_tau)
 #'        alpha_tau ~ Student_t(d.f., location, scale).
 #' ```
-#' Before using this term, read the \code{Details} section and the \code{type} argument. Specifically, if you use `type = bym`, then this `re` term is automatically added to the model. (Similar for `type = bym2`.)
+#' Before using this term, read the \code{Details} section and the \code{type} argument. Specifically, if you use `type = bym`, then an observational-level `re` term is already included in the model. (Similar for `type = bym2`.)
 #' 
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
+#'
+#' @param C Spatial connectivity matrix which will be used to construct an edge list for the ICAR model, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms. It will automatically be row-standardized before calculating \code{slx} terms. \code{C} must be a binary symmetric \code{n x n} matrix.
 #' 
 #' @param type Defaults to "icar" (partial pooling of neighboring observations through parameter \code{phi}); specify "bym" to add a second parameter vector \code{theta} to perform partial pooling across all observations; specify "bym2" for the innovation introduced by Riebler et al. (2016). See \code{Details} for more information.
 #' 
 #' @param scale_factor For the BYM2 model, optional. If missing, this will be set to a vector of ones. See `Details`.
+#'
+#' @param family The likelihood function for the outcome variable. Current options are \code{binomial(link = "logit")} and \code{poisson(link = "log")}.
+#'
+#' @param prior A named list of parameters for prior distributions (see \code{\link[geostan]{priors}}):
+#' \describe{
 #' 
-#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. The ME models are designed for American Community Survey (ACS) estimates, `x`, and their standard errors, `se`. The ME models have one of the the following two specifications, depending on the user input:
-#' ```
-#'        x ~ Gauss(x_true, se)
-#'        x_true ~ MVGauss(mu, Sigma)
-#'        Sigma = (I - rho * C)^(-1) M * tau^2
-#'        mu ~ Gauss(0, 100)
-#'        tau ~ student_t(10, 0, 40)
-#'        rho ~ uniform(lower_bound, upper_bound)
-#' ```
-#' where the covariance matrix, `Sigma`, has the conditional autoregressive specification, and `tau` is the scale parameter. If `ME$car_parts = FALSE`, then a non-spatial model will be used instead:
-#' ```
-#'        x ~ Gauss(x_true, se)
-#'        x_true ~ student_t(df, mu, sigma)
-#'        df ~ gamma(3, 0.2)
-#'        mu ~ Gauss(0, 100)
-#'        sigma ~ student_t(10, 0, 40)
-#' ```
-#' The target of inference is `x_true`, the actual values of the covariate during the period of the survey, and the observational error is the difference between the survey estimate and the unknown value that would have been obtained by a complete census. Elements of the list \code{ME} may include:
-#'  \describe{
+#' \item{intercept}{The intercept is assigned a Gaussian prior distribution (see \code{\link[geostan]{normal}}}.
+#' 
+#' \item{beta}{Regression coefficients are assigned Gaussian prior distributions. Variables must follow their order of appearance in the model `formula`. Note that if you also use `slx` terms (spatially lagged covariates), and you use custom priors for `beta`, then you have to provide priors for the slx terms. Since slx terms are *prepended* to the design matrix, the prior for the slx term will be listed first.
+#' }
+#'
+#' \item{sigma}{For `family = gaussian()` and `family = student_t()` models, the scale parameter, `sigma`, is assigned a (half-) Student's t prior distribution. The half-Student's t prior for `sigma` is constrained to be positive.}
+#'
+#' \item{nu}{`nu` is the degrees of freedom parameter in the Student's t likelihood (only used when `family = student_t()`). `nu` is assigned a gamma prior distribution. The default prior is `prior = list(nu = gamma(alpha = 3, beta = 0.2))`.
+#' }
+#'
+#' \item{tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(tau = student_t(df = 20, location = 0, scale = 20))`.}
+#' }
+#'
+#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list of priors. See the Details section below for more information. Elements of the \code{ME} list may include:
+#' \describe{
 #' 
 #' \item{se}{A required dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
 #' 
 #' \item{bounds}{An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to `c(-Inf, Inf)` (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.}
-#' 
-#'  \item{prior}{Optionally provide parameter values for the prior distributions of the measurement error model(s). The ME models contain a location parameter (mu) and a scale parameter (tau or sigma), each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console. \cr \cr
-#' 
-#' The prior for the location parameter, mu, is Gaussian (the default being `Gauss(0, 100)`). You can alter this by providing a `data.frame` with columns named `location` and `scale`; provide values for each covariate in `se`. List the values in the same order as the columns of `se`. \cr \cr
 #'
-#' The prior for the `scale` parameters is Student's t, and the default is `Student_t(10, 0, 40)`. You can alter this by providing a `data.frame` with columns named `df`, `location` and `scale`; provide values for each covariate in `se`. List the values in the same order as the columns of `se`. \cr \cr
-#'
-#' For example, if you are modeling two covariates with the ME models, you can add the priors to an existing `ME` list like this:
-#' ```
-#' ME$prior <- list(location = data.frame(location = c(0, 0),
-#'                                           scale = c(10, 10)),
-#'                  scale    = data.frame(df  c(10, 10),
-#'                                        location = c(0, 0),
-#'                                        scale = c(10, 10)), 
-#' ```
+#' \item{car_parts}{A list of data for the CAR model, as returned by \code{\link[geostan]{prep_car_data}}. If not provided, a non-spatial Student's t model will be used instead of the CAR model.}
 #' 
-#' The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boundaries of the prior with:
-#' ```
-#' ME$prior$car_rho <- c(lower_bound, upper_bound)
-#' ```
-#'  You must specify values that are within the permissible range of values for `rho`. This range is automatically printed to the console by \code{\link[geostan]{prep_car_data}}.
+#'  \item{prior}{Optionally provide a named list of prior distributions for the measurement error model(s) (see \code{\link[geostan]{priors}}). If none are provided, default priors will be assigned and printed to the console. \describe{
+#' 
+#'  \item{df}{If using a non-spatial ME model, the degrees of freedom for the Student's t model is assigned a gamma prior with default parameters of `gamma(alpha = 3, beta = 0.2)`. Provide values for each covariate in `se`, listing the values in the same order as the columns of `se`.}
+#'
+#'  \item{car_rho}{The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boundaries of the prior with: `ME$prior$car_rho <- uniform(lower_bound, upper_bound)`. You must specify values that are within the permissible range of values for `rho`. This range is automatically printed to the console by \code{\link[geostan]{prep_car_data}}.}
+#' 
+#'   \item{location}{The prior for the location parameter, mu, is Gaussian (the default being `normal(location = 0, scale = 100)`). To adjust the prior distributions, provide values for each covariate in `se`, listing the values in the same order as the columns of `se`.}
+#' 
+#'  \item{scale}{The prior for the `scale` parameters is Student's t, and the default is `student_t(df = 10, location = 0, scale = 40)`. To adjust, provide values for each covariate in `se`, listing the values in the same order as the columns of `se`.}
 #' }
-#'
-#' \item{car_parts}{A list of data for the CAR model, as returned by \link[geostan]{prep_car_data}. If not provided, then a non-spatial Student's t model will be used instead of the CAR model.}
 #' }
-#' 
-#' @param C Spatial connectivity matrix which will be used to construct an edge list for the ICAR model, and to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms. It will automatically be row-standardized before calculating \code{slx} terms. \code{C} must be a binary symmetric \code{n x n} matrix.
-#' 
-#' @param family The likelihood function for the outcome variable. Current options are \code{binomial(link = "logit")} and \code{poisson(link = "log")}.
-#'
-#' @param prior A named list of parameters for prior distributions. If not provided, the default prior distributions will be assigned and printed to the console. User-defined priors can be assigned to the following parameters:
-#' \describe{
-#' 
-#'  \item{intercept}{The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. \code{prior = list(intercept = c(location = 0, scale = 10))} to assign a Gaussian prior with mean zero and variance 10^2.}
-#' 
-#' \item{beta}{Regression coefficients are assigned Gaussian prior distributions. Provide a `data.frame` with two columns (location and scale). 
-#'
-#' The order of variables must follow their order of appearance in the model `formula`; e.g., if the formula is `y ~ x1 + x2`, then providing
-#' ```
-#' prior = list(beta = data.frame(location = c(0, 2),
-#'                                   scale = c(1, 2)))
-#' ```
-#' will assign the following prior distributions:
-#' ```
-#'        x1 ~ Gauss(0, 1)
-#'        x2 ~ Gauss(2, 2)
-#' ```
-#' Note that if you also use `slx` terms (spatially lagged covariates), then you have to provide priors for them. If your model specification is:
-#' ```
-#'  stan_glm(y ~ x1 + x2, slx = ~ x1, ...)
-#' ```
-#' then the prior for beta must have three rows. Since slx terms are always *prepended* to the design matrix, the prior for the slx term will be listed first.
-#' }
-#'
-#' \item{alpha_tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(alpha_tau = c(df = 20, location = 0, scale = 20))`.}
 #' }
 #'
 #' @param centerx To center predictors on their mean values, use `centerx = TRUE`. If `centerx` is a numeric vector, predictors will be centered on the values provided. This argument is passed to \code{\link[base]{scale}}.
@@ -126,43 +74,43 @@
 #' 
 #'  The Stan code for the ICAR component of the model and the BYM2 option is from Morris et al. (2019) with adjustments to enable non-binary weights and disconnected graph structures (see Freni-Sterrantino (2018) and Donegan (2021)).
 #'
-#' The exact specification depends on the `type` argument.
+#' The exact specification depends on the `type` argument. 
 #'
-#' ### `type = 'icar'`
+#' ### 'icar'
 #'
 #' For Poisson models for count data, y, the basic model specification (`type = "icar"`) is:
 #' ```
-#'              y ~ Poisson(exp(offset + mu + phi))
-#'              phi ~ ICAR(spatial_scale)
-#'              spatial_scale ~ Gaussian(0, 1)
+#'         y ~ Poisson(exp(offset + mu + phi))
+#'         phi ~ ICAR(spatial_scale)
+#'         spatial_scale ~ Gaussian(0, 1)
 #' ```
 #'  where `mu` contains an intercept and potentially covariates. The spatial trend, `phi`, has a mean of zero and a single scale parameter, `spatial_scale`.
 #' 
 #' The ICAR prior model is a CAR model that has a spatial autocorrelation parameter \code{car_alpha} equal to 1 (see \link[geostan]{stan_car}). Thus the ICAR prior places high probability on a smooth spatially (or temporally) varying mean. This is rarely sufficient to model the amount of variation present in social and health data.
 #'
-#' ### `type = 'bym'`
+#' ### 'bym'
 #'
 #' Often, an observational-level random effect term, `theta`, is added to capture (heterogeneous or unstructured) deviations from `mu + phi`. The combined term is referred to as a convolution term:
 #' ```
-#'              convolution = phi + theta.
+#'         convolution = phi + theta.
 #' ```
 #' This is known as the BYM model (Besag et al. 1991), and can be specified using `type = "bym"`:
 #' ```
-#'              y ~ Poisson(exp(offset + mu + phi + theta))
-#'              phi ~ ICAR(spatial_scale)
-#'              theta ~ Gaussian(0, theta_scale)
-#'              spatial_scale ~ Gaussian(0, 1)
-#'              theta_scale ~ Gaussian(0, 1)
+#'         y ~ Poisson(exp(offset + mu + phi + theta))
+#'         phi ~ ICAR(spatial_scale)
+#'         theta ~ Gaussian(0, theta_scale)
+#'         spatial_scale ~ Gaussian(0, 1)
+#'         theta_scale ~ Gaussian(0, 1)
 #' ```
 #'
-#' ### `type = 'bym2'`
+#' ### 'bym2'
 #' 
 #' Riebler et al. (2016) introduce a variation on the BYM model (`type = "bym2"`). This specification combines `phi` and `theta` using a mixing parameter, `rho`, that controls the proportion of the variation that is attributable to the spatially autocorrelated term, `phi`, rather than the spatially unstructured term, `theta`. The terms share a single scale parameter:
 #' ```
-#'              convolution = [sqrt(rho/scale_factor) * phi_tilde + sqrt(1 - rho) * theta_tilde] * spatial_scale.
-#'              phi_tilde ~ Gaussian(0, 1)
-#'              theta_tilde ~ Gaussian(0, 1)
-#'              spatial_scale ~ Gaussian(0, 1)
+#'         convolution = [sqrt(rho/scale_factor) * phi_tilde + sqrt(1 - rho) * theta_tilde] * spatial_scale.
+#'         phi_tilde ~ Gaussian(0, 1)
+#'         theta_tilde ~ Gaussian(0, 1)
+#'         spatial_scale ~ Gaussian(0, 1)
 #' ```
 #' The two `_tilde` terms are standard normal deviates, `rho` is restricted to values between zero and one, and `scale_factor` is a constant term provided by the user. By default, `scale_factor` is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure, `C`. This implies that the same prior distribution assigned to the `spatial_scale` will differ in its implications if `C` is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to `spatial_scale`.
 #'
@@ -214,6 +162,42 @@
 #'  return(scaling_factor) 
 #'}
 #' ```
+#'
+#'  ### Spatially lagged covariates (SLX)
+#' 
+#' The `slx` argument is a convenience function for including SLX terms. For example,
+#' ```
+#' stan_glm(y ~ x1 + x2, slx = ~ x1, ...)
+#' ```
+#' is a shortcut for
+#' ```
+#' stan_glm(y ~ I(W %*% x1) + x1 + x2, ...)
+#' ```
+#' where `W` is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}). SLX terms will always be *prepended* to the design matrix, as above, which is important to know when setting prior distributions for regression coefficients.
+#'
+#' For measurement error (ME) models, the SLX argument is the only way to include spatially lagged covariates since the SLX term needs to be re-calculated on each iteration of the MCMC algorithm.
+#' 
+#' ### Measurement error (ME) models
+#' 
+#' The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. With estimates, `x`, and their standard errors, `se`, the ME models have one of the the following two specifications, depending on the user input:
+#' ```
+#'        x ~ Gauss(x_true, se)
+#'        x_true ~ MVGauss(mu, Sigma)
+#'        Sigma = (I - rho * C)^(-1) M * tau^2
+#'        mu ~ Gauss(0, 100)
+#'        tau ~ student_t(10, 0, 40)
+#'        rho ~ uniform(lower_bound, upper_bound)
+#' ```
+#' where the covariance matrix, `Sigma`, has the conditional autoregressive specification, and `tau` is the scale parameter. If `ME$car_parts` is not provided by the user, then a non-spatial model will be used instead:
+#' ```
+#'        x ~ Gauss(x_true, se)
+#'        x_true ~ student_t(df, mu, sigma)
+#'        df ~ gamma(3, 0.2)
+#'        mu ~ Gauss(0, 100)
+#'        sigma ~ student_t(10, 0, 40)
+#' ```
+#' The observational error is the difference between the survey estimate and `x_true`, the actual value of the variable during the period of the survey.
+#' 
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
@@ -305,17 +289,20 @@
 #'    legend.key.width = unit(1.5, "cm")
 #'   )
 #' }
-#' 
+#'
+#' @export
+#' @md
+#' @importFrom rstan extract_sparse_parts
 stan_icar <- function(formula,
                       slx,
                       re,
                       data,
-                      C,                       
+                      C,
+                      family = poisson(),                      
                       type = c("icar", "bym", "bym2"),                      
                       scale_factor = NULL,
+                      prior = NULL,                      
                       ME = NULL,
-                      family = poisson(),
-                      prior = NULL,
                       centerx = FALSE,
                       prior_only = FALSE,
                       chains = 4, iter = 2e3, refresh = 500,
@@ -343,7 +330,6 @@ stan_icar <- function(formula,
             stop("You provided a spatial lag of X (slx) term for an intercept only model. Did you intend to include a covariate?")
         }
         x_full <- x_no_Wx <- model.matrix(~ 0, data = tmpdf) 
-        dbeta_prior <- 0
         slx <- " "
         W.list <- list(w = 1, v = 1, u = 1)
         dwx <- 0
@@ -367,7 +353,6 @@ stan_icar <- function(formula,
           wx_idx <- as.array( which(paste0("w.", colnames(x_no_Wx)) %in% colnames(Wx)), dim = dwx )
           x_full <- cbind(Wx, x_no_Wx)
       }
-      dbeta_prior <- ncol(x_full) 
   }
     ModData <- make_data(formula, tmpdf, x_full)
     frame <- model.frame(formula, tmpdf)
@@ -390,6 +375,26 @@ stan_icar <- function(formula,
         id_index <- to_index(id)
         re_list <- list(formula = re, data = id_index)
   }
+    standata <- list(
+  ## glm data -------------      
+        family = family_int,
+        prior_only = prior_only,
+        y = y,
+        y_int = y_int,
+        trials = rep(0, length(y)),
+        n = n,
+        offset = offset,
+        has_re = has_re,
+        n_ids = n_ids,
+        id = id_index$idx,
+        ## slx data -------------    
+        W_w = as.array(W.list$w),
+        W_v = as.array(W.list$v),
+        W_u = as.array(W.list$u),
+        dw_nonzero = length(W.list$w),
+        dwx = dwx,
+        wx_idx = wx_idx
+    )
     ## PRIORS -------------  
     is_student <- family$family == "student_t"
     priors_made <- make_priors(user_priors = prior,
@@ -397,38 +402,13 @@ stan_icar <- function(formula,
                                x = x_full,
                                link = family$link,
                                offset = offset)
-    standata <- list(
-  ## glm data -------------      
-    y = y,
-    y_int = y_int,
-    trials = rep(0, length(y)),
-    n = n,
-    dbeta_prior = dbeta_prior,
-    offset = offset,
-    has_re = has_re,
-    n_ids = n_ids,
-    id = id_index$idx,
-    alpha_prior = priors_made$intercept,
-    beta_prior = t(priors_made$beta), 
-    sigma_prior = priors_made$sigma,
-    alpha_tau_prior = priors_made$alpha_tau,
-    t_nu_prior = priors_made$nu,
-    family = family_int,
-    prior_only = prior_only,    
-  ## slx data -------------    
-    W_w = as.array(W.list$w),
-    W_v = as.array(W.list$v),
-    W_u = as.array(W.list$u),
-    dw_nonzero = length(W.list$w),
-    dwx = dwx,
-    wx_idx = wx_idx
-    )    
+    standata <- append_priors(standata, priors_made)        
     ## ICAR DATA [START] -------------
     iar.list <- prep_icar_data(C, scale_factor = scale_factor)
     if (!inherits(scale_factor, "NULL")) stopifnot(length(scale_factor) == iar.list$k)
     standata <- c(standata, iar.list)
     standata$type <- match(type, c("icar", "bym", "bym2"))
-    ## ICAR DATA [STOP] -------------
+    ## ICAR DATA [STOP] -------------    
     ## EMPTY PLACEHOLDERS
     standata <- c(standata, empty_esf_data(n))
     ## ME MODEL -------------  
@@ -456,7 +436,14 @@ stan_icar <- function(formula,
         }
     }
     priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
-    if (me.list$has_me) priors_made_slim <- c(priors_made_slim, list(ME_location = me.list$ME_prior_mean, ME_scale = me.list$ME_prior_scale))
+    if (me.list$has_me) {
+        if (me.list$spatial_me) {
+            priors_made_slim <- c(priors_made_slim, list(ME_car_rho = me.list$ME_prior_car_rho))
+        } else {
+            priors_made_slim <- c(priors_made_slim, list(ME_df = me.list$ME_prior_df))
+        }
+        priors_made_slim <- c(priors_made_slim, list(ME_location = me.list$ME_prior_mean, ME_scale = me.list$ME_prior_scale))
+    }
     print_priors(prior, priors_made_slim)    
     ## PARAMETERS TO KEEP with ICAR [STOP] -------------              
     ## CALL STAN -------------  

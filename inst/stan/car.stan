@@ -53,7 +53,7 @@ transformed parameters {
 
 model {
 #include parts/model.stan
-  target += student_t_lpdf(car_scale | sigma_prior[1], sigma_prior[2], sigma_prior[3]);
+  target += student_t_lpdf(car_scale | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
   if (is_auto_gaussian * !prior_only) {
       target += auto_normal_lpdf(y |
 				 fitted, car_scale, car_rho,

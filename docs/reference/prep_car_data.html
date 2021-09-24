@@ -53,6 +53,8 @@
 
 
 
+
+
 <!-- mathjax -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script>
@@ -74,9 +76,15 @@
 </script>
 
 
+  
+
+  
+
   </head>
 
   <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -90,19 +98,13 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
@@ -150,14 +152,15 @@
     <p>Prepare data for a Stan CAR model</p>
     </div>
 
-    <pre class="usage"><span class='fu'>prep_car_data</span><span class='op'>(</span>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>prep_car_data</span><span class='op'>(</span>
   <span class='va'>A</span>,
   style <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"WCAR"</span>, <span class='st'>"ACAR"</span>, <span class='st'>"DCAR"</span><span class='op'>)</span>,
   k <span class='op'>=</span> <span class='fl'>1</span>,
   gamma <span class='op'>=</span> <span class='fl'>0</span>,
   lambda <span class='op'>=</span> <span class='cn'>TRUE</span>,
-  cmat <span class='op'>=</span> <span class='cn'>TRUE</span>
-<span class='op'>)</span></pre>
+  cmat <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  stan_fn <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/ifelse.html'>ifelse</a></span><span class='op'>(</span><span class='va'>style</span> <span class='op'>==</span> <span class='st'>"WCAR"</span>, <span class='st'>"wcar_normal_lpdf"</span>, <span class='st'>"car_normal_lpdf"</span><span class='op'>)</span>
+<span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -186,6 +189,10 @@
       <th>cmat</th>
       <td><p>If <code>cmat = TRUE</code>, return the full matrix C (in sparse matrix format).</p></td>
     </tr>
+    <tr>
+      <th>stan_fn</th>
+      <td><p>Two computational methods are available for CAR models using <code><a href='stan_car.html'>stan_car</a></code>: <code>car\_normal\_lpdf</code> and <code>wcar\_normal\_lpdf</code>. For WCAR models, either method will work but <code>wcar\_normal\_lpdf</code> is faster. To force use <code>car\_normal\_lpdf</code> when <code>style = 'WCAR'</code>, provide <code>stan_fn = "car_normal_lpdf"</code>.</p></td>
+    </tr>
     </table>
 
     <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
@@ -200,38 +207,48 @@
     <p>A list containing all of the data elements required by the Stan CAR model.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The CAR model is:</p><pre>  Normal(Mu, Sigma), Sigma = (I - rho * C)^-1 * M * tau^2,
-</pre>
+    <p>The CAR model is:</p><pre><code>  Normal(Mu, Sigma), Sigma = (I - rho * C)^-1 * M * tau^2,
+</code></pre>
 
 <p>where <code>I</code> is the identity matrix, <code>rho</code> is a spatial autocorrelation parameter, <code>C</code> is a connectivity matrix, and <code>M * tau^2</code> is a diagonal matrix with conditional variances on the diagonal. <code>tau^2</code> is a (scalar) scale parameter.</p>
-<p>In the WCAR specification, <code>C</code> is the row-standardized version of <code>A</code>. This means that the non-zero elements of <code>A</code> will be converted to <code>1/N_i</code> where <code>N_i</code> is the number of neighbors for the <code>i</code>th site (obtained using <code><a href='https://rdrr.io/pkg/Matrix/man/colSums.html'>Matrix::rowSums(A)</a></code>. The conditional variances (on the diagonal of <code>M * tau^2</code>), are also proportional to <code>1/N_i</code>.</p>
+<p>In the WCAR specification, <code>C</code> is the row-standardized version of <code>A</code>. This means that the non-zero elements of <code>A</code> will be converted to <code>1/N_i</code> where <code>N_i</code> is the number of neighbors for the <code>i</code>th site (obtained using <code>Matrix::rowSums(A)</code>. The conditional variances (on the diagonal of <code>M * tau^2</code>), are also proportional to <code>1/N_i</code>.</p>
 <p>The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188).</p>
 <p>The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For <code>A</code>, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of <code>A</code> will be converted to: <code>d_{ij} = (a_{ij} + gamma)^(-k)</code> (Cliff and Ord 1981, p. 144). Default values are <code>k=1</code> and <code>gamma=0</code>. Following Cressie (2015), these values will be standardized by the maximum <code>d_{ij}</code> value. The conditional variances will be proportional to the inverse of the row sums of the transformed distance matrix: <code>D_{ii} = (sum_i^N d_{ij})^(-1)</code>.</p>
 <p>For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 [1993]) and Haining and Li (2020).</p>
 <p>When using <code><a href='stan_car.html'>stan_car</a></code>, always use <code>cmat = TRUE</code> (the default).</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
-
-<span class='co'>## binary adjacency matrix</span>
-<span class='va'>A</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, style <span class='op'>=</span> <span class='st'>"B"</span><span class='op'>)</span>
-
-<span class='co'>## get list of data for Stan</span>
-<span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'>prep_car_data</span><span class='op'>(</span><span class='va'>A</span>, <span class='st'>"WCAR"</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; Range of permissible rho values:  -1.661134 1 </div><div class='input'> <span class='co'># range of permissible values for rho:</span>
-<span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/range.html'>range</a></span><span class='op'>(</span><span class='va'>cp</span><span class='op'>$</span><span class='va'>lambda</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] -1.661134  1.000000</div><div class='input'>
-<span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-<span class='co'>## pass the data to stan_car</span>
-<span class='va'>fit</span> <span class='op'>=</span> <span class='fu'><a href='stan_car.html'>stan_car</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>rate.male</span><span class='op'>)</span> <span class='op'>~</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>georgia</span>, car_parts <span class='op'>=</span> <span class='va'>cp</span><span class='op'>)</span>
-<span class='op'>}</span>
-
-<span class='co'># or use the ACAR specification</span>
-<span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'>prep_car_data</span><span class='op'>(</span><span class='va'>A</span>, <span class='st'>"ACAR"</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; Range of permissible rho values:  -0.3283182 0.1634063 </div><div class='input'> <span class='co'># range of permissible values for rho:</span>
-<span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/range.html'>range</a></span><span class='op'>(</span><span class='va'>cp</span><span class='op'>$</span><span class='va'>lambda</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; [1] -0.3283182  0.1634063</div></pre>
+    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='r-in'></span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='co'>## binary adjacency matrix</span></span>
+<span class='r-in'><span class='va'>A</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, style <span class='op'>=</span> <span class='st'>"B"</span><span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='co'>## get list of data for Stan</span></span>
+<span class='r-in'><span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'>prep_car_data</span><span class='op'>(</span><span class='va'>A</span>, <span class='st'>"WCAR"</span><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Range of permissible rho values:  -1.661134 1 </span>
+<span class='r-in'><span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/range.html'>range</a></span><span class='op'>(</span><span class='va'>cp</span><span class='op'>$</span><span class='va'>lambda</span><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] -1.661134  1.000000</span>
+<span class='r-in'></span>
+<span class='r-in'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span class='r-in'><span class='co'>## pass the data to stan_car</span></span>
+<span class='r-in'><span class='va'>fit</span> <span class='op'>=</span> <span class='fu'><a href='stan_car.html'>stan_car</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>rate.male</span><span class='op'>)</span> <span class='op'>~</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>georgia</span>, car_parts <span class='op'>=</span> <span class='va'>cp</span><span class='op'>)</span></span>
+<span class='r-in'><span class='op'>}</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='co'># ACAR specification</span></span>
+<span class='r-in'><span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'>prep_car_data</span><span class='op'>(</span><span class='va'>A</span>, <span class='st'>"ACAR"</span><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Range of permissible rho values:  -0.3283182 0.1634063 </span>
+<span class='r-in'></span>
+<span class='r-in'><span class='co'>## DCAR specification (inverse-distance based)</span></span>
+<span class='r-in'><span class='va'>A</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='st'>"B"</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>D</span> <span class='op'>&lt;-</span> <span class='fu'>sf</span><span class='fu'>::</span><span class='fu'><a href='https://r-spatial.github.io/sf/reference/geos_measures.html'>st_distance</a></span><span class='op'>(</span><span class='fu'>sf</span><span class='fu'>::</span><span class='fu'><a href='https://r-spatial.github.io/sf/reference/geos_unary.html'>st_centroid</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span><span class='op'>)</span></span>
+<span class='r-wrn co'><span class='r-pr'>#&gt;</span> <span class='warning'>Warning: </span>st_centroid assumes attributes are constant over geometries of x</span>
+<span class='r-in'><span class='va'>A</span> <span class='op'>&lt;-</span> <span class='va'>D</span> <span class='op'>*</span> <span class='va'>A</span></span>
+<span class='r-in'><span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'>prep_car_data</span><span class='op'>(</span><span class='va'>A</span>, <span class='st'>"DCAR"</span>, k <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span></span>
+<span class='r-msg co'><span class='r-pr'>#&gt;</span> &lt;sparse&gt;[ &lt;logic&gt; ] : .M.sub.i.logical() maybe inefficient</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> Range of permissible rho values:  -0.6761887 0.3471584 </span>
+<span class='r-in'></span>
+</code></pre></div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -243,11 +260,11 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Connor Donegan.</p>
+  <p><p>Developed by Connor Donegan.</p></p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 1.6.1.9001.</p></p>
 </div>
 
       </footer>
@@ -255,6 +272,8 @@
 
   
 
+
+  
 
   </body>
 </html>

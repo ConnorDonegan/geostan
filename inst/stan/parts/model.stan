@@ -1,8 +1,8 @@
 // parameter models
-  target += normal_lpdf(intercept | alpha_prior[1], alpha_prior[2]);
-  if (dx_all) target += normal_lpdf(append_row(gamma, beta) | beta_prior[1], beta_prior[2]);  
-  if (has_sigma) target += student_t_lpdf(sigma | sigma_prior[1], sigma_prior[2], sigma_prior[3]);
-  if (is_student) target += gamma_lpdf(nu[1] | t_nu_prior[1], t_nu_prior[2]);  
+  target += normal_lpdf(intercept | prior_alpha[1], prior_alpha[2]);
+  if (dx_all) target += normal_lpdf(append_row(gamma, beta) | prior_beta_location, prior_beta_scale);  
+  if (has_sigma) target += student_t_lpdf(sigma | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
+  if (is_student) target += gamma_lpdf(nu[1] | prior_t_nu[1], prior_t_nu[2]);  
 // data models (observational uncertainty)
   if (dx_me) {
     if (spatial_me) {
@@ -21,7 +21,7 @@
       for (j in 1:dx_me) {
 	target += normal_lpdf(x_me[j] | x_true[j], sigma_me[j]);
 	target += student_t_lpdf(x_true[j] | nu_x_true[j], mu_x_true[j], sigma_x_true[j]);
-	target += gamma_lpdf(nu_x_true[j] | 3, 0.2);
+	target += gamma_lpdf(nu_x_true[j] | prior_nux_true_alpha[j], prior_nux_true_beta[j]);
       }
     }
       target += normal_lpdf(mu_x_true | prior_mux_true_location, prior_mux_true_scale);
@@ -30,7 +30,7 @@
 // partial pooling of observations across all groups/geographies (varying intercept)
   if (has_re) {
     target += normal_lpdf(alpha_re | 0, alpha_tau[has_re]);
-    target += student_t_lpdf(alpha_tau[has_re] | alpha_tau_prior[1], alpha_tau_prior[2], alpha_tau_prior[3]);
+    target += student_t_lpdf(alpha_tau[has_re] | prior_alpha_tau[1], prior_alpha_tau[2], prior_alpha_tau[3]);
   }
 // process model (likelihood)
   if (!prior_only) {

@@ -12,3 +12,5 @@ README_files/
 ^LICENSE\.md$
 ^index.md$
 ^data-raw/*
+tests/testthat/test-for-bias-results
+tests/testthat/test-rstan-conformity-results

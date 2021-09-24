@@ -66,8 +66,8 @@ test_that("Poisson model works with length-2 vector beta prior", {
                     data = sentencing,
                     type = "bym2",
                     prior = list(
-                        intercept = c(0, 5),
-                        beta = c(0, 2)
+                        intercept = normal(0, 5),
+                        beta = normal(0, 2)
                         ),
                     C = C,
                     chains = 1,

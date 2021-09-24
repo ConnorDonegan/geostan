@@ -29,6 +29,7 @@ reference:
   - starts_with("stan_")
   - matches("geostan_fit")
   - posterior_predict
+  - priors
 - title: "Convenience functions"
   desc: Tools for working with spatial data and **geostan** models
 - contents:

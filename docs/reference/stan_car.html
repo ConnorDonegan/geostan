@@ -53,6 +53,8 @@
 
 
 
+
+
 <!-- mathjax -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script>
@@ -74,9 +76,15 @@
 </script>
 
 
+  
+
+  
+
   </head>
 
   <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -90,19 +98,13 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
@@ -150,15 +152,15 @@
     <p>Use the CAR model as a prior on parameters, or fit data to an auto-Gaussian CAR model.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>stan_car</span><span class='op'>(</span>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>stan_car</span><span class='op'>(</span>
   <span class='va'>formula</span>,
   <span class='va'>slx</span>,
   <span class='va'>re</span>,
   <span class='va'>data</span>,
   <span class='va'>car_parts</span>,
-  ME <span class='op'>=</span> <span class='cn'>NULL</span>,
   family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>gaussian</a></span><span class='op'>(</span><span class='op'>)</span>,
   prior <span class='op'>=</span> <span class='cn'>NULL</span>,
+  ME <span class='op'>=</span> <span class='cn'>NULL</span>,
   centerx <span class='op'>=</span> <span class='cn'>FALSE</span>,
   prior_only <span class='op'>=</span> <span class='cn'>FALSE</span>,
   chains <span class='op'>=</span> <span class='fl'>4</span>,
@@ -167,7 +169,7 @@
   pars <span class='op'>=</span> <span class='cn'>NULL</span>,
   control <span class='op'>=</span> <span class='cn'>NULL</span>,
   <span class='va'>...</span>
-<span class='op'>)</span></pre>
+<span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -178,20 +180,13 @@
     </tr>
     <tr>
       <th>slx</th>
-      <td><p>Formula to specify any spatially-lagged covariates. As in, <code>~ x1 + x2</code> (the intercept term will be removed internally).</p>
-<p>These will be pre-multiplied by a row-standardized version of the user-provided spatial weights matrix and then added (prepended) to the design matrix. For example, providing</p><pre><span class='fu'>stan_car</span><span class='op'>(</span><span class='va'>y</span> <span class='op'>~</span> <span class='va'>x1</span> <span class='op'>+</span> <span class='va'>x2</span>, slx <span class='op'>=</span> <span class='op'>~</span> <span class='va'>x1</span>, <span class='va'>...</span><span class='op'>)</span>
-</pre>
-
-<p>is the same as providing</p><pre><span class='fu'>stan_car</span><span class='op'>(</span><span class='va'>y</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/AsIs.html'>I</a></span><span class='op'>(</span><span class='va'>W</span> <span class='op'>%*%</span> <span class='va'>x1</span><span class='op'>)</span> <span class='op'>+</span> <span class='va'>x1</span> <span class='op'>+</span> <span class='va'>x2</span>, <span class='va'>...</span><span class='op'>)</span>
-</pre>
-
-<p>where <code>W</code> is a row-standardized spatial weights matrix (see <code><a href='shape2mat.html'>shape2mat</a></code>). When setting priors for <code>beta</code>, remember to include priors for any SLX terms as well.</p></td>
+      <td><p>Formula to specify any spatially-lagged covariates. As in, <code>~ x1 + x2</code> (the intercept term will be removed internally). When setting priors for <code>beta</code>, remember to include priors for any SLX terms.</p></td>
     </tr>
     <tr>
       <th>re</th>
-      <td><p>To include a varying intercept (or "random effects") term, <code>alpha_re</code>, specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re</code> is a vector of parameters added to the linear predictor of the model, and:</p><pre>       alpha_re ~ N(0, alpha_tau)
+      <td><p>To include a varying intercept (or "random effects") term, <code>alpha_re</code>, specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re</code> is a vector of parameters added to the linear predictor of the model, and:</p><pre><code>       alpha_re ~ N(0, alpha_tau)
        alpha_tau ~ Student_t(d.f., location, scale).
-</pre>
+</code></pre>
 
 <p>With the CAR model, any <code>alpha_re</code> term should be at a <em>different</em> level or scale than the observations; that is, at a different scale than the autocorrelation structure of the CAR model itself.</p></td>
     </tr>
@@ -204,61 +199,37 @@
       <td><p>A list of data for the CAR model, as returned by <code><a href='prep_car_data.html'>prep_car_data</a></code>.</p></td>
     </tr>
     <tr>
-      <th>ME</th>
-      <td><p>To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. The ME models are designed for American Community Survey (ACS) estimates, <code>x</code>, and their standard errors, <code>se</code> (Donegan, Chun and Griffith 2021). The ME models have one of the the following two specifications, depending on the user input:</p><pre>       x ~ Gauss(x_true, se)
-       x_true ~ MVGauss(mu, Sigma)
-       Sigma = (I - rho * C)^(-1) M * tau^2
-       mu ~ Gauss(0, 100)
-       tau ~ student_t(10, 0, 40)
-       rho ~ uniform(lower_bound, upper_bound)
-</pre>
+      <th>family</th>
+      <td><p>The likelihood function for the outcome variable. Current options are <code><a href='auto_gaussian.html'>auto_gaussian()</a></code>, <code>binomial(link = "logit")</code>, and <code>poisson(link = "log")</code>; if <code>family = gaussian()</code> is provided, it will automatically be converted to <code><a href='auto_gaussian.html'>auto_gaussian()</a></code>.</p></td>
+    </tr>
+    <tr>
+      <th>prior</th>
+      <td><p>A named list of parameters for prior distributions (see <code><a href='priors.html'>priors</a></code>):</p><dl>
 
-<p>where the covariance matrix, <code>Sigma</code>, has the conditional autoregressive specification, and <code>tau</code> is the scale parameter. If <code>ME$car_parts = FALSE</code>, then a non-spatial model will be used instead:</p><pre>       <span class='va'>x</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='va'>x_true</span>, <span class='va'>se</span><span class='op'>)</span>
-       <span class='va'>x_true</span> <span class='op'>~</span> <span class='fu'><a href='student_t.html'>student_t</a></span><span class='op'>(</span><span class='va'>df</span>, <span class='va'>mu</span>, <span class='va'>sigma</span><span class='op'>)</span>
-       <span class='va'>df</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/base/Special.html'>gamma</a></span><span class='op'>(</span><span class='fl'>3</span>, <span class='fl'>0.2</span><span class='op'>)</span>
-       <span class='va'>mu</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>100</span><span class='op'>)</span>
-       <span class='va'>sigma</span> <span class='op'>~</span> <span class='fu'><a href='student_t.html'>student_t</a></span><span class='op'>(</span><span class='fl'>10</span>, <span class='fl'>0</span>, <span class='fl'>40</span><span class='op'>)</span>
-</pre>
+<dt>intercept</dt><dd><p>The intercept is assigned a Gaussian prior distribution (see <code><a href='priors.html'>normal</a></code></p></dd>.
 
-<p>The target of inference is <code>x_true</code>, the actual values of the covariate during the period of the survey, and the observational error is the difference between the survey estimate and the unknown value that would have been obtained by a complete census. Elements of the list <code>ME</code> may include:</p><dl>
+<dt>beta</dt><dd><p>Regression coefficients are assigned Gaussian prior distributions. Variables must follow their order of appearance in the model <code>formula</code>. Note that if you also use <code>slx</code> terms (spatially lagged covariates), and you use custom priors for <code>beta</code>, then you have to provide priors for the slx terms. Since slx terms are <em>prepended</em> to the design matrix, the prior for the slx term will be listed first.</p></dd>
 
-<dt>se</dt><dd><p>A required dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix(formula, data)</a></code>.</p></dd>
+<dt>car_scale</dt><dd><p>The scale of the CAR model, <code>car_scale</code>. The scale is assigned a Student's t prior model (constrained to be positive).</p></dd>
 
-<dt>bounds</dt><dd><p>An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to <code><a href='https://rdrr.io/r/base/c.html'>c(-Inf, Inf)</a></code> (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.</p></dd>
+<dt>car_rho</dt><dd><p>The spatial autocorrelation parameter in the CAR model, <code>rho</code>, is assigned a uniform prior distribution. By default, the prior will be uniform over all permissible values as determined by the eigenvalues of the connectivity matrix, <code>C</code>. The range of permissible values for <code>rho</code> is automatically printed to the console by <code><a href='prep_car_data.html'>prep_car_data</a></code>.</p></dd>
 
-<dt>prior</dt><dd><p>Optionally provide parameter values for the prior distributions of the measurement error model(s). The ME models contain a location parameter (mu) and a scale parameter (tau or sigma), each of which require prior distributions. If none are provided, default priors will be assigned and printed to the console. <br /> <br />The prior for the location parameter, mu, is Gaussian (the default being <code>Gauss(0, 100)</code>). You can alter this by providing a <code>data.frame</code> with columns named <code>location</code> and <code>scale</code>; provide values for each covariate in <code>se</code>. List the values in the same order as the columns of <code>se</code>. <br /> <br />The prior for the <code>scale</code> parameters is Student's t, and the default is <code>Student_t(10, 0, 40)</code>. You can alter this by providing a <code>data.frame</code> with columns named <code>df</code>, <code>location</code> and <code>scale</code>; provide values for each covariate in <code>se</code>. List the values in the same order as the columns of <code>se</code>. <br /> <br />For example, if you are modeling two covariates with the ME models, you can add the priors to an existing <code>ME</code> list like this:<pre>ME$prior &lt;- list(location = data.frame(location = c(0, 0),
-                                          scale = c(10, 10)),
-                 scale    = data.frame(df  c(10, 10),
-                                       location = c(0, 0),
-                                       scale = c(10, 10)), 
-</pre>The CAR model also has a spatial autocorrelation parameter, <code>rho</code>, which is assigned a uniform prior distribution. You can set the boundaries of the prior with:<pre><span class='va'>ME</span><span class='op'>$</span><span class='va'>prior</span><span class='op'>$</span><span class='va'>car_rho</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='va'>lower_bound</span>, <span class='va'>upper_bound</span><span class='op'>)</span>
-</pre>You must specify values that are within the permissible range of values for <code>rho</code>. This range is automatically printed to the console by <code><a href='prep_car_data.html'>prep_car_data</a></code>.</p></dd>
+<dt>tau</dt><dd><p>The scale parameter for any varying intercepts (a.k.a exchangeable random effects, or partial pooling) terms. This scale parameter, <code>tau</code>, is assigned a Student's t prior (constrained to be positive).</p></dd>
 
-<dt>car_parts</dt><dd><p>By default, any ME models within <code>stan_car</code> will be spatial CAR models. Any data passed to <code>ME$car_parts</code> will be ignored. However, to use a non-spatial Student's t ME model instead, provide <code>ME$car_parts = FALSE</code>.</p></dd>
 
 </dl></td>
     </tr>
     <tr>
-      <th>family</th>
-      <td><p>The likelihood function for the outcome variable. Current options are <code><a href='auto_gaussian.html'>auto_gaussian()</a></code>, <code><a href='https://rdrr.io/r/stats/family.html'>binomial(link = "logit")</a></code>, and <code><a href='https://rdrr.io/r/stats/family.html'>poisson(link = "log")</a></code>; if <code>family = gaussian()</code> is provided, it will automatically be converted to <code><a href='auto_gaussian.html'>auto_gaussian()</a></code>.</p></td>
-    </tr>
-    <tr>
-      <th>prior</th>
-      <td><p>A named list of parameters for prior distributions. If not provided, the default prior distributions will be assigned and printed to the console. User-defined priors can be assigned to the following parameters:</p><dl>
-<dt>intercept</dt><dd><p>The intercept is assigned a Gaussian prior distribution; provide a numeric vector with location and scale parameters; e.g. <code>prior = list(intercept = c(location = 0, scale = 10))</code> to assign a Gaussian prior with mean zero and variance 10^2.</p></dd>
+      <th>ME</th>
+      <td><p>To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list of priors. See the Details section below for more information. Elements of the <code>ME</code> list may include:</p>
+<dl>
+<dt>se</dt><dd><p>A required data.frame with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code>model.matrix(formula, data)</code>.</p></dd>
 
-<dt>beta</dt><dd><p>Regression coefficients are assigned Gaussian prior distributions. Provide a <code>data.frame</code> with two columns (location and scale).The order of variables must follow their order of appearance in the model <code>formula</code>; e.g., if the formula is <code>y ~ x1 + x2</code>, then providing<pre><span class='va'>prior</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span><span class='op'>(</span>beta <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>location <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>2</span><span class='op'>)</span>,
-                                  scale <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>1</span>, <span class='fl'>2</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
-</pre>will assign the following prior distributions:<pre>       <span class='va'>x1</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>1</span><span class='op'>)</span>
-       <span class='va'>x2</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='fl'>2</span>, <span class='fl'>2</span><span class='op'>)</span>
-</pre>Note that if you also use <code>slx</code> terms (spatially lagged covariates), then you have to provide priors for them. If your model specification is:<pre> <span class='fu'><a href='stan_glm.html'>stan_glm</a></span><span class='op'>(</span><span class='va'>y</span> <span class='op'>~</span> <span class='va'>x1</span> <span class='op'>+</span> <span class='va'>x2</span>, slx <span class='op'>=</span> <span class='op'>~</span> <span class='va'>x1</span>, <span class='va'>...</span><span class='op'>)</span>
-</pre>then the prior for beta must have three rows. Since slx terms are always <em>prepended</em> to the design matrix, the prior for the slx term will be listed first.</p></dd>
+<dt>bounds</dt><dd><p>An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to <code>c(-Inf, Inf)</code> (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.</p></dd>
 
-<dt>tau</dt><dd><p>The scale parameter for (spatially <em>un</em>structured) random effects, or varying intercepts, terms. This scale parameter, <code>tau</code>, is assigned a half-Student's t prior. To set this, use, e.g., <code>prior = list(tau = c(df = 20, location = 0, scale = 20))</code>.</p></dd>
+<dt>car_parts</dt><dd><p>For CAR models, the default is for ME models to be spatial CAR models themselves. However, to use a non-spatial Student's t ME model instead, provide <code>ME$car_parts = FALSE</code>.</p></dd>
 
-<dt>car_scale</dt><dd><p>Hyperprior parameters for the scale of the CAR model, <code>car_scale</code>. The scale is assigned a Student's t prior model; to set its parameter values, provide a length-three vector with the degrees of freedom, location, and scale parameters. E.g., <code>prior = list(car_scale = c(df = 15, location = 0, scale = 2))</code>.</p></dd>
-
-<dt>car_rho</dt><dd><p>The spatial autocorrelation parameter in the CAR model, <code>rho</code>, is assigned a uniform prior distribution. By default, the prior will be uniform over all permissible values as determined by the eigenvalues of the connectivity matrix, <code>C</code>. You may alter those limits by providing a numeric vector such as: <code>prior$car_rho = c(0, 1)</code>.The range of permissible values for <code>rho</code> is automatically printed to the <code>R</code> console by <code><a href='prep_car_data.html'>prep_car_data</a></code>. You may also identify the range of permissible values using the eigenvalues, <code>lambda</code>, returned by <code>prep_car_data</code> and the following code: <code>rho_limits = 1 / range(lambda)</code>. These limits are sensitive to the chosen specification (WCAR, ACAR, etc.) and connectivity matrix.</p></dd>
+<dt>prior</dt><dd><p>Optionally provide a named list of prior distributions for the measurement error model(s) (see <code><a href='priors.html'>priors</a></code>). If none are provided, default priors will be assigned and printed to the console. <dl><dt>df</dt><dd><p>If using a non-spatial ME model, the degrees of freedom for the Student's t model is assigned a gamma prior with default parameters of <code>gamma(alpha = 3, beta = 0.2)</code>. Provide values for each covariate in <code>se</code>, listing the values in the same order as the columns of <code>se</code>.</p></dd><dt>location</dt><dd><p>The prior for the location parameter, mu, is Gaussian (the default being <code>normal(location = 0, scale = 100)</code>). To adjust the prior distributions, provide values for each covariate in <code>se</code>, listing the values in the same order as the columns of <code>se</code>.</p></dd><dt>scale</dt><dd><p>The prior for the <code>scale</code> parameters is Student's t, and the default is <code>student_t(df = 10, location = 0, scale = 40)</code>. To adjust, provide values for each covariate in <code>se</code>, listing the values in the same order as the columns of <code>se</code>.</p></dd><dt>car_rho</dt><dd><p>The CAR model also has a spatial autocorrelation parameter, <code>rho</code>, which is assigned a uniform prior distribution. You can set the boundaries of the prior with: <code>ME$prior$car_rho &lt;- uniform(lower_bound, upper_bound)</code>. You must specify values that are within the permissible range of values for <code>rho</code>; these are automatically printed to the console by <code><a href='prep_car_data.html'>prep_car_data</a></code>.</p></dd></dl></p></dd>
 
 </dl></td>
     </tr>
@@ -292,7 +263,7 @@
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Other arguments passed to <code><a href='https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html'>sampling</a></code>. For multi-core processing, you can use <code>cores = parallel::detectCores()</code>, or run <code><a href='https://rdrr.io/r/base/options.html'>options(mc.cores = parallel::detectCores())</a></code> first.</p></td>
+      <td><p>Other arguments passed to <code><a href='https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html'>sampling</a></code>. For multi-core processing, you can use <code>cores = parallel::detectCores()</code>, or run <code>options(mc.cores = parallel::detectCores())</code> first.</p></td>
     </tr>
     </table>
 
@@ -327,144 +298,175 @@
 
     <p>CAR models are discussed in Cressie and Wikle (2011, p. 184-88), Cressie (2015, Ch. 6-7), and Haining and Li (2020, p. 249-51).</p>
 <p>The Stan code for this implementation of the CAR model first introduced in Donegan et al. (2021, supplementary material) for models of small area survey data.</p>
-<p>Details and results depend on the <code>family</code> argument, as well as on the particular CAR specification chosen (see <a href='prep_car_data.html'>prep_car_data</a>).</p><h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a><code>family = auto_gaussian()</code></h3>
+<p>Details and results depend on the <code>family</code> argument, as well as on the particular CAR specification chosen (see <a href='prep_car_data.html'>prep_car_data</a>).</p><h3 class='hasAnchor' id='list-auto-gaussian-'><a class='anchor' aria-hidden='true' href='#list-auto-gaussian-'></a><code><a href='auto_gaussian.html'>auto_gaussian()</a></code></h3>
 
 
-<p>With <code>family = auto_gaussian()</code> (referred to here as the auto-Gaussian model), the CAR model is specified as follows:</p><pre>                            Y ~ MVGauss(Mu, Sigma)
-                            Sigma = (I - rho C)^-1 * M * tau^2
-</pre>
+<p>With <code>family = auto_gaussian()</code> (referred to here as the auto-Gaussian model), the CAR model is specified as follows:</p><pre><code>        Y ~ MVGauss(Mu, Sigma)
+        Sigma = (I - rho C)^-1 * M * tau^2
+</code></pre>
 
 <p>where <code>Mu</code> is the mean vector (with intercept, covariates, etc.), <code>C</code> is a spatial connectivity matrix, and <code>M</code> is a known diagonal matrix with diagonal entries proportional to the conditional variances. <code>C</code> and <code>M</code> are provided by <code><a href='prep_car_data.html'>prep_car_data</a></code>.</p>
 <p>The covariance matrix of the CAR model, <code>Sigma</code>, contains two parameters: <code>car_rho</code> (rho), which controls the degree of spatial autocorrelation, and the scale parameter, <code>car_scale</code> (tau). The range of permissible values for <code>rho</code> depends on the specification of <code>C</code> and <code>M</code>; for options, see <code><a href='prep_car_data.html'>prep_car_data</a></code> and Cressie and Wikle (2011, pp. 184-188).</p>
-<p>The auto-Gaussian model contains an implicit spatial trend (i.e., autocorrelation) component which is calculated as follows (Cressie 2015, p. 564):</p><pre>                            trend = rho * C * (Y - Mu).
-</pre>
+<p>The auto-Gaussian model contains an implicit spatial trend (i.e., autocorrelation) component which is calculated as follows (Cressie 2015, p. 564):</p><pre><code>        trend = rho * C * (Y - Mu).
+</code></pre>
 
-<p>This term can be extracted from a fitted auto-Gaussian model using the <code><a href='print.geostan_fit.html'>spatial</a></code> method.</p>
-<p>When applied to a fitted auto-Gaussian model, the <code><a href='print.geostan_fit.html'>residuals.geostan_fit</a></code> method returns `de-trended' residuals by default. That is,</p><pre>                            <span class='va'>residual</span> <span class='op'>=</span> <span class='va'>Y</span> <span class='op'>-</span> <span class='va'>Mu</span> <span class='op'>-</span> <span class='va'>trend.</span>
-</pre>
+<p>This term can be extracted from a fitted auto-Gaussian model using the <code><a href='geostan_fit.html'>spatial</a></code> method.</p>
+<p>When applied to a fitted auto-Gaussian model, the <code><a href='geostan_fit.html'>residuals.geostan_fit</a></code> method returns `de-trended' residuals by default. That is,</p><pre class='sourceCode r'><code>        <span class='va'>residual</span> <span class='op'>=</span> <span class='va'>Y</span> <span class='op'>-</span> <span class='va'>Mu</span> <span class='op'>-</span> <span class='va'>trend.</span>
+</code></pre>
 
-<p>To obtain "raw" residuals (<code>Y - Mu</code>), use <code><a href='https://rdrr.io/r/stats/residuals.html'>residuals(fit, detrend = FALSE)</a></code>.</p>
+<p>To obtain "raw" residuals (<code>Y - Mu</code>), use <code>residuals(fit, detrend = FALSE)</code>.</p>
 
-<h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a><code>family = poisson()</code></h3>
+<h3 class='hasAnchor' id='list-poisson-'><a class='anchor' aria-hidden='true' href='#list-poisson-'></a><code><a href='https://rdrr.io/r/stats/family.html'>poisson()</a></code></h3>
 
 
-<p>For <code>family = poisson()</code>, the model is specified as:</p><pre>                            Y ~ Poisson(exp(offset + lambda))
-                            lambda ~ MVGauss(Mu, Sigma)
-                            Sigma = (I - rho C)^-1 * M * tau^2
-</pre>
+<p>For <code>family = poisson()</code>, the model is specified as:</p><pre><code>        Y ~ Poisson(exp(offset + lambda))
+        lambda ~ MVGauss(Mu, Sigma)
+        Sigma = (I - rho C)^-1 * M * tau^2
+</code></pre>
 
 <p>These models are most often used to calculate small area incidence rates (mortality or disease incidence rates); the user provided offset should be, then, the natural logarithm of the denominator in the rates, e.g., log-population at risk.</p>
-<p>For Poisson models, the <code><a href='print.geostan_fit.html'>spatial</a></code> method returns the parameter vector <code>phi</code>, which is the log-risk minus the intercept and any covariates:</p><pre>                           <span class='va'>phi</span> <span class='op'>=</span> <span class='va'>lambda</span> <span class='op'>-</span> <span class='va'>Mu.</span>
-</pre>
+<p>For Poisson models, the <code><a href='geostan_fit.html'>spatial</a></code> method returns the parameter vector <code>phi</code>, which is the log-risk minus the intercept and any covariates:</p><pre class='sourceCode r'><code>       <span class='va'>phi</span> <span class='op'>=</span> <span class='va'>lambda</span> <span class='op'>-</span> <span class='va'>Mu.</span>
+</code></pre>
 
-<p>This is the spatial autocorrelation component. This is equivalent to specifying the model as:</p><pre>                            Y ~ Poisson(exp(offset + Mu + phi))
-                            phi ~ MVGauss(0, Sigma)
-                            Sigma = (I - rho C)^-1 * M * tau^2.
-</pre>
+<p>This is the spatial autocorrelation component. This is equivalent to specifying the model as:</p><pre><code>        Y ~ Poisson(exp(offset + Mu + phi))
+        phi ~ MVGauss(0, Sigma)
+        Sigma = (I - rho C)^-1 * M * tau^2.
+</code></pre>
 
-<p>In the Poisson CAR model, <code>phi</code> contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from <code>phi</code>, you can do so by calculating (following Cressie 2015, p. 564):</p><pre>                            <span class='va'>trend</span> <span class='op'>=</span> <span class='va'>rho</span> <span class='op'>*</span> <span class='va'>C</span> <span class='op'>*</span> <span class='va'>phi.</span>
-</pre>
-
-
-<h3 class='hasAnchor' id='arguments'><a class='anchor' href='#arguments'></a><code>family = binomial()</code></h3>
+<p>In the Poisson CAR model, <code>phi</code> contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from <code>phi</code>, you can do so by calculating (following Cressie 2015, p. 564):</p><pre class='sourceCode r'><code>        <span class='va'>trend</span> <span class='op'>=</span> <span class='va'>rho</span> <span class='op'>*</span> <span class='va'>C</span> <span class='op'>*</span> <span class='va'>phi.</span>
+</code></pre>
 
 
-<p>For <code>family = binomial()</code>, the model is specified as:</p><pre>                            Y ~ Binomial(N, theta)
-                            logit(theta) ~ MVGauss(Mu, Sigma)
-                            Sigma = (I - rho C)^-1 * M * tau^2
-</pre>
+<h3 class='hasAnchor' id='list-binomial-'><a class='anchor' aria-hidden='true' href='#list-binomial-'></a><code><a href='https://rdrr.io/r/stats/family.html'>binomial()</a></code></h3>
+
+
+<p>For <code>family = binomial()</code>, the model is specified as:</p><pre><code>        Y ~ Binomial(N, theta)
+        logit(theta) ~ MVGauss(Mu, Sigma)
+        Sigma = (I - rho C)^-1 * M * tau^2
+</code></pre>
 
 <p>where outcome data <code>Y</code> are counts, <code>N</code> is the number of trials, and <code>theta</code> is the 'success' rate. Note that the model formula should be structured as: <code>cbind(sucesses, failures) ~ x</code>, such that <code>trials = successes = failures</code>.</p>
-<p>For fitted Binomial models, the <code><a href='print.geostan_fit.html'>spatial</a></code> method will return the parameter vector <code>phi</code>, equivalent to:</p><pre>                            <span class='va'>phi</span> <span class='op'>=</span> <span class='fu'>logit</span><span class='op'>(</span><span class='va'>theta</span><span class='op'>)</span> <span class='op'>-</span> <span class='va'>Mu.</span>
-</pre>
+<p>For fitted Binomial models, the <code><a href='geostan_fit.html'>spatial</a></code> method will return the parameter vector <code>phi</code>, equivalent to:</p><pre class='sourceCode r'><code>        <span class='va'>phi</span> <span class='op'>=</span> <span class='fu'>logit</span><span class='op'>(</span><span class='va'>theta</span><span class='op'>)</span> <span class='op'>-</span> <span class='va'>Mu.</span>
+</code></pre>
 
+
+<h3 class='hasAnchor' id='spatially-lagged-covariates-slx-'><a class='anchor' aria-hidden='true' href='#spatially-lagged-covariates-slx-'></a>Spatially lagged covariates (SLX)</h3>
+
+
+<p>The <code>slx</code> argument is a convenience function for including SLX terms. For example,</p><pre><code>stan_glm(y ~ x1 + x2, slx = ~ x1, \...)
+</code></pre>
+
+<p>is a shortcut for</p><pre><code>stan_glm(y ~ I(W \%*\% x1) + x1 + x2, \...)
+</code></pre>
+
+<p>where <code>W</code> is a row-standardized spatial weights matrix (see <code><a href='shape2mat.html'>shape2mat</a></code>). SLX terms will always be <em>prepended</em> to the design matrix, as above, which is important to know when setting prior distributions for regression coefficients.</p>
+<p>For measurement error (ME) models, the SLX argument is the only way to include spatially lagged covariates since the SLX term needs to be re-calculated on each iteration of the MCMC algorithm.</p>
+
+<h3 class='hasAnchor' id='measurement-error-me-models'><a class='anchor' aria-hidden='true' href='#measurement-error-me-models'></a>Measurement error (ME) models</h3>
+
+
+<p>The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. With estimates, <code>x</code>, and their standard errors, <code>se</code>, the ME models have one of the the following two specifications, depending on the user input:</p><pre><code>       x ~ Gauss(x_true, se)
+       x_true ~ MVGauss(mu, Sigma)
+       Sigma = (I - rho C)^(-1) M * tau^2
+       mu ~ Gauss(0, 100)
+       tau ~ student_t(10, 0, 40)
+       rho ~ uniform(lower_bound, upper_bound)
+</code></pre>
+
+<p>where the covariance matrix, <code>Sigma</code>, has the conditional autoregressive specification, and <code>tau</code> is the scale parameter. If <code>ME$car_parts</code> is not provided by the user, then a non-spatial model will be used instead:</p><pre class='sourceCode r'><code>       <span class='va'>x</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='va'>x_true</span>, <span class='va'>se</span><span class='op'>)</span>
+       <span class='va'>x_true</span> <span class='op'>~</span> <span class='fu'>student_t</span><span class='op'>(</span><span class='va'>df</span>, <span class='va'>mu</span>, <span class='va'>sigma</span><span class='op'>)</span>
+       <span class='va'>df</span> <span class='op'>~</span> <span class='fu'><a href='priors.html'>gamma</a></span><span class='op'>(</span><span class='fl'>3</span>, <span class='fl'>0.2</span><span class='op'>)</span>
+       <span class='va'>mu</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>100</span><span class='op'>)</span>
+       <span class='va'>sigma</span> <span class='op'>~</span> <span class='fu'>student_t</span><span class='op'>(</span><span class='fl'>10</span>, <span class='fl'>0</span>, <span class='fl'>40</span><span class='op'>)</span>
+</code></pre>
+
+<p>The observational error is the difference between the survey estimate and <code>x_true</code>, the actual value of the variable during the period of the survey.</p>
 
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>Connor Donegan, <a href='mailto:Connor.Donegan@UTDallas.edu'>Connor.Donegan@UTDallas.edu</a></p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/bayesplot/'>bayesplot</a></span><span class='op'>)</span>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span><span class='op'>(</span>mc.cores <span class='op'>=</span> <span class='fu'>parallel</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span>
-
-<span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>sentencing</span>, style <span class='op'>=</span> <span class='st'>"B"</span><span class='op'>)</span>
-<span class='va'>car.dl</span> <span class='op'>&lt;-</span> <span class='fu'><a href='prep_car_data.html'>prep_car_data</a></span><span class='op'>(</span><span class='va'>C</span>, style <span class='op'>=</span> <span class='st'>"WCAR"</span><span class='op'>)</span>
-<span class='va'>log_e</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>$</span><span class='va'>expected_sents</span><span class='op'>)</span>
-<span class='va'>fit.car</span> <span class='op'>&lt;-</span> <span class='fu'>stan_car</span><span class='op'>(</span><span class='va'>sents</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/offset.html'>offset</a></span><span class='op'>(</span><span class='va'>log_e</span><span class='op'>)</span>,
-                    family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span>,
-                    data <span class='op'>=</span> <span class='va'>sentencing</span>,
-                    car_parts <span class='op'>=</span> <span class='va'>car.dl</span>
-<span class='op'>)</span>
-
-<span class='co'># MCMC diagnostics</span>
-<span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span><span class='op'>(</span><span class='va'>fit.car</span><span class='op'>$</span><span class='va'>stanfit</span><span class='op'>)</span>
-<span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_ess</a></span><span class='op'>(</span><span class='va'>fit.car</span><span class='op'>$</span><span class='va'>stanfit</span><span class='op'>)</span>
-
-<span class='co'># Spatial diagnostics</span>
-<span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit.car</span>, <span class='va'>sentencing</span><span class='op'>)</span>
-
-<span class='co'># posterior predictive distribution</span>
-<span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span><span class='op'>(</span><span class='va'>fit.car</span>, S <span class='op'>=</span> <span class='fl'>75</span><span class='op'>)</span>
-<span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span>
-<span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>yrep</span><span class='op'>)</span>
-
-<span class='co'># examine posterior distributions of CAR parameters</span>
-<span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>fit.car</span>, pars <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"car_scale"</span>, <span class='st'>"car_rho"</span><span class='op'>)</span><span class='op'>)</span>
-
-<span class='co'># map the spatial autocorrelation term, phi</span>
-<span class='va'>sp.trend</span> <span class='op'>&lt;-</span> <span class='fu'><a href='print.geostan_fit.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit.car</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
-<span class='fu'><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>st_as_sf</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>sp.trend</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
-  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span><span class='op'>)</span>
- 
-<span class='co'># calculate log-standardized sentencing ratios (log-SSRs)</span>
-<span class='co'># (like Standardized Incidence Ratios: observed/exected case counts)</span>
-<span class='va'>SSR</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/fitted.values.html'>fitted</a></span><span class='op'>(</span><span class='va'>fit.car</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span>
-<span class='va'>log.SSR</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span> <span class='va'>SSR</span>, base <span class='op'>=</span> <span class='fl'>2</span> <span class='op'>)</span>
-
-<span class='fu'><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>st_as_sf</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span> <span class='op'>%&gt;%</span>
- <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
- <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>log.SSR</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span>
- <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span>
-   midpoint <span class='op'>=</span> <span class='fl'>0</span>,
-   name <span class='op'>=</span> <span class='cn'>NULL</span>,
-   breaks <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>3</span>, <span class='fl'>3</span>, by <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span>
-   <span class='op'>)</span> <span class='op'>+</span>
- <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Log-Standardized Sentencing Ratios"</span>,
-      subtitle <span class='op'>=</span> <span class='st'>"log( Fitted/Expected ), base 2"</span>
-      <span class='op'>)</span> <span class='op'>+</span>
- <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_void</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span>
- <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span>
-   legend.position <span class='op'>=</span> <span class='st'>"bottom"</span>,
-   legend.key.height <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/unit.html'>unit</a></span><span class='op'>(</span><span class='fl'>0.35</span>, <span class='st'>"cm"</span><span class='op'>)</span>,
-   legend.key.width <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/unit.html'>unit</a></span><span class='op'>(</span><span class='fl'>1.5</span>, <span class='st'>"cm"</span><span class='op'>)</span>
- <span class='op'>)</span>
-
-<span class='co'>## DCAR</span>
-<span class='va'>A</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='st'>"B"</span><span class='op'>)</span>
-<span class='va'>D</span> <span class='op'>&lt;-</span> <span class='fu'>sf</span><span class='fu'>::</span><span class='fu'><a href='https://r-spatial.github.io/sf/reference/geos_measures.html'>st_distance</a></span><span class='op'>(</span><span class='fu'>sf</span><span class='fu'>::</span><span class='fu'><a href='https://r-spatial.github.io/sf/reference/geos_unary.html'>st_centroid</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span><span class='op'>)</span>
-<span class='va'>A</span> <span class='op'>&lt;-</span> <span class='va'>D</span> <span class='op'>*</span> <span class='va'>A</span>
-<span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'><a href='prep_car_data.html'>prep_car_data</a></span><span class='op'>(</span><span class='va'>A</span>, <span class='st'>"DCAR"</span>, k <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
-
-<span class='co'># view distance against inverse distance: (A+gamma)^(-k) / max(C)</span>
-<span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='va'>A</span><span class='op'>)</span>,
-    <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='va'>cp</span><span class='op'>$</span><span class='va'>C</span><span class='op'>)</span>
-    <span class='op'>)</span>
-
-<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'>stan_car</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>rate.male</span><span class='op'>)</span> <span class='op'>~</span> <span class='fl'>1</span>,
-               data <span class='op'>=</span> <span class='va'>georgia</span>,
-               car <span class='op'>=</span> <span class='va'>cp</span>,
-               cores <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span>
-
-<span class='fu'><a href='me_diag.html'>me_diag</a></span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>georgia</span><span class='op'>)</span>
-<span class='op'>}</span>
-
-</div></pre>
+    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='r-in'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span></span>
+<span class='r-in'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span></span>
+<span class='r-in'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/bayesplot/'>bayesplot</a></span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span><span class='op'>(</span>mc.cores <span class='op'>=</span> <span class='fu'>parallel</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>sentencing</span>, style <span class='op'>=</span> <span class='st'>"B"</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>car.dl</span> <span class='op'>&lt;-</span> <span class='fu'><a href='prep_car_data.html'>prep_car_data</a></span><span class='op'>(</span><span class='va'>C</span>, style <span class='op'>=</span> <span class='st'>"WCAR"</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>log_e</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>$</span><span class='va'>expected_sents</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>fit.car</span> <span class='op'>&lt;-</span> <span class='fu'>stan_car</span><span class='op'>(</span><span class='va'>sents</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/offset.html'>offset</a></span><span class='op'>(</span><span class='va'>log_e</span><span class='op'>)</span>,</span>
+<span class='r-in'>                    family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span>,</span>
+<span class='r-in'>                    data <span class='op'>=</span> <span class='va'>sentencing</span>,</span>
+<span class='r-in'>                    car_parts <span class='op'>=</span> <span class='va'>car.dl</span></span>
+<span class='r-in'><span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='co'># MCMC diagnostics</span></span>
+<span class='r-in'><span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span><span class='op'>(</span><span class='va'>fit.car</span><span class='op'>$</span><span class='va'>stanfit</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_ess</a></span><span class='op'>(</span><span class='va'>fit.car</span><span class='op'>$</span><span class='va'>stanfit</span><span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='co'># Spatial diagnostics</span></span>
+<span class='r-in'><span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit.car</span>, <span class='va'>sentencing</span><span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='co'># posterior predictive distribution</span></span>
+<span class='r-in'><span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span><span class='op'>(</span><span class='va'>fit.car</span>, S <span class='op'>=</span> <span class='fl'>75</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span></span>
+<span class='r-in'><span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>yrep</span><span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='co'># examine posterior distributions of CAR parameters</span></span>
+<span class='r-in'><span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>fit.car</span>, pars <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"car_scale"</span>, <span class='st'>"car_rho"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='co'># map the spatial autocorrelation term, phi</span></span>
+<span class='r-in'><span class='va'>sp.trend</span> <span class='op'>&lt;-</span> <span class='fu'><a href='geostan_fit.html'>spatial</a></span><span class='op'>(</span><span class='va'>fit.car</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span></span>
+<span class='r-in'><span class='fu'><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>st_as_sf</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span class='r-in'>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span class='r-in'>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>sp.trend</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span class='r-in'>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span><span class='op'>)</span></span>
+<span class='r-in'> </span>
+<span class='r-in'><span class='co'># calculate log-standardized sentencing ratios (log-SSRs)</span></span>
+<span class='r-in'><span class='co'># (like Standardized Incidence Ratios: observed/exected case counts)</span></span>
+<span class='r-in'><span class='va'>SSR</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/fitted.values.html'>fitted</a></span><span class='op'>(</span><span class='va'>fit.car</span><span class='op'>)</span><span class='op'>$</span><span class='va'>mean</span></span>
+<span class='r-in'><span class='va'>log.SSR</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span> <span class='va'>SSR</span>, base <span class='op'>=</span> <span class='fl'>2</span> <span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='fu'><a href='https://r-spatial.github.io/sf/reference/st_as_sf.html'>st_as_sf</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span class='r-in'> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span class='r-in'> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggsf.html'>geom_sf</a></span><span class='op'>(</span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>fill <span class='op'>=</span> <span class='va'>log.SSR</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span class='r-in'> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/scale_gradient.html'>scale_fill_gradient2</a></span><span class='op'>(</span></span>
+<span class='r-in'>   midpoint <span class='op'>=</span> <span class='fl'>0</span>,</span>
+<span class='r-in'>   name <span class='op'>=</span> <span class='cn'>NULL</span>,</span>
+<span class='r-in'>   breaks <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/seq.html'>seq</a></span><span class='op'>(</span><span class='op'>-</span><span class='fl'>3</span>, <span class='fl'>3</span>, by <span class='op'>=</span> <span class='fl'>0.5</span><span class='op'>)</span></span>
+<span class='r-in'>   <span class='op'>)</span> <span class='op'>+</span></span>
+<span class='r-in'> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>title <span class='op'>=</span> <span class='st'>"Log-Standardized Sentencing Ratios"</span>,</span>
+<span class='r-in'>      subtitle <span class='op'>=</span> <span class='st'>"log( Fitted/Expected ), base 2"</span></span>
+<span class='r-in'>      <span class='op'>)</span> <span class='op'>+</span></span>
+<span class='r-in'> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggtheme.html'>theme_void</a></span><span class='op'>(</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span class='r-in'> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/theme.html'>theme</a></span><span class='op'>(</span></span>
+<span class='r-in'>   legend.position <span class='op'>=</span> <span class='st'>"bottom"</span>,</span>
+<span class='r-in'>   legend.key.height <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/unit.html'>unit</a></span><span class='op'>(</span><span class='fl'>0.35</span>, <span class='st'>"cm"</span><span class='op'>)</span>,</span>
+<span class='r-in'>   legend.key.width <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/grid/unit.html'>unit</a></span><span class='op'>(</span><span class='fl'>1.5</span>, <span class='st'>"cm"</span><span class='op'>)</span></span>
+<span class='r-in'> <span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='co'>## DCAR specification (inverse-distance based)</span></span>
+<span class='r-in'><span class='va'>A</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='st'>"B"</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>D</span> <span class='op'>&lt;-</span> <span class='fu'>sf</span><span class='fu'>::</span><span class='fu'><a href='https://r-spatial.github.io/sf/reference/geos_measures.html'>st_distance</a></span><span class='op'>(</span><span class='fu'>sf</span><span class='fu'>::</span><span class='fu'><a href='https://r-spatial.github.io/sf/reference/geos_unary.html'>st_centroid</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>A</span> <span class='op'>&lt;-</span> <span class='va'>D</span> <span class='op'>*</span> <span class='va'>A</span></span>
+<span class='r-in'><span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'><a href='prep_car_data.html'>prep_car_data</a></span><span class='op'>(</span><span class='va'>A</span>, <span class='st'>"DCAR"</span>, k <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='co'># view distance against inverse distance: (A+gamma)^(-k) / max(C)</span></span>
+<span class='r-in'><span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='va'>A</span><span class='op'>)</span>,</span>
+<span class='r-in'>    <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='va'>cp</span><span class='op'>$</span><span class='va'>C</span><span class='op'>)</span></span>
+<span class='r-in'>    <span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'>stan_car</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>rate.male</span><span class='op'>)</span> <span class='op'>~</span> <span class='fl'>1</span>,</span>
+<span class='r-in'>               data <span class='op'>=</span> <span class='va'>georgia</span>,</span>
+<span class='r-in'>               car <span class='op'>=</span> <span class='va'>cp</span>,</span>
+<span class='r-in'>               cores <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='fu'><a href='me_diag.html'>me_diag</a></span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>georgia</span><span class='op'>)</span></span>
+<span class='r-in'><span class='op'>}</span></span>
+<span class='r-in'></span>
+</code></pre></div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -476,11 +478,11 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by Connor Donegan.</p>
+  <p><p>Developed by Connor Donegan.</p></p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 1.6.1.9001.</p></p>
 </div>
 
       </footer>
@@ -488,6 +490,8 @@
 
   
 
+
+  
 
   </body>
 </html>

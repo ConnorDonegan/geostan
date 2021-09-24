@@ -1,0 +1,14 @@
+# Results from tests/testthat/test-for-bias 
+# Run date: 2021-09-20
+# Context: CAR log-linear Poisson SLX models are unbiased
+# alpha -0.005 Expected result: 0 \pm 0.019 
+# beta1 0.007 Expected result: 0 \pm 0.017 
+# beta2 0.014 Expected result: 0 \pm 0.017
+# Context: ESF log-linear Poisson SLX models are unbiased
+# alpha 0.017 Expected result: 0 \pm 0.026 
+# beta1 -0.004 Expected result: 0 \pm 0.016 
+# beta2 -0.012 Expected result: 0 \pm 0.017
+# Context: BYM log-linear Poisson SLX models are unbiased
+# alpha -0.003 Expected result: 0 \pm 0.018 
+# beta1 -0.008 Expected result: 0 \pm 0.016 
+# beta2 0.008 Expected result: 0 \pm 0.015
