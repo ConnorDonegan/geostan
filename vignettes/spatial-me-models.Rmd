@@ -96,7 +96,7 @@ $$ \boldsymbol x \sim Gauss(\mu \cdot \boldsymbol 1, \Sigma). $$
 This is a multivariate normal distribution with a constant mean, $\mu$, and covariance matrix $$\boldsymbol \Sigma = (I - \rho C)^{-1} M .$$
 $\Sigma$ contains the spatial connectivity matrix, $\boldsymbol C$. $M$ is a diagonal matrix that contains the scale parameter, $\tau^2$, multiplied by given constant terms. There are numerous ways to specify $C$ and $M$ with the CAR model (see `geostan::prep_car_data`). 
 
-The parameters $\mu$, $\rho$, and $\tau$ all require prior probability distributions; **geostan** uses the following by default:
+The parameters $\mu$, $\rho$, and $\tau$ all require prior probability distributions that respect one's background knowledge on the variable of interest; **geostan** uses the following by default:
 \begin{equation} 
 \begin{split}
 \mu &\sim Gauss(0, 100) \\
@@ -194,7 +194,7 @@ head(delta)
 We can follow up on this information by examining demographic information on the counties with the largest $\delta_i$:
 
 ```{r}
-georgia[c(91, 105, 90, 39, 18), c("NAME", "population", "white", "black", "hisp", "ai", "ICE", "ICE.se", "college", "college.se")]
+georgia[c(91, 105, 90, 39), c("NAME", "population", "white", "black", "hisp", "ai", "ICE", "ICE.se", "college", "college.se")]
 ```
 
 The somewhat large $\delta_i$ values for these counties are a result of the combination of fairly unreliable estimates (large standard errors) while also being local outliers. But we can see that these are low population areas that also have low income, few college grads, and fairly high percent Black populations; crucially, they have large standard errors on their ICE estimates. 

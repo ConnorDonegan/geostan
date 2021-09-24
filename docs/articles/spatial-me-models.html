@@ -155,7 +155,7 @@
 \end{equation}\]</span></p>
 <p>The ME models implemented in <strong>geostan</strong> are hierarchical Bayesian models (HBMs) that incorporate two sources of information: a sampling distribution for the survey estimates, and generic background knowledge on social variables. The former is a likelihood statement that states: for a given true value, <span class="math inline">\(x_i\)</span>, and standard error, <span class="math inline">\(s_i\)</span>, the probability of obtaining survey estimate <span class="math inline">\(z_i\)</span> is <span class="math display">\[z_i \sim Gauss(x_i, s_i).\]</span> This reflects the statement that sampling error is not systematically patterned, and it is consistent with conventional ‘margins of error’ for survey estimates.</p>
 <p>The relevant background knowledge includes our basic understanding of contemporary society, particularly that extreme conditions are not implausible, but tend to be clustered together (with important exceptions)<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>. This information is encoded into a probability distribution for the unknown set of values, <span class="math inline">\(\boldsymbol x\)</span>, using the conditional autoregressive (CAR) model: <span class="math display">\[ \boldsymbol x \sim Gauss(\mu \cdot \boldsymbol 1, \Sigma). \]</span> This is a multivariate normal distribution with a constant mean, <span class="math inline">\(\mu\)</span>, and covariance matrix <span class="math display">\[\boldsymbol \Sigma = (I - \rho C)^{-1} M .\]</span> <span class="math inline">\(\Sigma\)</span> contains the spatial connectivity matrix, <span class="math inline">\(\boldsymbol C\)</span>. <span class="math inline">\(M\)</span> is a diagonal matrix that contains the scale parameter, <span class="math inline">\(\tau^2\)</span>, multiplied by given constant terms. There are numerous ways to specify <span class="math inline">\(C\)</span> and <span class="math inline">\(M\)</span> with the CAR model (see <code><a href="../reference/prep_car_data.html">geostan::prep_car_data</a></code>).</p>
-<p>The parameters <span class="math inline">\(\mu\)</span>, <span class="math inline">\(\rho\)</span>, and <span class="math inline">\(\tau\)</span> all require prior probability distributions; <strong>geostan</strong> uses the following by default: <span class="math display">\[\begin{equation} 
+<p>The parameters <span class="math inline">\(\mu\)</span>, <span class="math inline">\(\rho\)</span>, and <span class="math inline">\(\tau\)</span> all require prior probability distributions that respect one’s background knowledge on the variable of interest; <strong>geostan</strong> uses the following by default: <span class="math display">\[\begin{equation} 
 \begin{split}
 \mu &amp;\sim Gauss(0, 100) \\
 \tau &amp;\sim Student_t(10, 0, 40) \\
@@ -218,8 +218,8 @@
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).
 ## Chain 1: 
-## Chain 1: Gradient evaluation took 0.000132 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.32 seconds.
+## Chain 1: Gradient evaluation took 0.000114 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.14 seconds.
 ## Chain 1: Adjust your expectations accordingly!
 ## Chain 1: 
 ## Chain 1: 
@@ -228,15 +228,15 @@
 ## Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 1: 
-## Chain 1:  Elapsed Time: 1.70693 seconds (Warm-up)
-## Chain 1:                1.35002 seconds (Sampling)
-## Chain 1:                3.05695 seconds (Total)
+## Chain 1:  Elapsed Time: 1.84421 seconds (Warm-up)
+## Chain 1:                1.36298 seconds (Sampling)
+## Chain 1:                3.20719 seconds (Total)
 ## Chain 1: 
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 2).
 ## Chain 2: 
-## Chain 2: Gradient evaluation took 0.000126 seconds
-## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 1.26 seconds.
+## Chain 2: Gradient evaluation took 0.0001 seconds
+## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 1 seconds.
 ## Chain 2: Adjust your expectations accordingly!
 ## Chain 2: 
 ## Chain 2: 
@@ -245,15 +245,15 @@
 ## Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 2: 
-## Chain 2:  Elapsed Time: 1.81636 seconds (Warm-up)
-## Chain 2:                1.36855 seconds (Sampling)
-## Chain 2:                3.18491 seconds (Total)
+## Chain 2:  Elapsed Time: 1.62624 seconds (Warm-up)
+## Chain 2:                1.38083 seconds (Sampling)
+## Chain 2:                3.00707 seconds (Total)
 ## Chain 2: 
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 3).
 ## Chain 3: 
-## Chain 3: Gradient evaluation took 0.000165 seconds
-## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 1.65 seconds.
+## Chain 3: Gradient evaluation took 0.000152 seconds
+## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 1.52 seconds.
 ## Chain 3: Adjust your expectations accordingly!
 ## Chain 3: 
 ## Chain 3: 
@@ -262,15 +262,15 @@
 ## Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 3: 
-## Chain 3:  Elapsed Time: 1.54832 seconds (Warm-up)
-## Chain 3:                1.52545 seconds (Sampling)
-## Chain 3:                3.07378 seconds (Total)
+## Chain 3:  Elapsed Time: 1.78567 seconds (Warm-up)
+## Chain 3:                1.39217 seconds (Sampling)
+## Chain 3:                3.17784 seconds (Total)
 ## Chain 3: 
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 4).
 ## Chain 4: 
-## Chain 4: Gradient evaluation took 0.000104 seconds
-## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 1.04 seconds.
+## Chain 4: Gradient evaluation took 9.7e-05 seconds
+## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.97 seconds.
 ## Chain 4: Adjust your expectations accordingly!
 ## Chain 4: 
 ## Chain 4: 
@@ -279,9 +279,9 @@
 ## Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 4: 
-## Chain 4:  Elapsed Time: 1.77551 seconds (Warm-up)
-## Chain 4:                1.38446 seconds (Sampling)
-## Chain 4:                3.15998 seconds (Total)
+## Chain 4:  Elapsed Time: 1.72468 seconds (Warm-up)
+## Chain 4:                1.5743 seconds (Sampling)
+## Chain 4:                3.29897 seconds (Total)
 ## Chain 4:</code></pre>
 <p>Note that <code>prior_only = TRUE</code> will prevent <code>stan_glm</code> from considering the likelihood of the outcome, <code>log(rate.male)</code>; to facilitate a valid workflow, the entire ME model is treated as part of the “prior” by <code>prior_only</code>. This allows us to understand the properties of the ME model itself, considered independently from any outcome variable.</p>
 </div>
@@ -314,43 +314,41 @@
 <code class="sourceCode R"><span class="fu"><a href="../reference/me_diag.html">me_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">'ICE'</span>, <span class="va">georgia</span>, index <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
 <pre><code>## Identifying the top 5 observations as ordered by their Delta values (Delta = posterior mean of x - raw x value):</code></pre>
 <pre><code>##                 x.raw       x.mu      x.lwr      x.upr       Delta
-## x_ICE[105] -0.3412494 -0.3070672 -0.3879118 -0.2282492 -0.03418212
-## x_ICE[91]  -0.4016787 -0.3687190 -0.4562764 -0.2803918 -0.03295963
-## x_ICE[90]  -0.2798395 -0.2552535 -0.3289484 -0.1830698 -0.02458606
-## x_ICE[39]  -0.3236583 -0.3006336 -0.3842532 -0.2170780 -0.02302472
-## x_ICE[143] -0.2395249 -0.2211420 -0.2909980 -0.1493183 -0.01838295</code></pre>
+## x_ICE[105] -0.3412494 -0.3069717 -0.3883074 -0.2275250 -0.03427766
+## x_ICE[91]  -0.4016787 -0.3676921 -0.4535625 -0.2830984 -0.03398653
+## x_ICE[90]  -0.2798395 -0.2554276 -0.3299981 -0.1836245 -0.02441190
+## x_ICE[39]  -0.3236583 -0.3002038 -0.3777328 -0.2199387 -0.02345446
+## x_ICE[143] -0.2395249 -0.2208750 -0.2924946 -0.1499602 -0.01864988</code></pre>
 <p><img src="spatial-me-models_files/figure-html/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>Or, we can have <code>me_diag</code> return results as raw data (it will also return a list of <code>ggplots</code>):</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">delta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/me_diag.html">me_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">'ICE'</span>, <span class="va">georgia</span>, plot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">$</span><span class="va">delta_data</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">delta</span><span class="op">)</span></code></pre></div>
 <pre><code>##                x.raw        x.mu       x.lwr        x.upr         Delta
-## x_ICE[1] -0.24576780 -0.23664164 -0.28900436 -0.183201886 -9.126156e-03
-## x_ICE[2] -0.27540984 -0.26752474 -0.32217397 -0.211567974 -7.885091e-03
-## x_ICE[3] -0.01856313 -0.01822699 -0.03428974 -0.001731015 -3.361490e-04
-## x_ICE[4]  0.05059098  0.05058446  0.04310448  0.058036817  6.520035e-06
-## x_ICE[5]  0.14701110  0.14415492  0.12344183  0.164902929  2.856185e-03
-## x_ICE[6]  0.16649112  0.16630259  0.15801271  0.174541712  1.885245e-04</code></pre>
+## x_ICE[1] -0.24576780 -0.23633594 -0.28902463 -0.185267814 -9.431859e-03
+## x_ICE[2] -0.27540984 -0.26743852 -0.31899422 -0.215955432 -7.971316e-03
+## x_ICE[3] -0.01856313 -0.01803580 -0.03360630 -0.002873013 -5.273333e-04
+## x_ICE[4]  0.05059098  0.05051609  0.04273121  0.058351382  7.489874e-05
+## x_ICE[5]  0.14701110  0.14443608  0.12369874  0.165282838  2.575026e-03
+## x_ICE[6]  0.16649112  0.16631250  0.15796295  0.174596683  1.786149e-04</code></pre>
 <p>We can follow up on this information by examining demographic information on the counties with the largest <span class="math inline">\(\delta_i\)</span>:</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">georgia</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">91</span>, <span class="fl">105</span>, <span class="fl">90</span>, <span class="fl">39</span>, <span class="fl">18</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NAME"</span>, <span class="st">"population"</span>, <span class="st">"white"</span>, <span class="st">"black"</span>, <span class="st">"hisp"</span>, <span class="st">"ai"</span>, <span class="st">"ICE"</span>, <span class="st">"ICE.se"</span>, <span class="st">"college"</span>, <span class="st">"college.se"</span><span class="op">)</span><span class="op">]</span></code></pre></div>
-<pre><code>## Simple feature collection with 5 features and 10 fields
+<code class="sourceCode R"><span class="va">georgia</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">91</span>, <span class="fl">105</span>, <span class="fl">90</span>, <span class="fl">39</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NAME"</span>, <span class="st">"population"</span>, <span class="st">"white"</span>, <span class="st">"black"</span>, <span class="st">"hisp"</span>, <span class="st">"ai"</span>, <span class="st">"ICE"</span>, <span class="st">"ICE.se"</span>, <span class="st">"college"</span>, <span class="st">"college.se"</span><span class="op">)</span><span class="op">]</span></code></pre></div>
+<pre><code>## Simple feature collection with 4 features and 10 fields
 ## Geometry type: MULTIPOLYGON
 ## Dimension:     XY
-## Bounding box:  xmin: -85.06359 ymin: 30.58092 xmax: -82.41898 ymax: 33.96591
+## Bounding box:  xmin: -85.06359 ymin: 30.58092 xmax: -82.41898 ymax: 33.46918
 ## Geodetic CRS:  NAD83
 ##        NAME population    white    black      hisp         ai        ICE
 ## 91   Clinch       6743 65.35667 27.61382  5.116417 0.05932078 -0.4016787
 ## 105 Wheeler       7939 56.06500 42.10858  1.272201 0.45345761 -0.3412494
 ## 90  Hancock       8535 24.22964 72.29057  1.921500 0.00000000 -0.2798395
 ## 39  Stewart       6042 24.62761 54.10460 17.212843 0.14895730 -0.3236583
-## 18   Oconee      37017 84.57465  5.41643  4.873437 0.04052192  0.2446345
 ##         ICE.se college college.se                       geometry
 ## 91  0.04806692    11.1   2.127660 MULTIPOLYGON (((-82.97125 3...
 ## 105 0.04801373    12.8   2.492401 MULTIPOLYGON (((-82.92786 3...
 ## 90  0.04151013     8.8   1.641337 MULTIPOLYGON (((-83.25346 3...
-## 39  0.04715834    11.2   1.945289 MULTIPOLYGON (((-85.05141 3...
-## 18  0.01939593    51.1   1.519757 MULTIPOLYGON (((-83.53739 3...</code></pre>
+## 39  0.04715834    11.2   1.945289 MULTIPOLYGON (((-85.05141 3...</code></pre>
 <p>The somewhat large <span class="math inline">\(\delta_i\)</span> values for these counties are a result of the combination of fairly unreliable estimates (large standard errors) while also being local outliers. But we can see that these are low population areas that also have low income, few college grads, and fairly high percent Black populations; crucially, they have large standard errors on their ICE estimates.</p>
 <p>Notice that the ACS estimate for the ICE in Clinch County is <span class="math inline">\(-0.40\)</span> (SE = 0.048), implying a 95% margin of error ranging from -0.5 to -0.3 (quite a wide range). Here is our probability distribution for the ICE in Clinch County:</p>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
@@ -369,7 +367,7 @@
 <pre><code>## [1] 4000    1</code></pre>
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">mu.x</span><span class="op">)</span></code></pre></div>
-<pre><code>## [1] -0.1280951</code></pre>
+<pre><code>## [1] -0.127934</code></pre>
 <p>We can visualize these using <code>plot</code>:</p>
 <div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mu_x_true"</span>, <span class="st">"car_rho_x_true"</span>, <span class="st">"sigma_x_true"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
@@ -385,7 +383,7 @@
 <code class="sourceCode R"><span class="va">x.mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2</span>, <span class="va">mean</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">x.mu</span><span class="op">)</span></code></pre></div>
 <pre><code>##    x_ICE[1]    x_ICE[2]    x_ICE[3]    x_ICE[4]    x_ICE[5]    x_ICE[6] 
-## -0.23664164 -0.26752474 -0.01822699  0.05058446  0.14415492  0.16630259</code></pre>
+## -0.23633594 -0.26743852 -0.01803580  0.05051609  0.14443608  0.16631250</code></pre>
 </div>
 </div>
 <div id="non-spatial-me-models" class="section level2">
@@ -440,8 +438,8 @@
 ## Spatial method (outcome):  Exchangeable 
 ## Likelihood function:  poisson 
 ## Link function:  log 
-## Residual Moran Coefficient:  0.03551325 
-## WAIC:  1318.57 
+## Residual Moran Coefficient:  0.03633575 
+## WAIC:  1317.45 
 ## Observations:  159 
 ## Data models (ME): ICE
 ##  Data model (ME prior): CAR (auto Gaussian)
@@ -450,11 +448,11 @@
 ## post-warmup draws per chain=1000, total post-warmup draws=4000.
 ## 
 ##             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-## intercept -4.384   0.001 0.017 -4.416 -4.396 -4.384 -4.373 -4.351   694 1.004
-## ICE       -1.707   0.004 0.102 -1.898 -1.777 -1.711 -1.640 -1.502   731 1.004
-## alpha_tau  0.124   0.000 0.011  0.103  0.116  0.123  0.131  0.147  1689 1.000
+## intercept -4.385   0.001 0.017 -4.420 -4.396 -4.384 -4.373 -4.352   674 1.006
+## ICE       -1.709   0.004 0.104 -1.914 -1.777 -1.710 -1.638 -1.506   634 1.004
+## alpha_tau  0.124   0.000 0.011  0.105  0.117  0.124  0.131  0.147  1767 1.002
 ## 
-## Samples were drawn using NUTS(diag_e) at Fri Sep 24 14:56:33 2021.
+## Samples were drawn using NUTS(diag_e) at Fri Sep 24 16:03:02 2021.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>
