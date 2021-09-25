@@ -829,22 +829,6 @@ row_standardize <- function(C, warn = TRUE, msg = "Row standardizing connectivit
     return (W)
 }
 
-#' Student t family
-#'
-#' @export
-#' @description create a family object for the Student t likelihood
-#' @return An object of class \code{family}
-#' @examples
-#' \dontrun{
-#' data(georgia)
-#' fit = stan_glm(log(rate.male) ~ 1, data = georgia, family = student_t())
-#' }
-student_t <- function() {
-  family <- list(family = "student_t", link = 'identity')
-  class(family) <- "family"
-  return(family)
-}
-
 #' auto Gaussian family for CAR models
 #'
 #' @export

@@ -213,7 +213,7 @@
     </tr>
     <tr>
       <th>family</th>
-      <td><p>The likelihood function for the outcome variable. Current options are <code>family = gaussian()</code>, <code>student_t()</code> and <code>poisson(link = "log")</code>, and <code>binomial(link = "logit")</code>.</p></td>
+      <td><p>The likelihood function for the outcome variable. Current options are <code>family = gaussian()</code>, <code><a href='priors.html'>student_t()</a></code> and <code>poisson(link = "log")</code>, and <code>binomial(link = "logit")</code>.</p></td>
     </tr>
     <tr>
       <th>prior</th>
@@ -287,7 +287,8 @@
 .</p>
 <p>Dray, S., P. Legendre &amp; P. R. Peres-Neto (2006). Spatial modelling: a comprehensive framework for principal coordinate analysis of neighbour matrices (PCNM). <em>Ecological Modeling</em>, 196(3-4), 483-493.</p>
 <p>Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian estimation of spatial filters with Moran’s Eigenvectors and hierarchical shrinkage priors. <em>Spatial Statistics</em>. doi: <a href='https://doi.org/10.1016/j.spasta.2020.100450'>10.1016/j.spasta.2020.100450</a>
-.</p>
+ (open access: doi: <a href='https://doi.org/10.31219/osf.io/fah3z'>10.31219/osf.io/fah3z</a>
+).</p>
 <p>Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. <em>Int. J. Env. Res. and Public Health</em> 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: <a href='https://github.com/ConnorDonegan/survey-HBM'>https://github.com/ConnorDonegan/survey-HBM</a>.</p>
 <p>Griffith, Daniel A., and P. R. Peres-Neto (2006). Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses. <em>Ecology</em> 87(10), 2603-2613.</p>
 <p>Griffith, D., and Y. Chun (2014). Spatial autocorrelation and spatial filtering, Handbook of Regional Science. Fischer, MM and Nijkamp, P. eds.</p>
@@ -355,10 +356,10 @@
 </code></pre>
 
 <p>where the covariance matrix, <code>Sigma</code>, has the conditional autoregressive specification, and <code>tau</code> is the scale parameter. If <code>ME$car_parts</code> is not provided by the user, then a non-spatial model will be used instead:</p><pre class='sourceCode r'><code>       <span class='va'>x</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='va'>x_true</span>, <span class='va'>se</span><span class='op'>)</span>
-       <span class='va'>x_true</span> <span class='op'>~</span> <span class='fu'>student_t</span><span class='op'>(</span><span class='va'>df</span>, <span class='va'>mu</span>, <span class='va'>sigma</span><span class='op'>)</span>
+       <span class='va'>x_true</span> <span class='op'>~</span> <span class='fu'><a href='priors.html'>student_t</a></span><span class='op'>(</span><span class='va'>df</span>, <span class='va'>mu</span>, <span class='va'>sigma</span><span class='op'>)</span>
        <span class='va'>df</span> <span class='op'>~</span> <span class='fu'><a href='priors.html'>gamma</a></span><span class='op'>(</span><span class='fl'>3</span>, <span class='fl'>0.2</span><span class='op'>)</span>
        <span class='va'>mu</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>100</span><span class='op'>)</span>
-       <span class='va'>sigma</span> <span class='op'>~</span> <span class='fu'>student_t</span><span class='op'>(</span><span class='fl'>10</span>, <span class='fl'>0</span>, <span class='fl'>40</span><span class='op'>)</span>
+       <span class='va'>sigma</span> <span class='op'>~</span> <span class='fu'><a href='priors.html'>student_t</a></span><span class='op'>(</span><span class='fl'>10</span>, <span class='fl'>0</span>, <span class='fl'>40</span><span class='op'>)</span>
 </code></pre>
 
 <p>The observational error is the difference between the survey estimate and <code>x_true</code>, the actual value of the variable during the period of the survey.</p>

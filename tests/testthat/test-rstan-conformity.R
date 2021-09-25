@@ -1,5 +1,7 @@
 skip("Run interactively to avoid crashing R session.")
-devtools::load_all("~/dev/geostan")
+
+## uncomment to run test
+#devtools::load_all("~/dev/geostan")
 library(rstan)
 library(testthat)
 context("RStan conformity")
