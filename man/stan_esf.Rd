@@ -12,6 +12,8 @@ Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian estimation of spatial fil
 
 Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. \emph{Int. J. Env. Res. and Public Health} 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: \url{https://github.com/ConnorDonegan/survey-HBM}.
 
+Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. \emph{OSF Preprints}. \doi{10.31219/osf.io/3ey65}.
+
 Griffith, Daniel A., and P. R. Peres-Neto (2006). Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses. \emph{Ecology} 87(10), 2603-2613.
 
 Griffith, D., and Y. Chun (2014). Spatial autocorrelation and spatial filtering, Handbook of Regional Science. Fischer, MM and Nijkamp, P. eds.
@@ -176,7 +178,7 @@ For measurement error (ME) models, the SLX argument is the only way to include s
 
 \subsection{Measurement error (ME) models}{
 
-The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. With estimates, \code{x}, and their standard errors, \code{se}, the ME models have one of the the following two specifications, depending on the user input:\preformatted{       x ~ Gauss(x_true, se)
+The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates (Donegan et al. 2021; Donegan 2021). With estimates, \code{x}, and their standard errors, \code{se}, the ME models have one of the the following two specifications, depending on the user input:\preformatted{       x ~ Gauss(x_true, se)
        x_true ~ MVGauss(mu, Sigma)
        Sigma = (I - rho * C)^(-1) M * tau^2
        mu ~ Gauss(0, 100)

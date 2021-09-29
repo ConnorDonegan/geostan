@@ -236,7 +236,7 @@
 <h3 class='hasAnchor' id='the-horseshoe-prior'><a class='anchor' aria-hidden='true' href='#the-horseshoe-prior'></a>The horseshoe prior</h3>
 
 
-<p>The horseshoe prior is used by <code><a href='stan_esf.html'>stan_esf</a></code> as a prior for the eigenvector coefficients. The horseshoe model encodes a prior state of knowledge that effectively states, 'I believe a small number of these variables may be important, but I don't know which of them is important.' The horseshoe is a normal distribution with unkown scale (Polson and Scott 2010):</p><pre><code>       beta_j ~ Normal(0, tau^2 lambda_j^2)
+<p>The horseshoe prior is used by <code><a href='stan_esf.html'>stan_esf</a></code> as a prior for the eigenvector coefficients. The horseshoe model encodes a prior state of knowledge that effectively states, 'I believe a small number of these variables may be important, but I don't know which of them is important.' The horseshoe is a normal distribution with unkown scale (Polson and Scott 2010):</p><pre class='sourceCode r'><code>       <span class='va'>beta_j</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>Normal</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='va'>tau</span><span class='op'>^</span><span class='fl'>2</span> <span class='op'>*</span> <span class='va'>lambda_j</span><span class='op'>^</span><span class='fl'>2</span><span class='op'>)</span>
 </code></pre>
 
 <p>The scale parameter for this prior is the product of two terms: <code>lambda_j^2</code> is specific to the variable <code>beta_j</code>, and <code>tau^2</code> is known as the global shrinkage parameter.</p>

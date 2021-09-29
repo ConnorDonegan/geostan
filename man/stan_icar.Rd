@@ -12,6 +12,8 @@ Donegan, Connor. 2021. Flexible functions for ICAR, BYM, and BYM2 models in Stan
 
 Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. \emph{Int. J. Env. Res. and Public Health} 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: \url{https://github.com/ConnorDonegan/survey-HBM}.
 
+Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. \emph{OSF Preprints}. \doi{10.31219/osf.io/3ey65}.
+
 Freni-Sterrantino, Anna, Massimo Ventrucci, and Håvard Rue. 2018. A Note on Intrinsic Conditional Autoregressive Models for Disconnected Graphs. Spatial and Spatio-Temporal Epidemiology 26: 25–34.
 
 Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A., & DiMaggio, C. (2019). Bayesian hierarchical spatial models: Implementing the Besag York Mollié model in stan. Spatial and spatio-temporal epidemiology, 31, 100301.
@@ -236,7 +238,7 @@ For measurement error (ME) models, the SLX argument is the only way to include s
 
 \subsection{Measurement error (ME) models}{
 
-The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. With estimates, \code{x}, and their standard errors, \code{se}, the ME models have one of the the following two specifications, depending on the user input:\preformatted{       x ~ Gauss(x_true, se)
+The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates (Donegan et al. 2021; Donegan 2021). With estimates, \code{x}, and their standard errors, \code{se}, the ME models have one of the the following two specifications, depending on the user input:\preformatted{       x ~ Gauss(x_true, se)
        x_true ~ MVGauss(mu, Sigma)
        Sigma = (I - rho * C)^(-1) M * tau^2
        mu ~ Gauss(0, 100)

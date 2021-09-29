@@ -290,6 +290,8 @@
  (open access: doi: <a href='https://doi.org/10.31219/osf.io/fah3z'>10.31219/osf.io/fah3z</a>
 ).</p>
 <p>Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. <em>Int. J. Env. Res. and Public Health</em> 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: <a href='https://github.com/ConnorDonegan/survey-HBM'>https://github.com/ConnorDonegan/survey-HBM</a>.</p>
+<p>Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. <em>OSF Preprints</em>. doi: <a href='https://doi.org/10.31219/osf.io/3ey65'>10.31219/osf.io/3ey65</a>
+.</p>
 <p>Griffith, Daniel A., and P. R. Peres-Neto (2006). Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses. <em>Ecology</em> 87(10), 2603-2613.</p>
 <p>Griffith, D., and Y. Chun (2014). Spatial autocorrelation and spatial filtering, Handbook of Regional Science. Fischer, MM and Nijkamp, P. eds.</p>
 <p>Griffith, D., Chun, Y. and Li, B. (2019). <em>Spatial Regression Analysis Using Eigenvector Spatial Filtering</em>. Elsevier.</p>
@@ -347,7 +349,7 @@
 <h3 class='hasAnchor' id='measurement-error-me-models'><a class='anchor' aria-hidden='true' href='#measurement-error-me-models'></a>Measurement error (ME) models</h3>
 
 
-<p>The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. With estimates, <code>x</code>, and their standard errors, <code>se</code>, the ME models have one of the the following two specifications, depending on the user input:</p><pre><code>       x ~ Gauss(x_true, se)
+<p>The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates (Donegan et al. 2021; Donegan 2021). With estimates, <code>x</code>, and their standard errors, <code>se</code>, the ME models have one of the the following two specifications, depending on the user input:</p><pre><code>       x ~ Gauss(x_true, se)
        x_true ~ MVGauss(mu, Sigma)
        Sigma = (I - rho * C)^(-1) M * tau^2
        mu ~ Gauss(0, 100)
