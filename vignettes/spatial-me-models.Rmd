@@ -24,7 +24,7 @@ knitr::opts_chunk$set(echo = TRUE,
                       )
 ```
 
-This vignette introduces users to the spatial measurement error (ME) models implemented in the **geostan** package [@donegan_2021]. These models are particularly appropriate for working with American Community Survey (ACS) data and other large, government-backed surveys.  
+This vignette introduces users to the spatial measurement error (ME) models implemented in the **geostan** package [@donegan_2021;@donegan_2021b]. These models are particularly appropriate for working with American Community Survey (ACS) data and other large, government-backed surveys.  
 
 A premise of this methodology is that the survey includes a systematic spatial sampling design (i.e., the sampling procedure was stratified by areal unit, whether they be block groups, counties, or states). 
 
