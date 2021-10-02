@@ -40,7 +40,7 @@ Creates sparse matrix representations of spatial connectivity structures
 \details{
 Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matrices (Ch. 4).
 
-The `lagged' space-time structure connects each observation to its own past (one period lagged) value and the past value of its neighbors. The `contemporaneous' specification links each observation to its neighbors and to its own in situ past (one period lagged) value (Griffith 2012, p. 23).
+The space-time connectivity matrix can be used for eigenvector space-time filtering (\code{\link[geostan]{stan_esf}}. The `lagged' space-time structure connects each observation to its own past (one period lagged) value and the past value of its neighbors. The `contemporaneous' specification links each observation to its neighbors and to its own in situ past (one period lagged) value (Griffith 2012, p. 23).
 }
 \examples{
 
@@ -68,5 +68,5 @@ dim(EVst)
 
 }
 \seealso{
-\code{\link[geostan]{edges}}
+\code{\link[geostan]{edges}} \code{\link[geostan]{prep_car_data}} \code{\link[geostan]{prep_icar_data}}
 }

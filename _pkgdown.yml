@@ -5,7 +5,7 @@ template:
 destination: docs
 url: https://connordonegan.github.io/geostan/
 home:
-  title: R package for Bayesian spatial modeling
+  title: Bayesian spatial modeling
 reference:
 - title: "Package overview"
 - contents:

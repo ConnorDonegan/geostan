@@ -109,9 +109,13 @@ aple <- function(x, w, digits = 3) {
 #' 
 #' data(georgia)
 #' w <- shape2mat(georgia, "W")
-#' x <- sim_sar(w=w, rho=.5)
+#' x <- sim_sar(w = w, rho = 0.5)
 #' aple(x, w)
 #'
+#' x <- sim_sar(w = w, rho = 0.7, m = 4)
+#' dim(x)
+#' apply(x, 1, aple, w = w)
+#' 
 #' @importFrom MASS mvrnorm
 #' 
 sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
@@ -718,20 +722,19 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' 
 #' @return A spatial connectivity matrix
 #'
-#' @seealso \code{\link[geostan]{edges}}
+#' @seealso \code{\link[geostan]{edges}} \code{\link[geostan]{prep_car_data}} \code{\link[geostan]{prep_icar_data}}
 #' 
 #' @details
 #'
 #' Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matrices (Ch. 4).
 #'
-#' The `lagged' space-time structure connects each observation to its own past (one period lagged) value and the past value of its neighbors. The `contemporaneous' specification links each observation to its neighbors and to its own in situ past (one period lagged) value (Griffith 2012, p. 23).
+#' The space-time connectivity matrix can be used for eigenvector space-time filtering (\code{\link[geostan]{stan_esf}}. The `lagged' space-time structure connects each observation to its own past (one period lagged) value and the past value of its neighbors. The `contemporaneous' specification links each observation to its neighbors and to its own in situ past (one period lagged) value (Griffith 2012, p. 23).
 #' 
 #' @source
 #'
 #' Griffith, D. A. (2012). Space, time, and space-time eigenvector filter specifications that account for autocorrelation. Estadística Espanola, 54(177), 7-34.
 #'
 #' Haining, R. P., & Li, G. (2020). Regression Modelling Wih Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.
-#' 
 #'
 #' @examples
 #' 
