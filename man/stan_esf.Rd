@@ -82,7 +82,7 @@ stan_esf(
 \item{beta_ev}{The eigenvector coefficients are assigned the horseshoe prior (Piironen and Vehtari, 2017), parameterized by \code{global_scale} (to control overall prior sparsity), plus the degrees of freedom and scale of a Student's t model for any large coefficients (see \code{\link[geostan]{priors}}). To allow the spatial filter to account for a greater amount of spatial autocorrelation (i.e., if you find the residuals contain spatial autocorrelation), increase the global scale parameter (to a maximum of \code{global_scale = 1}).}
 }}
 
-\item{ME}{To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list of priors. See the Details section below for more information. Elements of the \code{ME} list may include:
+\item{ME}{To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. See the Details section below for more information. Elements of the \code{ME} list may include:
 \describe{
 
 \item{se}{A required dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}

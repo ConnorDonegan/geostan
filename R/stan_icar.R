@@ -39,7 +39,7 @@
 #' \item{tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(tau = student_t(df = 20, location = 0, scale = 20))`.}
 #' }
 #'
-#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list of priors. See the Details section below for more information. Elements of the \code{ME} list may include:
+#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. See the Details section below for more information. Elements of the \code{ME} list may include:
 #' \describe{
 #' 
 #' \item{se}{A required dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}

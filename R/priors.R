@@ -34,7 +34,7 @@
 #' ME <- list()
 #' ME$se <- data.frame(insurance = georgia$insurance.se)
 #' ME$prior <- list()
-#' ME$prior$nu <- gamma(3, 0.2)
+#' ME$prior$df <- gamma(3, 0.2)
 #' ME$prior$location <- normal(50, 50)
 #' ME$prior$scale <- student_t(12, 10, 20)
 #' \dontrun{

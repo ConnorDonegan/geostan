@@ -39,7 +39,7 @@
 #' \item{tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, `tau`, is assigned a half-Student's t prior. To set this, use, e.g., `prior = list(tau = student_t(df = 20, location = 0, scale = 20))`.}
 #' }
 #' 
-#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list of priors. See the Details section below for more information. Elements of the \code{ME} list may include:
+#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. See the Details section below for more information. Elements of the \code{ME} list may include:
 #' \describe{
 #' 
 #' \item{se}{A required dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
@@ -77,14 +77,22 @@
 #'
 #' ### Poisson models and disease mapping
 #' 
-#' In spatial statistics, Poisson models are often used to calculate incidence rates (mortality rates, or disease incidence rates) for administrative areas like counties or census tracts. If `Y` are counts of cases, and `P` are populations at risk, then the crude rates are `Y/P`. For a Poisson model, `Y` is the outcome and the user should provide an offset value of `log(P)`. For such a case, disease incidence across the collection of areas could be modeled as:
+#' In spatial statistics, Poisson models are often used to calculate incidence rates (mortality rates, or disease incidence rates) for administrative areas like counties or census tracts. If `Y` are counts of cases, and `P` are populations at risk, then the crude rates are `Y/P`. The purpose is to model risk, `eta`, for which crude rates are a (noisy) indicator. Our analysis should also respect the fact that the amount of information contained in the observations, `Y/P`, increases with `P`. Hierarchical Poisson models are often the best way to incorporate all of this information.
+#'
+#' For the Poisson model, `Y` is specified as the outcome and the log of the population at risk, `log(P)`, needs to be provided as an offset term. For such a case, disease incidence across the collection of areas could be modeled as:
 #' ```
-#'         Y ~ Poisson(exp(offset + Mu))
-#'         Mu = alpha + A
+#'         Y ~ Poisson(exp(log(P) + eta))
+#'         eta = alpha + A
 #'         A ~ Guass(0, tau)
 #'         tau ~ student(20, 0, 2),
 #' ```
-#' where `alpha` is the mean log-risk (incidence rate) and `A` is a vector of (so-called) random effects, which enable partial pooling of information across observations. See the example section of this document for a demonstration (where the denominator of the outcome is the expected count, rather than population at risk).
+#' where `alpha` is the mean log-risk (incidence rate) and `A` is a vector of (so-called) random effects, which enable partial pooling of information across observations. Covariates can be added to the model for the log-rates, such that `eta = alpha + X * beta + A`. See the example section of this document for a demonstration (where the denominator of the outcome is the expected count, rather than population at risk).
+#'
+#' Note that the denominator for the rates is specified as a log-offset to provide a consistent, formula-line interface to the model. However, an equivalent, and perhaps more intuitive, specification is the following:
+#' ```
+#'         Y ~ Poisson(P * exp(eta))
+#' ```
+#' where `P` is still the population at risk and `exp(eta)` is the level of risk (expressed as a rate). This translation is derived from the rules for manipulating exponents: `P * exp(eta) = exp(log(P)) * exp(eta) = exp(log(P) + eta)`.
 #'
 #' ### Spatially lagged covariates (SLX)
 #' 

@@ -14,3 +14,4 @@ README_files/
 ^data-raw/*
 tests/testthat/test-for-bias-results
 tests/testthat/test-rstan-conformity-results
+^README\.Rmd$

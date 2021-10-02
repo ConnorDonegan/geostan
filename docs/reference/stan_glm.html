@@ -218,7 +218,7 @@
     </tr>
     <tr>
       <th>ME</th>
-      <td><p>To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list of priors. See the Details section below for more information. Elements of the <code>ME</code> list may include:</p><dl>
+      <td><p>To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. See the Details section below for more information. Elements of the <code>ME</code> list may include:</p><dl>
 
 <dt>se</dt><dd><p>A required dataframe with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of <code>model.matrix(formula, data)</code>.</p></dd>
 
@@ -293,13 +293,18 @@
     <p>Fit a generalized linear model using the R formula interface. Default prior distributions are designed to be weakly informative relative to the data. Much of the functionality intended for spatial models, such as the ability to add spatially lagged covariates and observational error models, are also available in <code>stan_glm</code>. All of <code>geostan</code>'s spatial models build on top of the same Stan code used in <code>stan_glm</code>.</p><h3 class='hasAnchor' id='poisson-models-and-disease-mapping'><a class='anchor' aria-hidden='true' href='#poisson-models-and-disease-mapping'></a>Poisson models and disease mapping</h3>
 
 
-<p>In spatial statistics, Poisson models are often used to calculate incidence rates (mortality rates, or disease incidence rates) for administrative areas like counties or census tracts. If <code>Y</code> are counts of cases, and <code>P</code> are populations at risk, then the crude rates are <code>Y/P</code>. For a Poisson model, <code>Y</code> is the outcome and the user should provide an offset value of <code>log(P)</code>. For such a case, disease incidence across the collection of areas could be modeled as:</p><pre><code>        Y ~ Poisson(exp(offset + Mu))
-        Mu = alpha + A
+<p>In spatial statistics, Poisson models are often used to calculate incidence rates (mortality rates, or disease incidence rates) for administrative areas like counties or census tracts. If <code>Y</code> are counts of cases, and <code>P</code> are populations at risk, then the crude rates are <code>Y/P</code>. The purpose is to model risk, <code>eta</code>, for which crude rates are a (noisy) indicator. Our analysis should also respect the fact that the amount of information contained in the observations, <code>Y/P</code>, increases with <code>P</code>. Hierarchical Poisson models are often the best way to incorporate all of this information.</p>
+<p>For the Poisson model, <code>Y</code> is specified as the outcome and the log of the population at risk, <code>log(P)</code>, needs to be provided as an offset term. For such a case, disease incidence across the collection of areas could be modeled as:</p><pre><code>        Y ~ Poisson(exp(log(P) + eta))
+        eta = alpha + A
         A ~ Guass(0, tau)
         tau ~ student(20, 0, 2),
 </code></pre>
 
-<p>where <code>alpha</code> is the mean log-risk (incidence rate) and <code>A</code> is a vector of (so-called) random effects, which enable partial pooling of information across observations. See the example section of this document for a demonstration (where the denominator of the outcome is the expected count, rather than population at risk).</p>
+<p>where <code>alpha</code> is the mean log-risk (incidence rate) and <code>A</code> is a vector of (so-called) random effects, which enable partial pooling of information across observations. Covariates can be added to the model for the log-rates, such that <code>eta = alpha + X * beta + A</code>. See the example section of this document for a demonstration (where the denominator of the outcome is the expected count, rather than population at risk).</p>
+<p>Note that the denominator for the rates is specified as a log-offset to provide a consistent, formula-line interface to the model. However, an equivalent, and perhaps more intuitive, specification is the following:</p><pre class='sourceCode r'><code>        <span class='va'>Y</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/Poisson.html'>Poisson</a></span><span class='op'>(</span><span class='va'>P</span> <span class='op'>*</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>exp</a></span><span class='op'>(</span><span class='va'>eta</span><span class='op'>)</span><span class='op'>)</span>
+</code></pre>
+
+<p>where <code>P</code> is still the population at risk and <code>exp(eta)</code> is the level of risk (expressed as a rate). This translation is derived from the rules for manipulating exponents: <code>P * exp(eta) = exp(log(P)) * exp(eta) = exp(log(P) + eta)</code>.</p>
 
 <h3 class='hasAnchor' id='spatially-lagged-covariates-slx-'><a class='anchor' aria-hidden='true' href='#spatially-lagged-covariates-slx-'></a>Spatially lagged covariates (SLX)</h3>
 
