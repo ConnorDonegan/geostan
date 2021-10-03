@@ -36,7 +36,7 @@ Tools for building custom spatial models in
 
 ## Installation
 
-From **R**, install the latest version of **geostan** using:
+From **R** (&gt;= version 4.05), install **geostan** using:
 
 ``` r
 if (!require(drat)) install.packages("drat")
