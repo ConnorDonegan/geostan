@@ -333,7 +333,7 @@ lisa <- function(x, w, type = TRUE) {
 #'
 #' @param ... Additional arguments passed to \code{\link[geostan]{residuals.geostan_fit}}. For binomial and Poisson models, this includes the option to view the outcome variable as a rate (the default) rather than a count; for \code{\link[geostan]{stan_car}} models with auto-Gaussian likelihood (`fit$family$family = "auto_gaussian"), the residuals will be detrended by default, but this can be changed using `detrend = FALSE`.
 #' 
-#' @return A grid of spatial diagnostic plots. When provided with a numeric vector, this function plots a histogram, Moran scatter plot, and map. When provided with a fitted `geostan` model, the function returns a histogram of residuals, a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals, and a map of the mean posterior residuals (means of the marginal distributions).
+#' @return A grid of spatial diagnostic plots. When provided with a numeric vector, this function plots a histogram, Moran scatter plot, and map. When provided with a fitted `geostan` model, the function returns a point-interval plot of observed values against fitted values (mean and 95 percent credible interval), a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals, and a map of the mean posterior residuals (means of the marginal distributions).
 #'
 #' If `plot = TRUE`, the `ggplots` are drawn using \code{\link[gridExtra]{grid.arrange}}; otherwise, they are returned in a list. For the `geostan_fit` method, the underlying data for the Moran coefficient will also be returned if `plot = FALSE`.
 #'
@@ -376,6 +376,8 @@ sp_diag <- function(y,
 #' @export
 #' @md
 #' @param y A fitted `geostan` model (class `geostan_fit`).
+#' @param rates For Poisson and binomial models, convert the outcome variable to a rate before calculating residuals. Defaults to `rates = TRUE`.
+#' @param size Point size and linewidth for point-interval plot of observed vs. fitted values (passed to \code{\link[ggplot2]{geom_pointrange}}).
 #' @method sp_diag geostan_fit
 #' @rdname sp_diag
 #' @importFrom sf st_as_sf
@@ -390,25 +392,42 @@ sp_diag.geostan_fit <- function(y,
                             style = c("W", "B"),
                             w = shape2mat(shape, match.arg(style)),
                             binwidth = function(x) 0.5 * stats::sd(x),
+                            rates = TRUE,
+                            size = 0.15,
                             ...) {
-    marginal_residual <- residuals(y, summary = TRUE, ...)$mean
+
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
-    hist.y <- ggplot() +
-        geom_histogram(aes(marginal_residual),                       
-                       binwidth = binwidth(marginal_residual),
-                       fill = "gray20",
-                       col = "gray90")  +
+    outcome <- y$data[,1] 
+    fits <- fitted(y, summary = TRUE, rates = rates)
+    if (rates && y$family$family == "binomial") { outcome <- outcome / (outcome + y$data[,2]) }
+    if (rates && y$family$family == "poisson" && "offset" %in% c(colnames(y$data))) {
+        log.at.risk <- y$data[, "offset"]
+        at.risk <- exp( log.at.risk )
+        outcome <- outcome / at.risk     
+    }
+    # observed vs. fitted values
+    ovf <- ggplot() +
+        geom_abline(slope = 1, intercept = 0) +
+        geom_pointrange(aes(outcome,
+                            y = fits$mean,
+                            ymin = fits$`2.5%`,
+                            ymax = fits$`97.5%`),
+                        size = size) +
         scale_x_continuous(labels = signs::signs) +
-        theme_classic() +
-        labs(x = name)
+        labs(x = "Observed",
+             y = "Fitted") +
+        theme_classic()
+    # map of marginal residuals
+    marginal_residual <- residuals(y, summary = TRUE, ...)$mean    
     map.y <- ggplot(shape) +
         geom_sf(aes(fill = marginal_residual),
                 lwd = 0.05,
                 col = "gray20") +
         scale_fill_gradient2(name = name,
                              label = signs::signs) +
-        theme_void()   
-    R <- residuals(y, summary = FALSE)
+        theme_void()
+    # residual autocorrelation
+    R <- residuals(y, summary = FALSE)    
     R.mc <- apply(R, 1, mc, w = w)
     if (length(unique(R.mc)) == 1) {
         g.mc <- moran_plot(R[1,], w, xlab = name)
@@ -426,9 +445,9 @@ sp_diag.geostan_fit <- function(y,
                 subtitle = paste0("MC (mean) = ", round(R.mc.mu, 2)))
     }
     if (plot) {
-        return( gridExtra::grid.arrange(hist.y, g.mc, map.y, ncol = 3) )
+        return( gridExtra::grid.arrange(ovf, g.mc, map.y, ncol = 3) )
     } else {        
-        return (list(residual_histogram = hist.y, mc_plot = g.mc, residual_map = map.y, mc_data = R.mc))
+        return (list(fitted_plot = ovf, mc_plot = g.mc, residual_map = map.y, mc_data = R.mc))
         }
  }
 
@@ -927,7 +946,7 @@ expected_mc <- function(X, C) {
 #'
 #' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian estimation of spatial filters with Moran’s Eigenvectors and hierarchical shrinkage priors. *Spatial Statistics*. \doi{10.1016/j.spasta.2020.100450}.
 #'
-#' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In *Electronic Journal of Statistics*, 11(2):5018-5051. \doi{10.1214/17-EJS1337SI}.
+#' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In *Electronic Journal of Statistics*, 11(2):5018-5051.
 #' 
 #' @examples
 #'
