@@ -1,5 +1,5 @@
 Package: geostan
-Title: Bayesian spatial analysis
+Title: Bayesian Spatial Analysis
 Version: 0.1.0
 URL: https://connordonegan.github.io/geostan/, https://github.com/ConnorDonegan/geostan
 Authors@R: 

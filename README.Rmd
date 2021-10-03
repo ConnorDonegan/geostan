@@ -7,54 +7,74 @@ output: github_document
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  eval = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  fig.width = 7,
+  fig.height = 3,
+  fig.align = 'center'
 )
 ```
 
-# geostan
 
-<!-- badges: start -->
-<!-- badges: end -->
+<img src="man/figures/logo.png" align="right" width="160" />
 
-The goal of geostan is to ...
+# geostan 
+
+The **geostan** R package supports a complete spatial analysis
+workflow with hierarchical Bayesian models (HBMs) for areal
+data and a variety of functions for visualizing spatial data and model results.
+
+### Spatial analysis tools
+
+Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics.
+
+### Disease mapping and spatial regression
+
+Model small-area incidence rates with mortality or disease data recorded across areal units like counties or census tracts.
+
+### Observational uncertainty 
+
+Incorporate information on data reliability into any **geostan** model. Built specifically for American Community Survey (ACS) data.
+
+### The RStan ecosystem
+
+Compatible with a suite of high-quality R packages for Bayesian inference and model evaluation.
+
+### Custom Stan models
+
+Tools for building custom spatial models in [Stan](https://mc-stan.org/).
 
 ## Installation
 
-You can install the released version of geostan from [CRAN](https://CRAN.R-project.org) with:
+From **R**, install the latest version of **geostan** using:
 
 ``` r
+if (!require(drat)) install.packages("drat")
+drat::addRepo("connordonegan")
 install.packages("geostan")
 ```
 
-And the development version from [GitHub](https://github.com/) with:
+## Resources
 
-``` r
-# install.packages("devtools")
-devtools::install_github("ConnorDonegan/geostan")
-```
-## Example
+For demonstration analyses and some additional discussion, see the vignettes on the package [website](https://connordonegan.github.io/geostan/) and the package help pages (e.g., run `?stan_car` in R).
 
-This is a basic example which shows you how to solve a common problem:
+## Citation
 
-```{r example}
-library(geostan)
-## basic example code
-```
+If you use **geostan** in your work, please cite the package itself and supporting methodology on spatial HBMs, as well as any other foundational research as indicated by the documentation for each function you use.
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
+ * Donegan, Connor, Yongwan Chun, and Daniel A. Griffith. Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. International Journal of Environmental Research and Public Health 18.13 (2021): 6856. DOI: 10.3390/ijerph18136856
+ 
+ * Donegan, Connor (2021). geostan: Bayesian Spatial Analysis. R package Version 0.1.0 https://connordonegan.github.io/geostan
 
-```{r cars}
-summary(cars)
-```
+Since **geostan** is an interface to **Stan**, also be sure to cite **Stan**:
 
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/master/examples>.
+ * Carpenter B., Gelman A., Hoffman M. D., Lee D., Goodrich B., Betancourt M., Brubaker M., Guo J., Li P., and Riddell A. (2017). Stan: A probabilistic programming language. Journal of Statistical Software. 76(1). DOI: 10.18637/jss.v076.i01
 
-You can also embed plots, for example:
+## Credit
 
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
+The **geostan** package was built with the help of **rstantools**:
 
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+ * Gabry, Jonah, Ben Goodrich, and Martin Lysy (2021). rstantools: Tools for Developing R Packages Interfacing with 'Stan'. R package version 2.1.1 https://mc-stan.org/rstantools/index.html
+
+

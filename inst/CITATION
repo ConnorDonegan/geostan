@@ -1,0 +1,32 @@
+message("\nPlease use the following citations for geostan, as well as any other core methodology or development papers indicated by the manual page for the functions you make use of:")
+
+bibentry(
+  bibtype    = "Article",
+  title    = "Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure",
+  author   = "Donegan, Connor and Chun, Yongwan and Griffith, Danial A.",
+  journal  = "Int J Env Res Public Health",
+  year     = "2021",
+  volume   = "18",
+  number   = "13",
+  pages    = "6856",
+  doi      = "10.3390/ijerph18136856",
+  textVersion = paste(
+           "Donegan, Connor, Chun, Yongwan, and Griffith, Daniel A (2021)",
+           "Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure",
+           "Int J Env Res Public Health 18, no. 13: 6856. DOI: 10.3390/ijerph18136856"
+)
+)
+
+
+bibentry(
+  bibtype = "Manual",
+  title= "geostan: Bayesian Spatial Analysis",
+  author= "Donegan, Connor",
+  url = "https://connordonegan.github.io/geostan",
+  year = 2021,
+  note = "R package version 0.1.0",
+  textVersion = paste(
+        "Donegan, Connor (2021). geostan: Bayesian spatial analysis. R package version 0.1.0.",
+         "https://connordonegan.github.io/geostan"
+)
+)

@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bayesian spatial modeling • geostan</title>
+<title>Bayesian Spatial Analysis • geostan</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="apple-touch-icon.png">
@@ -17,7 +17,7 @@
 <script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="Bayesian spatial modeling">
+<script src="pkgdown.js"></script><meta property="og:title" content="Bayesian Spatial Analysis">
 <meta property="og:description" content="Under development. For Bayesian inference with spatial data, provides exploratory analysis tools, multiple spatial model specifications, spatial model diagnostics, and special methods for inference with small area survey data (e.g., the America Community Survey (ACS)). Models are pre-specified using the Stan programming language, a platform for Bayesian inference using Markov chain Monte Carlo (MCMC). References: Carpenter et al. (2017) &lt;doi:10.18637/jss.v076.i01&gt;; Donegan, Chun and Hughes (2020) &lt;doi:10.1016/j.spasta.2020.100450&gt;; Donegan, Chun and Griffith (2021) &lt;doi:10.3390/ijerph18136856&gt;; Morris et al. (2019) &lt;doi:10.1016/j.sste.2019.100301&gt;.">
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -94,9 +94,7 @@
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#geostan-" class="anchor" aria-hidden="true"></a>geostan <img src="reference/figures/logo.png" align="right" width="160">
 </h1></div>
-<p>The <strong>geostan</strong> R package provides a user-friendly interface to hierarchical Bayesian models (HBMs) for areal data. It is designed for relative ease of use and developed with a particular emphasis on spatial epidemiology and survey data for public health. All of the models are built with the Stan programming language, but users only need to be familiar with the R language.</p>
-<p><strong>The package and website are still under development.</strong></p>
-<hr>
+<p>The <strong>geostan</strong> R package supports a complete spatial analysis workflow with hierarchical Bayesian models (HBMs) for areal data and a variety of functions for visualizing spatial data and model results.</p>
 <div id="spatial-analysis-tools" class="section level3">
 <h3 class="hasAnchor">
 <a href="#spatial-analysis-tools" class="anchor" aria-hidden="true"></a>Spatial analysis tools</h3>
@@ -107,15 +105,45 @@
 <a href="#disease-mapping-and-spatial-regression" class="anchor" aria-hidden="true"></a>Disease mapping and spatial regression</h3>
 <p>Model small-area incidence rates with mortality or disease data recorded across areal units like counties or census tracts.</p>
 </div>
-<div id="observational-error-models" class="section level3">
+<div id="observational-uncertainty" class="section level3">
 <h3 class="hasAnchor">
-<a href="#observational-error-models" class="anchor" aria-hidden="true"></a>Observational error models</h3>
-<p>Incorporate information on data quality into any <strong>geostan</strong> model. Built specifically for American Community Survey (ACS) data.</p>
+<a href="#observational-uncertainty" class="anchor" aria-hidden="true"></a>Observational uncertainty</h3>
+<p>Incorporate information on data reliability into any <strong>geostan</strong> model. Built specifically for American Community Survey (ACS) data.</p>
 </div>
 <div id="the-rstan-ecosystem" class="section level3">
 <h3 class="hasAnchor">
 <a href="#the-rstan-ecosystem" class="anchor" aria-hidden="true"></a>The RStan ecosystem</h3>
 <p>Compatible with a suite of high-quality R packages for Bayesian inference and model evaluation.</p>
+</div>
+<div id="custom-stan-models" class="section level3">
+<h3 class="hasAnchor">
+<a href="#custom-stan-models" class="anchor" aria-hidden="true"></a>Custom Stan models</h3>
+<p>Tools for building custom spatial models in <a href="https://mc-stan.org/" class="external-link">Stan</a>.</p>
+</div>
+<div id="installation" class="section level2">
+<h2 class="hasAnchor">
+<a href="#installation" class="anchor" aria-hidden="true"></a>Installation</h2>
+<p>From <strong>R</strong>, install the latest version of <strong>geostan</strong> using:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/eddelbuettel/drat" class="external-link">drat</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"drat"</span><span class="op">)</span>
+<span class="fu">drat</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/drat/man/addRepo.html" class="external-link">addRepo</a></span><span class="op">(</span><span class="st">"connordonegan"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"geostan"</span><span class="op">)</span></code></pre></div>
+</div>
+<div id="citation" class="section level2">
+<h2 class="hasAnchor">
+<a href="#citation" class="anchor" aria-hidden="true"></a>Citation</h2>
+<p>If you use <strong>geostan</strong> in your work, please cite the package itself and supporting methodology on spatial HBMs, as well as any other foundational research as indicated by the documentation page for each function.</p>
+<ul>
+<li><p>Donegan, Connor, Yongwan Chun, and Daniel A. Griffith. Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. International Journal of Environmental Research and Public Health 18.13 (2021): 6856. DOI: 10.3390/ijerph18136856</p></li>
+<li><p>Donegan, Connor (2021). geostan: Bayesian Spatial Analysis. R package Version 0.1.0 <a href="https://connordonegan.github.io/geostan" class="uri">https://connordonegan.github.io/geostan</a></p></li>
+</ul>
+<p>All <strong>geostan</strong> models are built using <strong>Stan</strong>, so be sure to cite <strong>Stan</strong> too:</p>
+<ul>
+<li>Carpenter B., Gelman A., Hoffman M. D., Lee D., Goodrich B., Betancourt M., Brubaker M., Guo J., Li P., and Riddell A. (2017). Stan: A probabilistic programming language. Journal of Statistical Software. 76(1). DOI: 10.18637/jss.v076.i01</li>
+</ul>
+<p><br></p>
+<p><span style="color:gray">The <strong>geostan</strong> package was built with the help of <strong>rstantools</strong>:</span></p>
+<p><span style="color:gray"> Gabry, Jonah, Ben Goodrich, and Martin Lysy (2021). rstantools: Tools for Developing R Packages Interfacing with ‘Stan’. R package version 2.1.1 <a href="https://mc-stan.org/rstantools/index.html" class="external-link uri">https://mc-stan.org/rstantools/index.html</a></span>.</p>
 </div>
 </div>
   </div>
@@ -137,6 +165,13 @@
 </ul>
 </div>
 
+
+<div class="citation">
+<h2 data-toc-skip>Citation</h2>
+<ul class="list-unstyled">
+<li><a href="authors.html">Citing geostan</a></li>
+</ul>
+</div>
 
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
