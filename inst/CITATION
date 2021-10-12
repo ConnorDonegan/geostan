@@ -1,4 +1,3 @@
-message("\nPlease use the following citations for geostan, as well as any other core methodology or development papers indicated by the manual page for the functions you make use of:")
 
 bibentry(
   bibtype    = "Article",

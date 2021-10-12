@@ -1,16 +1,17 @@
 Package: geostan
 Title: Bayesian Spatial Analysis
 Version: 0.1.0
-URL: https://connordonegan.github.io/geostan/, https://github.com/ConnorDonegan/geostan
+URL: https://connordonegan.github.io/geostan/, https://github.com/ConnorDonegan/geostan/
 Authors@R: 
     c(person(given = "Connor",
            family = "Donegan",
            role = c("aut", "cre"),
-           email = "Connor.Donegan@UTDallas.edu"),
+           email = "Connor.Donegan@UTDallas.edu",
+           comment = c(ORCID = "0000-0002-9698-5443")),
       person(given = "Mitzi",
              family = "Morris",
 	     role = c("ctb")))
-Description: Under development. For Bayesian inference with spatial data, provides exploratory analysis tools, multiple spatial model specifications, spatial model diagnostics, and special methods for inference with small area survey data (e.g., the America Community Survey (ACS)). Models are pre-specified using the Stan programming language, a platform for Bayesian inference using Markov chain Monte Carlo (MCMC). References: Carpenter et al. (2017) <doi:10.18637/jss.v076.i01>; Donegan, Chun and Hughes (2020) <doi:10.1016/j.spasta.2020.100450>; Donegan, Chun and Griffith (2021) <doi:10.3390/ijerph18136856>; Morris et al. (2019) <doi:10.1016/j.sste.2019.100301>.
+Description: For Bayesian inference with spatial data, provides exploratory analysis tools, multiple spatial model specifications, spatial model diagnostics, and special methods for inference with small area survey data (e.g., the America Community Survey (ACS)). Models are pre-specified using the Stan programming language, a platform for Bayesian inference using Markov chain Monte Carlo (MCMC). References: Carpenter et al. (2017) <doi:10.18637/jss.v076.i01>; Donegan, Chun and Hughes (2020) <doi:10.1016/j.spasta.2020.100450>; Donegan, Chun and Griffith (2021) <doi:10.3390/ijerph18136856>; Morris et al. (2019) <doi:10.1016/j.sste.2019.100301>.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
