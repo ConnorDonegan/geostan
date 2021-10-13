@@ -12,7 +12,13 @@
 \alias{spatial.geostan_fit}
 \title{geostan_fit methods}
 \usage{
-\method{print}{geostan_fit}(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digits = 3, ...)
+\method{print}{geostan_fit}(
+  x,
+  probs = c(0.025, 0.25, 0.5, 0.75, 0.975),
+  digits = 3,
+  pars = NULL,
+  ...
+)
 
 \method{plot}{geostan_fit}(x, pars, plotfun = "hist", fill = "steelblue4", ...)
 
@@ -37,9 +43,9 @@ spatial(object, summary = TRUE, ...)
 
 \item{digits}{number of digits to print}
 
-\item{...}{additional arguments.}
+\item{pars}{parameters to include; a character string (or vector) of parameter names.}
 
-\item{pars}{parameters to include; a character string or vector of parameter names.}
+\item{...}{additional arguments.}
 
 \item{plotfun}{Argument passed to \code{rstan::plot}. Options include histograms ("hist"), MCMC traceplots ("trace"), and density plots ("dens"). Diagnostic plots are also available such as Rhat statistics ("rhat"), effective sample size ("ess"), and MCMC autocorrelation ("ac").}
 

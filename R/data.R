@@ -43,8 +43,10 @@
 #' }
 #' @examples
 #' \dontrun{
-#' library(sf)
 #' data(georgia)
+#' head(georgia)
+#' 
+#' library(sf)
 #' plot(georgia[,'rate.female'])
 #' }
 "georgia"
@@ -73,6 +75,7 @@
 #' @examples
 #' \dontrun{
 #' data(sentencing)
+#' head(sentencing@data)
 #' }
 "sentencing"
 

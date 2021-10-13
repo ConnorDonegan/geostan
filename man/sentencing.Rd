@@ -33,6 +33,7 @@ A spatial polygons data frame of historical 1910 county boundaries of Florida wi
 \examples{
 \dontrun{
 data(sentencing)
+head(sentencing@data)
 }
 }
 \keyword{datasets}

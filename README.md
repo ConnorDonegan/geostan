@@ -36,7 +36,7 @@ Tools for building custom spatial models in
 
 ## Installation
 
-From **R** (&gt;= version 4.05), install **geostan** using:
+From **R** (\>= version 4.05), install **geostan** using:
 
 ``` r
 if (!require(drat)) install.packages("drat")
@@ -58,19 +58,19 @@ supporting methodology on spatial HBMs, as well as any other
 foundational research as indicated by the documentation for each
 function you use.
 
--   Donegan, Connor, Yongwan Chun, and Daniel A. Griffith. Modeling
+  - Donegan, Connor, Yongwan Chun, and Daniel A. Griffith. Modeling
     community health with areal data: Bayesian inference with survey
     standard errors and spatial structure. International Journal of
     Environmental Research and Public Health 18.13 (2021): 6856. DOI:
     10.3390/ijerph18136856
 
--   Donegan, Connor (2021). geostan: Bayesian Spatial Analysis. R
-    package Version 0.1.0 <https://connordonegan.github.io/geostan>
+  - Donegan, Connor (2021). geostan: Bayesian Spatial Analysis. R
+    package Version 0.1.0 <https://connordonegan.github.io/geostan/>
 
 Since **geostan** is an interface to **Stan**, also be sure to cite
 **Stan**:
 
--   Carpenter B., Gelman A., Hoffman M. D., Lee D., Goodrich B.,
+  - Carpenter B., Gelman A., Hoffman M. D., Lee D., Goodrich B.,
     Betancourt M., Brubaker M., Guo J., Li P., and Riddell A. (2017).
     Stan: A probabilistic programming language. Journal of Statistical
     Software. 76(1). DOI: 10.18637/jss.v076.i01
@@ -79,6 +79,6 @@ Since **geostan** is an interface to **Stan**, also be sure to cite
 
 The **geostan** package was built with the help of **rstantools**:
 
--   Gabry, Jonah, Ben Goodrich, and Martin Lysy (2021). rstantools:
+  - Gabry, Jonah, Ben Goodrich, and Martin Lysy (2021). rstantools:
     Tools for Developing R Packages Interfacing with ‘Stan’. R package
     version 2.1.1 <https://mc-stan.org/rstantools/index.html>

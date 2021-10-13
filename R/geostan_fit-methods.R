@@ -6,7 +6,7 @@
 #' @param object A fitted model object of class \code{geostan_fit}.
 #' @param x A fitted model object of class \code{geostan_fit}.
 #' @param summary Logical; should the values be summarized with the mean, standard deviation and quantiles (\code{probs = c(.025, .2, .5, .8, .975)}) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.
-#' @param pars parameters to include; a character string or vector of parameter names.
+#' @param pars parameters to include; a character string (or vector) of parameter names.
 #' @param plotfun Argument passed to \code{rstan::plot}. Options include histograms ("hist"), MCMC traceplots ("trace"), and density plots ("dens"). Diagnostic plots are also available such as Rhat statistics ("rhat"), effective sample size ("ess"), and MCMC autocorrelation ("ac").
 #' @param digits number of digits to print
 #' @param probs Argument passed to \code{quantile}; which quantiles to calculate and print.
@@ -83,8 +83,8 @@
 #' @md
 #' @method print geostan_fit
 #' @rdname geostan_fit
-print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digits = 3, ...) {
-  pars <- "intercept"
+print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digits = 3, pars = NULL, ...) {
+  pars <- c(pars, "intercept")
   cat("Spatial Model Results \n")
   cat("Formula: ")
   print(x$formula)
@@ -100,7 +100,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
     print(x$re$formula)
     pars <- c(pars, "alpha_tau")
   }
-  cat("\nSpatial method (outcome): ", as.character(x$spatial$method), "\n")
+  cat("Spatial method (outcome): ", as.character(x$spatial$method), "\n")
   if (x$spatial$method == "CAR") pars <- c(pars, "car_rho", "car_scale")
   if (x$spatial$method == "BYM2") pars <- c(pars, "rho", "spatial_scale")
   if (x$spatial$method == "BYM") pars <- c(pars, "spatial_scale", "theta_scale")

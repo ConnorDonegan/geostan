@@ -15,3 +15,6 @@ README_files/
 tests/testthat/test-for-bias-results
 tests/testthat/test-rstan-conformity-results
 ^README\.Rmd$
+NEWS.md
+index.html
+cran-comments.md

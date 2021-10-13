@@ -122,6 +122,9 @@
     </li>
   </ul>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
@@ -191,8 +194,9 @@
 <span class='r-in'></span>
 <span class='r-in'><span class='va'>lse1</span> <span class='op'>=</span> <span class='fu'>se_log</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>se</span><span class='op'>)</span></span>
 <span class='r-in'><span class='va'>lse2</span> <span class='op'>=</span> <span class='fu'>se_log</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>se</span>, method <span class='op'>=</span> <span class='st'>"delta"</span><span class='op'>)</span></span>
+<span class='r-in'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span></span>
 <span class='r-in'><span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>lse1</span>, <span class='va'>lse2</span><span class='op'>)</span>; <span class='fu'><a href='https://rdrr.io/r/graphics/abline.html'>abline</a></span><span class='op'>(</span><span class='fl'>0</span>, <span class='fl'>1</span><span class='op'>)</span></span>
-<span class='r-plt'><img src='se_log-1.png' alt='' width='700' height='433' /></span>
+<span class='r-in'><span class='op'>}</span></span>
 <span class='r-in'></span>
 <span class='r-in'><span class='co'># the monte carlo method</span></span>
 <span class='r-in'><span class='va'>x</span> <span class='op'>=</span> <span class='fl'>10</span></span>
@@ -200,9 +204,9 @@
 <span class='r-in'><span class='va'>z</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/Normal.html'>rnorm</a></span><span class='op'>(</span>n <span class='op'>=</span> <span class='fl'>30e3</span>, mean <span class='op'>=</span> <span class='va'>x</span>,  sd <span class='op'>=</span> <span class='va'>se</span><span class='op'>)</span></span>
 <span class='r-in'><span class='va'>l.z</span> <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>z</span><span class='op'>)</span></span>
 <span class='r-in'><span class='fu'><a href='https://rdrr.io/r/stats/sd.html'>sd</a></span><span class='op'>(</span><span class='va'>l.z</span><span class='op'>)</span></span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] 0.212478</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] 0.2115323</span>
 <span class='r-in'><span class='fu'>se_log</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>se</span>, method <span class='op'>=</span> <span class='st'>"mc"</span><span class='op'>)</span></span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] 0.2082244</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] 0.2072991</span>
 <span class='r-in'><span class='fu'>se_log</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>se</span>, method <span class='op'>=</span> <span class='st'>"delta"</span><span class='op'>)</span></span>
 <span class='r-out co'><span class='r-pr'>#&gt;</span> [1] 0.2</span>
 <span class='r-in'></span>

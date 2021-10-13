@@ -70,6 +70,9 @@
     </li>
   </ul>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
@@ -228,15 +231,15 @@
 ## Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 1: 
-## Chain 1:  Elapsed Time: 1.60854 seconds (Warm-up)
-## Chain 1:                1.32135 seconds (Sampling)
-## Chain 1:                2.9299 seconds (Total)
+## Chain 1:  Elapsed Time: 1.29673 seconds (Warm-up)
+## Chain 1:                1.18586 seconds (Sampling)
+## Chain 1:                2.48259 seconds (Total)
 ## Chain 1: 
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 2).
 ## Chain 2: 
-## Chain 2: Gradient evaluation took 0.000103 seconds
-## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 1.03 seconds.
+## Chain 2: Gradient evaluation took 9.7e-05 seconds
+## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.97 seconds.
 ## Chain 2: Adjust your expectations accordingly!
 ## Chain 2: 
 ## Chain 2: 
@@ -245,15 +248,15 @@
 ## Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 2: 
-## Chain 2:  Elapsed Time: 1.58581 seconds (Warm-up)
-## Chain 2:                1.4501 seconds (Sampling)
-## Chain 2:                3.0359 seconds (Total)
+## Chain 2:  Elapsed Time: 1.50522 seconds (Warm-up)
+## Chain 2:                1.18719 seconds (Sampling)
+## Chain 2:                2.6924 seconds (Total)
 ## Chain 2: 
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 3).
 ## Chain 3: 
-## Chain 3: Gradient evaluation took 0.000172 seconds
-## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 1.72 seconds.
+## Chain 3: Gradient evaluation took 0.000162 seconds
+## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 1.62 seconds.
 ## Chain 3: Adjust your expectations accordingly!
 ## Chain 3: 
 ## Chain 3: 
@@ -262,15 +265,15 @@
 ## Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 3: 
-## Chain 3:  Elapsed Time: 1.93661 seconds (Warm-up)
-## Chain 3:                1.36991 seconds (Sampling)
-## Chain 3:                3.30652 seconds (Total)
+## Chain 3:  Elapsed Time: 1.68111 seconds (Warm-up)
+## Chain 3:                1.2015 seconds (Sampling)
+## Chain 3:                2.88261 seconds (Total)
 ## Chain 3: 
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 4).
 ## Chain 4: 
-## Chain 4: Gradient evaluation took 0.000104 seconds
-## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 1.04 seconds.
+## Chain 4: Gradient evaluation took 9.9e-05 seconds
+## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.99 seconds.
 ## Chain 4: Adjust your expectations accordingly!
 ## Chain 4: 
 ## Chain 4: 
@@ -279,9 +282,9 @@
 ## Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 4: 
-## Chain 4:  Elapsed Time: 1.79673 seconds (Warm-up)
-## Chain 4:                1.47689 seconds (Sampling)
-## Chain 4:                3.27362 seconds (Total)
+## Chain 4:  Elapsed Time: 1.61822 seconds (Warm-up)
+## Chain 4:                1.20999 seconds (Sampling)
+## Chain 4:                2.82822 seconds (Total)
 ## Chain 4:</code></pre>
 <p>Note that <code>prior_only = TRUE</code> will prevent <code>stan_glm</code> from considering the likelihood of the outcome, <code>log(rate.male)</code>; to facilitate a valid workflow, the entire ME model is treated as part of the “prior” by <code>prior_only</code>. This allows us to understand the properties of the ME model itself, considered independently from any outcome variable.</p>
 </div>
@@ -314,23 +317,23 @@
 <code class="sourceCode R"><span class="fu"><a href="../reference/me_diag.html">me_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">'ICE'</span>, <span class="va">georgia</span>, index <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
 <pre><code>## Identifying the top 5 observations as ordered by their Delta values (Delta = posterior mean of x - raw x value):</code></pre>
 <pre><code>##                 x.raw       x.mu      x.lwr      x.upr       Delta
-## x_ICE[91]  -0.4016787 -0.3673477 -0.4538907 -0.2805198 -0.03433098
-## x_ICE[105] -0.3412494 -0.3074764 -0.3927641 -0.2241093 -0.03377291
-## x_ICE[90]  -0.2798395 -0.2553175 -0.3276108 -0.1820716 -0.02452201
-## x_ICE[39]  -0.3236583 -0.2997589 -0.3825007 -0.2167692 -0.02389942
-## x_ICE[143] -0.2395249 -0.2205786 -0.2914537 -0.1478089 -0.01894629</code></pre>
+## x_ICE[91]  -0.4016787 -0.3674858 -0.4511550 -0.2837050 -0.03419285
+## x_ICE[105] -0.3412494 -0.3075664 -0.3849684 -0.2285629 -0.03368298
+## x_ICE[39]  -0.3236583 -0.2985129 -0.3814802 -0.2157464 -0.02514534
+## x_ICE[90]  -0.2798395 -0.2550659 -0.3276095 -0.1852030 -0.02477361
+## x_ICE[143] -0.2395249 -0.2206520 -0.2891585 -0.1498940 -0.01887287</code></pre>
 <p><img src="spatial-me-models_files/figure-html/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>Or, we can have <code>me_diag</code> return results as raw data (it will also return a list of <code>ggplots</code>):</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">delta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/me_diag.html">me_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">'ICE'</span>, <span class="va">georgia</span>, plot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">$</span><span class="va">delta_data</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">delta</span><span class="op">)</span></code></pre></div>
-<pre><code>##                x.raw        x.mu       x.lwr        x.upr         Delta
-## x_ICE[1] -0.24576780 -0.23673507 -0.29207867 -0.181772546 -9.032734e-03
-## x_ICE[2] -0.27540984 -0.26719729 -0.31880294 -0.214672899 -8.212542e-03
-## x_ICE[3] -0.01856313 -0.01810241 -0.03333605 -0.003051268 -4.607282e-04
-## x_ICE[4]  0.05059098  0.05051454  0.04305244  0.058025040  7.644853e-05
-## x_ICE[5]  0.14701110  0.14459227  0.12386720  0.165233265  2.418828e-03
-## x_ICE[6]  0.16649112  0.16626591  0.15782709  0.174659533  2.252081e-04</code></pre>
+<pre><code>##                x.raw        x.mu       x.lwr       x.upr         Delta
+## x_ICE[1] -0.24576780 -0.23648675 -0.29158580 -0.18141122 -9.281049e-03
+## x_ICE[2] -0.27540984 -0.26751005 -0.32056545 -0.21580127 -7.899791e-03
+## x_ICE[3] -0.01856313 -0.01810652 -0.03402589 -0.00209421 -4.566129e-04
+## x_ICE[4]  0.05059098  0.05053551  0.04302128  0.05814348  5.547813e-05
+## x_ICE[5]  0.14701110  0.14451589  0.12412486  0.16590852  2.495213e-03
+## x_ICE[6]  0.16649112  0.16624403  0.15779436  0.17442971  2.470821e-04</code></pre>
 <p>We can follow up on this information by examining demographic information on the counties with the largest <span class="math inline">\(\delta_i\)</span>:</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">georgia</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">91</span>, <span class="fl">105</span>, <span class="fl">90</span>, <span class="fl">39</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NAME"</span>, <span class="st">"population"</span>, <span class="st">"white"</span>, <span class="st">"black"</span>, <span class="st">"hisp"</span>, <span class="st">"ai"</span>, <span class="st">"ICE"</span>, <span class="st">"ICE.se"</span>, <span class="st">"college"</span>, <span class="st">"college.se"</span><span class="op">)</span><span class="op">]</span></code></pre></div>
@@ -352,45 +355,69 @@
 <p>The somewhat large <span class="math inline">\(\delta_i\)</span> values for these counties are a result of the combination of fairly unreliable estimates (large standard errors) while also being local outliers. But we can see that these are low population areas that also have low income, few college grads, and fairly high percent Black populations; crucially, they have large standard errors on their ICE estimates.</p>
 <p>Notice that the ACS estimate for the ICE in Clinch County is <span class="math inline">\(-0.40\)</span> (SE = 0.048), implying a 95% margin of error ranging from -0.5 to -0.3 (quite a wide range). Here is our probability distribution for the ICE in Clinch County:</p>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, pars <span class="op">=</span> <span class="st">"x_ICE[91]"</span><span class="op">)</span></code></pre></div>
-<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<p><img src="spatial-me-models_files/figure-html/unnamed-chunk-13-1.png" width="336" style="display: block; margin: auto;"></p>
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span>, pars <span class="op">=</span> <span class="st">"x_ICE[91]"</span><span class="op">)</span></code></pre></div>
+<pre><code>## Inference for Stan model: foundation.
+## 4 chains, each with iter=2000; warmup=1000; thin=1; 
+## post-warmup draws per chain=1000, total post-warmup draws=4000.
+## 
+##            mean se_mean   sd  2.5%   25%   50%   75% 97.5% n_eff Rhat
+## x_ICE[91] -0.37       0 0.04 -0.45 -0.39 -0.37 -0.34 -0.28  7675    1
+## 
+## Samples were drawn using NUTS(diag_e) at Tue Oct 12 18:34:35 2021.
+## For each parameter, n_eff is a crude measure of effective sample size,
+## and Rhat is the potential scale reduction factor on split chains (at 
+## convergence, Rhat=1).</code></pre>
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># or visualize with:</span>
+<span class="co"># plot(fit, pars = "x_ICE[91]")</span>
+<span class="co"># plot(fit$stanfit, pars = "x_ICE[91]")</span></code></pre></div>
 </div>
 <div id="working-with-mcmc-samples-from-me-models" class="section level3">
 <h3 class="hasAnchor">
 <a href="#working-with-mcmc-samples-from-me-models" class="anchor" aria-hidden="true"></a>Working with MCMC samples from ME models</h3>
 <p><strong>geostan</strong> consists of pre-compiled Stan models, and users can always access the Markov chain Monte Carlo (MCMC) samples returned by Stan. When extracted as a matrix of samples (as below), each row represents a draw from the joint probability distribution for all model parameters, and each column consists of samples from the marginal distribution of each parameter.</p>
 <p>The ME models return samples for every <span class="math inline">\(x_i\)</span> as well as the model parameters <span class="math inline">\(\mu\)</span> (“mu_x_true”), <span class="math inline">\(\rho\)</span> (“car_rho_x_true”), and <span class="math inline">\(\tau\)</span> (“sigma_x_true”). We can access these using <code>as.matrix</code> (or <code>as.array</code> or <code>as.data.frame</code>).</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mu.x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">fit</span>, pars <span class="op">=</span> <span class="st">"mu_x_true"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">mu.x</span><span class="op">)</span></code></pre></div>
 <pre><code>## [1] 4000    1</code></pre>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">mu.x</span><span class="op">)</span></code></pre></div>
-<pre><code>## [1] -0.1306214</code></pre>
-<p>We can visualize these using <code>plot</code>:</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mu_x_true"</span>, <span class="st">"car_rho_x_true"</span>, <span class="st">"sigma_x_true"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<p><img src="spatial-me-models_files/figure-html/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;"></p>
+<pre><code>## [1] -0.1285083</code></pre>
+<p>We can visualize these using <code>plot</code> or print a summary:</p>
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span>, pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mu_x_true"</span>, <span class="st">"car_rho_x_true"</span>, <span class="st">"sigma_x_true"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<pre><code>## Inference for Stan model: foundation.
+## 4 chains, each with iter=2000; warmup=1000; thin=1; 
+## post-warmup draws per chain=1000, total post-warmup draws=4000.
+## 
+##                    mean se_mean   sd  2.5%   25%   50%   75% 97.5% n_eff Rhat
+## mu_x_true[1]      -0.13       0 0.08 -0.28 -0.16 -0.13 -0.10  0.04  2114    1
+## car_rho_x_true[1]  0.97       0 0.02  0.92  0.96  0.98  0.99  1.00  4021    1
+## sigma_x_true[1]    0.20       0 0.01  0.18  0.19  0.20  0.21  0.23  7671    1
+## 
+## Samples were drawn using NUTS(diag_e) at Tue Oct 12 18:34:35 2021.
+## For each parameter, n_eff is a crude measure of effective sample size,
+## and Rhat is the potential scale reduction factor on split chains (at 
+## convergence, Rhat=1).</code></pre>
 <p>To extract samples from the joint probability distribution for <span class="math inline">\(\boldsymbol x\)</span>, use the generic parameter name “x_true”:</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">fit</span>, pars <span class="op">=</span> <span class="st">"x_true"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></code></pre></div>
 <pre><code>## [1] 4000  159</code></pre>
 <p>If we wanted to calculate the mean of each of these marginal distributions, we could use <code>apply</code> with <code>MARGIN = 2</code> to summarize by column:</p>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">x.mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2</span>, <span class="va">mean</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">x.mu</span><span class="op">)</span></code></pre></div>
 <pre><code>##    x_ICE[1]    x_ICE[2]    x_ICE[3]    x_ICE[4]    x_ICE[5]    x_ICE[6] 
-## -0.23673507 -0.26719729 -0.01810241  0.05051454  0.14459227  0.16626591</code></pre>
+## -0.23648675 -0.26751005 -0.01810652  0.05053551  0.14451589  0.16624403</code></pre>
 </div>
 </div>
 <div id="non-spatial-me-models" class="section level2">
 <h2 class="hasAnchor">
 <a href="#non-spatial-me-models" class="anchor" aria-hidden="true"></a>Non-spatial ME models</h2>
 <p>If the <code>ME</code> list doesn’t have a slot with <code>car_parts</code>, <strong>geostan</strong> will automatically use a non-spatial Student’s t model instead of the CAR model:</p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">ME_nsp</span> <span class="op">&lt;-</span> <span class="va">ME</span>
 <span class="va">ME_nsp</span><span class="op">$</span><span class="va">car_parts</span> <span class="op">&lt;-</span> <span class="cn">NULL</span>
 <span class="va">fit_nsp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="va">ICE</span>, data <span class="op">=</span> <span class="va">georgia</span>, ME <span class="op">=</span> <span class="va">ME_nsp</span>, prior_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
@@ -400,7 +427,7 @@
 <a href="#spatial-regression-with-a-noisy-covariate" class="anchor" aria-hidden="true"></a>Spatial regression with a noisy covariate</h2>
 <p>Incorporating these ME models into any other <strong>geostan</strong> model is as simple as removing the <code>prior_only</code> argument (or setting it to <code>FALSE</code>). The ME model will automatically be incorporated into the Bayesian regression analysis, such that all of the regression parameters are modeled jointly with the ME model. This means that our observational uncertainty for the ICE will be propagated throughout the regression analysis.</p>
 <p>At this point, we can introduce a more appropriate model for the mortality data. We will use a Poisson likelihood for the counts of deaths, provide the log-population at risk as an offset term, and pool information across counties using a non-spatial Gaussian model for the log-rates, <span class="math inline">\(\boldsymbol \phi\)</span>: <span class="math display">\[y_i \sim Pois(e^{log(P_i) + \phi_i}) \\ \boldsymbol \phi \sim Gauss(\alpha + \boldsymbol x \beta, I \tau^2),\]</span> where <span class="math inline">\(\alpha\)</span> is the mean log-mortality rate and <span class="math inline">\(\beta\)</span> is the regression coefficient on the modeled ICE, <span class="math inline">\(\boldsymbol x\)</span>. <span class="math inline">\(\tau^2\)</span> is the variance of the log-mortality rates around the fitted regression line, <span class="math inline">\(\alpha + X\beta\)</span>. This model for <span class="math inline">\(\boldsymbol \phi\)</span> is equivalent to a CAR model with <span class="math inline">\(\rho=0\)</span> and <span class="math inline">\(M=I\tau^2\)</span>.</p>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">fit_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="va">ICE</span>, 
                   re <span class="op">=</span> <span class="op">~</span> <span class="va">NAME</span>,   
                   data <span class="op">=</span> <span class="va">georgia</span>, 
@@ -429,17 +456,16 @@
 <pre><code>##   df location scale
 ## 1 10        0     3</code></pre>
 <p>Printing the model results will show the model specification, the mean Moran coefficient of the residuals, a summary of the posterior distributions of select model parameters, and some MCMC diagnostics from Stan.</p>
-<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit_2</span><span class="op">)</span></code></pre></div>
 <pre><code>## Spatial Model Results 
 ## Formula: deaths.male ~ offset(log(pop.at.risk.male)) + ICE
 ## Partial pooling (varying intercept): ~NAME
-## 
 ## Spatial method (outcome):  Exchangeable 
 ## Likelihood function:  poisson 
 ## Link function:  log 
-## Residual Moran Coefficient:  0.03711225 
-## WAIC:  1318.4 
+## Residual Moran Coefficient:  0.0359325 
+## WAIC:  1316.73 
 ## Observations:  159 
 ## Data models (ME): ICE
 ##  Data model (ME prior): CAR (auto Gaussian)
@@ -448,11 +474,11 @@
 ## post-warmup draws per chain=1000, total post-warmup draws=4000.
 ## 
 ##             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-## intercept -4.385   0.001 0.017 -4.418 -4.396 -4.385 -4.373 -4.352   495 1.009
-## ICE       -1.713   0.004 0.103 -1.913 -1.781 -1.716 -1.646 -1.504   569 1.007
-## alpha_tau  0.123   0.000 0.011  0.103  0.116  0.123  0.130  0.145  1562 1.001
+## intercept -4.384   0.001 0.017 -4.417 -4.395 -4.384 -4.373 -4.352   670 1.009
+## ICE       -1.709   0.003 0.101 -1.903 -1.780 -1.710 -1.643 -1.504   832 1.004
+## alpha_tau  0.124   0.000 0.011  0.103  0.116  0.123  0.131  0.147  1659 1.002
 ## 
-## Samples were drawn using NUTS(diag_e) at Sun Oct  3 17:36:45 2021.
+## Samples were drawn using NUTS(diag_e) at Tue Oct 12 18:34:58 2021.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>
@@ -464,7 +490,7 @@
 <p>In the case of our example model, the bivariate regression relationship implies a multivariate normal probability model for <span class="math inline">\(\boldsymbol x\)</span> and <span class="math inline">\(\boldsymbol \phi\)</span> with correlation <span class="math inline">\(\rho_{x \phi}\)</span>.</p>
 <p>An important implication of this fact is that the previously stated criteria for evaluating ME models (e.g., regarding spatial autocorrelation) no longer apply, because the results presented here (<code>fit_2</code>) are conditioned on quite different information, not just the survey data. This is why it is important to critically evaluate the ME model itself, with <code>prior_only = TRUE</code>, before moving to a subsequent stage of analysis.</p>
 <p>To make this more concrete, consider the various outliers in this scatter plot of ICE estimates against crude log-mortality rates:</p>
-<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">ICE</span>, <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span>, col <span class="op">=</span> <span class="va">ICE.se</span><span class="op">)</span>,
              shape <span class="op">=</span> <span class="fl">6</span>,
@@ -478,11 +504,7 @@
         <span class="op">)</span></code></pre></div>
 <p><img src="spatial-me-models_files/figure-html/unnamed-chunk-21-1.png" width="432" style="display: block; margin: auto;"></p>
 <p>Two counties in particular (Wheeler and Echols) stand out for having low ICE estimates, large standard errors on their ICE estimates, and mortality rates that resemble areas with considerably higher ICE values.</p>
-<p>Now let’s see how the posterior distribution of <span class="math inline">\(\boldsymbol x\)</span> has shifted in light of the regression relationship:</p>
-<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/me_diag.html">me_diag</a></span><span class="op">(</span><span class="va">fit_2</span>, <span class="st">'ICE'</span>, <span class="va">georgia</span><span class="op">)</span></code></pre></div>
-<p><img src="spatial-me-models_files/figure-html/unnamed-chunk-22-1.png" width="720" style="display: block; margin: auto;"></p>
-<p>While generally similar, one of the biggest shifts from the prior-only model is Wheeler County, a noted outlier, which now has a <span class="math inline">\(\hat{\delta}_i\)</span> value -0.07—twice its value in the prior-only model.</p>
+<p>If we look at the posterior distribution of <span class="math inline">\(\boldsymbol x\)</span>, we see it has shifted somewhat in light of the regression relationship (try <code>me_diag(fit_2, 'ICE', georgia, plot = FALSE)</code>).While generally similar, one of the biggest shifts from the prior-only model is Wheeler County, a noted outlier, which now has a <span class="math inline">\(\hat{\delta}_i\)</span> value (-0.07) that is twice its value in the prior-only model.</p>
 <p>Now here are the posterior means for the ICE and log-mortality rates; the darker red color indicates a higher degree of posterior uncertainty in the ICE value:</p>
 <div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">eta</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit_2</span><span class="op">)</span>
@@ -500,7 +522,7 @@
         plot.background <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_rect</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">'gray80'</span><span class="op">)</span>,
         legend.background <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_rect</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">'gray80'</span><span class="op">)</span>
         <span class="op">)</span></code></pre></div>
-<p><img src="spatial-me-models_files/figure-html/unnamed-chunk-23-1.png" width="432" style="display: block; margin: auto;"></p>
+<p><img src="spatial-me-models_files/figure-html/unnamed-chunk-22-1.png" width="432" style="display: block; margin: auto;"></p>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2 class="hasAnchor">

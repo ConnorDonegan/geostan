@@ -24,9 +24,10 @@
 #' n_eff(100, 0.9)
 #' n_eff(100, 1)
 #'
+#' \dontrun{
 #' rho <- seq(0, 1, by = 0.01)
 #' plot(rho, n_eff(100, rho), type = 'l')
-#' 
+#' }
 #' @export
 #' 
 n_eff <- function(n, rho) {
@@ -209,12 +210,12 @@ mc <- function(x, w, digits = 3, warn = TRUE) {
 #' Anselin, Luc. "Local indicators of spatial association—LISA." Geographical analysis 27, no. 2 (1995): 93-115.
 #' 
 #' @examples
-#' 
+#' \dontrun{
 #' data(georgia)
 #' x <- georgia$ICE
 #' w <- shape2mat(georgia, "W")
 #' moran_plot(x, w)
-#'
+#' }
 #' @import ggplot2
 #' @importFrom signs signs
 #' @importFrom Matrix rowSums
@@ -293,10 +294,11 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
 #' x <- georgia$ICE
 #' li = lisa(x, w)
 #' head(li)
-#'
+#' \dontrun{
 #' ggplot(georgia, aes(fill = li$Li)) +
 #'   geom_sf() +
 #'   scale_fill_gradient2()
+#'  }
 #' @importFrom Matrix rowSums
 lisa <- function(x, w, type = TRUE) {
     check_sa_data(x, w)
@@ -341,13 +343,13 @@ lisa <- function(x, w, type = TRUE) {
 #' 
 #'
 #' @examples
+#' \dontrun{
 #' data(georgia)
 #' sp_diag(georgia$college, georgia)
 #'
 #' bin_fn <- function(y) mad(y)
 #' sp_diag(georgia$college, georgia, binwidth = bin_fn)
 #' 
-#' \dontrun{
 #' fit <- stan_glm(log(rate.male) ~ 1, data = georgia)
 #' sp_diag(fit, georgia)
 #'
@@ -684,11 +686,13 @@ me_diag <- function(fit,
 #' data(georgia)
 #' C <- shape2mat(georgia, style = "B")
 #' EV <- make_EV(C)
+#' head(EV)
+#'
+#' \dontrun{
 #' ggplot(georgia) +
 #'   geom_sf(aes(fill = EV[,1])) +
 #'   scale_fill_gradient2()
-#'
-#' \dontrun{
+#' 
 #' fit <- stan_esf(log(rate.male) ~ 1, data = georgia, EV = EV, C = C)
 #' sp_diag(fit, georgia)
 #' }
@@ -1053,8 +1057,10 @@ edges <- function(C, unique_pairs_only = TRUE) {
 #'
 #' lse1 = se_log(x, se)
 #' lse2 = se_log(x, se, method = "delta")
+#' \dontrun{
 #' plot(lse1, lse2); abline(0, 1)
-#'
+#' }
+#' 
 #' # the monte carlo method
 #' x = 10
 #' se = 2

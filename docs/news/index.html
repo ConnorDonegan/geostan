@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Moran plot — moran_plot • geostan</title>
+<title>Changelog • geostan</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,7 @@
 
 
 
-<meta property="og:title" content="Moran plot — moran_plot" />
-<meta property="og:description" content="Plots a set of values against their spatially lagged values and gives the Moran coefficient as a measure of spatial autocorrelation." />
+<meta property="og:title" content="Changelog" />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
@@ -85,7 +84,7 @@
   <body data-spy="scroll" data-target="#toc">
     
 
-    <div class="container template-reference-topic">
+    <div class="container template-news">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -146,96 +145,23 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Moran plot</h1>
-    <small class="dont-index">Source: <a href='https://github.com/ConnorDonegan/geostan/blob/master/R/convenience-functions.R'><code>R/convenience-functions.R</code></a></small>
-    <div class="hidden name"><code>moran_plot.Rd</code></div>
+      <h1 data-toc-skip>Changelog <small></small></h1>
+      <small>Source: <a href='https://github.com/ConnorDonegan/geostan/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
-    <div class="ref-description">
-    <p>Plots a set of values against their spatially lagged values and gives the Moran coefficient as a measure of spatial autocorrelation.</p>
-    </div>
-
-    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>moran_plot</span><span class='op'>(</span>
-  <span class='va'>x</span>,
-  <span class='va'>w</span>,
-  xlab <span class='op'>=</span> <span class='st'>"x (centered)"</span>,
-  ylab <span class='op'>=</span> <span class='st'>"Spatial Lag"</span>,
-  pch <span class='op'>=</span> <span class='fl'>20</span>,
-  col <span class='op'>=</span> <span class='st'>"darkred"</span>,
-  size <span class='op'>=</span> <span class='fl'>2</span>,
-  alpha <span class='op'>=</span> <span class='fl'>1</span>,
-  lwd <span class='op'>=</span> <span class='fl'>0.5</span>
-<span class='op'>)</span></code></pre></div>
-
-    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
-    <table class="ref-arguments">
-    <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>x</th>
-      <td><p>A numeric vector of length n.</p></td>
-    </tr>
-    <tr>
-      <th>w</th>
-      <td><p>An n x n spatial connectivity matrix.</p></td>
-    </tr>
-    <tr>
-      <th>xlab</th>
-      <td><p>Label for the x-axis.</p></td>
-    </tr>
-    <tr>
-      <th>ylab</th>
-      <td><p>Label for the y-axis.</p></td>
-    </tr>
-    <tr>
-      <th>pch</th>
-      <td><p>Symbol type.</p></td>
-    </tr>
-    <tr>
-      <th>col</th>
-      <td><p>Symbol color.</p></td>
-    </tr>
-    <tr>
-      <th>size</th>
-      <td><p>Symbol size.</p></td>
-    </tr>
-    <tr>
-      <th>alpha</th>
-      <td><p>Symbol transparency.</p></td>
-    </tr>
-    <tr>
-      <th>lwd</th>
-      <td><p>Width of the regression line.</p></td>
-    </tr>
-    </table>
-
-    <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
-
-    <p>Anselin, Luc. "Local indicators of spatial association—LISA." Geographical analysis 27, no. 2 (1995): 93-115.</p>
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>Returns a <code>gg</code> plot, a scatter plot with <code>x</code> on the horizontal and its spatially lagged values on the vertical axis (i.e. a Moran plot).</p>
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>For details on the symbol parameters see the documentation for <a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a>.</p>
-<p>If any observations with no neighbors are found (i.e. <code>any(Matrix::rowSums(w) == 0)</code>) they will be dropped automatically and a message will print stating how many were dropped.</p>
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
-
-    <div class='dont-index'><p><a href='mc.html'>mc</a>, <a href='lisa.html'>lisa</a>, <a href='aple.html'>aple</a></p></div>
-
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='r-in'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span></span>
-<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span></span>
-<span class='r-in'><span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>georgia</span><span class='op'>$</span><span class='va'>ICE</span></span>
-<span class='r-in'><span class='va'>w</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='st'>"W"</span><span class='op'>)</span></span>
-<span class='r-in'><span class='fu'>moran_plot</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span><span class='op'>)</span></span>
-<span class='r-in'><span class='op'>}</span></span>
-</code></pre></div>
+    <div id="geostan-010" class="section level1">
+<h1 class="page-header" data-toc-text="0.1.0">
+<a href="#geostan-010" class="anchor" aria-hidden="true"></a>geostan 0.1.0</h1>
+<p>geostan’s first release</p>
+</div>
   </div>
+
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
       <h2 data-toc-skip>Contents</h2>
     </nav>
   </div>
+
 </div>
 
 

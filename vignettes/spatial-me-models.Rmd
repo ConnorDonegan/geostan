@@ -202,7 +202,10 @@ The somewhat large $\delta_i$ values for these counties are a result of the comb
 Notice that the ACS estimate for the ICE in Clinch County is $-0.40$ (SE = 0.048), implying a 95\% margin of error ranging from -0.5 to -0.3 (quite a wide range). Here is our probability distribution for the ICE in Clinch County:
 
 ```{r}
-plot(fit, pars = "x_ICE[91]")
+print(fit$stanfit, pars = "x_ICE[91]")
+# or visualize with:
+# plot(fit, pars = "x_ICE[91]")
+# plot(fit$stanfit, pars = "x_ICE[91]")
 ```
 
 ### Working with MCMC samples from ME models
@@ -215,9 +218,9 @@ mu.x <- as.matrix(fit, pars = "mu_x_true")
 dim(mu.x)
 mean(mu.x)
 ```
-We can visualize these using `plot`:
-```{r fig.width = 7}
-plot(fit, pars = c("mu_x_true", "car_rho_x_true", "sigma_x_true"))
+We can visualize these using `plot` or print a summary:
+```{r}
+print(fit$stanfit, pars = c("mu_x_true", "car_rho_x_true", "sigma_x_true"))
 ```
 
 To extract samples from the joint probability distribution for $\boldsymbol x$, use the generic parameter name "x_true":
@@ -292,13 +295,7 @@ ggplot(georgia) +
 
 Two counties in particular (Wheeler and Echols) stand out for having low ICE estimates, large standard errors on their ICE estimates, and mortality rates that resemble areas with considerably higher ICE values. 
 
-Now let's see how the posterior distribution of $\boldsymbol x$ has shifted in light of the regression relationship:
-
-```{r fig.width = 7.5}
-me_diag(fit_2, 'ICE', georgia)
-```
-
-While generally similar, one of the biggest shifts from the prior-only model is Wheeler County, a noted outlier, which now has a $\hat{\delta}_i$ value -0.07---twice its value in the prior-only model. 
+If we look at the posterior distribution of $\boldsymbol x$, we see it has shifted somewhat in light of the regression relationship (try `me_diag(fit_2, 'ICE', georgia, plot = FALSE)`).While generally similar, one of the biggest shifts from the prior-only model is Wheeler County, a noted outlier, which now has a $\hat{\delta}_i$ value (-0.07) that is twice its value in the prior-only model. 
 
 Now here are the posterior means for the ICE and log-mortality rates; the darker red color indicates a higher degree of posterior uncertainty in the ICE value:
 

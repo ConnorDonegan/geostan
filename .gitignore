@@ -6,3 +6,4 @@ man/*.Rd
 .Rhistory
 *~
 inst/doc
+cran-comments.md
