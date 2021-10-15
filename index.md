@@ -4,10 +4,6 @@ The **geostan** R package supports a complete spatial analysis
 workflow with hierarchical Bayesian models (HBMs) for areal
 data and a variety of functions for visualizing spatial data and model results.
 
-### Spatial analysis tools
-
-Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics.
-
 ### Disease mapping and spatial regression
 
 Model small-area incidence rates with mortality or disease data recorded across areal units like counties or census tracts.
@@ -16,9 +12,13 @@ Model small-area incidence rates with mortality or disease data recorded across 
 
 Incorporate information on data reliability into any **geostan** model. Built specifically for American Community Survey (ACS) data.
 
+### Spatial analysis tools
+
+Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model criticism.
+
 ### The RStan ecosystem
 
-Compatible with a suite of high-quality R packages for Bayesian inference and model evaluation.
+Compatible with a suite of high-quality R packages for Bayesian inference.
 
 ### Custom Stan models
 
