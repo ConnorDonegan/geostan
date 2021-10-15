@@ -1,4 +1,7 @@
-// outcome model information
+  // ICAR
+  int has_theta = type > 1;
+
+  // outcome model information
   int<lower=0,upper=1> is_gaussian;
   int<lower=0,upper=1> is_student;
   int<lower=0,upper=1> is_poisson;

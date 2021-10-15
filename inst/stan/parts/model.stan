@@ -40,3 +40,44 @@
     if (is_binomial) target += binomial_lpmf(y_int | trials, fitted);
 }
   
+  // ICAR
+  if (type) {
+    if (has_theta) {
+      target += std_normal_lpdf(theta_tilde);
+      if (type == 2) target += std_normal_lpdf(theta_scale[1]);
+      // implicit uniform prior on rho:   if (type == 3) rho[1] ~ beta(1, 1);
+    }
+    target += std_normal_lpdf(spatial_scale[1]);
+    phi_tilde ~ icar_normal(spatial_scale[1], node1, node2, k, group_size, group_idx, has_theta);
+    if (m) target += normal_lpdf(alpha_phi | 0, prior_alpha[2]);
+  }
+  // ESF
+  if (dev) {
+    target += std_normal_lpdf(z);
+    target += std_normal_lpdf(aux1_local);
+    target += inv_gamma_lpdf(aux2_local | 0.5, 0.5); // .5 * nu_local, .5 * nu_local, nu_local = 1
+    target += std_normal_lpdf(aux1_global[1]);
+    target += inv_gamma_lpdf(aux2_global[1] | 0.5, 0.5); // .5 * nu_local, .5 * nu_global, both = 1
+    target += inv_gamma_lpdf(caux[1] | 0.5*slab_df, 0.5*slab_df);
+  }
+  // CAR
+  if (car) {
+    target += student_t_lpdf(car_scale[1] | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
+    if (is_auto_gaussian * !prior_only) {
+      target += auto_normal_lpdf(y |
+				 fitted, car_scale[1], car_rho[1],
+				 Ax_w, Ax_v, Ax_u,
+				 Cidx,
+				 Delta_inv, log_det_Delta_inv,
+				 lambda, n, WCAR);
+  }
+    if (!is_auto_gaussian) {
+      target += auto_normal_lpdf(log_lambda |
+				 log_lambda_mu, car_scale[1], car_rho[1],
+				 Ax_w, Ax_v, Ax_u,
+				 Cidx,
+				 Delta_inv, log_det_Delta_inv,
+				 lambda, n, WCAR);
+    }
+  }
+

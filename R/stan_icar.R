@@ -270,7 +270,10 @@
 #' sp.trend <- spatial(fit.bym)$mean
 #' ggplot( st_as_sf(sentencing) ) +
 #'   geom_sf(aes(fill = sp.trend)) +
-#'   scale_fill_gradient2() +
+#'   scale_fill_gradient2(
+#'    low = "navy",
+#'    high = "darkred"
+#'   ) +
 #'   theme_void()
 #'
 #' # calculate log-standardized sentencing ratios (log-SSRs)
@@ -281,7 +284,10 @@
 #'
 #' ggplot( st_as_sf(sentencing) ) +
 #'   geom_sf(aes(fill = log.SSR)) +
-#'   scale_fill_gradient2() +
+#'   scale_fill_gradient2(
+#'    low = "navy",
+#'    high = "darkred"
+#'   ) +
 #'   labs(title = "Log-standardized sentencing ratios",
 #'        subtitle = "log( Fitted/Expected), base 2") +
 #'   theme_void() +
@@ -412,7 +418,7 @@ stan_icar <- function(formula,
     standata$type <- match(type, c("icar", "bym", "bym2"))
     ## ICAR DATA [STOP] -------------    
     ## EMPTY PLACEHOLDERS
-    standata <- c(standata, empty_esf_data(n))
+    standata <- c(standata, empty_esf_data(n), empty_car_data())
     ## ME MODEL -------------  
     me.list <- prep_me_data(ME, x_no_Wx)
     standata <- c(standata, me.list)  

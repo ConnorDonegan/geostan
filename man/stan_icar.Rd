@@ -289,7 +289,10 @@ bayesplot::ppc_dens_overlay(y, yrep)
 sp.trend <- spatial(fit.bym)$mean
 ggplot( st_as_sf(sentencing) ) +
   geom_sf(aes(fill = sp.trend)) +
-  scale_fill_gradient2() +
+  scale_fill_gradient2(
+   low = "navy",
+   high = "darkred"
+  ) +
   theme_void()
 
 # calculate log-standardized sentencing ratios (log-SSRs)
@@ -300,7 +303,10 @@ log.SSR <- log( SSR, base = 2)
 
 ggplot( st_as_sf(sentencing) ) +
   geom_sf(aes(fill = log.SSR)) +
-  scale_fill_gradient2() +
+  scale_fill_gradient2(
+   low = "navy",
+   high = "darkred"
+  ) +
   labs(title = "Log-standardized sentencing ratios",
        subtitle = "log( Fitted/Expected), base 2") +
   theme_void() +

@@ -261,7 +261,9 @@
 #'  scale_fill_gradient2(
 #'    midpoint = 0,
 #'    name = NULL,
-#'    breaks = seq(-3, 3, by = 0.5)
+#'    breaks = seq(-3, 3, by = 0.5),
+#'    low = "navy",
+#'    high = "darkred"
 #'    ) +
 #'  labs(title = "Log-Standardized Sentencing Ratios",
 #'       subtitle = "log( Fitted/Expected ), base 2"
@@ -418,7 +420,10 @@ stan_car <- function(formula,
     }
     standata$car_rho_lims = c(priors_made$car_rho$lower, priors_made$car_rho$upper)     
     standata <- c(standata, car_parts)
-    standata <- append_priors(standata, priors_made)    
+    standata <- append_priors(standata, priors_made)
+    standata$car <- 1
+    ## EMPTY PLACEHOLDERS
+    standata <- c(standata, empty_icar_data(n), empty_esf_data(n))    
     ## ME MODEL -------------
     # overwrites any user specified ME$car_parts
     if ( !is.null(ME) ) {
@@ -433,7 +438,7 @@ stan_car <- function(formula,
     }
     ## PARAMETERS TO KEEP, with CAR PARAMETERS [START] -------------            
     pars <- c(pars, 'intercept', 'car_scale', 'car_rho', 'fitted', 'log_lik')
-    if (family_int < 5) pars <- c(pars, 'phi') 
+    if (family_int < 5) pars <- c(pars, 'log_lambda_mu') 
     if (!intercept_only) pars <- c(pars, 'beta')
     if (dwx) pars <- c(pars, 'gamma')
     if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
@@ -458,7 +463,9 @@ stan_car <- function(formula,
     }
     print_priors(prior, priors_made_slim)
     ## CALL STAN -------------  
-    samples <- rstan::sampling(stanmodels$car, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+    standata$car <- 1
+    samples <- rstan::sampling(stanmodels$foundation, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
+    #/#/#/#/#/
     ## OUTPUT -------------
     out <- clean_results(samples, pars, is_student, has_re, Wx, x_no_Wx, me.list$x_me_idx)
     out$data <- ModData

@@ -210,6 +210,10 @@ clean_results <- function(samples, pars, is_student, has_re, Wx, x, x_me_idx) {
     if ("rho" %in% pars) samples <- par_alias(samples, "^rho\\[1\\]", "rho")
     if ("theta_scale" %in% pars) samples <- par_alias(samples, "^theta_scale\\[1\\]", "theta_scale")
     if ("spatial_scale" %in% pars) samples <- par_alias(samples, "^spatial_scale\\[1\\]", "spatial_scale")
+    if ("car_rho" %in% pars) {
+        samples <- par_alias(samples, "^car_rho\\[1\\]", "car_rho")
+        samples <- par_alias(samples, "^car_scale\\[1\\]", "car_scale")
+    }
     if (is_student) samples <- par_alias(samples, "^nu\\[1\\]", "nu")
     if (has_re) samples <- par_alias(samples, "^alpha_tau\\[1\\]", "alpha_tau")
     main_pars <- pars[which(pars %in% c("nu", "intercept", "alpha_tau", "gamma", "beta", "sigma", "rho", "spatial_scale", "theta_scale", "car_scale", "car_rho"))]
@@ -340,5 +344,13 @@ empty_esf_data <- function(n) {
         global_scale = 0,
         slab_scale = 0,
         slab_df = 0        
+    )
+}
+
+#' @noRd
+empty_car_data <- function() {
+    list(
+        car = 0,
+        car_rho_lims = c(-1, 1)
     )
 }

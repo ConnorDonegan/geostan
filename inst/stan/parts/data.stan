@@ -69,3 +69,27 @@
   int<lower=0> trials[n];
   int<lower=0,upper=1> prior_only;
 
+  // ICAR 
+  int<lower=0,upper=3> type; // 0=glm, 1=icar, 2=bym, 3=bym2
+  int<lower=1> k; // no. of groups
+  int group_size[k]; // observational units per group
+  int group_idx[n]; // index of observations, ordered by group
+  int<lower=0> m; // no of components requiring additional intercepts
+  matrix[n, m] A; // dummy variables for any extra graph component intercepts  
+  int<lower=1> n_edges; 
+  int<lower=1, upper=n> node1[n_edges];
+  int<lower=1, upper=n> node2[n_edges];
+  vector[n_edges] weight;
+  int<lower=1, upper=k> comp_id[n]; 
+  vector[k] inv_sqrt_scale_factor; // can be a vector of ones, as a placeholder
+
+  // ESF 
+  int<lower=0> dev; // number of eigenvectors : now included in parts/data.stan
+  matrix[n, dev] EV; // the eigenvectors : now included in parts/data.stan
+  real<lower=0> global_scale;  // horseshoe parameters
+  real<lower=0> slab_scale;
+  real<lower=0> slab_df;
+
+  // CAR
+  real car_rho_lims[2];
+  int<lower=0,upper=1> car;
