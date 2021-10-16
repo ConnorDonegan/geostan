@@ -14,15 +14,15 @@ Incorporate information on data reliability into any **geostan** model. Built sp
 
 ### Spatial analysis tools
 
-Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics.
-
-### The RStan ecosystem
-
-Compatible with a suite of high-quality R packages for Bayesian inference and model evaluation.
+Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model criticism.
 
 ### Custom Stan models
 
 Tools for building custom spatial models in [Stan](https://mc-stan.org/).
+
+### RStan ecosystem
+
+Compatible with a suite of high-quality R packages for Bayesian inference.
 
 ## Installation
 
