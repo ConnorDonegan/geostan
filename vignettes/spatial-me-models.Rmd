@@ -159,7 +159,7 @@ Note that `prior_only = TRUE` will prevent `stan_glm` from considering the likel
  
 Provide `me_diag` with the fitted model, the name of the variable, and the underlying spatial object:
  
-```{r fig.width = 7}
+```{r fig.width = 7.5}
 # (math symbols in figure labels may not be visible on html versions of this vignette)
 me_diag(fit, 'ICE', georgia)
 ```
@@ -180,7 +180,7 @@ Large $|\delta_i|$ values can provide a warning that your data may be of low qua
 
 To look more closely at the model results, we can have `me_diag` return the index value for the observations with the $k$ largest $\delta_i$ values:
 
-```{r fig.width = 7}
+```{r fig.width = 7.5}
 me_diag(fit, 'ICE', georgia, index = 5)
 ```
 
