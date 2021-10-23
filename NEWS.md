@@ -5,3 +5,4 @@ The stan files for the CAR model have been combined with the 'foundation.stan' f
 # geostan 0.1.0
 
 geostan's first release
+

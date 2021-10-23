@@ -227,16 +227,22 @@ spatial <- function(object, summary = TRUE, ...) {
 spatial.geostan_fit <- function(object, summary = TRUE, ...) {
   if (is.na(object$spatial$par)) stop("This model does not have a spatial trend component to extract.")
   par <- as.character(object$spatial$par)
-  if (object$family$family == "auto_gaussian") {
-      C <- object$C      
-      R <- resid(object, summary = FALSE, detrend = FALSE)
-      rho <- as.matrix(object, pars = "car_rho")
-      spatial.samples <- t(sapply(1:nrow(rho), function(i) {
-          as.numeric( rho[i] * C %*% R[i,] )
-      }))
-  } else {      
+  if (!object$spatial$method == "CAR") {
       spatial.samples <- as.matrix(object, pars = par, ...)
-  }
+  } else {
+      if (object$family$family == "auto_gaussian") {
+          C <- object$C              
+          R <- resid(object, summary = FALSE, detrend = FALSE)
+          rho <- as.matrix(object, pars = "car_rho")
+          spatial.samples <- t(sapply(1:nrow(rho), function(i) {
+              as.numeric( rho[i] * C %*% R[i,] )
+          }))         
+      } else {
+          log_lambda_mu <- as.matrix(object, pars = "log_lambda_mu")
+          log_lambda <- log( fitted(object, summary = FALSE, rates = TRUE) )
+          spatial.samples <- log_lambda - log_lambda_mu
+      }
+  } 
   if (summary) {
     return ( post_summary(spatial.samples) )
   } else {

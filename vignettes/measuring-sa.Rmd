@@ -15,7 +15,7 @@ bibliography: bib.bib
 link-citations: yes
 ---
 
-This vignette walks through exploratory spatial analysis functionality in the **geostan** package, which includes methods for measuring and visualizing spatial autocorrelation. 
+This vignette walks through exploratory spatial analysis functionality in the **geostan** package, which includes methods for measuring and visualizing spatial autocorrelation. The last section introduces a set of diagnostic plots for spatial models.
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -29,16 +29,14 @@ knitr::opts_chunk$set(
 
 ## Getting started
 
-From the R console, load the **geostan**, **sf**, and **tidyverse** packages. 
+From the R console, load **geostan** and the `georgia` data set.
 
 ```{r setup, message = FALSE, warning = FALSE}
 library(geostan)
-library(sf)
-library(ggplot2)
 data("georgia")
 ```
 
-This vignette uses the `georgia` data set from the **geostan** package. This is a simple features (`sf`) object with estimates of county population characteristics from the American Community Survey (ACS) for the five year period spanning 2014-2018. Their corresponding standard errors are also here. The column `college` contains ACS estimates for the percent of the population age 25 and older that has obtained a college degree or higher; the standard errors of the survey estimates are in the column named `college.se`. 
+`georgia` is a simple features (`sf`) object with estimates of county population characteristics from the American Community Survey (ACS) for the five year period spanning 2014-2018. Their corresponding standard errors are also here. The column `college` contains ACS estimates for the percent of the population age 25 and older that has obtained a college degree or higher; the standard errors of the survey estimates are in the column named `college.se`. 
 
 ## Spatial diagnostic summary
 
@@ -103,7 +101,7 @@ c(mc(georgia$college, C), mean(Li$Li))
 
 ## Effective sample size
 
-We can also consider what these spatial patterns mean in terms of the information content of our data; that is, the impact that spatial autocorrelation might have on the amount evidence that can be garnered from this data in an analysis. This is often described as effective sample size (ESS).
+We can also consider what these spatial patterns mean in terms of the information content of our data; that is, the impact that spatial autocorrelation might have on the amount of evidence that can be garnered from this data in an analysis. This is often described as effective sample size (ESS).
 
 The `n_eff` function provides an approximate measure of ESS for spatially autocorrelated data. Based on the simultaneous autoregressive (SAR) model [@griffith_2005], it requires a value of the SA parameter, $\rho$, from the SAR model and the number of observations in our data set. We can get a rough measure of ESS for our ICE data using the following code:
 
@@ -113,7 +111,51 @@ n <- nrow(georgia)
 ess <- n_eff(rho = rho, n = n)
 c(nominal_n = n, rho = rho, ESS = ess)
 ```
+
 This tells us that, given the degree of SA in the ICE estimates, our nominal sample size of 159 observations has about the same information content as 22 independent observations. This should provide some idea as to why it is so perilous to use conventional (non-spatial) statistical methods with spatial data. The odds of observing a strong correlation between any arbitrary pair of spatially patterned variables can be far greater than conventional methods report. 
+
+## Model diagnostics
+
+The `sp_diag` function can also be used to evaluate spatial models. One of the purposes of the function is to identify spatial patterns in the model residuals, because spatial autocorrelation violates a core assumption (independence) of conventional statistical models and because spatial patterns can provide valuable information that we should pay attention to.
+
+To demonstrate, we first fit a (non-spatial) Poisson model to the Georgia male mortality data. The following code fits a log-linear Poisson model, and it models mortality rates for each county separately (that's provided by the "random effects" argument: `re ~ GEOID`). 
+
+```{r}
+C <- shape2mat(georgia)
+fit <- stan_glm(deaths.male ~ offset(log(pop.at.risk.male)), 
+                data = georgia, 
+                re = ~ GEOID, 
+                family = poisson(), 
+                C = C,
+                refresh = 0 # this line silences Stan's printing
+                )
+print(fit)
+```
+
+Because **geostan** uses Bayesian inference and a Markov chain Monte Carlo (MCMC) algorithm from the Stan modeling language to draw samples from the posterior distribution of parameters, the `fit` object contains not just summaries of results (as printed above) but also full probability distributions for each parameter. We can plot the posterior distribution of any model parameter; below is the probability distribution for the intercept, which is the mean log-county mortality rate. We can see it is centered on $-4.183$, which is a mortality rate of $e^{-4.183} = 153$ per 10,000. 
+
+When necessary, Stan will print important warning messages, such as "Bulk Effective Samples Size (ESS) is too low." Looking at the printed results above, we can see that we kept a total of 4,000 MCMC samples for inference. If we then look at the "n_eff" (i.e., ESS) column in the table of results, we see that the effective sample size is smaller that the nominal sample size of 4,000 (due to serial autocorrelation in the MCMC samples). If the MCMC samples are an approximation of the exact posterior distribution, then the more samples we draw the closer our approximation will be. The Monte Carlo standard error of the estimates ("se_mean") tells us how close we are. To evaluate all model parameters (which you should always do), you can use the following function calls: `rstan::stan_ess(fit$stanfit)`, `rstan::stan_mcse(fit$stanfit)`, and `rstan::stan_rhat(fit$stanfit)` (and see the corresponding help pages, `?rstan::stan_rhat`.)
+
+```{r}
+plot(fit, pars = "intercept")
+```
+
+With MCMC samples, we can easily extrapolate our inferences from the posterior distribution of parameters to any function of those parameters [@mackay_2003]. This means we can obtain a posterior distribution for every county mortality rate, and for the difference between the modeled mortality rates (fitted values) and the crude mortality rates (i.e., the residuals: $\text{observed} - \text{modeled}$), and, further, for any function of those residuals. These are generally referred to as 'quantities of interest.'
+
+Quantities of interest can be useful for model criticism as well as for making inferences from a model. For example, we can measure the degree of spatial autocorrelation in the MCMC samples of residuals, resulting in a probability distribution for the residual autocorrelation. Or, if we wanted to measure health inequality across counties as a function of the county mortality rates, we could calculate that inequality measure for each MCMC sample of fitted values to obtain a probability distribution for the degree of inequality.
+
+Now provide the fitted model, `fit`, and the spatial data, `georgia`, to the `sp_diag` function to see a set of spatial model diagnostics:
+
+```{r fig.width = 7.5}
+sp_diag(fit, georgia)
+```
+
+The point-interval plot on the left shows the raw mortality rates (the raw outcome data) on the x-axis, the fitted values on the y-axis, and a 'perfect fit' (slope = 1, intercept = 0) line for reference. We can see that a number of the fitted values have posterior means that deviate from the observations; but this "shrinkage" towards the mean is not necessarily a problem. In fact, it is often desirable insofar as it indicates that these are counties for which our data provide very little evidence as to what the risk of death is (i.e., the population is very small). (For a good introductory discussion of information pooling and many other topics as well, see @mcelreath_2016). 
+
+The middle panel represents spatial autocorrelation in the residuals as measured by the Moran coefficient (i.e., autocorrelation in the joint probability distribution of residuals), and the map shows the mean residual for each county (marginal posterior means). In this case, the MC histogram shows that there is a small amount of residual autocorrelation, while the map indicates that this derives mainly from a north-south/metropolitan-rural trend. The trend in the residuals helps us see that shrinking towards the mean mortality rate is less than ideal in this case because we can see that county mortality rates are higher in the southern half of the state than in the greater Atlanta metropolitan area. 
+
+We could probably do better than shrinking towards the mean by using one of **geostan**'s spatial models (see the examples in `?stan_car`) or by adding one or more (substantively meaningful) covariates. 
+
 
 ## References
 

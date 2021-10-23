@@ -98,7 +98,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.1</span>
       </span>
     </div>
 
@@ -306,7 +306,7 @@
 <p>Details and results depend on the <code>family</code> argument, as well as on the particular CAR specification chosen (see <a href='prep_car_data.html'>prep_car_data</a>).</p><h3 class='hasAnchor' id='list-auto-gaussian-'><a class='anchor' aria-hidden='true' href='#list-auto-gaussian-'></a><code><a href='auto_gaussian.html'>auto_gaussian()</a></code></h3>
 
 
-<p>With <code>family = auto_gaussian()</code> (referred to here as the auto-Gaussian model), the CAR model is specified as follows:</p><pre><code>        Y ~ MVGauss(Mu, Sigma)
+<p>When <code>family = auto_gaussian()</code>, the CAR model is specified as follows:</p><pre><code>        Y ~ MVGauss(Mu, Sigma)
         Sigma = (I - rho C)^-1 * M * tau^2
 </code></pre>
 
@@ -396,16 +396,34 @@
 <span class='r-in'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span></span>
 <span class='r-in'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/bayesplot/'>bayesplot</a></span><span class='op'>)</span></span>
 <span class='r-in'><span class='fu'><a href='https://rdrr.io/r/base/options.html'>options</a></span><span class='op'>(</span>mc.cores <span class='op'>=</span> <span class='fu'>parallel</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/r/parallel/detectCores.html'>detectCores</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='co'># model incidence or mortality rates</span></span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, style <span class='op'>=</span> <span class='st'>"B"</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'><a href='prep_car_data.html'>prep_car_data</a></span><span class='op'>(</span><span class='va'>C</span><span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'>stan_car</span><span class='op'>(</span><span class='va'>deaths.male</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/offset.html'>offset</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>pop.at.risk.male</span><span class='op'>)</span><span class='op'>)</span>,</span>
+<span class='r-in'>                car_parts <span class='op'>=</span> <span class='va'>cp</span>,</span>
+<span class='r-in'>                data <span class='op'>=</span> <span class='va'>georgia</span>,</span>
+<span class='r-in'>                family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>$</span><span class='va'>stanfit</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_mcse</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>$</span><span class='va'>stanfit</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/base/print.html'>print</a></span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>georgia</span><span class='op'>)</span></span>
+<span class='r-in'></span>
+<span class='r-in'></span>
+<span class='r-in'><span class='co'># model observed/expected incidence</span></span>
+<span class='r-in'><span class='co'># in this case, prison sentences </span></span>
 <span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span></span>
 <span class='r-in'></span>
 <span class='r-in'><span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>sentencing</span>, style <span class='op'>=</span> <span class='st'>"B"</span><span class='op'>)</span></span>
-<span class='r-in'><span class='va'>car.dl</span> <span class='op'>&lt;-</span> <span class='fu'><a href='prep_car_data.html'>prep_car_data</a></span><span class='op'>(</span><span class='va'>C</span>, style <span class='op'>=</span> <span class='st'>"WCAR"</span><span class='op'>)</span></span>
+<span class='r-in'><span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'><a href='prep_car_data.html'>prep_car_data</a></span><span class='op'>(</span><span class='va'>C</span>, style <span class='op'>=</span> <span class='st'>"WCAR"</span><span class='op'>)</span></span>
 <span class='r-in'><span class='va'>log_e</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>$</span><span class='va'>expected_sents</span><span class='op'>)</span></span>
 <span class='r-in'><span class='va'>fit.car</span> <span class='op'>&lt;-</span> <span class='fu'>stan_car</span><span class='op'>(</span><span class='va'>sents</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/offset.html'>offset</a></span><span class='op'>(</span><span class='va'>log_e</span><span class='op'>)</span>,</span>
 <span class='r-in'>                    family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span>,</span>
 <span class='r-in'>                    data <span class='op'>=</span> <span class='va'>sentencing</span>,</span>
-<span class='r-in'>                    car_parts <span class='op'>=</span> <span class='va'>car.dl</span></span>
-<span class='r-in'><span class='op'>)</span></span>
+<span class='r-in'>                    car_parts <span class='op'>=</span> <span class='va'>cp</span><span class='op'>)</span></span>
 <span class='r-in'></span>
 <span class='r-in'><span class='co'># MCMC diagnostics</span></span>
 <span class='r-in'><span class='fu'>rstan</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html'>stan_rhat</a></span><span class='op'>(</span><span class='va'>fit.car</span><span class='op'>$</span><span class='va'>stanfit</span><span class='op'>)</span></span>
@@ -417,7 +435,7 @@
 <span class='r-in'><span class='co'># posterior predictive distribution</span></span>
 <span class='r-in'><span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span><span class='op'>(</span><span class='va'>fit.car</span>, S <span class='op'>=</span> <span class='fl'>75</span><span class='op'>)</span></span>
 <span class='r-in'><span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span></span>
-<span class='r-in'><span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>yrep</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'>bayesplot</span><span class='fu'>::</span><span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>yrep</span><span class='op'>)</span></span>
 <span class='r-in'></span>
 <span class='r-in'><span class='co'># examine posterior distributions of CAR parameters</span></span>
 <span class='r-in'><span class='fu'><a href='https://r-spatial.github.io/sf/reference/plot.html'>plot</a></span><span class='op'>(</span><span class='va'>fit.car</span>, pars <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"car_scale"</span>, <span class='st'>"car_rho"</span><span class='op'>)</span><span class='op'>)</span></span>
@@ -455,6 +473,7 @@
 <span class='r-in'> <span class='op'>)</span></span>
 <span class='r-in'></span>
 <span class='r-in'><span class='co'>## DCAR specification (inverse-distance based)</span></span>
+<span class='r-in'><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span></span>
 <span class='r-in'><span class='va'>A</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='st'>"B"</span><span class='op'>)</span></span>
 <span class='r-in'><span class='va'>D</span> <span class='op'>&lt;-</span> <span class='fu'>sf</span><span class='fu'>::</span><span class='fu'><a href='https://r-spatial.github.io/sf/reference/geos_measures.html'>st_distance</a></span><span class='op'>(</span><span class='fu'>sf</span><span class='fu'>::</span><span class='fu'><a href='https://r-spatial.github.io/sf/reference/geos_unary.html'>st_centroid</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span><span class='op'>)</span></span>
 <span class='r-in'><span class='va'>A</span> <span class='op'>&lt;-</span> <span class='va'>D</span> <span class='op'>*</span> <span class='va'>A</span></span>
@@ -465,12 +484,12 @@
 <span class='r-in'>    <span class='fu'><a href='https://rdrr.io/r/base/numeric.html'>as.numeric</a></span><span class='op'>(</span><span class='va'>cp</span><span class='op'>$</span><span class='va'>C</span><span class='op'>)</span></span>
 <span class='r-in'>    <span class='op'>)</span></span>
 <span class='r-in'></span>
-<span class='r-in'><span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'>stan_car</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>rate.male</span><span class='op'>)</span> <span class='op'>~</span> <span class='fl'>1</span>,</span>
+<span class='r-in'><span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'>stan_car</span><span class='op'>(</span><span class='va'>deaths.male</span> <span class='op'>~</span> <span class='fu'><a href='https://rdrr.io/r/stats/offset.html'>offset</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>pop.at.risk.male</span><span class='op'>)</span><span class='op'>)</span>,</span>
 <span class='r-in'>               data <span class='op'>=</span> <span class='va'>georgia</span>,</span>
 <span class='r-in'>               car <span class='op'>=</span> <span class='va'>cp</span>,</span>
-<span class='r-in'>               cores <span class='op'>=</span> <span class='fl'>5</span><span class='op'>)</span></span>
+<span class='r-in'>               family <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/stats/family.html'>poisson</a></span><span class='op'>(</span><span class='op'>)</span><span class='op'>)</span></span>
 <span class='r-in'></span>
-<span class='r-in'><span class='fu'><a href='me_diag.html'>me_diag</a></span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>georgia</span><span class='op'>)</span></span>
+<span class='r-in'><span class='fu'><a href='sp_diag.html'>sp_diag</a></span><span class='op'>(</span><span class='va'>fit</span>, <span class='va'>georgia</span><span class='op'>)</span></span>
 <span class='r-in'><span class='op'>}</span></span>
 <span class='r-in'></span>
 </code></pre></div>

@@ -17,13 +17,13 @@ test_that("geostan model results match raw rstan results: gaussian glm", {
     fit1 <- stan_glm(y ~ ICE + insurance + college,
                      data = georgia,
                      prior = list(
-                         intercept = c(0, 1),
-                         beta = data.frame(
+                         intercept = normal(0, 1),
+                         beta = normal(
                              location = c(0, 0, 0),
                              scale = c(10, 10, 10)
                          ),
-                         sigma = c(df = 10, location = 0, scale = 1)
-                     ),                 
+                         sigma = student_t(df = 10, location = 0, scale = 1)
+                         ),
                      family = gaussian(),
                      chains = 1,
                      iter= 6e3
@@ -86,9 +86,9 @@ test_that("geostan model results match raw rstan results: Poisson rates", {
                      data = georgia,
                      re = ~ GEOID,
                      prior = list(
-                         intercept = c(0, 10),
-                         beta = c(0, 10),
-                         alpha_tau = c(df=10, location = 0, scale = 1)
+                         intercept = normal(0, 10),
+                         beta = normal(0, 10),
+                         alpha_tau = student_t(df=10, location = 0, scale = 1)
                          ),                                     
                      family = poisson(),
                      cores = 5
@@ -160,10 +160,10 @@ test_that("geostan model results match raw rstan results: Binomial rates", {
                      re = ~ GEOID,
                      data = georgia,
                      family = binomial(),
-                     prior = list(intercept = c(0, 10),
-                                  beta = data.frame(location = c(0, 0),
+                     prior = list(intercept = normal(0, 10),
+                                  beta = normal(location = c(0, 0),
                                                     scale = c(10, 10)),
-                                  alpha_tau = c(10, 0, 1)
+                                  alpha_tau = student_t(10, 0, 1)
                                   ),
                      centerx = TRUE,
                      cores = 4
@@ -235,18 +235,18 @@ generated quantities {
 rm(list=ls())
 test_that("geostan model results match raw rstan results: non-spatial ME model", {
     ME <- list(se = data.frame(ICE = georgia$ICE.se))  
-    ME$prior <- list(location = data.frame(location = 0,
+    ME$prior <- list(location = normal(location = 0,
                                        scale = 0.5),
-                 scale = data.frame(df = 10,
+                 scale = student_t(df = 10,
                                     location = 0,
                                     scale = 1)
                  )    
     fit4.a <- stan_glm(log(rate.male) ~ ICE,
                      data = georgia,
                      ME = ME,
-                     prior = list(intercept = c(0, 10),
-                                  beta = data.frame(location = 0, scale = 2),
-                                  sigma = c(10, 0, 1)
+                     prior = list(intercept = normal(0, 10),
+                                  beta = normal(location = 0, scale = 2),
+                                  sigma = student_t(10, 0, 1)
                                   ),
                      cores = 4
                      )
