@@ -26,11 +26,9 @@ Compatible with a suite of high-quality R packages for Bayesian inference.
 
 ## Installation
 
-From **R** (>= version 4.05), install **geostan** using:
+Install **geostan** from CRAN using:
 
 ``` r
-if (!require(drat)) install.packages("drat")
-drat::addRepo("connordonegan")
 install.packages("geostan")
 ```
 

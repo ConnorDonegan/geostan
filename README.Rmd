@@ -47,11 +47,9 @@ Tools for building custom spatial models in [Stan](https://mc-stan.org/).
 
 ## Installation
 
-From **R** (>= version 4.05), install **geostan** using:
+Install **geostan** from CRAN using:
 
 ``` r
-if (!require(drat)) install.packages("drat")
-drat::addRepo("connordonegan")
 install.packages("geostan")
 ```
 
