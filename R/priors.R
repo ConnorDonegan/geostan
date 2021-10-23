@@ -6,7 +6,7 @@
 #' 
 #' The prior distribution functions are used to set the values of prior parameters.
 #'
-#' Users can control the values of the parameters, but the distribution (model) itself is fixed. The intercept and regression coefficients are given Gaussian prior distributions and scale parameters are assigned Student's t prior distributions. Degrees of freedom pararmeters are assigned gamma priors, and the spatial autocorrelation parameter in the CAR model, rho, is assigned a uniform prior. The horseshoe (`hs`) model is used by \code{\link[geostan]{stan_esf}}.
+#' Users can control the values of the parameters, but the distribution (model) itself is fixed. The intercept and regression coefficients are given Gaussian prior distributions and scale parameters are assigned Student's t prior distributions. Degrees of freedom parameters are assigned gamma priors, and the spatial autocorrelation parameter in the CAR model, rho, is assigned a uniform prior. The horseshoe (`hs`) model is used by \code{\link[geostan]{stan_esf}}.
 #'
 #' Note that the `variable` argument is used internally by `geostan`, and any user provided values will be ignored.
 #'
@@ -123,7 +123,7 @@ gamma <- function(alpha, beta, variable = NULL) {
 #'
 #' ### The horseshoe prior
 #' 
-#' The horseshoe prior is used by \code{\link[geostan]{stan_esf}} as a prior for the eigenvector coefficients. The horseshoe model encodes a prior state of knowledge that effectively states, 'I believe a small number of these variables may be important, but I don't know which of them is important.' The horseshoe is a normal distribution with unkown scale (Polson and Scott 2010):
+#' The horseshoe prior is used by \code{\link[geostan]{stan_esf}} as a prior for the eigenvector coefficients. The horseshoe model encodes a prior state of knowledge that effectively states, 'I believe a small number of these variables may be important, but I don't know which of them is important.' The horseshoe is a normal distribution with unknown scale (Polson and Scott 2010):
 #' ```
 #'        beta_j ~ Normal(0, tau^2 * lambda_j^2)
 #' ```
