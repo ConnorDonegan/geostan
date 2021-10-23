@@ -36,11 +36,11 @@ install.packages("geostan")
 
 ## Citation
 
-If you use **geostan** in your work, please cite the package itself and supporting methodology on spatial HBMs, as well as any other foundational research as indicated by the documentation page for each function.
+Please cite **geostan** if you use it in your work, and cite any appropriate methodology papers as well (found in the package documentation page for the functions you use).
 
- * Donegan, Connor, Yongwan Chun, and Daniel A. Griffith. Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. International Journal of Environmental Research and Public Health 18.13 (2021): 6856. DOI: 10.3390/ijerph18136856
+ * Donegan, Connor (2021). geostan: Bayesian Spatial Analysis. R package Version 0.1.1 https://connordonegan.github.io/geostan
  
- * Donegan, Connor (2021). geostan: Bayesian Spatial Analysis. R package Version 0.1.0 https://connordonegan.github.io/geostan
+ * Donegan, Connor, Yongwan Chun, and Daniel A. Griffith. Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. International Journal of Environmental Research and Public Health 18.13 (2021): 6856. DOI: 10.3390/ijerph18136856
 
 All **geostan** models are built using **Stan**, so be sure to cite **Stan** too:
 
