@@ -221,8 +221,8 @@
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).
 ## Chain 1: 
-## Chain 1: Gradient evaluation took 0.000118 seconds
-## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.18 seconds.
+## Chain 1: Gradient evaluation took 0.00017 seconds
+## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.7 seconds.
 ## Chain 1: Adjust your expectations accordingly!
 ## Chain 1: 
 ## Chain 1: 
@@ -231,15 +231,15 @@
 ## Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 1: 
-## Chain 1:  Elapsed Time: 1.29673 seconds (Warm-up)
-## Chain 1:                1.18586 seconds (Sampling)
-## Chain 1:                2.48259 seconds (Total)
+## Chain 1:  Elapsed Time: 2.20836 seconds (Warm-up)
+## Chain 1:                1.5902 seconds (Sampling)
+## Chain 1:                3.79855 seconds (Total)
 ## Chain 1: 
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 2).
 ## Chain 2: 
-## Chain 2: Gradient evaluation took 9.7e-05 seconds
-## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.97 seconds.
+## Chain 2: Gradient evaluation took 0.000128 seconds
+## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 1.28 seconds.
 ## Chain 2: Adjust your expectations accordingly!
 ## Chain 2: 
 ## Chain 2: 
@@ -248,15 +248,15 @@
 ## Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 2: 
-## Chain 2:  Elapsed Time: 1.50522 seconds (Warm-up)
-## Chain 2:                1.18719 seconds (Sampling)
-## Chain 2:                2.6924 seconds (Total)
+## Chain 2:  Elapsed Time: 1.90231 seconds (Warm-up)
+## Chain 2:                1.60992 seconds (Sampling)
+## Chain 2:                3.51223 seconds (Total)
 ## Chain 2: 
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 3).
 ## Chain 3: 
-## Chain 3: Gradient evaluation took 0.000162 seconds
-## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 1.62 seconds.
+## Chain 3: Gradient evaluation took 0.000187 seconds
+## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 1.87 seconds.
 ## Chain 3: Adjust your expectations accordingly!
 ## Chain 3: 
 ## Chain 3: 
@@ -265,15 +265,15 @@
 ## Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 3: 
-## Chain 3:  Elapsed Time: 1.68111 seconds (Warm-up)
-## Chain 3:                1.2015 seconds (Sampling)
-## Chain 3:                2.88261 seconds (Total)
+## Chain 3:  Elapsed Time: 1.85171 seconds (Warm-up)
+## Chain 3:                1.40342 seconds (Sampling)
+## Chain 3:                3.25513 seconds (Total)
 ## Chain 3: 
 ## 
 ## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 4).
 ## Chain 4: 
-## Chain 4: Gradient evaluation took 9.9e-05 seconds
-## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.99 seconds.
+## Chain 4: Gradient evaluation took 0.000111 seconds
+## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 1.11 seconds.
 ## Chain 4: Adjust your expectations accordingly!
 ## Chain 4: 
 ## Chain 4: 
@@ -282,9 +282,9 @@
 ## Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
 ## Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
 ## Chain 4: 
-## Chain 4:  Elapsed Time: 1.61822 seconds (Warm-up)
-## Chain 4:                1.20999 seconds (Sampling)
-## Chain 4:                2.82822 seconds (Total)
+## Chain 4:  Elapsed Time: 1.85636 seconds (Warm-up)
+## Chain 4:                1.8386 seconds (Sampling)
+## Chain 4:                3.69496 seconds (Total)
 ## Chain 4:</code></pre>
 <p>Note that <code>prior_only = TRUE</code> will prevent <code>stan_glm</code> from considering the likelihood of the outcome, <code>log(rate.male)</code>; to facilitate a valid workflow, the entire ME model is treated as part of the “prior” by <code>prior_only</code>. This allows us to understand the properties of the ME model itself, considered independently from any outcome variable.</p>
 </div>
@@ -317,23 +317,23 @@
 <code class="sourceCode R"><span class="fu"><a href="../reference/me_diag.html">me_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">'ICE'</span>, <span class="va">georgia</span>, index <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></code></pre></div>
 <pre><code>## Identifying the top 5 observations as ordered by their Delta values (Delta = posterior mean of x - raw x value):</code></pre>
 <pre><code>##                 x.raw       x.mu      x.lwr      x.upr       Delta
-## x_ICE[91]  -0.4016787 -0.3674858 -0.4511550 -0.2837050 -0.03419285
-## x_ICE[105] -0.3412494 -0.3075664 -0.3849684 -0.2285629 -0.03368298
-## x_ICE[39]  -0.3236583 -0.2985129 -0.3814802 -0.2157464 -0.02514534
-## x_ICE[90]  -0.2798395 -0.2550659 -0.3276095 -0.1852030 -0.02477361
-## x_ICE[143] -0.2395249 -0.2206520 -0.2891585 -0.1498940 -0.01887287</code></pre>
+## x_ICE[91]  -0.4016787 -0.3673625 -0.4538293 -0.2830203 -0.03431619
+## x_ICE[105] -0.3412494 -0.3069745 -0.3857929 -0.2304210 -0.03427485
+## x_ICE[39]  -0.3236583 -0.2989770 -0.3826309 -0.2172894 -0.02468124
+## x_ICE[90]  -0.2798395 -0.2555373 -0.3268515 -0.1827792 -0.02430227
+## x_ICE[143] -0.2395249 -0.2212503 -0.2918625 -0.1483925 -0.01827460</code></pre>
 <p><img src="spatial-me-models_files/figure-html/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;"></p>
 <p>Or, we can have <code>me_diag</code> return results as raw data (it will also return a list of <code>ggplots</code>):</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">delta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/me_diag.html">me_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">'ICE'</span>, <span class="va">georgia</span>, plot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">$</span><span class="va">delta_data</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">delta</span><span class="op">)</span></code></pre></div>
 <pre><code>##                x.raw        x.mu       x.lwr       x.upr         Delta
-## x_ICE[1] -0.24576780 -0.23648675 -0.29158580 -0.18141122 -9.281049e-03
-## x_ICE[2] -0.27540984 -0.26751005 -0.32056545 -0.21580127 -7.899791e-03
-## x_ICE[3] -0.01856313 -0.01810652 -0.03402589 -0.00209421 -4.566129e-04
-## x_ICE[4]  0.05059098  0.05053551  0.04302128  0.05814348  5.547813e-05
-## x_ICE[5]  0.14701110  0.14451589  0.12412486  0.16590852  2.495213e-03
-## x_ICE[6]  0.16649112  0.16624403  0.15779436  0.17442971  2.470821e-04</code></pre>
+## x_ICE[1] -0.24576780 -0.23654110 -0.28911611 -0.18349993 -0.0092266978
+## x_ICE[2] -0.27540984 -0.26759481 -0.32098478 -0.21443650 -0.0078150303
+## x_ICE[3] -0.01856313 -0.01799391 -0.03402179 -0.00243728 -0.0005692207
+## x_ICE[4]  0.05059098  0.05045357  0.04286484  0.05810458  0.0001374159
+## x_ICE[5]  0.14701110  0.14427309  0.12390030  0.16478096  0.0027380105
+## x_ICE[6]  0.16649112  0.16618239  0.15760980  0.17487681  0.0003087258</code></pre>
 <p>We can follow up on this information by examining demographic information on the counties with the largest <span class="math inline">\(\delta_i\)</span>:</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">georgia</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">91</span>, <span class="fl">105</span>, <span class="fl">90</span>, <span class="fl">39</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NAME"</span>, <span class="st">"population"</span>, <span class="st">"white"</span>, <span class="st">"black"</span>, <span class="st">"hisp"</span>, <span class="st">"ai"</span>, <span class="st">"ICE"</span>, <span class="st">"ICE.se"</span>, <span class="st">"college"</span>, <span class="st">"college.se"</span><span class="op">)</span><span class="op">]</span></code></pre></div>
@@ -360,10 +360,10 @@
 ## 4 chains, each with iter=2000; warmup=1000; thin=1; 
 ## post-warmup draws per chain=1000, total post-warmup draws=4000.
 ## 
-##            mean se_mean   sd  2.5%   25%   50%   75% 97.5% n_eff Rhat
-## x_ICE[91] -0.37       0 0.04 -0.45 -0.39 -0.37 -0.34 -0.28  7675    1
+##            mean se_mean   sd  2.5%  25%   50%   75% 97.5% n_eff Rhat
+## x_ICE[91] -0.37       0 0.04 -0.45 -0.4 -0.37 -0.34 -0.28  9283    1
 ## 
-## Samples were drawn using NUTS(diag_e) at Tue Oct 12 18:34:35 2021.
+## Samples were drawn using NUTS(diag_e) at Sat Oct 23 10:15:29 2021.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>
@@ -383,7 +383,7 @@
 <pre><code>## [1] 4000    1</code></pre>
 <div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">mu.x</span><span class="op">)</span></code></pre></div>
-<pre><code>## [1] -0.1285083</code></pre>
+<pre><code>## [1] -0.1318968</code></pre>
 <p>We can visualize these using <code>plot</code> or print a summary:</p>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span>, pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mu_x_true"</span>, <span class="st">"car_rho_x_true"</span>, <span class="st">"sigma_x_true"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
@@ -392,11 +392,11 @@
 ## post-warmup draws per chain=1000, total post-warmup draws=4000.
 ## 
 ##                    mean se_mean   sd  2.5%   25%   50%   75% 97.5% n_eff Rhat
-## mu_x_true[1]      -0.13       0 0.08 -0.28 -0.16 -0.13 -0.10  0.04  2114    1
-## car_rho_x_true[1]  0.97       0 0.02  0.92  0.96  0.98  0.99  1.00  4021    1
-## sigma_x_true[1]    0.20       0 0.01  0.18  0.19  0.20  0.21  0.23  7671    1
+## mu_x_true[1]      -0.13       0 0.08 -0.30 -0.17 -0.13 -0.10  0.03  1772    1
+## car_rho_x_true[1]  0.97       0 0.02  0.91  0.96  0.98  0.99  1.00  3609    1
+## sigma_x_true[1]    0.20       0 0.01  0.18  0.19  0.20  0.21  0.23  8111    1
 ## 
-## Samples were drawn using NUTS(diag_e) at Tue Oct 12 18:34:35 2021.
+## Samples were drawn using NUTS(diag_e) at Sat Oct 23 10:15:29 2021.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>
@@ -410,7 +410,7 @@
 <code class="sourceCode R"><span class="va">x.mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2</span>, <span class="va">mean</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">x.mu</span><span class="op">)</span></code></pre></div>
 <pre><code>##    x_ICE[1]    x_ICE[2]    x_ICE[3]    x_ICE[4]    x_ICE[5]    x_ICE[6] 
-## -0.23648675 -0.26751005 -0.01810652  0.05053551  0.14451589  0.16624403</code></pre>
+## -0.23654110 -0.26759481 -0.01799391  0.05045357  0.14427309  0.16618239</code></pre>
 </div>
 </div>
 <div id="non-spatial-me-models" class="section level2">
@@ -464,8 +464,8 @@
 ## Spatial method (outcome):  Exchangeable 
 ## Likelihood function:  poisson 
 ## Link function:  log 
-## Residual Moran Coefficient:  0.0359325 
-## WAIC:  1316.73 
+## Residual Moran Coefficient:  0.0357165 
+## WAIC:  1317.28 
 ## Observations:  159 
 ## Data models (ME): ICE
 ##  Data model (ME prior): CAR (auto Gaussian)
@@ -474,11 +474,11 @@
 ## post-warmup draws per chain=1000, total post-warmup draws=4000.
 ## 
 ##             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-## intercept -4.384   0.001 0.017 -4.417 -4.395 -4.384 -4.373 -4.352   670 1.009
-## ICE       -1.709   0.003 0.101 -1.903 -1.780 -1.710 -1.643 -1.504   832 1.004
-## alpha_tau  0.124   0.000 0.011  0.103  0.116  0.123  0.131  0.147  1659 1.002
+## intercept -4.385   0.001 0.017 -4.418 -4.396 -4.385 -4.373 -4.353   660 1.002
+## ICE       -1.711   0.004 0.101 -1.911 -1.778 -1.712 -1.642 -1.514   787 1.002
+## alpha_tau  0.123   0.000 0.011  0.103  0.116  0.123  0.131  0.147  1491 0.999
 ## 
-## Samples were drawn using NUTS(diag_e) at Tue Oct 12 18:34:58 2021.
+## Samples were drawn using NUTS(diag_e) at Sat Oct 23 10:15:59 2021.
 ## For each parameter, n_eff is a crude measure of effective sample size,
 ## and Rhat is the potential scale reduction factor on split chains (at 
 ## convergence, Rhat=1).</code></pre>
