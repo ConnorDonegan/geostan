@@ -211,6 +211,9 @@
 <span class="co">#&gt; Distribution: student_t</span>
 <span class="co">#&gt;   df location scale</span>
 <span class="co">#&gt; 1 10        0     3</span>
+<span class="co">#&gt; Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
+<span class="co">#&gt; Running the chains for more iterations may help. See</span>
+<span class="co">#&gt; http://mc-stan.org/misc/warnings.html#bulk-ess</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
 <span class="co">#&gt; Spatial Model Results </span>
 <span class="co">#&gt; Formula: deaths.male ~ offset(log(pop.at.risk.male))</span>
@@ -218,8 +221,8 @@
 <span class="co">#&gt; Spatial method (outcome):  Exchangeable </span>
 <span class="co">#&gt; Likelihood function:  poisson </span>
 <span class="co">#&gt; Link function:  log </span>
-<span class="co">#&gt; Residual Moran Coefficient:  0.02368625 </span>
-<span class="co">#&gt; WAIC:  1320.22 </span>
+<span class="co">#&gt; Residual Moran Coefficient:  0.0259065 </span>
+<span class="co">#&gt; WAIC:  1318.92 </span>
 <span class="co">#&gt; Observations:  159 </span>
 <span class="co">#&gt; Data models (ME): none</span>
 <span class="co">#&gt; Inference for Stan model: foundation.</span>
@@ -227,10 +230,10 @@
 <span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat</span>
-<span class="co">#&gt; intercept -4.179   0.001 0.022 -4.222 -4.193 -4.178 -4.165 -4.136   398 1.016</span>
-<span class="co">#&gt; alpha_tau  0.248   0.000 0.016  0.219  0.238  0.248  0.258  0.282  4777 1.000</span>
+<span class="co">#&gt; intercept -4.183   0.001 0.021 -4.222 -4.197 -4.184 -4.169 -4.140   305 1.029</span>
+<span class="co">#&gt; alpha_tau  0.247   0.000 0.015  0.219  0.236  0.246  0.257  0.279  3126 1.000</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Fri Oct 22 21:31:51 2021.</span>
+<span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Sat Oct 23 10:08:51 2021.</span>
 <span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span>
 <span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span>
 <span class="co">#&gt; convergence, Rhat=1).</span></code></pre></div>
@@ -246,7 +249,7 @@
 <span class="co">#&gt; `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-13-1.png" width="720" style="display: block; margin: auto;"></p>
 <p>The point-interval plot on the left shows the raw mortality rates (the raw outcome data) on the x-axis, the fitted values on the y-axis, and a ‘perfect fit’ (slope = 1, intercept = 0) line for reference. We can see that a number of the fitted values have posterior means that deviate from the observations; but this “shrinkage” towards the mean is not necessarily a problem. In fact, it is often desirable insofar as it indicates that these are counties for which our data provide very little evidence as to what the risk of death is (i.e., the population is very small). (For a good introductory discussion of information pooling and many other topics as well, see <span class="citation">McElreath (<a href="#ref-mcelreath_2016">2016</a>)</span>).</p>
-<p>The middle panel represents spatial autocorrelation in the residuals as measured by the Moran coefficient (i.e., autocorrelation in the joint probability distribution of residuals), and the map shows the mean residual for each county (marginal posterior means). In this case, the MC histogram shows that there is only a small amount of residual autocorrelation, while the map indicates that this derives mainly from a north-south/metropolitan-rural trend. This indicates that we could improve this model by either adding one or more covariates (preferably something with direct substantive bearing on one’s research question) or by using one of <strong>geostan</strong>’s spatial models. The trend in the residuals also helps us see that simply “shrinking” towards the mean mortality rate is undesirable in this case because we are well aware that county mortality rates are higher in the southern half of the state than in the greater Atlanta metropolitan area.</p>
+<p>The middle panel represents spatial autocorrelation in the residuals as measured by the Moran coefficient (i.e., autocorrelation in the joint probability distribution of residuals), and the map shows the mean residual for each county (marginal posterior means). In this case, the MC histogram shows that there is only a small amount of residual autocorrelation, while the map indicates that this derives mainly from a north-south/metropolitan-rural trend. The trend in the residuals helps us see that shrinking towards the mean mortality rate is undesirable in this case because we can see that county mortality rates are higher in the southern half of the state than in the greater Atlanta metropolitan area. We could improve this model by either adding one or more covariates (something with direct substantive bearing on one’s research question) or by using one of <strong>geostan</strong>’s spatial models.</p>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2 class="hasAnchor">
