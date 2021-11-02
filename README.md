@@ -36,9 +36,11 @@ Tools for building custom spatial models in
 
 ## Installation
 
-Install **geostan** from CRAN using:
+Install **geostan** using:
 
 ``` r
+if (!require(drat)) install.packages("drat")
+drat::addRepo("connordonegan")
 install.packages("geostan")
 ```
 
@@ -51,10 +53,6 @@ pages (e.g., run `?stan_car` in R).
 
 ## Citation
 
-If you use **geostan** in your work, please cite the package itself and
-supporting methodology as indicated by the documentation for each
-function you use.
-
   - Donegan, Connor (2021). geostan: Bayesian Spatial Analysis. R
     package Version 0.1.1 <https://connordonegan.github.io/geostan/>
 
@@ -64,8 +62,7 @@ function you use.
     Environmental Research and Public Health 18.13 (2021): 6856. DOI:
     10.3390/ijerph18136856
 
-Since **geostan** is an interface to **Stan**, also be sure to cite
-**Stan**:
+**geostan** is an interface to **Stan**:
 
   - Carpenter B., Gelman A., Hoffman M. D., Lee D., Goodrich B.,
     Betancourt M., Brubaker M., Guo J., Li P., and Riddell A. (2017).
