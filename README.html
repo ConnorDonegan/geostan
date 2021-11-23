@@ -606,30 +606,29 @@ body {
 
 <h1 id="geostan">geostan</h1>
 <p>The <strong>geostan</strong> R package supports a complete spatial analysis workflow with hierarchical Bayesian models (HBMs) for areal data and a variety of functions for visualizing spatial data and model results.</p>
-<h3 id="spatial-analysis-tools">Spatial analysis tools</h3>
-<p>Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics.</p>
 <h3 id="disease-mapping-and-spatial-regression">Disease mapping and spatial regression</h3>
 <p>Model small-area incidence rates with mortality or disease data recorded across areal units like counties or census tracts.</p>
 <h3 id="observational-uncertainty">Observational uncertainty</h3>
 <p>Incorporate information on data reliability into any <strong>geostan</strong> model. Built specifically for American Community Survey (ACS) data.</p>
+<h3 id="spatial-analysis-tools">Spatial analysis tools</h3>
+<p>Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics.</p>
 <h3 id="the-rstan-ecosystem">The RStan ecosystem</h3>
 <p>Compatible with a suite of high-quality R packages for Bayesian inference and model evaluation.</p>
 <h3 id="custom-stan-models">Custom Stan models</h3>
 <p>Tools for building custom spatial models in <a href="https://mc-stan.org/">Stan</a>.</p>
 <h2 id="installation">Installation</h2>
-<p>From <strong>R</strong> (&gt;= version 4.05), install <strong>geostan</strong> using:</p>
+<p>Install <strong>geostan</strong> using:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="cf">if</span> (<span class="op">!</span><span class="kw">require</span>(drat)) <span class="kw">install.packages</span>(<span class="st">&quot;drat&quot;</span>)</a>
 <a class="sourceLine" id="cb1-2" title="2">drat<span class="op">::</span><span class="kw">addRepo</span>(<span class="st">&quot;connordonegan&quot;</span>)</a>
 <a class="sourceLine" id="cb1-3" title="3"><span class="kw">install.packages</span>(<span class="st">&quot;geostan&quot;</span>)</a></code></pre></div>
 <h2 id="resources">Resources</h2>
 <p>For demonstration analyses and some additional discussion, see the vignettes on the package <a href="https://connordonegan.github.io/geostan/">website</a> and the package help pages (e.g., run <code>?stan_car</code> in R).</p>
 <h2 id="citation">Citation</h2>
-<p>If you use <strong>geostan</strong> in your work, please cite the package itself and supporting methodology on spatial HBMs, as well as any other foundational research as indicated by the documentation for each function you use.</p>
 <ul>
+<li><p>Donegan, Connor (2021). geostan: Bayesian Spatial Analysis. R package Version 0.1.1 <a href="https://connordonegan.github.io/geostan/">https://connordonegan.github.io/geostan/</a></p></li>
 <li><p>Donegan, Connor, Yongwan Chun, and Daniel A. Griffith. Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. International Journal of Environmental Research and Public Health 18.13 (2021): 6856. DOI: 10.3390/ijerph18136856</p></li>
-<li><p>Donegan, Connor (2021). geostan: Bayesian Spatial Analysis. R package Version 0.1.0 <a href="https://connordonegan.github.io/geostan/">https://connordonegan.github.io/geostan/</a></p></li>
 </ul>
-<p>Since <strong>geostan</strong> is an interface to <strong>Stan</strong>, also be sure to cite <strong>Stan</strong>:</p>
+<p><strong>geostan</strong> is an interface to <strong>Stan</strong>:</p>
 <ul>
 <li>Carpenter B., Gelman A., Hoffman M. D., Lee D., Goodrich B., Betancourt M., Brubaker M., Guo J., Li P., and Riddell A. (2017). Stan: A probabilistic programming language. Journal of Statistical Software. 76(1). DOI: 10.18637/jss.v076.i01</li>
 </ul>

@@ -79,7 +79,7 @@
 #' 
 #' ###  `auto_gaussian()`
 #'
-#' With \code{family = auto_gaussian()} (referred to here as the auto-Gaussian model), the CAR model is specified as follows:
+#' When \code{family = auto_gaussian()}, the CAR model is specified as follows:
 #' ```
 #'         Y ~ MVGauss(Mu, Sigma)
 #'         Sigma = (I - rho C)^-1 * M * tau^2
@@ -217,16 +217,34 @@
 #' library(ggplot2)
 #' library(bayesplot)
 #' options(mc.cores = parallel::detectCores())
+#'
+#' # model incidence or mortality rates
+#' data(georgia)
+#' C <- shape2mat(georgia, style = "B")
+#' cp <- prep_car_data(C)
+#' 
+#' fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)),
+#'                 car_parts = cp,
+#'                 data = georgia,
+#'                 family = poisson())
+#' 
+#' rstan::stan_rhat(fit$stanfit)
+#' rstan::stan_mcse(fit$stanfit)
+#' print(fit)
+#' sp_diag(fit, georgia)
+#'
+#' 
+#' # model observed/expected incidence
+#' # in this case, prison sentences 
 #' data(sentencing)
 #'
 #' C <- shape2mat(sentencing, style = "B")
-#' car.dl <- prep_car_data(C, style = "WCAR")
+#' cp <- prep_car_data(C, style = "WCAR")
 #' log_e <- log(sentencing$expected_sents)
 #' fit.car <- stan_car(sents ~ offset(log_e),
 #'                     family = poisson(),
 #'                     data = sentencing,
-#'                     car_parts = car.dl
-#' )
+#'                     car_parts = cp)
 #'
 #' # MCMC diagnostics
 #' rstan::stan_rhat(fit.car$stanfit)
@@ -238,7 +256,7 @@
 #' # posterior predictive distribution
 #' yrep <- posterior_predict(fit.car, S = 75)
 #' y <- sentencing$sents
-#' ppc_dens_overlay(y, yrep)
+#' bayesplot::ppc_dens_overlay(y, yrep)
 #'
 #' # examine posterior distributions of CAR parameters
 #' plot(fit.car, pars = c("car_scale", "car_rho"))
@@ -276,6 +294,7 @@
 #'  )
 #'
 #' ## DCAR specification (inverse-distance based)
+#' library(sf)
 #' A <- shape2mat(georgia, "B")
 #' D <- sf::st_distance(sf::st_centroid(georgia))
 #' A <- D * A
@@ -286,12 +305,12 @@
 #'     as.numeric(cp$C)
 #'     )
 #'
-#' fit <- stan_car(log(rate.male) ~ 1,
+#' fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)),
 #'                data = georgia,
 #'                car = cp,
-#'                cores = 5)
+#'                family = poisson())
 #'
-#' me_diag(fit, georgia)
+#' sp_diag(fit, georgia)
 #' }
 #'
 #' @export

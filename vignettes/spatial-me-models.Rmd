@@ -138,7 +138,7 @@ ME$bounds <- c(-1, 1)
 As noted previously, **geostan** will use its default priors if none are provided. The following code demonstrates setting custom priors for $\mu$ (location) and $\tau$ (scale) (see `?priors` for details):
 
 ```{r}
-ME$prior <- list(location = normal(location = 0, scale = 0.5),
+ME$prior <- list(location = normal(0, 0.5),
                  scale = student_t(df = 10, location = 0, scale = 1)
 )
 ```

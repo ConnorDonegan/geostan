@@ -9,11 +9,6 @@ The **geostan** R package supports a complete spatial analysis workflow
 with hierarchical Bayesian models (HBMs) for areal data and a variety of
 functions for visualizing spatial data and model results.
 
-### Spatial analysis tools
-
-Tools for visualizing and measuring spatial autocorrelation and map
-patterns, for exploratory analysis and model diagnostics.
-
 ### Disease mapping and spatial regression
 
 Model small-area incidence rates with mortality or disease data recorded
@@ -23,6 +18,11 @@ across areal units like counties or census tracts.
 
 Incorporate information on data reliability into any **geostan** model.
 Built specifically for American Community Survey (ACS) data.
+
+### Spatial analysis tools
+
+Tools for visualizing and measuring spatial autocorrelation and map
+patterns, for exploratory analysis and model diagnostics.
 
 ### The RStan ecosystem
 
@@ -36,7 +36,7 @@ Tools for building custom spatial models in
 
 ## Installation
 
-From **R** (\>= version 4.05), install **geostan** using:
+Install **geostan** using:
 
 ``` r
 if (!require(drat)) install.packages("drat")
@@ -53,10 +53,8 @@ pages (e.g., run `?stan_car` in R).
 
 ## Citation
 
-If you use **geostan** in your work, please cite the package itself and
-supporting methodology on spatial HBMs, as well as any other
-foundational research as indicated by the documentation for each
-function you use.
+  - Donegan, Connor (2021). geostan: Bayesian Spatial Analysis. R
+    package Version 0.1.1 <https://connordonegan.github.io/geostan/>
 
   - Donegan, Connor, Yongwan Chun, and Daniel A. Griffith. Modeling
     community health with areal data: Bayesian inference with survey
@@ -64,11 +62,7 @@ function you use.
     Environmental Research and Public Health 18.13 (2021): 6856. DOI:
     10.3390/ijerph18136856
 
-  - Donegan, Connor (2021). geostan: Bayesian Spatial Analysis. R
-    package Version 0.1.0 <https://connordonegan.github.io/geostan/>
-
-Since **geostan** is an interface to **Stan**, also be sure to cite
-**Stan**:
+**geostan** is an interface to **Stan**:
 
   - Carpenter B., Gelman A., Hoffman M. D., Lee D., Goodrich B.,
     Betancourt M., Brubaker M., Guo J., Li P., and Riddell A. (2017).

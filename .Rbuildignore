@@ -18,3 +18,5 @@ tests/testthat/test-rstan-conformity-results
 NEWS.md
 index.html
 cran-comments.md
+
+^CRAN-RELEASE$
