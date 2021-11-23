@@ -113,7 +113,7 @@ aple <- function(x, w, digits = 3) {
 #' x <- sim_sar(w = w, rho = 0.5)
 #' aple(x, w)
 #'
-#' x <- sim_sar(w = w, rho = 0.7, m = 4)
+#' x <- sim_sar(w = w, rho = 0.7, m = 10)
 #' dim(x)
 #' apply(x, 1, aple, w = w)
 #' 
@@ -1243,7 +1243,7 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' \dontrun{
 #' ## pass the data to stan_car
 #' fit = stan_car(log(rate.male) ~ 1, data = georgia, car_parts = cp)
-#' }
+#' 
 #'
 #' # ACAR specification
 #' cp <- prep_car_data(A, "ACAR")
@@ -1253,7 +1253,8 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' D <- sf::st_distance(sf::st_centroid(georgia))
 #' A <- D * A
 #' cp <- prep_car_data(A, "DCAR", k = 1)
-#' 
+#'
+#' }
 #' @export
 #' @md
 #' @importFrom rstan extract_sparse_parts

@@ -151,7 +151,7 @@ gamma <- function(alpha, beta, variable = NULL) {
 #' 
 #' Polson, N.G. and J.G. Scott (2010). Shrink globally, act locally: Sparse Bayesian regularization and prediction. *Bayesian Statistics* 9, 501-538.
 #'
-#' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In *Electronic Journal of Statistics*, 11(2):5018-5051. \doi{10.1214/17-EJS1337SI}.
+#' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In *Electronic Journal of Statistics*, 11(2):5018-5051.
 #' 
 #' @rdname priors
 #' @export
@@ -204,7 +204,7 @@ append_priors <- function(standata, priors_made) {
 #' @method print prior
 print.prior <- function(x, digits = 2, ...) {
     nm <- x$dist
-    var <- ifelse(is.null(x$variable), FALSE, x$variable)
+ #   var <- ifelse(is.null(x$variable), FALSE, x$variable)
     message("Distribution: ", nm)
     if (nm == "gamma")     df <- as.data.frame(x[c('alpha', 'beta')])
     if (nm == "student_t") df <- as.data.frame(x[c('df', 'location', 'scale')])

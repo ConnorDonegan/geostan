@@ -20,7 +20,7 @@ Griffith, D., and Y. Chun (2014). Spatial autocorrelation and spatial filtering,
 
 Griffith, D., Chun, Y. and Li, B. (2019). \emph{Spatial Regression Analysis Using Eigenvector Spatial Filtering}. Elsevier.
 
-Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In \emph{Electronic Journal of Statistics}, 11(2):5018-5051. \doi{10.1214/17-EJS1337SI}.
+Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In \emph{Electronic Journal of Statistics}, 11(2):5018-5051.
 }
 \usage{
 stan_esf(
