@@ -22,8 +22,8 @@ test_that("CAR accepts covariate ME", {
     SW(
         fit <- stan_car(log(rate.male) ~ insurance + ICE,
                         data = georgia,
-                        ME = list(se = data.frame(insurance = georgia$insurance.se,
-                                                  ICE = georgia$ICE.se)
+                        ME = prep_me_data(se = data.frame(insurance = georgia$insurance.se,
+                                                          ICE = georgia$ICE.se)
                         ),
                         car_parts = prep_car_data(shape2mat(georgia, "B")),                        
                         chains = 1,
@@ -33,18 +33,46 @@ test_that("CAR accepts covariate ME", {
     expect_geostan(fit)
 })
 
+test_that("CAR accepts covariate ME with logit transform", {
+    data(georgia)
+    georgia$income <- georgia$income/1e3
+    georgia$income.se <- georgia$income.se/1e3
+    georgia$log_income <- log(georgia$income)
+    georgia$log_income.se <- se_log(georgia$income, georgia$income.se)
+    georgia$college <- georgia$college/1e3
+    georgia$college.se <- georgia$college.se/1e3
+    
+    ME <- prep_me_data(se = data.frame(college = georgia$college.se,
+                                       log_income = georgia$log_income.se),
+                       logit = c(TRUE, FALSE),
+                       bounds =c (0, Inf)
+                       )
+    SW(
+        fit <- stan_car(log(rate.male) ~ college + log_income,
+                        data = georgia,
+                        ME = ME,
+                        car_parts = prep_car_data(shape2mat(georgia, "B")),                        
+                        chains = 1,
+                        iter = iter,
+                        refresh = refresh)
+    )
+    expect_geostan(fit)
+})
 
 
 test_that("CAR accepts covariate ME with WX, mixed ME-non-ME", {
     data(georgia)
+    A <- shape2mat(georgia)
+    cars <- prep_car_data(A)
+    ME <- prep_me_data(se = data.frame(insurance = georgia$insurance.se),
+                 bounds = c(0, 100),
+                 car_parts = cars)
     SW(
-        fit <- stan_glm(log(rate.male) ~ insurance + ICE,
+        fit <- stan_car(log(rate.male) ~ insurance + ICE,
                         slx = ~ insurance + ICE,
                         data = georgia,
-                        C = shape2mat(georgia),
-                        ME = list(se = data.frame(insurance = georgia$insurance.se),
-                                  bounds = c(0, 100)
-                        ),        
+                        ME = ME,
+                        car_parts = cars,
                         chains = 1,
                         iter = iter,
                         refresh = refresh)
@@ -64,4 +92,10 @@ test_that("DCAR example runs", {
                     chains = 1)
      expect_geostan(fit)
 })
+
+
+
+
+
+
 

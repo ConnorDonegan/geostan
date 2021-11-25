@@ -7,25 +7,10 @@
     <loc>https://connordonegan.github.io/geostan/LICENSE.html</loc>
   </url>
   <url>
-    <loc>https://connordonegan.github.io/geostan/articles/Introduction-to-geostan.html</loc>
-  </url>
-  <url>
-    <loc>https://connordonegan.github.io/geostan/articles/building-models.html</loc>
-  </url>
-  <url>
     <loc>https://connordonegan.github.io/geostan/articles/index.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/articles/measuring-sa.html</loc>
-  </url>
-  <url>
-    <loc>https://connordonegan.github.io/geostan/articles/modeling-spatial-data-with-geostan.html</loc>
-  </url>
-  <url>
-    <loc>https://connordonegan.github.io/geostan/articles/observational-error.html</loc>
-  </url>
-  <url>
-    <loc>https://connordonegan.github.io/geostan/articles/setting-priors.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/articles/spatial-me-models.html</loc>
@@ -104,6 +89,9 @@
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/prep_icar_data.html</loc>
+  </url>
+  <url>
+    <loc>https://connordonegan.github.io/geostan/reference/prep_me_data.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/prep_sp_me_data.html</loc>

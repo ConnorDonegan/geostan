@@ -60,4 +60,37 @@ test_that("ESF model works by providing EV", {
 
 
 
+test_that("ICAR accepts covariate ME with logit transform", {
+    data(georgia)
+    C <- shape2mat(georgia)    
+    georgia$income <- georgia$income/1e3
+    georgia$income.se <- georgia$income.se/1e3
+    georgia$log_income <- log(georgia$income)
+    georgia$log_income.se <- se_log(georgia$income, georgia$income.se)
+    georgia$college <- georgia$college/1e3
+    georgia$college.se <- georgia$college.se/1e3
+    
+    ME <- prep_me_data(se = data.frame(college = georgia$college.se,
+                                       log_income = georgia$log_income.se),
+                       logit = c(TRUE, FALSE),
+                       bounds =c (0, Inf)
+                       )
+    
+    SW(
+                fit <- stan_esf(deaths.male ~ offset(log(pop.at.risk.male)) + college + log_income,
+                                data = georgia,
+                                re = ~ GEOID,
+                                 ME = ME,
+                                 C = C,                                
+                                 prior = list(
+                                     intercept = normal(0, 5),
+                                     beta = normal(c(0,0), c(4,4))
+                                 ),
+                                 chains = 1,
+                                 family = poisson(),
+                                 iter = iter,
+                                 refresh = refresh)
+    )
+    expect_geostan(fit)
+})
 

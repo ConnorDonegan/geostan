@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Spatial autocorrelation estimator — aple • geostan</title>
+<title>Prepare data for spatial measurement error models — prep_me_data • geostan</title>
 
 <!-- favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -46,8 +46,8 @@
 
 
 
-<meta property="og:title" content="Spatial autocorrelation estimator — aple" />
-<meta property="og:description" content="The approximate-profile likelihood estimator for the spatial autocorrelation parameter from a simultaneous autoregressive (SAR) model. Note, the APLE approximation is quite unreliable when the number of observations is large." />
+<meta property="og:title" content="Prepare data for spatial measurement error models — prep_me_data" />
+<meta property="og:description" content="Prepares the list of data required for geostan's (spatial) measurement error models. Given a data frame of standard errors and any optional arguments, the function returns a list with all required data for the models, filling in missing elements with default values." />
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png" />
 
 
@@ -146,54 +146,73 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Spatial autocorrelation estimator</h1>
+    <h1>Prepare data for spatial measurement error models</h1>
     <small class="dont-index">Source: <a href='https://github.com/ConnorDonegan/geostan/blob/master/R/convenience-functions.R'><code>R/convenience-functions.R</code></a></small>
-    <div class="hidden name"><code>aple.Rd</code></div>
+    <div class="hidden name"><code>prep_me_data.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>The approximate-profile likelihood estimator for the spatial autocorrelation parameter from a simultaneous autoregressive (SAR) model. Note, the <code>APLE</code> approximation is quite unreliable when the number of observations is large.</p>
+    <p>Prepares the list of data required for geostan's (spatial) measurement error models. Given a data frame of standard errors and any optional arguments, the function returns a list with all required data for the models, filling in missing elements with default values.</p>
     </div>
 
-    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>aple</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span>, digits <span class='op'>=</span> <span class='fl'>3</span><span class='op'>)</span></code></pre></div>
+    <div class="ref-usage sourceCode"><pre class='sourceCode r'><code><span class='fu'>prep_me_data</span><span class='op'>(</span>
+  <span class='va'>se</span>,
+  bounds <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='op'>-</span><span class='cn'>Inf</span>, <span class='cn'>Inf</span><span class='op'>)</span>,
+  <span class='va'>car_parts</span>,
+  <span class='va'>prior</span>,
+  logit <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/rep.html'>rep</a></span><span class='op'>(</span><span class='cn'>FALSE</span>, times <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>ncol</a></span><span class='op'>(</span><span class='va'>se</span><span class='op'>)</span><span class='op'>)</span>
+<span class='op'>)</span></code></pre></div>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>x</th>
-      <td><p>Numeric vector of values, length <code>n</code>. This will be standardized internally with <code>scale(x)</code>.</p></td>
+      <th>se</th>
+      <td><p>Data frame of standard errors; column names must match (exactly) the variable names used in the model formula.</p></td>
     </tr>
     <tr>
-      <th>w</th>
-      <td><p>An <code>n x n</code> row-standardized spatial connectivity matrix. See <a href='shape2mat.html'>shape2mat</a>.</p></td>
+      <th>bounds</th>
+      <td><p>An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to c(-Inf, Inf) (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.</p></td>
     </tr>
     <tr>
-      <th>digits</th>
-      <td><p>Number of digits to round results to.</p></td>
+      <th>car_parts</th>
+      <td><p>A list of data required for spatial CAR models, as created by <code><a href='prep_car_data.html'>prep_car_data</a></code>; optional. If omitted, the measurement error model will be a non-spatial Student's t model.</p></td>
+    </tr>
+    <tr>
+      <th>prior</th>
+      <td><p>A named list of prior distributions (see <code><a href='priors.html'>priors</a></code>). If none are provided, default priors will be assigned. The liste of priors may include the following parameters:</p><dl>
+<dt>df</dt><dd><p>If using a non-spatial ME model, the degrees of freedom (df) for the Student's t model is assigned a gamma prior with default parameters of <code>gamma(alpha = 3, beta = 0.2)</code>. Provide values for each covariate in <code>se</code>, listing the values in the same order as the columns of <code>se</code>.</p></dd>
+
+<dt>location</dt><dd><p>The prior for the location parameter (mu) is a normal (Gaussian) distribution (the default being <code>normal(location = 0, scale = 100)</code>). To adjust the prior distributions, provide values for each covariate in <code>se</code>, listing the values in the same order as the columns of se.</p></dd>
+
+<dt>scale</dt><dd><p>The prior for the scale parameters is Student's t, and the default parameters are <code>student_t(df = 10, location = 0, scale = 40)</code>. To adjust, provide values for each covariate in <code>se</code>, listing the values in the same order as the columns of se.</p></dd>
+
+<dt>car_rho</dt><dd><p>The CAR model, if used, has a spatial autocorrelation parameter, <code>rho</code>, which is assigned a uniform prior distribution. You must specify values that are within the permissible range of values for <code>rho</code>; these are automatically printed to the console by the <code><a href='prep_car_data.html'>prep_car_data</a></code> function.</p></dd>
+
+
+</dl></td>
+    </tr>
+    <tr>
+      <th>logit</th>
+      <td><p>Optional vector of logical values (<code>TRUE</code>, <code>FALSE</code>) indicating if the variable should be logit-transformed before being modeled. When <code>TRUE</code>, the sampling error will be modeled on the untransformed scale as usual; however, the spatial CAR prior model (or non-spatial Student's t prior model) will be assigned to the logit-transformed variate. Transformation can be crucial for modeling proportions with frequency distributions that are highly skewed.</p></td>
     </tr>
     </table>
 
-    <h2 class="hasAnchor" id="source"><a class="anchor" href="#source"></a>Source</h2>
-
-    <p>Li, Honfei and Calder, Catherine A. and Cressie, Noel (2007). Beyond Moran's I: testing for spatial dependence based on the spatial autoregressive model. Geographical Analysis: 39(4): 357-375.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>the APLE estimate, a numeric value.</p>
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>To check reliability, the <code>APLE</code> can be compared to an estimate of the spatial autocorrelation parameter from an intercept-only SAR model.</p>
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
-
-    <div class='dont-index'><p><a href='mc.html'>mc</a>, <a href='moran_plot.html'>moran_plot</a>, <a href='lisa.html'>lisa</a>, <a href='sim_sar.html'>sim_sar</a></p></div>
+    <p>A list of data as required for (spatial) ME models. Missing arguments will be filled in with default values, including prior distributions.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code>
-<span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
-<span class='va'>w</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='st'>"W"</span><span class='op'>)</span>
-<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>georgia</span><span class='op'>$</span><span class='va'>ICE</span>
-<span class='fu'>aple</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span><span class='op'>)</span>
+    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
+
+<span class='co'>## for a non-spatial prior model </span>
+<span class='va'>se</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/base/data.frame.html'>data.frame</a></span><span class='op'>(</span>ICE <span class='op'>=</span> <span class='va'>georgia</span><span class='op'>$</span><span class='va'>ICE.se</span>, college <span class='op'>=</span> <span class='va'>georgia</span><span class='op'>$</span><span class='va'>college.se</span><span class='op'>)</span>
+<span class='va'>ME</span> <span class='op'>&lt;-</span> <span class='fu'>prep_me_data</span><span class='op'>(</span><span class='va'>se</span><span class='op'>)</span>
+
+<span class='co'>## for a spatial prior model (generally recommended)</span>
+<span class='va'>A</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='st'>"B"</span><span class='op'>)</span>
+<span class='va'>cars</span> <span class='op'>&lt;-</span> <span class='fu'><a href='prep_car_data.html'>prep_car_data</a></span><span class='op'>(</span><span class='va'>A</span><span class='op'>)</span>
+<span class='va'>ME</span> <span class='op'>&lt;-</span> <span class='fu'>prep_me_data</span><span class='op'>(</span><span class='va'>se</span>, car_parts <span class='op'>=</span> <span class='va'>cars</span><span class='op'>)</span>
 
 </code></pre></div>
   </div>

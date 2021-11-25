@@ -1,4 +1,6 @@
 // parameter models
+  vector[n] x_true_transform[dx_me];
+  x_true_transform = x_true;
   target += normal_lpdf(intercept | prior_alpha[1], prior_alpha[2]);
   if (dx_all) target += normal_lpdf(append_row(gamma, beta) | prior_beta_location, prior_beta_scale);  
   if (has_sigma) target += student_t_lpdf(sigma | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
@@ -7,8 +9,9 @@
   if (dx_me) {
     if (spatial_me) {
       for (j in 1:dx_me) {
-        target += normal_lpdf(x_me[j] | x_true[j], sigma_me[j]);	       
-	target += auto_normal_lpdf(x_true[j] |
+        target += normal_lpdf(x_me[j] | x_true[j], sigma_me[j]);
+	if (use_logit[j]) x_true_transform[j] = logit(x_true[j]);
+	target += auto_normal_lpdf(x_true_transform[j] |
 				   rep_vector(mu_x_true[j], n),
 				   sigma_x_true[j],
 				   car_rho_x_true[j],
@@ -20,7 +23,8 @@
     } else {
       for (j in 1:dx_me) {
 	target += normal_lpdf(x_me[j] | x_true[j], sigma_me[j]);
-	target += student_t_lpdf(x_true[j] | nu_x_true[j], mu_x_true[j], sigma_x_true[j]);
+	if (use_logit[j]) x_true_transform[j] = logit(x_true[j]);	
+	target += student_t_lpdf(x_true_transform[j] | nu_x_true[j], mu_x_true[j], sigma_x_true[j]);
 	target += gamma_lpdf(nu_x_true[j] | prior_nux_true_alpha[j], prior_nux_true_beta[j]);
       }
     }

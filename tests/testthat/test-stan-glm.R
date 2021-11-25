@@ -28,7 +28,7 @@ test_that("GLM works", {
 test_that("GLM works with covariate ME", {
     data(georgia)
     n <- nrow(georgia)
-    ME <- list(se = data.frame(ICE = georgia$ICE.se))
+    ME <- prep_me_data(se = data.frame(ICE = georgia$ICE.se))
     SW(
         fit <- stan_glm(log(rate.male) ~ ICE,
                     ME = ME,                        
@@ -43,7 +43,7 @@ test_that("GLM works with covariate ME", {
 test_that("GLM works with covariate ME: spatial data model", {
     data(georgia)
     A <- shape2mat(georgia, "B")
-    ME <- list(
+    ME <- prep_me_data(
         se = data.frame(ICE = georgia$ICE.se),
         car_parts = prep_car_data(A)
         )
@@ -61,13 +61,44 @@ test_that("GLM works with covariate ME: spatial data model", {
 test_that("GLM accepts covariate ME, multiple proportions", {
     data(georgia)
     A <- shape2mat(georgia, "B")
-    ME <- list(
+    ME <- prep_me_data(
         se = data.frame(
             insurance = georgia$insurance.se,
             college = georgia$college.se
             ),
         bounds = c(0, 100)
         )
+    SW(
+        fit <- stan_glm(log(rate.male) ~ insurance + college,
+                    ME = ME,                        
+                    data = georgia,
+                    chains = 1,
+                    iter = iter,
+                    refresh = refresh)
+    )
+    expect_geostan(fit)
+})
+
+test_that("GLM accepts covariate ME, with logit transform", {
+    data(georgia)
+    georgia$insurance <- georgia$insurance / 100
+    georgia$insurance.se <- georgia$insurance.se / 100
+    ME <- prep_me_data(
+        se = data.frame(
+            insurance = georgia$insurance.se
+        ),
+        logit = TRUE,
+        bounds = c(0, 1)
+        )
+    SW(
+        fit <- stan_glm(log(rate.male) ~ insurance,
+                    ME = ME,                        
+                    data = georgia,
+                    chains = 1,
+                    iter = iter,
+                    refresh = refresh)
+    )
+    expect_geostan(fit)
     SW(
         fit <- stan_glm(log(rate.male) ~ insurance + college,
                     ME = ME,                        

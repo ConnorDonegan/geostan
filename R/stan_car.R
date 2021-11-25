@@ -35,29 +35,7 @@
 #' 
 #' }
 #' 
-#'@param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a named list. See the Details section below for more information. Elements of the \code{ME} list may include:
-#'
-#' \describe{
-#' \item{se}{A required data.frame with standard errors for each observation; columns will be matched to the variables by column names. The names should match those from the output of \code{model.matrix(formula, data)}.}
-#' 
-#' \item{bounds}{An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to `c(-Inf, Inf)` (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.}
-#' 
-#'\item{car_parts}{For CAR models, the default is for ME models to be spatial CAR models themselves. However, to use a non-spatial Student's t ME model instead, provide `ME$car_parts = FALSE`.}
-#' 
-#'  \item{prior}{Optionally provide a named list of prior distributions for the measurement error model(s) (see \code{\link[geostan]{priors}}). If none are provided, default priors will be assigned and printed to the console. \describe{
-#' 
-#'  \item{df}{If using a non-spatial ME model, the degrees of freedom for the Student's t model is assigned a gamma prior with default parameters of `gamma(alpha = 3, beta = 0.2)`. Provide values for each covariate in `se`, listing the values in the same order as the columns of `se`.}
-#' 
-#'   \item{location}{The prior for the location parameter, mu, is Gaussian (the default being `normal(location = 0, scale = 100)`). To adjust the prior distributions, provide values for each covariate in `se`, listing the values in the same order as the columns of `se`.}
-#' 
-#'  \item{scale}{The prior for the `scale` parameters is Student's t, and the default is `student_t(df = 10, location = 0, scale = 40)`. To adjust, provide values for each covariate in `se`, listing the values in the same order as the columns of `se`.}
-#'
-#'  \item{car_rho}{The CAR model also has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You can set the boundaries of the prior with: `ME$prior$car_rho <- uniform(lower_bound, upper_bound)`. You must specify values that are within the permissible range of values for `rho`; these are automatically printed to the console by \code{\link[geostan]{prep_car_data}}.}
-#' }
-#' }
-#' }
-#' 
-#'
+#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a list of data as constructed by the \code{\link[geostan]{prep_me_data}} function. 
 #' @param centerx To center predictors on their mean values, use `centerx = TRUE`. If `centerx` is a numeric vector, predictors will be centered on the values provided. This argument is passed to \code{\link[base]{scale}}.
 #' 
 #' @param prior_only Logical value; if \code{TRUE}, draw samples only from the prior distributions of parameters.
@@ -444,11 +422,7 @@ stan_car <- function(formula,
     ## EMPTY PLACEHOLDERS
     standata <- c(standata, empty_icar_data(n), empty_esf_data(n))    
     ## ME MODEL -------------
-    # overwrites any user specified ME$car_parts
-    if ( !is.null(ME) ) {
-        if (is.logical(ME$car_parts) && !ME$car_parts) ME$car_parts <- NULL else ME$car_parts <- car_parts
-    }    
-    me.list <- prep_me_data(ME, x_no_Wx)
+    me.list <- make_me_data(ME, x_no_Wx)
     standata <- c(standata, me.list)
     ## INTEGER OUTCOMES -------------    
     if (family$family == "binomial") {
@@ -470,21 +444,19 @@ stan_car <- function(formula,
         }
     }
     priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
-    ## PARAMETERS TO KEEP, with CAR PARAMETERS [STOP] -------------                
-    ## PRINT PRIORS -------------
-    if (me.list$has_me) {
-        if (me.list$spatial_me) {
-            priors_made_slim <- c(priors_made_slim, list(ME_car_rho = me.list$ME_prior_car_rho))
-        } else {
-            priors_made_slim <- c(priors_made_slim, list(ME_df = me.list$ME_prior_df))
-        }        
-        priors_made_slim <- c(priors_made_slim, list(ME_location = me.list$ME_prior_mean, ME_scale = me.list$ME_prior_scale))
-    }
+    ## PARAMETERS TO KEEP, with CAR PARAMETERS [STOP] -------------
+    if (me.list$has_me) priors_made_slim$ME_model <- ME$prior    
+    ## PRINT PRIORS  -------------
     print_priors(prior, priors_made_slim)
+    ## MCMC INITIAL VALUES -------------
+    inits <- "random"
+    if (standata$has_me == 1 && any(standata$use_logit == 1)) {
+        FRAME <- sys.nframe()
+        inits <- init_fn_builder(FRAME_NUMBER = FRAME)
+    }     
     ## CALL STAN -------------  
     standata$car <- 1
-    samples <- rstan::sampling(stanmodels$foundation, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, ...)
-    #/#/#/#/#/
+    samples <- rstan::sampling(stanmodels$foundation, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init = inits, ...)
     ## OUTPUT -------------
     out <- clean_results(samples, pars, is_student, has_re, Wx, x_no_Wx, me.list$x_me_idx)
     out$data <- ModData

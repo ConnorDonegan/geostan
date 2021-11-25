@@ -50,7 +50,7 @@ n_eff <- function(n, rho) {
 #' @param w An `n x n` row-standardized spatial connectivity matrix. See \link[geostan]{shape2mat}.
 #' @param digits Number of digits to round results to.
 #' 
-#' @return the APLE estimate.
+#' @return the APLE estimate, a numeric value.
 #'
 #' @seealso \link[geostan]{mc}, \link[geostan]{moran_plot}, \link[geostan]{lisa}, \link[geostan]{sim_sar}
 #'
@@ -324,7 +324,7 @@ lisa <- function(x, w, type = TRUE) {
 #'
 #' @description Visual diagnostics for areal data and model residuals
 #' 
-#' @param y A numeric vector.
+#' @param y A numeric vector, or a fitted `geostan` model (class `geostan_fit`).
 #' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
 #' @param name The name to use on the plot labels; default to "y" or, if \code{y} is a \code{geostan_fit} object, to "Residuals".
 #' @param plot If \code{FALSE}, return a list of \code{gg} plots.
@@ -377,7 +377,6 @@ sp_diag <- function(y,
 
 #' @export
 #' @md
-#' @param y A fitted `geostan` model (class `geostan_fit`).
 #' @param rates For Poisson and binomial models, convert the outcome variable to a rate before calculating residuals. Defaults to `rates = TRUE`.
 #' @param size Point size and linewidth for point-interval plot of observed vs. fitted values (passed to \code{\link[ggplot2]{geom_pointrange}}).
 #' @method sp_diag geostan_fit
@@ -879,6 +878,7 @@ auto_gaussian <- function() {
 #' @param fit An \code{geostan_fit} object or any Stan model with a parameter named "log_lik", the pointwise log likelihood of the observations.
 #' @param pointwise Logical (defaults to `FALSE`), should a vector of values for each observation be returned? 
 #' @param digits Round results to this many digits.
+#' 
 #' @return A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density \code{Lpd}. If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
 #' 
 #' @seealso \code{\link[loo]{waic}} \code{\link[loo]{loo}}
@@ -920,6 +920,7 @@ waic <- function(fit, pointwise = FALSE, digits = 2) {
 #'  Chun, Yongwan and Griffith, Daniel A. (2013). Spatial statistics and geostatistics. Sage, p. 18.
 #' 
 #' @return Returns a numeric value.
+#' 
 expected_mc <- function(X, C) {
     C <- as.matrix(C)
     n = nrow(X)
@@ -937,6 +938,7 @@ expected_mc <- function(X, C) {
 #' @param formula Model formula.
 #' @param data The data used to fit the model; must be coercible to a dataframe for use in \code{model.matrix}.
 #' @param C An N x N binary connectivity matrix.
+#' 
 #' @return Returns a numeric value representing the expected number of eigenvectors required to estimate a spatial filter (i.e. number of non-zero or 'large' coefficients).
 #' 
 #' @details Following Chun et al. (2016), the expected number of eigenvectors required to remove residual spatial autocorrelation from a model
@@ -1047,6 +1049,7 @@ edges <- function(C, unique_pairs_only = TRUE) {
 #' @param bounds Lower and upper bounds for the variable, used in the monte carlo method. Must be a length-two numeric vector with lower bound greater than or equal to zero (i.e. \code{c(lower, upper)} as in default \code{bounds = c(0, Inf)}.
 #' @details The delta method returns \code{x^(-1) * se}. The monte carlo method is detailed in the examples section.
 #'
+#' @return Numeric vector of standard errors
 #' @export
 #' @importFrom truncnorm rtruncnorm
 #' @examples
@@ -1227,7 +1230,7 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #'
 #' Haining RP, Li G (2020). Modelling Spatial and Spatio-Temporal Data: A Bayesian Approach. CRC Press.
 #'
-#' @return A list containing all of the data elements required by the Stan CAR model.
+#' @return A list containing all of the data elements required by the CAR model in \code{\link[geostan]{stan_car}}.
 #'
 #' @examples
 #'
@@ -1358,4 +1361,80 @@ get_shp <- function(url, folder = "shape") {
 	unzip(tmp.dir, exdir = folder)
 	list.files(folder, full.names = TRUE)
 }
+
+
+#' Prepare data for spatial measurement error models
+#'
+#' @description Prepares the list of data required for geostan's (spatial) measurement error models. Given a data frame of standard errors and any optional arguments, the function returns a list with all required data for the models, filling in missing elements with default values.
+#' 
+#' @param se Data frame of standard errors; column names must match (exactly) the variable names used in the model formula. 
+#' @param bounds An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to c(-Inf, Inf) (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.
+#' @param car_parts A list of data required for spatial CAR models, as created by \code{\link[geostan]{prep_car_data}}; optional. If omitted, the measurement error model will be a non-spatial Student's t model.
+#' @param prior A named list of prior distributions (see \code{\link[geostan]{priors}}). If none are provided, default priors will be assigned. The liste of priors may include the following parameters:
+#' \describe{
+#'  \item{df}{If using a non-spatial ME model, the degrees of freedom (df) for the Student's t model is assigned a gamma prior with default parameters of `gamma(alpha = 3, beta = 0.2)`. Provide values for each covariate in `se`, listing the values in the same order as the columns of `se`.}
+#'
+#' \item{location}{The prior for the location parameter (mu) is a normal (Gaussian) distribution (the default being `normal(location = 0, scale = 100)`). To adjust the prior distributions, provide values for each covariate in `se`, listing the values in the same order as the columns of se.}
+#'
+#' \item{scale}{The prior for the scale parameters is Student's t, and the default parameters are `student_t(df = 10, location = 0, scale = 40)`. To adjust, provide values for each covariate in `se`, listing the values in the same order as the columns of se.}
+#'
+#' \item{car_rho}{The CAR model, if used, has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You must specify values that are within the permissible range of values for `rho`; these are automatically printed to the console by the \code{\link[geostan]{prep_car_data}} function.}
+#' 
+#' }
+#' @param logit Optional vector of logical values (`TRUE`, `FALSE`) indicating if the variable should be logit-transformed before being modeled. When `TRUE`, the sampling error will be modeled on the untransformed scale as usual; however, the spatial CAR prior model (or non-spatial Student's t prior model) will be assigned to the logit-transformed variate. Transformation can be crucial for modeling proportions with frequency distributions that are highly skewed.
+#'
+#' @return
+#'
+#' A list of data as required for (spatial) ME models. Missing arguments will be filled in with default values, including prior distributions.
+#' 
+#' @examples
+#' data(georgia)
+#'
+#' ## for a non-spatial prior model 
+#' se <- data.frame(ICE = georgia$ICE.se, college = georgia$college.se)
+#' ME <- prep_me_data(se)
+#' 
+#' ## for a spatial prior model (generally recommended)
+#' A <- shape2mat(georgia, "B")
+#' cars <- prep_car_data(A)
+#' ME <- prep_me_data(se, car_parts = cars)
+#' 
+#' @export
+#' @md
+prep_me_data <- function(se, bounds = c(-Inf, Inf), car_parts, prior, logit = rep(FALSE, times = ncol(se))) {
+    stopifnot(inherits(se, "data.frame"))
+    stopifnot(inherits(bounds, "numeric"))
+    stopifnot(length(bounds) == 2)
+    if (!missing(car_parts)) check_car_parts(car_parts)
+    if (!missing(prior)) check_me_prior(prior)
+    stopifnot(length(logit) == ncol(se))    
+    n <- nrow(se)
+    k <- ncol(se)
+    ME <- list()
+    ME$se <- se
+    ME$bounds <- bounds
+    if (missing(car_parts)) {
+        ME$spatial_me <- FALSE        
+        ME$car_parts <- car_parts_shell(n)
+    } else {        
+        ME$spatial_me <- TRUE
+        ME$car_parts <- car_parts
+    }
+    if (missing(prior)) prior <- list()
+    if (ME$spatial_me) {
+        if (inherits(prior$car_rho, "NULL")) {
+            lims <- 1 / range(car_parts$lambda)
+            prior$car_rho <- uniform(lims[1], lims[2])
+        }
+    } else {
+        if (inherits(prior$df, "NULL")) prior$df <- gamma(rep(3, k), rep(0.2, k))
+    }            
+    if (inherits(prior$location, "NULL")) prior$location <- normal(rep(0, k), rep(100, k))
+    if (inherits(prior$scale, "NULL")) prior$scale <- student_t(df = rep(10, k), location = rep(0, k), scale = rep(40, k))
+    ME$prior <- prior
+    ME$logit <- as.logical(logit)
+    check_me_data(ME)
+    return (ME)
+}
+
 

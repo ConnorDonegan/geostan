@@ -149,6 +149,15 @@
       <small>Source: <a href='https://github.com/ConnorDonegan/geostan/blob/master/NEWS.md'><code>NEWS.md</code></a></small>
     </div>
 
+    <div id="geostan-012" class="section level1">
+<h1 class="page-header" data-toc-text="0.1.2">
+<a href="#geostan-012" class="anchor" aria-hidden="true"></a>geostan 0.1.2</h1>
+<p>The measurement error models have been updated in three important respects:</p>
+<ol style="list-style-type: decimal"><li>There is now a prep_me_data function which must be used to create the list of data for the ME models. See <code><a href="../reference/prep_me_data.html">?prep_me_data</a></code>.</li>
+<li>For covariates that are proportions or rates, the ME models now have an option for using a logit transformation on the variable. Again, see <code><a href="../reference/prep_me_data.html">?prep_me_data</a></code> for usage.</li>
+<li>Previously, when using <code>stan_car</code>, ME models automatically employed the CAR model as a prior for the modeled covariates. That has changed, so that the default behavior for the ME models is the same across all <code>stan_*</code> models (CAR, GLM, ESF, ICAR).</li>
+</ol><p>The second change addresses a limitation of the CAR prior models for the ME models. These are particularly important for variables that are highly skewed, such as the poverty rate. To determine whether a transformation should be considered, it can be helpful to evaluate results of the ME model (with the untransformed covariate) using the <code>me_diag</code> function. The logit transform is done on the ‘latent’ (modeled) variable, not the raw covariate. This transformation cannot be applied to the raw data by the user because the standard errors of covariate estimates (e.g., ACS standard errors) cannot be logit transformed.</p>
+</div>
     <div id="geostan-011" class="section level1">
 <h1 class="page-header" data-toc-text="0.1.1">
 <a href="#geostan-011" class="anchor" aria-hidden="true"></a>geostan 0.1.1</h1>

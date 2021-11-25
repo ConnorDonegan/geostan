@@ -117,29 +117,34 @@ fit <- stan_glm(log(rate.male) ~ ICE, data = georgia, prior_only = TRUE)
 
 For now, we are just going to use `stan_glm` to set up our ME models. To tell `stan_glm` to ignore the outcome data and fit the ME model described above, we add `prior_only = TRUE`.
 
-First, we need to build a list containing data for the ME model. The list must contain an element named `se`, which must be a data frame with standard errors for all of the estimates. To fit the spatial models introduced above, we also need to provide a list called `car_parts` with data for the CAR model.
+The `prep_me_data` function creates a list of data in the correct format for `geostan`'s ME models. The only required argument is a data frame of standard errors (`se`). To use a CAR model for the covariates, we just have to provide the necessary data for `geostan`'s CAR model, which we can easily obtain using the `prep_car_data` function. Since the ICE can only range from -1 to 1, it may be important to restrict the parameter space to that range. We can do this using the `bounds` argument, which defaults to `(-Inf, Inf)`.^[Practically, it is not always necessary to enforce these restrictions; if you are sure that the model does not approach the boundary points, that is, you can see that none of the estimates plus/minus two standard errors approach the boundaries, it can be more efficient to ignore the restriction. One of the limitations of these models is that all of the covariates have the same restrictions on their parameter space. Thus, if you can safely ignore the restrictions, you also have greater freedom to include other covariates.]
 
 ```{r}
 # use binary weights matrix for prep_car_data
 C <- shape2mat(georgia, style = "B")
 cp <- prep_car_data(C, style = "WCAR")
-ME <- list(
+ME <- prep_me_data(
   se = data.frame(ICE = georgia$ICE.se),
-  car_parts = cp
+  car_parts = cp,
+  bounds = c(-1, 1)
 )
 ```
 
-The ICE can only range from -1 to 1; to provide the model with this information, we add an element named `bounds`:
+As noted previously, **geostan** will use its default priors if none are provided.
 
 ```{r}
-ME$bounds <- c(-1, 1)
+print(ME$prior)
 ```
 
-As noted previously, **geostan** will use its default priors if none are provided. The following code demonstrates setting custom priors for $\mu$ (location) and $\tau$ (scale) (see `?priors` for details):
+The following code demonstrates setting custom priors for $\mu$ (location) and $\tau$ (scale) (see `?priors` for details):
 
 ```{r}
-ME$prior <- list(location = normal(0, 0.5),
-                 scale = student_t(df = 10, location = 0, scale = 1)
+ME <- prep_me_data(
+  se = data.frame(ICE = georgia$ICE.se),
+  car_parts = cp,
+  bounds = c(-1, 1),
+  prior = list(location = normal(0, 0.5),
+  	       scale = student_t(df = 10, location = 0, scale = 1))
 )
 ```
 
@@ -197,7 +202,7 @@ We can follow up on this information by examining demographic information on the
 georgia[c(91, 105, 90, 39), c("NAME", "population", "white", "black", "hisp", "ai", "ICE", "ICE.se", "college", "college.se")]
 ```
 
-The somewhat large $\delta_i$ values for these counties are a result of the combination of fairly unreliable estimates (large standard errors) while also being local outliers. But we can see that these are low population areas that also have low income, few college grads, and fairly high percent Black populations; crucially, they have large standard errors on their ICE estimates. 
+The somewhat large $\delta_i$ values for these counties are a result of the combination of fairly unreliable estimates (large standard errors) while also being local outliers. We can see that these are low population areas that also have low income, few college grads, and fairly high percent Black populations. 
 
 Notice that the ACS estimate for the ICE in Clinch County is $-0.40$ (SE = 0.048), implying a 95\% margin of error ranging from -0.5 to -0.3 (quite a wide range). Here is our probability distribution for the ICE in Clinch County:
 
@@ -207,6 +212,7 @@ print(fit$stanfit, pars = "x_ICE[91]")
 # plot(fit, pars = "x_ICE[91]")
 # plot(fit$stanfit, pars = "x_ICE[91]")
 ```
+Given the socioeconomic and demographic information on Clinch County, one could argue that the model is being overly conservative by shrinking towards the mean value. However, by examining full posterior distributions, we see in this case that the results are not particularly vulnerable to this concer due to the fact that the model is still positing that the raw estimate *and* more extreme values are quite plausible. Of course, this was already apparent from examination of the `me_diag` plots.
 
 ### Working with MCMC samples from ME models
 
@@ -241,8 +247,10 @@ head(x.mu)
 If the `ME` list doesn't have a slot with `car_parts`, **geostan** will automatically use a non-spatial Student's t model instead of the CAR model:
 
 ```{r eval = FALSE}
-ME_nsp <- ME
-ME_nsp$car_parts <- NULL
+ME_nsp <- prep_me_data(
+  se = data.frame(ICE = georgia$ICE.se),
+  bounds = c(-1, 1)
+)
 fit_nsp <- stan_glm(log(rate.male) ~ ICE, data = georgia, ME = ME_nsp, prior_only = TRUE)
 ```
 
@@ -295,9 +303,9 @@ ggplot(georgia) +
 
 Two counties in particular (Wheeler and Echols) stand out for having low ICE estimates, large standard errors on their ICE estimates, and mortality rates that resemble areas with considerably higher ICE values. 
 
-If we look at the posterior distribution of $\boldsymbol x$, we see it has shifted somewhat in light of the regression relationship (try `me_diag(fit_2, 'ICE', georgia, plot = FALSE)`).While generally similar, one of the biggest shifts from the prior-only model is Wheeler County, a noted outlier, which now has a $\hat{\delta}_i$ value (-0.07) that is twice its value in the prior-only model. 
+If we look at the posterior distribution of $\boldsymbol x$, we see it has shifted somewhat in light of the regression relationship (try `me_diag(fit_2, 'ICE', georgia, plot = FALSE)`).While generally similar, one of the biggest shifts from the prior-only model is Wheeler County, a noted outlier, which now has a $\hat{\delta}_i$ value (-0.07) that is twice its value in the prior-only model. Wheeler County's high mortality rate renders the low ICE estimate less plausible.^[To be clear, the principle being examined here is a general and integral property of all Bayesian ME models.]
 
-Now here are the posterior means for the ICE and log-mortality rates; the darker red color indicates a higher degree of posterior uncertainty in the ICE value:
+Now here are the posterior means for the ICE and against the posterior means for the log-mortality rates; the darker red color indicates a higher degree of posterior uncertainty in the ICE value:
 
 ```{r fig.width = 4.5}
 eta <- fitted(fit_2)

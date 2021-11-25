@@ -20,6 +20,7 @@
     // no. columns
   int<lower=0> dx_obs;
   int<lower=0> dx_me;
+  int<lower=0,upper=1> use_logit[dx_me];
     // indices matching columns of observed and ME data matrices to columns of raw data matrix x (and parameter x_all)
   int<lower=0> x_obs_idx[dx_obs ? dx_obs : 1]; 
   int<lower=0> x_me_idx[dx_me ? dx_me : 1];  
