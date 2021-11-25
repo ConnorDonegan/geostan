@@ -2,7 +2,8 @@
 
 The **geostan** R package supports a complete spatial analysis
 workflow with hierarchical Bayesian models (HBMs) for areal
-data and a variety of functions for visualizing spatial data and model results. 
+data and a variety of functions for visualizing spatial data and model results.
+
 **geostan** is an interface to [Stan](https://mc-stan.org).
 
 ### Disease mapping and spatial regression
