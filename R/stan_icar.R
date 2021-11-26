@@ -305,7 +305,6 @@ stan_icar <- function(formula,
     #### ICAR TYPE [START] --------
     type <- match.arg(type)
     #### ICAR TYPE [STOP] --------
-    a.zero <- as.array(0, dim = 1)
     tmpdf <- as.data.frame(data)
     mod.mat <- model.matrix(formula, tmpdf)
     if (nrow(mod.mat) < nrow(tmpdf)) stop("There are missing (NA) values in your data.")  
@@ -320,7 +319,7 @@ stan_icar <- function(formula,
         slx <- " "
         W.list <- list(w = 1, v = 1, u = 1)
         dwx <- 0
-        wx_idx <- a.zero
+        wx_idx <- a.zero()
   } else {
       xraw <- model.matrix(formula, data = tmpdf)
       xraw <- remove_intercept(xraw)
@@ -328,7 +327,7 @@ stan_icar <- function(formula,
       if (missing(slx)) {
           slx <- " "
           W.list <- list(w = 1, v = 1, u = 1)
-          wx_idx = a.zero
+          wx_idx = a.zero()
           dwx <- 0
           x_full <- x_no_Wx          
       } else {

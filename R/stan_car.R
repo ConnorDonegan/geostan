@@ -335,7 +335,7 @@ stan_car <- function(formula,
         slx <- " "
         W.list <- list(w = 1, v = 1, u = 1)
         dwx <- 0
-        wx_idx <- a.zero
+        wx_idx <- a.zero()
   } else {
       xraw <- model.matrix(formula, data = tmpdf)
       xraw <- remove_intercept(xraw)
@@ -343,7 +343,7 @@ stan_car <- function(formula,
       if (missing(slx)) {
           slx <- " "
           W.list <- list(w = 1, v = 1, u = 1)
-          wx_idx = a.zero
+          wx_idx = a.zero()
           dwx <- 0
           x_full <- x_no_Wx          
       } else {
