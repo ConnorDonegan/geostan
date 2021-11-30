@@ -10,7 +10,7 @@
     if (spatial_me) {
       for (j in 1:dx_me) {
         target += normal_lpdf(x_me[j] | x_true[j], sigma_me[j]);
-	if (use_logit[j]) x_true_transform[j] = logit(x_true[j]);
+	if (use_logit[j] > 0) x_true_transform[j] = logit(x_true[j]);
 	target += auto_normal_lpdf(x_true_transform[j] |
 				   rep_vector(mu_x_true[j], n),
 				   sigma_x_true[j],
@@ -23,7 +23,7 @@
     } else {
       for (j in 1:dx_me) {
 	target += normal_lpdf(x_me[j] | x_true[j], sigma_me[j]);
-	if (use_logit[j]) x_true_transform[j] = logit(x_true[j]);	
+	if (use_logit[j] > 0) x_true_transform[j] = logit(x_true[j]);	
 	target += student_t_lpdf(x_true_transform[j] | nu_x_true[j], mu_x_true[j], sigma_x_true[j]);
 	target += gamma_lpdf(nu_x_true[j] | prior_nux_true_alpha[j], prior_nux_true_beta[j]);
       }
@@ -40,7 +40,10 @@
   if (!prior_only) {
     if (is_student)  target += student_t_lpdf(y | nu[1], fitted, sigma[has_sigma]);
     if (is_gaussian) target += normal_lpdf(y | fitted, sigma[has_sigma]);
-    if (is_poisson)  target += poisson_lpmf(y_int | fitted);
+    if (is_poisson) {
+      target += poisson_lpmf(y_int[y_obs_idx] | fitted[y_obs_idx]);
+      if (censor_point > 0) target += poisson_lcdf(censor_point | fitted[y_mis_idx]);
+    }
     if (is_binomial) target += binomial_lpmf(y_int | trials, fitted);
 }
   

@@ -6,7 +6,8 @@ context("stan_car")
 
 test_that("Poisson CAR model works", {
     data(sentencing)
-  SW(     fit <- stan_car(sents ~ offset(log(expected_sents)),
+    SW(
+        fit <- stan_car(sents ~ offset(log(expected_sents)),
                     data = sentencing,
                     car_parts = prep_car_data(shape2mat(sentencing, "B")),
                     chains = 1,
@@ -93,9 +94,21 @@ test_that("DCAR example runs", {
      expect_geostan(fit)
 })
 
-
-
-
-
-
+test_that("CAR with censored y", {
+    data(georgia)
+    A <- shape2mat(georgia)
+    cars <- prep_car_data(A)    
+    SW(
+        fit <- stan_car(deaths.female ~ offset(log(pop.at.risk.female)) + ICE + college,
+                        censor_point = 9,
+                        data = georgia,
+                        chains = 1,
+                        family = poisson(),
+                        car_parts = cars,
+                        iter = iter,
+                        refresh = refresh
+                        )
+    )
+    expect_geostan(fit)
+})
 

@@ -213,7 +213,7 @@
     <p>Anselin, Luc. "Local indicators of spatial association—LISA." Geographical analysis 27, no. 2 (1995): 93-115.</p>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Returns a <code>gg</code> plot, a scatter plot with <code>x</code> on the horizontal and its spatially lagged values on the vertical axis (i.e. a Moran plot).</p>
+    <p>Returns a <code>gg</code> plot, a scatter plot with <code>x</code> on the horizontal and its spatially lagged values on the vertical axis (i.e. a Moran scatter plot).</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>For details on the symbol parameters see the documentation for <a href='https://ggplot2.tidyverse.org/reference/geom_point.html'>geom_point</a>.</p>
@@ -223,12 +223,12 @@
     <div class='dont-index'><p><a href='mc.html'>mc</a>, <a href='lisa.html'>lisa</a>, <a href='aple.html'>aple</a></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='r-in'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span></span>
-<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span></span>
-<span class='r-in'><span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>georgia</span><span class='op'>$</span><span class='va'>ICE</span></span>
-<span class='r-in'><span class='va'>w</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='st'>"W"</span><span class='op'>)</span></span>
-<span class='r-in'><span class='fu'>moran_plot</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span><span class='op'>)</span></span>
-<span class='r-in'><span class='op'>}</span></span>
+    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
+<span class='va'>x</span> <span class='op'>&lt;-</span> <span class='va'>georgia</span><span class='op'>$</span><span class='va'>ICE</span>
+<span class='va'>w</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span>, <span class='st'>"W"</span><span class='op'>)</span>
+<span class='fu'>moran_plot</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>w</span><span class='op'>)</span>
+<span class='op'>}</span>
 </code></pre></div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

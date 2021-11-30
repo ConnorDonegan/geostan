@@ -25,7 +25,7 @@
 #' @seealso \link[geostan]{stan_glm}, \link[geostan]{stan_esf}, \link[geostan]{stan_icar}, \link[geostan]{stan_car}
 #' 
 #' @examples 
-#' \dontrun{
+#' \donttest{
 #' library(ggplot2)
 #' library(sf)
 #' data(sentencing)
@@ -42,8 +42,7 @@
 #'                    re = ~ name,
 #'                    family = poisson(),
 #'                    data = sentencing,
-#'                    C = C,
-#'                    refresh = 0
+#'                    C = C
 #' )
 #'
 #' # print and plot results

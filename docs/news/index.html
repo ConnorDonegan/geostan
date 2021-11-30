@@ -152,11 +152,25 @@
     <div id="geostan-012" class="section level1">
 <h1 class="page-header" data-toc-text="0.1.2">
 <a href="#geostan-012" class="anchor" aria-hidden="true"></a>geostan 0.1.2</h1>
+<div id="measurement-error-models-improved" class="section level2">
+<h2 class="hasAnchor">
+<a href="#measurement-error-models-improved" class="anchor" aria-hidden="true"></a>measurement error models improved</h2>
 <p>The measurement error models have been updated in three important respects:</p>
 <ol style="list-style-type: decimal"><li>There is now a prep_me_data function which must be used to create the list of data for the ME models. See <code><a href="../reference/prep_me_data.html">?prep_me_data</a></code>.</li>
 <li>For covariates that are proportions or rates, the ME models now have an option for using a logit transformation on the variable. Again, see <code><a href="../reference/prep_me_data.html">?prep_me_data</a></code> for usage.</li>
 <li>Previously, when using <code>stan_car</code>, ME models automatically employed the CAR model as a prior for the modeled covariates. That has changed, so that the default behavior for the ME models is the same across all <code>stan_*</code> models (CAR, GLM, ESF, ICAR).</li>
-</ol><p>The second change addresses a limitation of the CAR prior models for the ME models. These are particularly important for variables that are highly skewed, such as the poverty rate. To determine whether a transformation should be considered, it can be helpful to evaluate results of the ME model (with the untransformed covariate) using the <code>me_diag</code> function. The logit transform is done on the ‘latent’ (modeled) variable, not the raw covariate. This transformation cannot be applied to the raw data by the user because the standard errors of covariate estimates (e.g., ACS standard errors) cannot be logit transformed.</p>
+</ol><p>The second change addresses a limitation of the CAR prior models for the ME models. These are particularly important for variables that are highly skewed, such as the poverty rate. To determine whether a transformation should be considered, it can be helpful to evaluate results of the ME model (with the untransformed covariate) using the <code>me_diag</code> function. The logit transform is done on the ‘latent’ (modeled) variable, not the raw covariate. This transformation cannot be applied to the raw data by the user because that would require the standard errors of covariate estimates (e.g., ACS standard errors) to be adjusted for the transformation.</p>
+</div>
+<div id="models-for-censored-disease-and-mortality-data" class="section level2">
+<h2 class="hasAnchor">
+<a href="#models-for-censored-disease-and-mortality-data" class="anchor" aria-hidden="true"></a>Models for censored disease and mortality data</h2>
+<p>geostan now supports Poisson models with censored count data, a common problem in public health research where small area disease and mortality counts are censored below a threshold value. Model for censored outcome data can now be implemented using the <code>censor_point</code> argument found in all of the model fitting functions (stan_glm, stan_car, stan_esf, stan_icar).</p>
+</div>
+<div id="centering-covariates-with-measurement-error-models" class="section level2">
+<h2 class="hasAnchor">
+<a href="#centering-covariates-with-measurement-error-models" class="anchor" aria-hidden="true"></a>Centering covariates with measurement error models</h2>
+<p>The <code>centerx</code> argument previously centered the covariates on their mean value using the <code>scale</code> function; centering covariates can improve sampling efficiency, sometimes rather drastically, and has interpretive value since it allows the intercept to be interpreted as the mean value of the outcome. Now, the <code>centerx</code> argument has been updated to handle measurement error models for covariates. The centering happens inside the Stan model so that the means of the modeled covariates (latent variables) are used instead of the raw data mean.</p>
+</div>
 </div>
     <div id="geostan-011" class="section level1">
 <h1 class="page-header" data-toc-text="0.1.1">

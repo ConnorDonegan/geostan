@@ -43,7 +43,9 @@
 #'
 #' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a list of data as constructed by the \code{\link[geostan]{prep_me_data}} function.
 #' 
-#' @param centerx To center predictors on their mean values, use `centerx = TRUE`. If `centerx` is a numeric vector, predictors will be centered on the values provided. This argument is passed to \code{\link[base]{scale}}.
+#' @param centerx To center predictors on their mean values, use `centerx = TRUE`. If the ME argument is used, the modeled covariate (i.e., latent variable), rather than the raw observations, will be centered. When using the ME argument, this is the recommended method for centering the covariates.
+#'
+#' @param censor_point Integer value indicating the maximum censored value; this argument is for modeling censored (suppressed) outcome data, typically disease case counts or deaths. For example, the US Centers for Disease Control and Prevention censors (does not report) death counts that are nine or fewer, so if you're using CDC WONDER mortality data you could provide `censor_point = 9`.
 #' 
 #' @param prior_only Draw samples from the prior distributions of parameters only.
 #' @param chains Number of MCMC chains to estimate. Default \code{chains = 4}.
@@ -112,7 +114,29 @@
 #'        mu ~ Gauss(0, 100)
 #'        sigma ~ student_t(10, 0, 40)
 #' ```
-#' The observational error is the difference between the survey estimate and `x_true`, the actual value of the variable during the period of the survey.
+#' 
+#' For strongly skewed variables, such census tract poverty rates, it can be advantageous to apply a logit transformation to `x_true` before applying the CAR or Student t prior model. When the `logit` argument is used, the model becomes:
+#' ```
+#'        x ~ Gauss(x_true, se)
+#'       logit(x_true) ~ MVGauss(mu, Sigma)
+#' ```
+#' and similar for the Student t model.
+#'
+#' ### Censored counts
+#'
+#' Vital statistics systems and disease surveillance programs typically suppress case counts when they are smaller than a specific theshold value. In such cases, the observation of a censored count is not the same as a missing value; instead, you are informed that the value is an integer somewhere between zero and the threshold value. For Poisson models (`family = poisson())`), you can use the `censor_point` argument to encode this information into your model. 
+#'
+#' Internally, `geostan` will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:
+#' ```
+#'  p(y_i | data, model) = Poisson(y_i | fitted_i), 
+#' ```
+#' as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:
+#' ```
+#'   p(y_j | data, model) = sum_{m=0}^censor_point Poisson( c_m | fitted_j),
+#' ```
+#' 
+#' For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide `censor_point = 9` and then the likelihood statmenet for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model paramters). See Donegan (2021) for additional discussion, references, and Stan code.
+#'
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
@@ -127,7 +151,7 @@
 #' \item{re}{A list containing \code{re},  the random effects (varying intercepts) formula if provided, and 
 #' \code{data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 #' \item{priors}{Prior specifications.}
-#' \item{x_center}{If covariates are centered internally (i.e., `centerx` is not `FALSE`), then `x_centers` is the numeric vector of values on which the covariates were centered.}
+#' \item{x_center}{If covariates are centered internally (`centerx = TRUE`), then `x_center` is a numeric vector of the values on which covariates were centered.}
 #' \item{ME}{The \code{ME} data list, if one was provided by the user for measurement error models.}
 #' \item{spatial}{A data frame with the name of the spatial component parameter ("esf") and method ("ESF")}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
@@ -156,7 +180,7 @@
 #' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In *Electronic Journal of Statistics*, 11(2):5018-5051.
 #' 
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(ggplot2)
 #' library(sf)
 #' library(bayesplot)
@@ -188,7 +212,7 @@
 #' plot(fit.esf, pars = "beta_ev")
 #'
 #' # posterior predictive distribution
-#' yrep <- posterior_predict(fit.esf, samples = 75)
+#' yrep <- posterior_predict(fit.esf, S = 75)
 #' y <- sentencing$sents
 #' bayesplot::ppc_dens_overlay(y, yrep) 
 #'
@@ -242,6 +266,7 @@ stan_esf <- function(formula,
                      prior = NULL,                     
                      ME = NULL,
                      centerx = FALSE,
+                     censor_point,
                      prior_only = FALSE,
                      chains = 4, iter = 2e3, refresh = 500,
                      pars = NULL,
@@ -258,53 +283,57 @@ stan_esf <- function(formula,
     dev <- ncol(EV)
     ## ESF [STOP] -------------
     tmpdf <- as.data.frame(data)
-    mod.mat <- model.matrix(formula, tmpdf)
-    if (nrow(mod.mat) < nrow(tmpdf)) stop("There are missing (NA) values in your data.")  
-    n <- nrow(mod.mat)
-    family_int <- family_2_int(family)
-    is_student <- family$family == "student_t"    
-    intercept_only <- ifelse(all(dimnames(mod.mat)[[2]] == "(Intercept)"), 1, 0) 
+    n <- nrow(tmpdf)    
+    family_int <- family_2_int(family)        
+    if (!missing(censor_point)) if (family$family != "poisson") stop("censor_point argument is only available for Poisson models.")
+    if (missing(censor_point)) censor_point <- FALSE
+    mod_frame <- model.frame(formula, tmpdf, na.action = NULL)
+    handle_missing_x(mod_frame)
+    y_index_list <- handle_censored_y(censor_point, mod_frame)
+    y <- y_int <- model.response(mod_frame)
+    if (family_int %in% c(1,2)) y_int <- rep(0, length(y))
+    y[y_index_list$y_mis_idx] <- y_int[y_index_list$y_mis_idx] <- 0
+    mod_frame[y_index_list$y_mis_idx, 1] <- 0 
+    if (is.null(model.offset(mod_frame))) {
+        offset <- rep(0, times = n)
+    } else {
+        offset <- model.offset(mod_frame)
+    }    
+    x_mat_tmp <- model.matrix(formula, mod_frame)
+    intercept_only <- ifelse(all(dimnames(x_mat_tmp)[[2]] == "(Intercept)"), 1, 0)
     if (intercept_only) {
         if (!missing(slx)) {
             stop("You provided a spatial lag of X (slx) term for an intercept only model. Did you intend to include a covariate?")
         }
-        x_full <- x_no_Wx <- model.matrix(~ 0, data = tmpdf) 
+        x_full <- xraw <- model.matrix(~ 0, data = mod_frame) 
         slx <- " "
         W.list <- list(w = 1, v = 1, u = 1)
         dwx <- 0
         wx_idx <- a.zero()
   } else {
-      xraw <- model.matrix(formula, data = tmpdf)
+      xraw <- model.matrix(formula, data = mod_frame)
       xraw <- remove_intercept(xraw)
-      x_no_Wx <- center_x(xraw, center = centerx)
       if (missing(slx)) {
           slx <- " "
           W.list <- list(w = 1, v = 1, u = 1)
           wx_idx = a.zero()
           dwx <- 0
-          x_full <- x_no_Wx          
+          x_full <- xraw          
       } else {
           stopifnot(inherits(slx, "formula"))
           W <- row_standardize(C, msg =  "Row standardizing connectivity matrix to calculate spatially lagged covaraite(s)")
           W.list <- rstan::extract_sparse_parts(W)
-          Wx <- SLX(f = slx, DF = tmpdf, x = x_no_Wx, W = W)
+          Wx <- SLX(f = slx, DF = mod_frame, x = xraw, W = W)
           dwx <- ncol(Wx)
-          wx_idx <- as.array( which(paste0("w.", colnames(x_no_Wx)) %in% colnames(Wx)), dim = dwx )
-          x_full <- cbind(Wx, x_no_Wx)
+          wx_idx <- as.array( which(paste0("w.", colnames(xraw)) %in% colnames(Wx)), dim = dwx )
+
+          x_full <- cbind(Wx, xraw)
       }
   }
-    ModData <- make_data(formula, tmpdf, x_full)
-    frame <- model.frame(formula, tmpdf)
-    y <- y_int <- model.response(frame)
-    if (family_int %in% c(1,2)) y_int <- rep(0, length(y))
-    if (is.null(model.offset(frame))) {
-        offset <- rep(0, times = n)
-    } else {
-        offset <- model.offset(frame)
-  }
+    ModData <- make_data(mod_frame, x_full, y_index_list$y_mis_idx)
     if(missing(re)) {
         has_re <- n_ids <- id <- 0;
-        id_index <- to_index(id, n = nrow(tmpdf))
+        id_index <- to_index(id, n = n)
         re_list <- NULL
     } else {
         stopifnot(inherits(re, "formula"))
@@ -313,7 +342,7 @@ stan_esf <- function(formula,
         n_ids <- length(unique(id))
         id_index <- to_index(id)
         re_list <- list(formula = re, data = id_index)
-  }   
+  }
     standata <- list(
   ## glm data -------------
         family = family_int,
@@ -326,6 +355,7 @@ stan_esf <- function(formula,
         has_re = has_re,
         n_ids = n_ids,
         id = id_index$idx,
+        center_x = centerx,         
         ## slx data -------------
         W_w = as.array(W.list$w),
         W_v = as.array(W.list$v),
@@ -334,7 +364,10 @@ stan_esf <- function(formula,
         dwx = dwx,
         wx_idx = wx_idx
     )
+    ## ADD MISSING/OBSERVED INDICES -------------  
+    standata <- c(y_index_list, standata)    
     ## PRIORS with RHS-ESF [START] -------------
+    is_student <- family$family == "student_t"
     if (family$family %in% c("poisson", "binomial")) hs_global_scale = 1
     if (family$family %in% c("gaussian", "student_t")) {
         ## default value of global_scale
@@ -362,7 +395,7 @@ stan_esf <- function(formula,
     ## EMPTY PLACEHOLDERS
     standata <- c(standata, empty_icar_data(n), empty_car_data())
     ## ME MODEL STUFF -------------  
-    me.list <- make_me_data(ME, x_no_Wx)
+    me.list <- make_me_data(ME, xraw)
     standata <- c(standata, me.list)
     ## INTEGER OUTCOMES -------------    
     if (family$family == "binomial") {
@@ -389,14 +422,14 @@ stan_esf <- function(formula,
     print_priors(prior, priors_made_slim)
     ## MCMC INITIAL VALUES ------------- 
     inits <- "random"
-    if (standata$has_me == 1 && any(standata$use_logit == 1)) {
+    if (censor_point > 0 | (standata$has_me == 1 && any(standata$use_logit == 1))) {
         FRAME <- sys.nframe()
         inits <- init_fn_builder(FRAME_NUMBER = FRAME)
     }     
     ## CALL STAN -------------    
     samples <- rstan::sampling(stanmodels$foundation, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init = inits, ...)
     ## OUTPUT -------------    
-    out <- clean_results(samples, pars, is_student, has_re, Wx, x_no_Wx, me.list$x_me_idx)  
+    out <- clean_results(samples, pars, is_student, has_re, Wx, xraw, me.list$x_me_idx)  
     out$data <- ModData
     out$family <- family
     out$formula <- formula
@@ -405,7 +438,7 @@ stan_esf <- function(formula,
     out$EV <- EV  
     out$re <- re_list
     out$priors <- priors_made_slim
-    out$x_center <- attributes(x_full)$`scaled:center`
+    out$x_center <- get_x_center(standata, samples)
     out$ME <- list(has_me = me.list$has_me, spatial_me = me.list$spatial_me)
     if (out$ME$has_me) out$ME <- c(out$ME, ME)
     out$spatial <- data.frame(par = "esf", method = "ESF")

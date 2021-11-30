@@ -113,7 +113,7 @@ make_me_priors <- function(ME, me.list) {
     pl$prior_sigmax_true_location <- as.array(ME$prior$scale$location)
     pl$prior_sigmax_true_scale    <- as.array(ME$prior$scale$scale)
     if (me.list$spatial_me) {
-        pl$prior_nux_true_alpha <- pl$prior_nux_true_beta <- a.zero()
+        pl$prior_nux_true_alpha <- pl$prior_nux_true_beta <- array(vec.n.zeros(me.list$dx_me))
         pl$prior_rhox_true <- c(ME$prior$car_rho$lower, ME$prior$car_rho$upper)
     } else {
         pl$prior_nux_true_alpha <- as.array(ME$prior$df$alpha)

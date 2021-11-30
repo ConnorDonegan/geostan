@@ -129,14 +129,7 @@ ME <- prep_me_data(
   bounds = c(-1, 1)
 )
 ```
-
-As noted previously, **geostan** will use its default priors if none are provided.
-
-```{r}
-print(ME$prior)
-```
-
-The following code demonstrates setting custom priors for $\mu$ (location) and $\tau$ (scale) (see `?priors` for details):
+As noted previously, **geostan** will use its default priors if none are provided. The following code demonstrates setting custom priors for $\mu$ (location) and $\tau$ (scale) (see `?priors` for details):
 
 ```{r}
 ME <- prep_me_data(

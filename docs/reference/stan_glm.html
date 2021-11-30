@@ -166,6 +166,7 @@
   ME <span class='op'>=</span> <span class='cn'>NULL</span>,
   centerx <span class='op'>=</span> <span class='cn'>FALSE</span>,
   prior_only <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  <span class='va'>censor_point</span>,
   chains <span class='op'>=</span> <span class='fl'>4</span>,
   iter <span class='op'>=</span> <span class='fl'>2000</span>,
   refresh <span class='op'>=</span> <span class='fl'>1000</span>,
@@ -225,11 +226,15 @@
     </tr>
     <tr>
       <th>centerx</th>
-      <td><p>To center predictors on their mean values, use <code>centerx = TRUE</code>. If <code>centerx</code> is a numeric vector, predictors will be centered on the values provided. This argument is passed to <code><a href='https://rdrr.io/r/base/scale.html'>scale</a></code>.</p></td>
+      <td><p>To center predictors on their mean values, use <code>centerx = TRUE</code>. If the ME argument is used, the modeled covariate (i.e., latent variable), rather than the raw observations, will be centered. When using the ME argument, this is the recommended method for centering the covariates.</p></td>
     </tr>
     <tr>
       <th>prior_only</th>
       <td><p>Draw samples from the prior distributions of parameters only.</p></td>
+    </tr>
+    <tr>
+      <th>censor_point</th>
+      <td><p>Integer value indicating the maximum censored value; this argument is for modeling censored (suppressed) outcome data, typically disease case counts or deaths. For example, the US Centers for Disease Control and Prevention censors (does not report) death counts that are nine or fewer, so if you're using CDC WONDER mortality data you could provide <code>censor_point = 9</code>.</p></td>
     </tr>
     <tr>
       <th>chains</th>
@@ -275,7 +280,7 @@
 <dt>re</dt><dd><p>A list containing <code>re</code>, the random effects (varying intercepts) formula if provided, and
 <code>Data</code> a data frame with columns <code>id</code>, the grouping variable, and <code>idx</code>, the index values assigned to each group.</p></dd>
 <dt>priors</dt><dd><p>Prior specifications.</p></dd>
-<dt>x_center</dt><dd><p>If covariates are centered internally (i.e., <code>centerx</code> is not <code>FALSE</code>), then <code>x_centers</code> is the numeric vector of values on which the covariates were centered.</p></dd>
+<dt>x_center</dt><dd><p>If covariates are centered internally (<code>centerx = TRUE</code>), then <code>x_center</code> is a numeric vector of the values on which covariates were centered.</p></dd>
 <dt>ME</dt><dd><p>The <code>ME</code> data list, if one was provided by the user for measurement error models.</p></dd>
 <dt>spatial</dt><dd><p>NA, slot is maintained for use in <code>geostan_fit</code> methods.</p></dd>
 
@@ -329,14 +334,30 @@
        <span class='va'>sigma</span> <span class='op'>~</span> <span class='fu'><a href='priors.html'>student_t</a></span><span class='op'>(</span><span class='fl'>10</span>, <span class='fl'>0</span>, <span class='fl'>40</span><span class='op'>)</span>
 </code></pre>
 
-<p>The observational error is the difference between the survey estimate and <code>x_true</code>, the actual value of the variable during the period of the survey.</p>
+<p>For strongly skewed variables, such census tract poverty rates, it can be advantageous to apply a logit transformation to <code>x_true</code> before applying the CAR or Student t prior model. When the <code>logit</code> argument is used, the model becomes:</p><pre class='sourceCode r'><code>       <span class='va'>x</span> <span class='op'>~</span> <span class='fu'>Gauss</span><span class='op'>(</span><span class='va'>x_true</span>, <span class='va'>se</span><span class='op'>)</span>
+      <span class='fu'>logit</span><span class='op'>(</span><span class='va'>x_true</span><span class='op'>)</span> <span class='op'>~</span> <span class='fu'>MVGauss</span><span class='op'>(</span><span class='va'>mu</span>, <span class='va'>Sigma</span><span class='op'>)</span>
+</code></pre>
+
+<p>and similar for the Student t model.</p>
+
+<h3 class='hasAnchor' id='censored-counts'><a class='anchor' aria-hidden='true' href='#censored-counts'></a>Censored counts</h3>
+
+
+<p>Vital statistics systems and disease surveillance programs typically suppress case counts when they are smaller than a specific theshold value. In such cases, the observation of a censored count is not the same as a missing value; instead, you are informed that the value is an integer somewhere between zero and the threshold value. For Poisson models (<code>family = poisson()</code>), you can use the <code>censor_point</code> argument to encode this information into your model.</p>
+<p>Internally, <code>geostan</code> will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:</p><pre><code> p(y_i | data, model) = Poisson(y_i | fitted_i), 
+</code></pre>
+
+<p>as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:</p><pre><code>  p(y_j | data, model) = sum_{m=0}^censor_point Poisson( c_m | fitted_j),
+</code></pre>
+
+<p>For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide <code>censor_point = 9</code> and then the likelihood statmenet for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model paramters). See Donegan (2021) for additional discussion, references, and Stan code.</p>
 
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>
 
     <p>Connor Donegan, <a href='mailto:Connor.Donegan@UTDallas.edu'>Connor.Donegan@UTDallas.edu</a></p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='co'># \donttest{</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://ggplot2.tidyverse.org'>ggplot2</a></span><span class='op'>)</span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://r-spatial.github.io/sf/'>sf</a></span><span class='op'>)</span>
 <span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>sentencing</span><span class='op'>)</span>
@@ -361,10 +382,11 @@
 
 <span class='co'>## Posterior predictive distribution                                       </span>
 <span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://mc-stan.org/bayesplot/'>bayesplot</a></span><span class='op'>)</span>
-<span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span><span class='op'>(</span><span class='va'>fit.pois</span>, samples <span class='op'>=</span> <span class='fl'>75</span><span class='op'>)</span>
+<span class='va'>yrep</span> <span class='op'>&lt;-</span> <span class='fu'><a href='posterior_predict.html'>posterior_predict</a></span><span class='op'>(</span><span class='va'>fit.pois</span>, S <span class='op'>=</span> <span class='fl'>75</span><span class='op'>)</span>
 <span class='va'>y</span> <span class='op'>&lt;-</span> <span class='va'>sentencing</span><span class='op'>$</span><span class='va'>sents</span>
 <span class='fu'><a href='https://mc-stan.org/bayesplot/reference/PPC-distributions.html'>ppc_dens_overlay</a></span><span class='op'>(</span><span class='va'>y</span>, <span class='va'>yrep</span><span class='op'>)</span>
-<span class='op'>}</span>
+<span class='co'># }</span>
+
 </code></pre></div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

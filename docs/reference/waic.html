@@ -185,12 +185,13 @@
     <div class='dont-index'><p><code><a href='https://mc-stan.org/loo/reference/waic.html'>waic</a></code> <code><a href='https://mc-stan.org/loo/reference/loo.html'>loo</a></code></p></div>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code><span class='r-in'></span>
-<span class='r-in'><span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span></span>
-<span class='r-in'><span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span></span>
-<span class='r-in'><span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_glm.html'>stan_glm</a></span><span class='op'>(</span><span class='va'>college</span> <span class='op'>~</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>georgia</span><span class='op'>)</span></span>
-<span class='r-in'><span class='fu'>waic</span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span></span>
-<span class='r-in'><span class='op'>}</span></span>
+    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code>
+<span class='co'># \donttest{</span>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
+<span class='va'>fit</span> <span class='op'>&lt;-</span> <span class='fu'><a href='stan_glm.html'>stan_glm</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>rate.male</span><span class='op'>)</span> <span class='op'>~</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>georgia</span><span class='op'>)</span>
+<span class='fu'>waic</span><span class='op'>(</span><span class='va'>fit</span><span class='op'>)</span>
+<span class='co'># }</span>
+
 </code></pre></div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

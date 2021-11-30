@@ -20,3 +20,11 @@ Returns a numeric value.
 \description{
 Expected value for the Moran coefficient of model residuals under the null hypothesis of no spatial autocorrelation.
 }
+\examples{
+
+data(georgia)
+C <- shape2mat(georgia)
+X <- model.matrix(~ ICE + college, georgia)
+expected_mc(X, C)
+
+}

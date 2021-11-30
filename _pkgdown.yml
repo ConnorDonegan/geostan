@@ -35,7 +35,6 @@ reference:
 - contents:
   - auto_gaussian
   - edges
-  - exp_pars
   - get_shp
   - make_EV
   - prep_icar_data

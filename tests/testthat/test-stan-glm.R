@@ -25,6 +25,20 @@ test_that("GLM works", {
     expect_geostan(fit)    
 })
 
+test_that("GLM works, centerx = TRUE", {
+    SW(
+        fit <- stan_glm(deaths.male ~ offset(log(pop.at.risk.male)) + college + black,
+                    data = georgia,
+                    chains = 1,
+                    centerx = TRUE,
+                    family = poisson(),
+                    iter = iter,
+                    refresh = refresh)
+       )
+    expect_geostan(fit)
+})
+
+
 test_that("GLM works with covariate ME", {
     data(georgia)
     n <- nrow(georgia)
@@ -133,5 +147,27 @@ test_that("Set priors for GLM", {
     expect_geostan(fit)
 })
 
+
+
+test_that("GLM with censored y", {
+    data(georgia)
+    SW(
+        fit <- stan_glm(deaths.female ~ offset(log(pop.at.risk.female)) + ICE + college,
+                        censor_point = 9,
+                        data = georgia,
+                        chains = 1,
+                        family = poisson(),
+                        prior = list(
+                            beta = normal(location = c(0,0),
+                                                   scale = c(5,5)),
+                                     intercept = normal(-4, 5)
+                                     ),
+                    iter = iter,
+                    refresh = refresh,
+                    init_r = 0.1
+                    )
+    )
+    expect_geostan(fit)
+})
 
 

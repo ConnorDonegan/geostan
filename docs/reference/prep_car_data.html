@@ -231,10 +231,9 @@
 <span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'>prep_car_data</span><span class='op'>(</span><span class='va'>A</span>, <span class='st'>"WCAR"</span><span class='op'>)</span>
 <span class='fl'>1</span> <span class='op'>/</span> <span class='fu'><a href='https://rdrr.io/r/base/range.html'>range</a></span><span class='op'>(</span><span class='va'>cp</span><span class='op'>$</span><span class='va'>lambda</span><span class='op'>)</span>
 
-<span class='kw'>if</span> <span class='op'>(</span><span class='cn'>FALSE</span><span class='op'>)</span> <span class='op'>{</span>
+<span class='co'># \donttest{</span>
 <span class='co'>## pass the data to stan_car</span>
 <span class='va'>fit</span> <span class='op'>=</span> <span class='fu'><a href='stan_car.html'>stan_car</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/Log.html'>log</a></span><span class='op'>(</span><span class='va'>rate.male</span><span class='op'>)</span> <span class='op'>~</span> <span class='fl'>1</span>, data <span class='op'>=</span> <span class='va'>georgia</span>, car_parts <span class='op'>=</span> <span class='va'>cp</span><span class='op'>)</span>
-
 
 <span class='co'># ACAR specification</span>
 <span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'>prep_car_data</span><span class='op'>(</span><span class='va'>A</span>, <span class='st'>"ACAR"</span><span class='op'>)</span>
@@ -244,8 +243,8 @@
 <span class='va'>D</span> <span class='op'>&lt;-</span> <span class='fu'>sf</span><span class='fu'>::</span><span class='fu'><a href='https://r-spatial.github.io/sf/reference/geos_measures.html'>st_distance</a></span><span class='op'>(</span><span class='fu'>sf</span><span class='fu'>::</span><span class='fu'><a href='https://r-spatial.github.io/sf/reference/geos_unary.html'>st_centroid</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span><span class='op'>)</span>
 <span class='va'>A</span> <span class='op'>&lt;-</span> <span class='va'>D</span> <span class='op'>*</span> <span class='va'>A</span>
 <span class='va'>cp</span> <span class='op'>&lt;-</span> <span class='fu'>prep_car_data</span><span class='op'>(</span><span class='va'>A</span>, <span class='st'>"DCAR"</span>, k <span class='op'>=</span> <span class='fl'>1</span><span class='op'>)</span>
+<span class='co'># }</span>
 
-<span class='op'>}</span>
 </code></pre></div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

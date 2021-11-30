@@ -177,6 +177,14 @@
 
     <p>Returns a numeric value.</p>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <div class="ref-examples sourceCode"><pre class='sourceCode r'><code>
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
+<span class='va'>C</span> <span class='op'>&lt;-</span> <span class='fu'><a href='shape2mat.html'>shape2mat</a></span><span class='op'>(</span><span class='va'>georgia</span><span class='op'>)</span>
+<span class='va'>X</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/model.matrix.html'>model.matrix</a></span><span class='op'>(</span><span class='op'>~</span> <span class='va'>ICE</span> <span class='op'>+</span> <span class='va'>college</span>, <span class='va'>georgia</span><span class='op'>)</span>
+<span class='fu'>expected_mc</span><span class='op'>(</span><span class='va'>X</span>, <span class='va'>C</span><span class='op'>)</span>
+
+</code></pre></div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

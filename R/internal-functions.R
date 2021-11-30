@@ -28,24 +28,27 @@ family_2_int <- function(family) {
     if (family$family == "auto_gaussian") return (5)
 }
 
-#' center model matrix
-#'
+
 #' @noRd
-#' 
-#' @param x model matrix
-#' 
-#' @param center Logical indicator for centering covariates, or numeric vector of values on which covariates will be centered.s
-#' 
-#' @return centered model matrix. No special hanlding of indicator variables.
-#'
-center_x <- function(x, center) {
-    x <- scale(x, center = center, scale = FALSE)
-    x_center <- attributes(x)$`scaled:center`
-    if (center[1] || length(center) > 1) {
-        message("Centering covariates:")
-        for (i in 1:ncol(x)) message(" ", colnames(x)[i], ": ",  x_center[i])
+#' @param standata The list of data as passed to rstan::sampling
+#' @param samples The stanfit object returned by rstan::sampling
+#' If centerx = TRUE, return the values on which covariates were centered. Handle ME variables appropriately using modeled covariate mean.
+get_x_center <- function(standata, samples) {
+    if (standata$center_x == 0) return (NULL)
+    dx_obs <- standata$dx_obs
+    dx_me <- standata$dx_me
+    M <- dx_obs + dx_me
+    x_center <- vector(mode = "numeric", length = M)    
+    if (dx_obs > 0) {
+        x_obs_mean <- Matrix::colMeans(standata$x_obs)
+        x_center[standata$x_obs_idx] <- x_obs_mean
     }
-    return(x)
+    if (dx_me > 0) {
+        x_true <- as.matrix(samples, pars = 'mu_x_true')
+        x_true_mean <- apply(x_true, 2, mean)    
+        x_center[standata$x_me_idx] <- x_true_mean
+    }
+    return (x_center)
 }
 
 #' Create matrix of spatially lagged covariates, using prepared (i.e., possibly centered) model matrix.
@@ -73,12 +76,13 @@ SLX <- function(f, DF, x, W) {
 #' Prep data to return to user
 #'
 #' @noRd
-#' @param f formula
+#' @param frame Model frame from calling model.frame(formula, data, na.action = NULL)
 #' @param x Model matrix, including SLX terms if any, after centering and scaling
-#' @param df user provided data.frame
-make_data <- function(f, df, x) {
-    y <- model.response(model.frame(f, df))
-    offset <- model.offset(model.frame(f, df))
+#' @param y_mis_idx Index of censored counts in the outcome, if any.
+make_data <- function(frame, x, y_mis_idx) {
+    y <- model.response(frame)
+    if (length(y_mis_idx) > 0) y[y_mis_idx] <- NA
+    offset <- model.offset(frame)
     if (is.null(offset)) return(cbind(y, x))
     return(cbind(y, offset, x))
 }

@@ -24,11 +24,12 @@ Widely Application Information Criteria (WAIC) for model comparison
 }
 \examples{
 
-\dontrun{
+\donttest{
 data(georgia)
-fit <- stan_glm(college ~ 1, data = georgia)
+fit <- stan_glm(log(rate.male) ~ 1, data = georgia)
 waic(fit)
 }
+
 }
 \seealso{
 \code{\link[loo]{waic}} \code{\link[loo]{loo}}

@@ -36,6 +36,7 @@ stan_esf(
   prior = NULL,
   ME = NULL,
   centerx = FALSE,
+  censor_point,
   prior_only = FALSE,
   chains = 4,
   iter = 2000,
@@ -84,7 +85,9 @@ stan_esf(
 
 \item{ME}{To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a list of data as constructed by the \code{\link[geostan]{prep_me_data}} function.}
 
-\item{centerx}{To center predictors on their mean values, use \code{centerx = TRUE}. If \code{centerx} is a numeric vector, predictors will be centered on the values provided. This argument is passed to \code{\link[base]{scale}}.}
+\item{centerx}{To center predictors on their mean values, use \code{centerx = TRUE}. If the ME argument is used, the modeled covariate (i.e., latent variable), rather than the raw observations, will be centered. When using the ME argument, this is the recommended method for centering the covariates.}
+
+\item{censor_point}{Integer value indicating the maximum censored value; this argument is for modeling censored (suppressed) outcome data, typically disease case counts or deaths. For example, the US Centers for Disease Control and Prevention censors (does not report) death counts that are nine or fewer, so if you're using CDC WONDER mortality data you could provide \code{censor_point = 9}.}
 
 \item{prior_only}{Draw samples from the prior distributions of parameters only.}
 
@@ -114,7 +117,7 @@ An object of class class \code{geostan_fit} (a list) containing:
 \item{re}{A list containing \code{re},  the random effects (varying intercepts) formula if provided, and
 \code{data} a data frame with columns \code{id}, the grouping variable, and \code{idx}, the index values assigned to each group.}
 \item{priors}{Prior specifications.}
-\item{x_center}{If covariates are centered internally (i.e., \code{centerx} is not \code{FALSE}), then \code{x_centers} is the numeric vector of values on which the covariates were centered.}
+\item{x_center}{If covariates are centered internally (\code{centerx = TRUE}), then \code{x_center} is a numeric vector of the values on which covariates were centered.}
 \item{ME}{The \code{ME} data list, if one was provided by the user for measurement error models.}
 \item{spatial}{A data frame with the name of the spatial component parameter ("esf") and method ("ESF")}
 \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
@@ -173,11 +176,28 @@ where the covariance matrix, \code{Sigma}, has the conditional autoregressive sp
        sigma ~ student_t(10, 0, 40)
 }
 
-The observational error is the difference between the survey estimate and \code{x_true}, the actual value of the variable during the period of the survey.
+For strongly skewed variables, such census tract poverty rates, it can be advantageous to apply a logit transformation to \code{x_true} before applying the CAR or Student t prior model. When the \code{logit} argument is used, the model becomes:\preformatted{       x ~ Gauss(x_true, se)
+      logit(x_true) ~ MVGauss(mu, Sigma)
+}
+
+and similar for the Student t model.
+}
+
+\subsection{Censored counts}{
+
+Vital statistics systems and disease surveillance programs typically suppress case counts when they are smaller than a specific theshold value. In such cases, the observation of a censored count is not the same as a missing value; instead, you are informed that the value is an integer somewhere between zero and the threshold value. For Poisson models (\verb{family = poisson())}), you can use the \code{censor_point} argument to encode this information into your model.
+
+Internally, \code{geostan} will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:\preformatted{ p(y_i | data, model) = Poisson(y_i | fitted_i), 
+}
+
+as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:\preformatted{  p(y_j | data, model) = sum_\{m=0\}^censor_point Poisson( c_m | fitted_j),
+}
+
+For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide \code{censor_point = 9} and then the likelihood statmenet for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model paramters). See Donegan (2021) for additional discussion, references, and Stan code.
 }
 }
 \examples{
-\dontrun{
+\donttest{
 library(ggplot2)
 library(sf)
 library(bayesplot)
@@ -209,7 +229,7 @@ plot(fit.esf, pars = "beta_ev")
 plot(fit.esf, pars = "beta_ev")
 
 # posterior predictive distribution
-yrep <- posterior_predict(fit.esf, samples = 75)
+yrep <- posterior_predict(fit.esf, S = 75)
 y <- sentencing$sents
 bayesplot::ppc_dens_overlay(y, yrep) 
 

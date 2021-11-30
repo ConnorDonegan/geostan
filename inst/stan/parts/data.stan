@@ -1,8 +1,24 @@
 // likelihood function
   int<lower=0,upper=5> family;
+
 // number of observations
   int<lower=0> n; 
-  
+
+  int<lower=0> center_x;
+
+// censored counts
+  int<lower=0> n_mis;
+  int<lower=0> n_obs;
+  int y_mis_idx[n_mis];
+  int y_obs_idx[n_obs];
+  int censor_point;
+
+// outcome 
+  vector[n] y;
+  int<lower=0> y_int[n];
+  int<lower=0> trials[n];
+  int<lower=0,upper=1> prior_only;
+
 // offset
   vector[n] offset; 
   
@@ -64,11 +80,6 @@
   vector[3] prior_alpha_tau; // prior on standard deviation of varying intercepts
   vector[2] prior_t_nu;
   vector[3] prior_sigma;
-  // outcome 
-  vector[n] y;
-  int<lower=0> y_int[n];
-  int<lower=0> trials[n];
-  int<lower=0,upper=1> prior_only;
 
   // ICAR 
   int<lower=0,upper=3> type; // 0=glm, 1=icar, 2=bym, 3=bym2

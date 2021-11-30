@@ -44,7 +44,7 @@ n_eff <- function(n, rho) {
 #'
 #' @md
 #' 
-#' @description The approximate-profile likelihood estimator for the spatial autocorrelation parameter from a simultaneous autoregressive (SAR) model. Note, the `APLE` approximation is quite unreliable when the number of observations is large.
+#' @description The approximate-profile likelihood estimator for the spatial autocorrelation parameter from a simultaneous autoregressive (SAR) model (Li et al. 2007). Note, the `APLE` approximation is quite unreliable when the number of observations is large.
 #' 
 #' @param x Numeric vector of values, length `n`. This will be standardized internally with \code{scale(x)}.
 #' @param w An `n x n` row-standardized spatial connectivity matrix. See \link[geostan]{shape2mat}.
@@ -201,7 +201,7 @@ mc <- function(x, w, digits = 3, warn = TRUE) {
 #'
 #' If any observations with no neighbors are found (i.e. \code{any(Matrix::rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
 #' 
-#' @return Returns a \code{gg} plot, a scatter plot with \code{x} on the horizontal and its spatially lagged values on the vertical axis (i.e. a Moran plot).
+#' @return Returns a \code{gg} plot, a scatter plot with \code{x} on the horizontal and its spatially lagged values on the vertical axis (i.e. a Moran scatter plot).
 #'
 #' @seealso \link[geostan]{mc}, \link[geostan]{lisa}, \link[geostan]{aple}
 #'
@@ -837,12 +837,15 @@ count_neighbors <- function(z) {
 #' @param msg A warning message to print.
 #' @return A row-standardized matrix, W (i.e., all row sums equal 1, or zero).
 #' @examples
+#' 
 #' A <- shape2mat(georgia)
 #' head(Matrix::summary(A))
 #' Matrix::rowSums(A)
+#' 
 #' W <- row_standardize(A)
 #' head(Matrix::summary(W))
 #' Matrix::rowSums(W)
+#' 
 #' @importFrom Matrix rowSums
 #' @export
 row_standardize <- function(C, warn = TRUE, msg = "Row standardizing connectivity matrix") {
@@ -861,10 +864,15 @@ row_standardize <- function(C, warn = TRUE, msg = "Row standardizing connectivit
 #' @return An object of class \code{family}
 #' @seealso \code{\link[geostan]{stan_car}}
 #' @examples
-#' \dontrun{
+#' 
+#' \donttest{
 #' cp = prep_car_data(shape2mat(georgia))
-#' fit <- stan_car(log(rate.male) ~ 1, data = georgia, car_parts = cp, family = auto_gaussian())
+#' fit <- stan_car(log(rate.male) ~ 1,
+#'                 data = georgia,
+#'                 car_parts = cp,
+#'                 family = auto_gaussian())
 #' }
+#' 
 auto_gaussian <- function() {
     family <- list(family = "auto_gaussian", link = "identity")
     class(family) <- "family"
@@ -885,11 +893,12 @@ auto_gaussian <- function() {
 #'
 #' @examples
 #' 
-#' \dontrun{
+#' \donttest{
 #' data(georgia)
-#' fit <- stan_glm(college ~ 1, data = georgia)
+#' fit <- stan_glm(log(rate.male) ~ 1, data = georgia)
 #' waic(fit)
 #' }
+#' 
 #' @source
 #'
 #' Watanabe, S. (2010). Asymptotic equivalence of Bayes cross validation and widely application information criterion in singular learning theory. Journal of Machine Learning Research 11, 3571-3594.
@@ -920,6 +929,13 @@ waic <- function(fit, pointwise = FALSE, digits = 2) {
 #'  Chun, Yongwan and Griffith, Daniel A. (2013). Spatial statistics and geostatistics. Sage, p. 18.
 #' 
 #' @return Returns a numeric value.
+#'
+#' @examples
+#' 
+#' data(georgia)
+#' C <- shape2mat(georgia)
+#' X <- model.matrix(~ ICE + college, georgia)
+#' expected_mc(X, C)
 #' 
 expected_mc <- function(X, C) {
     C <- as.matrix(C)
@@ -930,69 +946,6 @@ expected_mc <- function(X, C) {
     return(as.numeric(mc))
 }
 
-#' Expected dimensions of an eigenvector spatial filter
-#'
-#' @description Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression. This is used internally for \code{\link[geostan]{stan_esf}}; the result can be used to set the prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior. A smaller value of `p0` leads to a more sparse specification.
-#' 
-#' 
-#' @param formula Model formula.
-#' @param data The data used to fit the model; must be coercible to a dataframe for use in \code{model.matrix}.
-#' @param C An N x N binary connectivity matrix.
-#' 
-#' @return Returns a numeric value representing the expected number of eigenvectors required to estimate a spatial filter (i.e. number of non-zero or 'large' coefficients).
-#' 
-#' @details Following Chun et al. (2016), the expected number of eigenvectors required to remove residual spatial autocorrelation from a model
-#'  is an increasing function of the degree of spatial autocorrelation in the outcome variable and the number of links in the connectivity matrix.
-#'
-#' @seealso \code{\link[geostan]{stan_esf}}
-#' 
-#' @source
-#'
-#' Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters. *Journal of Geographical Systems*, 18(1), 67-85. \doi{10.1007/s10109-015-0225-3}.
-#'
-#' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian estimation of spatial filters with Moran’s Eigenvectors and hierarchical shrinkage priors. *Spatial Statistics*. \doi{10.1016/j.spasta.2020.100450}.
-#'
-#' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In *Electronic Journal of Statistics*, 11(2):5018-5051.
-#' 
-#' @examples
-#'
-#' C <- shape2mat(georgia, "B")
-#' c(p0 = exp_pars(log(rate.male) ~ college, georgia, C))
-#' \dontrun{
-#'  fit <- stan_esf(log(rate.male) ~ college, data = georgia, p0 = p0, iter = 1e3)
-#' }
-#' 
-#' @importFrom stats model.matrix residuals lm
-#' @export
-#' @importFrom Matrix summary
-exp_pars <- function(formula, data, C) {
-    stopifnot(inherits(C, "matrix") | inherits(C, "Matrix"))
-##    C <- as(C, "ngCMatrix")
-    C <- Matrix::Matrix(C)
-    nlinks <- nrow(Matrix::summary(C))
-    N <- nrow(C)
-    ## if (any(!C %in% c(0, 1))) {
-    ##     C <- apply(C, 2, function(i) ifelse(i != 0, 1, 0))
-    ## }
-    M <- Matrix::Diagonal(N) - Matrix::Matrix(1, nrow = N, ncol = N)/N
-    MCM <- M %*% C %*% M
-    eigens <- eigen(MCM, symmetric = TRUE)
-    npos <- sum(eigens$values > 0)
-    sa <- mc(residuals(lm(formula, data = data)), C)
-    X <- model.matrix(formula, data)
-    E_sa <- expected_mc(X, C)
-    Sigma_sa <- sqrt( 2 / nlinks )
-    z_sa <- (sa - E_sa) / Sigma_sa
-    if (z_sa < -.59) {
-        z_sa = -.59
-        warning("The moran coefficient indicates very strong negative spatial autocorrelation, which this formula for obtaining the expected no. of eigenvectors was not designed for.")
-    }
-    a <- (6.1808 * (z_sa + .6)^.1742) / npos^.1298
-    b <- 3.3534 / (z_sa + .6)^.1742
-    denom <- 1 + exp(2.148 - a + b)
-    candidates <- round(npos / denom)
-    return(candidates)
-}
 
 #' Edge list
 #'
@@ -1243,11 +1196,10 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' cp <- prep_car_data(A, "WCAR")
 #' 1 / range(cp$lambda)
 #' 
-#' \dontrun{
+#' \donttest{
 #' ## pass the data to stan_car
 #' fit = stan_car(log(rate.male) ~ 1, data = georgia, car_parts = cp)
 #' 
-#'
 #' # ACAR specification
 #' cp <- prep_car_data(A, "ACAR")
 #'
@@ -1256,8 +1208,8 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' D <- sf::st_distance(sf::st_centroid(georgia))
 #' A <- D * A
 #' cp <- prep_car_data(A, "DCAR", k = 1)
-#'
 #' }
+#' 
 #' @export
 #' @md
 #' @importFrom rstan extract_sparse_parts
@@ -1438,3 +1390,70 @@ prep_me_data <- function(se, bounds = c(-Inf, Inf), car_parts, prior, logit = re
 }
 
 
+
+#' Expected dimensions of an eigenvector spatial filter
+#'
+#' @description Provides an informed guess for the number of eigenvectors required to remove spatial autocorrelation from a regression. This is used internally for \code{\link[geostan]{stan_esf}}; the result can be used to set the prior scale parameter for the global shrinkage parameter in the regularized horseshoe prior. A smaller value of `p0` leads to a more sparse specification.
+#' 
+#' 
+#' @param formula Model formula.
+#' @param data The data used to fit the model; must be coercible to a dataframe for use in \code{model.matrix}.
+#' @param C An N x N binary connectivity matrix.
+#' 
+#' @return Returns a numeric value representing the expected number of eigenvectors required to estimate a spatial filter (i.e. number of non-zero or 'large' coefficients).
+#' 
+#' @details Following Chun et al. (2016), the expected number of eigenvectors required to remove residual spatial autocorrelation from a model
+#'  is an increasing function of the degree of spatial autocorrelation in the outcome variable and the number of links in the connectivity matrix.
+#'
+#' @seealso \code{\link[geostan]{stan_esf}}
+#' 
+#' @source
+#'
+#' Chun, Y., D. A. Griffith, M. Lee and P. Sinha (2016). Eigenvector selection with stepwise regression techniques to construct eigenvector spatial filters. *Journal of Geographical Systems*, 18(1), 67-85. \doi{10.1007/s10109-015-0225-3}.
+#'
+#' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian estimation of spatial filters with Moran’s Eigenvectors and hierarchical shrinkage priors. *Spatial Statistics*. \doi{10.1016/j.spasta.2020.100450}.
+#'
+#' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In *Electronic Journal of Statistics*, 11(2):5018-5051.
+#' 
+#' @examples
+#'
+#' C <- shape2mat(georgia, "B")
+#' c(p0 <- exp_pars(log(rate.male) ~ college, georgia, C))
+#' 
+#' \donttest{
+#'  fit <- stan_esf(log(rate.male) ~ college, data = georgia, p0 = p0, iter = 1e3, C = C)
+#' }
+#' 
+#' @importFrom stats model.matrix residuals lm
+#' 
+#' @importFrom Matrix summary
+#' @noRd
+#' 
+exp_pars <- function(formula, data, C) {
+    stopifnot(inherits(C, "matrix") | inherits(C, "Matrix"))
+##    C <- as(C, "ngCMatrix")
+    C <- Matrix::Matrix(C)
+    nlinks <- nrow(Matrix::summary(C))
+    N <- nrow(C)
+    ## if (any(!C %in% c(0, 1))) {
+    ##     C <- apply(C, 2, function(i) ifelse(i != 0, 1, 0))
+    ## }
+    M <- Matrix::Diagonal(N) - Matrix::Matrix(1, nrow = N, ncol = N)/N
+    MCM <- M %*% C %*% M
+    eigens <- eigen(MCM, symmetric = TRUE)
+    npos <- sum(eigens$values > 0)
+    sa <- mc(residuals(lm(formula, data = data)), C)
+    X <- model.matrix(formula, data)
+    E_sa <- expected_mc(X, C)
+    Sigma_sa <- sqrt( 2 / nlinks )
+    z_sa <- (sa - E_sa) / Sigma_sa
+    if (z_sa < -.59) {
+        z_sa = -.59
+        warning("The moran coefficient indicates very strong negative spatial autocorrelation, which this formula for obtaining the expected no. of eigenvectors was not designed for.")
+    }
+    a <- (6.1808 * (z_sa + .6)^.1742) / npos^.1298
+    b <- 3.3534 / (z_sa + .6)^.1742
+    denom <- 1 + exp(2.148 - a + b)
+    candidates <- round(npos / denom)
+    return(candidates)
+}

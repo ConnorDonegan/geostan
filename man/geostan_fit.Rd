@@ -70,7 +70,7 @@ Methods \code{residuals}, \code{fitted}, \code{spatial} return a matrix containi
 Methods for fitted geostan models: extract residuals, fitted values, posterior predictive distribution or spatial component from a spatial regression model; extract samples from the posterior distribution; print regression results; plot posterior distributions.
 }
 \examples{
-\dontrun{
+\donttest{
 library(ggplot2)
 library(sf)
 data(sentencing)
@@ -87,8 +87,7 @@ fit <- stan_glm(sents ~ offset(log_e),
                    re = ~ name,
                    family = poisson(),
                    data = sentencing,
-                   C = C,
-                   refresh = 0
+                   C = C
 )
 
 # print and plot results
