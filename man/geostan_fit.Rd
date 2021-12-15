@@ -10,6 +10,7 @@
 \alias{fitted.geostan_fit}
 \alias{spatial}
 \alias{spatial.geostan_fit}
+\alias{predict.geostan_fit}
 \title{geostan_fit methods}
 \usage{
 \method{print}{geostan_fit}(
@@ -35,6 +36,8 @@
 spatial(object, summary = TRUE, ...)
 
 \method{spatial}{geostan_fit}(object, summary = TRUE, ...)
+
+\method{predict}{geostan_fit}(object, newdata, summary = TRUE, type = c("link", "response"), ...)
 }
 \arguments{
 \item{x}{A fitted model object of class \code{geostan_fit}.}
@@ -58,9 +61,15 @@ spatial(object, summary = TRUE, ...)
 \item{rates}{For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to \code{TRUE}.}
 
 \item{detrend}{For CAR models with Gaussian likelihood only (auto-gaussian); if \code{detrend = TRUE}, the implicit spatial trend will be removed from the residuals. The implicit spatial trend is \code{Trend = rho * C \%*\% (Y - Mu)} (see \code{\link[geostan]{stan_car}}). I.e., \code{resid = Y - (Mu + Trend)}.}
+
+\item{newdata}{A data frame in which to look for variables with which to predict, presumably for the purpose of viewing marginal effects. Note that if the model formula includes an offset term, \code{newdata} must contain a column with te appropriate name for the offset, even tough it will be ignored (you may set all values to 1). Also, any spatially-lagged covariate terms will be ignored if they were provided using the \code{slx} argument. If covariates in the model were centered using the \code{centerx} argument, the \code{predict.geostan_fit} method will center the predictors in \code{newdata} internally using the values stored in \code{fit$x_center}. If \code{newdata} is missing, user arguments will be passed to the \code{fitted} method to return the fitted values of the model.}
+
+\item{type}{By default, results are on the scale of the linear predictor (\verb{type = "link")}). The alternative (\code{type = "response"}) is on the scale of the response variable. Thus, for a Poisson model the default predictive values are log-rates, and type = "response" gives the rates (by exponentiating the log-rates).}
 }
 \value{
-Methods \code{residuals}, \code{fitted}, \code{spatial} return a matrix containing all samples for each observation if \code{summary = FALSE}, else if \code{summary = TRUE} a \code{data.frame} containing a summary of the posterior distribution at each observation (of, respectively, residuals, fitted values, or the spatial trend).
+Methods \code{residuals}, \code{fitted}, \code{predict}, and \code{spatial} return a matrix containing all samples for each observation if \code{summary = FALSE}, else if \code{summary = TRUE} a \code{data.frame} containing a summary of the posterior distribution at each observation (of, respectively, residuals, fitted values, or the spatial trend).
+
+The \code{predict} method is designed for reviewing marginal effects of covariates. Thus, results do not include spatial trends or offset terms. Results are return on the scale of the linear predictor. To obtain the fitted values of the model (as opposed to predictions from new data), use the \code{fitted} method. For the posterior predictive distribution, see \code{\link[geostan]{posterior_predict}}.
 
 \code{plot} returns a \code{ggplot} object that can be customized using the \code{ggplot2} package.
 
@@ -119,11 +128,34 @@ S.array <- as.array(fit, pars = c("intercept", "alpha_re", "alpha_tau"))
 S.monitor <- rstan::monitor(S.array, print = FALSE, warmup = 0)
 head(S.monitor)
 
-# extract data.frame of posterior samples
-S <- as.data.frame(fit, pars = "alpha_re")
+## marginal effects
+data(georgia)
+C <- shape2mat(georgia, style = "B")
+cp <- prep_car_data(C)
+georgia$income <- georgia$income/1e3
+
+fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)) + log(income),
+                slx = ~ log(income),
+                centerx = TRUE,
+                car_parts = cp,
+                data = georgia,
+                family = poisson(),
+                chains = 2, iter = 500) # for speed only
+
+newdata <- data.frame(
+    income = seq(35, 100, by = 1),
+    pop.at.risk.male = 1
+)
+
+p <- predict(fit, newdata, type = "response")
+plot(newdata$income, p$mean * 100e3,
+     main = "Deaths per 100,000",
+     ylab = NA,
+     xlab = "Median county income ($1,000s)")
+
 }
 
 }
 \seealso{
-\link[geostan]{stan_glm}, \link[geostan]{stan_esf}, \link[geostan]{stan_icar}, \link[geostan]{stan_car}
+\code{\link[geostan]{posterior_predict}}, \code{\link[geostan]{stan_glm}}, \code{\link[geostan]{stan_esf}}, \code{\link[geostan]{stan_icar}}, \code{\link[geostan]{stan_car}}
 }

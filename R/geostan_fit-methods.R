@@ -2,10 +2,13 @@
 #'
 #' @description Methods for fitted geostan models: extract residuals, fitted values, posterior predictive distribution or spatial component from a spatial regression model; extract samples from the posterior distribution; print regression results; plot posterior distributions.
 #'
-#' 
 #' @param object A fitted model object of class \code{geostan_fit}.
 #' @param x A fitted model object of class \code{geostan_fit}.
 #' @param summary Logical; should the values be summarized with the mean, standard deviation and quantiles (\code{probs = c(.025, .2, .5, .8, .975)}) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.
+#' @param newdata A data frame in which to look for variables with which to predict, presumably for the purpose of viewing marginal effects. Note that if the model formula includes an offset term, `newdata` must contain a column with te appropriate name for the offset, even tough it will be ignored (you may set all values to 1). Also, any spatially-lagged covariate terms will be ignored if they were provided using the `slx` argument. If covariates in the model were centered using the `centerx` argument, the `predict.geostan_fit` method will center the predictors in `newdata` internally using the values stored in `fit$x_center`. If `newdata` is missing, user arguments will be passed to the `fitted` method to return the fitted values of the model.
+#' 
+#' @param type By default, results are on the scale of the linear predictor (`type = "link")`). The alternative (`type = "response"`) is on the scale of the response variable. Thus, for a Poisson model the default predictive values are log-rates, and type = "response" gives the rates (by exponentiating the log-rates).
+#' 
 #' @param pars parameters to include; a character string (or vector) of parameter names.
 #' @param plotfun Argument passed to \code{rstan::plot}. Options include histograms ("hist"), MCMC traceplots ("trace"), and density plots ("dens"). Diagnostic plots are also available such as Rhat statistics ("rhat"), effective sample size ("ess"), and MCMC autocorrelation ("ac").
 #' @param digits number of digits to print
@@ -16,13 +19,15 @@
 #' @param ... additional arguments.
 #' @return
 #'
-#' Methods \code{residuals}, \code{fitted}, \code{spatial} return a matrix containing all samples for each observation if \code{summary = FALSE}, else if \code{summary = TRUE} a \code{data.frame} containing a summary of the posterior distribution at each observation (of, respectively, residuals, fitted values, or the spatial trend).
+#' Methods \code{residuals}, \code{fitted}, \code{predict}, and \code{spatial} return a matrix containing all samples for each observation if \code{summary = FALSE}, else if \code{summary = TRUE} a \code{data.frame} containing a summary of the posterior distribution at each observation (of, respectively, residuals, fitted values, or the spatial trend).
+#'
+#' The \code{predict} method is designed for reviewing marginal effects of covariates. Thus, results do not include spatial trends or offset terms. Results are return on the scale of the linear predictor. To obtain the fitted values of the model (as opposed to predictions from new data), use the \code{fitted} method. For the posterior predictive distribution, see \code{\link[geostan]{posterior_predict}}. 
 #'
 #' \code{plot} returns a \code{ggplot} object that can be customized using the \code{ggplot2} package.
 #'
 #' \code{as.matrix}, \code{as.data.frame}, \code{as.array} return samples from the joint posterior distribution of parameters in the format corresponding to their names. The \code{pars} argument is used to return samples from only a subset of parameters.
 #'
-#' @seealso \link[geostan]{stan_glm}, \link[geostan]{stan_esf}, \link[geostan]{stan_icar}, \link[geostan]{stan_car}
+#' @seealso \code{\link[geostan]{posterior_predict}}, \code{\link[geostan]{stan_glm}}, \code{\link[geostan]{stan_esf}}, \code{\link[geostan]{stan_icar}}, \code{\link[geostan]{stan_car}}
 #' 
 #' @examples 
 #' \donttest{
@@ -73,9 +78,32 @@
 #' S.array <- as.array(fit, pars = c("intercept", "alpha_re", "alpha_tau"))
 #' S.monitor <- rstan::monitor(S.array, print = FALSE, warmup = 0)
 #' head(S.monitor)
+#'
+#' ## marginal effects
+#' data(georgia)
+#' C <- shape2mat(georgia, style = "B")
+#' cp <- prep_car_data(C)
+#' georgia$income <- georgia$income/1e3
 #' 
-#' # extract data.frame of posterior samples
-#' S <- as.data.frame(fit, pars = "alpha_re")
+#' fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)) + log(income),
+#'                 slx = ~ log(income),
+#'                 centerx = TRUE,
+#'                 car_parts = cp,
+#'                 data = georgia,
+#'                 family = poisson(),
+#'                 chains = 2, iter = 500) # for speed only
+#'
+#' newdata <- data.frame(
+#'     income = seq(35, 100, by = 1),
+#'     pop.at.risk.male = 1
+#' )
+#'
+#' p <- predict(fit, newdata, type = "response")
+#' plot(newdata$income, p$mean * 100e3,
+#'      main = "Deaths per 100,000",
+#'      ylab = NA,
+#'      xlab = "Median county income ($1,000s)")
+#'
 #' }
 #' 
 #' @export
@@ -247,5 +275,29 @@ spatial.geostan_fit <- function(object, summary = TRUE, ...) {
   } else {
       return( spatial.samples )
   }
+}
+
+#' @export
+#' @method predict geostan_fit
+#' @rdname geostan_fit
+predict.geostan_fit <- function(object, newdata, summary = TRUE, type = c("link", "response"), ...) {
+    type <- match.arg(type)
+    if (missing(newdata)) return (fitted(object, summary = summary, ...))
+    f <- object$formula[-2]
+    X <- model.matrix(f, newdata)
+    X[,-1] <- scale(as.matrix(X[,-1]), center = object$x_center, scale = FALSE)
+    A <- as.matrix(object, pars = "intercept")
+    B <- as.matrix(object, pars = "beta")
+    B <- cbind(A, B)    
+    M <- nrow(B)
+    N <- nrow(X)
+    P <- matrix(NA, nrow = M, ncol = N)
+    for (m in 1:M) P[m,] <- X %*% B[m,]
+    if (type == "response") {
+        if (object$family$link == "log") P <- exp(P)
+        if (object$family$link == "logit") P <- inv_logit(P)
+    }
+    if (summary) P <- post_summary(P)
+    return (P)
 }
 

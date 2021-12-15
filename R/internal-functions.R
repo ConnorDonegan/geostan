@@ -1,7 +1,3 @@
-
-
-
-
 #' Remove intercept from formula
 #' 
 #' @noRd
@@ -45,12 +41,14 @@ get_x_center <- function(standata, samples) {
     }
     if (dx_me > 0) {
         x_true <- as.matrix(samples, pars = 'mu_x_true')
-        x_true_mean <- apply(x_true, 2, mean)    
+        x_true_mean <- apply(x_true, 2, mean)
+        ulo <- standata$use_logit
+        for (k in 1:dx_me) if (ulo[k]) x_true_mean[k] <- inv_logit(x_true_mean[k])     
         x_center[standata$x_me_idx] <- x_true_mean
     }
     return (x_center)
 }
-
+    
 #' Create matrix of spatially lagged covariates, using prepared (i.e., possibly centered) model matrix.
 #' 
 #' @importFrom stats model.matrix
@@ -120,6 +118,10 @@ post_summary <- function(samples) {
 #' @noRd
 #' @param p probability
 logit <- function(p) log(p/(1-p))
+
+#' inverse logit
+#' @noRd
+inv_logit <- function(x) exp(x)/(1 + exp(x))
 
 #' Build list of priors
 #' 
