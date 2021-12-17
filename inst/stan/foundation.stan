@@ -26,13 +26,7 @@ transformed parameters {
       }
     }  
     if (dwx) {
-      if (has_me) {
-      for (i in 1:dwx) {
-	fitted += csr_matrix_times_vector(n, n, W_w, W_v, W_u, x_all[,wx_idx[i]]) * gamma[i];
-      }
-      } else {
-	fitted += WX * gamma;
-      }
+      for (i in 1:dwx) fitted += csr_matrix_times_vector(n, n, W_w, W_v, W_u, x_all[,wx_idx[i]]) * gamma[i];      
     } 
     if (dx_all) fitted += x_all * beta;
   }
