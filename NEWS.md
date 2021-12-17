@@ -2,13 +2,15 @@
 
 ## measurement error models improved
 
-The measurement error models have been updated in three important respects:
+1. The measurement error models have been updated in three important respects:
 
-  (1) There is now a prep_me_data function which must be used to create the list of data for the ME models. See `?prep_me_data`.
-  (2) For covariates that are proportions or rates, the ME models now have an option for using a logit transformation on the variable. Again, see `?prep_me_data` for usage.
-  (3) Previously, when using `stan_car`, ME models automatically employed the CAR model as a prior for the modeled covariates. That has changed, so that the default behavior for the ME models is the same across all `stan_*` models (CAR, GLM, ESF, ICAR). 
+  (a) There is now a prep_me_data function which must be used to create the list of data for the ME models. See `?prep_me_data`.
+  (b) For covariates that are proportions or rates, the ME models now have an option for using a logit transformation on the variable. Again, see `?prep_me_data` for usage.
+  (c) Previously, when using `stan_car`, ME models automatically employed the CAR model as a prior for the modeled covariates. That has changed, so that the default behavior for the ME models is the same across all `stan_*` models (CAR, GLM, ESF, ICAR). 
 
-The second change addresses a limitation of the CAR prior models for the ME models. These are particularly important for variables that are highly skewed, such as the poverty rate. To determine whether a transformation should be considered, it can be helpful to evaluate results of the ME model (with the untransformed covariate) using the `me_diag` function. The logit transform is done on the 'latent' (modeled) variable, not the raw covariate. This transformation cannot be applied to the raw data by the user because that would require the standard errors of covariate estimates (e.g., ACS standard errors) to be adjusted for the transformation.
+The second change listed above is particularly useful for variables that are highly skewed, such as the poverty rate. To determine whether a transformation should be considered, it can be helpful to evaluate results of the ME model (with the untransformed covariate) using the `me_diag` function. The logit transform is done on the 'latent' (modeled) variable, not the raw covariate. This transformation cannot be applied to the raw data by the user because that would require the standard errors of covariate estimates (e.g., ACS standard errors) to be adjusted for the transformation.
+
+2. Users can now model left-censored count data; this is designed for modeling mortality or disease rates when case counts below a certain number have been suppressed by the reporting agency. This functionality is available for all of the Poisson models (GLM, CAR, ESF, ICAR) through the `censor_point` argument.
 
 ## Models for censored disease and mortality data
 
