@@ -261,7 +261,6 @@ stan_glm <- function(formula,
           Wx <- SLX(f = slx, DF = mod_frame, x = xraw, W = W)
           dwx <- ncol(Wx)
           wx_idx <- as.array( which(paste0("w.", colnames(xraw)) %in% colnames(Wx)), dim = dwx )
-
           x_full <- cbind(Wx, xraw)
       }
   }

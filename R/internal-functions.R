@@ -54,11 +54,8 @@ get_x_center <- function(standata, samples) {
 #' @importFrom stats model.matrix
 #'
 #' @param f formula (from slx)
-#'
 #' @param DF `as.data.frame(data)`
-#'
 #' @param x The possibly centered model matrix, no intercept
-#'
 #' @param W row-standardized spatial weights matrix
 #' 
 #' @noRd
