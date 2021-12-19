@@ -30,7 +30,7 @@ family_2_int <- function(family) {
 #' @param samples The stanfit object returned by rstan::sampling
 #' If centerx = TRUE, return the values on which covariates were centered. Handle ME variables appropriately using modeled covariate mean.
 get_x_center <- function(standata, samples) {
-    if (standata$center_x == 0) return (NULL)
+    if (standata$center_x == 0) return (FALSE)
     dx_obs <- standata$dx_obs
     dx_me <- standata$dx_me
     M <- dx_obs + dx_me

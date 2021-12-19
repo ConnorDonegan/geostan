@@ -5,9 +5,14 @@
 #' @param object A fitted model object of class \code{geostan_fit}.
 #' @param x A fitted model object of class \code{geostan_fit}.
 #' @param summary Logical; should the values be summarized with the mean, standard deviation and quantiles (\code{probs = c(.025, .2, .5, .8, .975)}) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.
-#' @param newdata A data frame in which to look for variables with which to predict, presumably for the purpose of viewing marginal effects. Note that if the model formula includes an offset term, `newdata` must contain a column with te appropriate name for the offset, even tough it will be ignored (you may set all values to 1). Also, any spatially-lagged covariate terms will be ignored if they were provided using the `slx` argument. If covariates in the model were centered using the `centerx` argument, the `predict.geostan_fit` method will center the predictors in `newdata` internally using the values stored in `fit$x_center`. If `newdata` is missing, user arguments will be passed to the `fitted` method to return the fitted values of the model.
+#' @param newdata A data frame in which to look for variables with which to predict, presumably for the purpose of viewing marginal effects. Note that if the model formula includes an offset term, `newdata` must contain a column with the appropriate name for the offset, even though the values will be ignored (you may set all values to 1); you must use the `alpha` argument to include any additional terms. Note also that any spatially-lagged covariate terms will be ignored if they were provided using the `slx` argument. If covariates in the model were centered using the `centerx` argument, the `predict.geostan_fit` method will automatically center the predictors in `newdata` internally using the values stored in `fit$x_center`. If `newdata` is missing, user arguments will be passed to the `fitted.geostan_fit` method to return the fitted values of the model.
 #' 
-#' @param type By default, results are on the scale of the linear predictor (`type = "link")`). The alternative (`type = "response"`) is on the scale of the response variable. Thus, for a Poisson model the default predictive values are log-rates, and type = "response" gives the rates (by exponentiating the log-rates).
+#' @param alpha A single numeric value or a numeric vector with length equal to `nrow(newdata)`; `alpha` serves as the intercept in the linear predictor. The default is to use the posterior mean of the intercept. Even if \code{type = "response"}, this needs to be provided on the scale of the linear predictor. See `Details` for additional information.
+#'
+#' @param center May be a vector of numeric values or a logical scalar to pass to \code{\link[base]{scale}}. Defaults to using `object$x_center`. If the model was fit using `centerx = TRUE`, then covariates were centered and their mean values are stored in `object$x_center` and the `predict` method will use them to automatically center `newdata`; if the model was fit with `centerx = FALSE`, then `object$x_center = FALSE` and `newdata` will not be centered. 
+#' 
+#' @param type By default, results from `predict` are on the scale of the linear predictor (`type = "link")`). The alternative (`type = "response"`) is on the scale of the response variable. For example, the default return values for a Poisson model are log-rates, and using `type = "response"` will return the rates (by exponentiating the log-rates).
+#' 
 #' 
 #' @param pars parameters to include; a character string (or vector) of parameter names.
 #' @param plotfun Argument passed to \code{rstan::plot}. Options include histograms ("hist"), MCMC traceplots ("trace"), and density plots ("dens"). Diagnostic plots are also available such as Rhat statistics ("rhat"), effective sample size ("ess"), and MCMC autocorrelation ("ac").
@@ -17,11 +22,24 @@
 #' @param rates For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to `TRUE`.
 #' @param detrend For CAR models with Gaussian likelihood only (auto-gaussian); if `detrend = TRUE`, the implicit spatial trend will be removed from the residuals. The implicit spatial trend is `Trend = rho * C %*% (Y - Mu)` (see \code{\link[geostan]{stan_car}}). I.e., `resid = Y - (Mu + Trend)`.
 #' @param ... additional arguments.
+#'
+#' @details
+#' 
+#' ### predict.geostan_fit
+#'
+#' The purpose of the predict method is to explore marginal effects of (combinations of) covariates. The method sets the intercept equal to its posterior mean (i.e., `alpha = mean(as.matrix(object, pars = "intercept"))`); the only source of uncertainty in the results is the posterior distribution of the coefficients, which can be obtained using `Beta = as.matrix(object, pars = "beta")`. The results returned by `predict.geostan_fit` are obtain by (a summary of):
+#'```
+#'   for (m in 1:M) preds[m,] = alpha + X * Beta[m,] 
+#'```
+#' where `M` is the number of MCMC samples in the model (`M = nrow(Beta)`) and `preds` is a matrix of predicted values.
+#' 
+#' Be aware that in non-linear models (including Poisson and Binomial models) marginal effects of each covariate are sensitive to the level of other covariates in the model. If the model includes any spatially-lagged covariates (introduced using the `slx` argument) or a spatial autocorrelation term, these terms will essentially be fixed at zero for the purposes of calculating marginal effects. To explore the impact of these (missing) terms, you can add their values to the linear predictor using the `alpha` argument. 
+#' 
 #' @return
 #'
-#' Methods \code{residuals}, \code{fitted}, \code{predict}, and \code{spatial} return a matrix containing all samples for each observation if \code{summary = FALSE}, else if \code{summary = TRUE} a \code{data.frame} containing a summary of the posterior distribution at each observation (of, respectively, residuals, fitted values, or the spatial trend).
+#' Methods \code{residuals}, \code{fitted}, \code{predict}, and \code{spatial} return a matrix containing all samples for each observation if \code{summary = FALSE}, else if \code{summary = TRUE} a \code{data.frame} containing a summary of the posterior distribution at each observation (of, respectively, residuals, fitted values, predicted values, or the spatial trend). The \code{predict} method will return a data frame with a summary of results together with use-provided `newdata`.
 #'
-#' The \code{predict} method is designed for reviewing marginal effects of covariates. Thus, results do not include spatial trends or offset terms. Results are return on the scale of the linear predictor. To obtain the fitted values of the model (as opposed to predictions from new data), use the \code{fitted} method. For the posterior predictive distribution, see \code{\link[geostan]{posterior_predict}}. 
+#' The \code{predict} method is designed for reviewing marginal effects of covariates. Thus, results do not include spatial trends or offset terms. To obtain the fitted values of the model (as opposed to predictions from new data), use the \code{fitted} method. For the posterior predictive distribution, see \code{\link[geostan]{posterior_predict}}. 
 #'
 #' \code{plot} returns a \code{ggplot} object that can be customized using the \code{ggplot2} package.
 #'
@@ -47,8 +65,8 @@
 #'                    re = ~ name,
 #'                    family = poisson(),
 #'                    data = sentencing,
-#'                    C = C
-#' )
+#'                    C = C,
+#'                    chains = 2, iter = 500) # for speed only
 #'
 #' # print and plot results
 #' print(fit)
@@ -94,13 +112,13 @@
 #'                 chains = 2, iter = 500) # for speed only
 #'
 #' newdata <- data.frame(
-#'     income = seq(35, 100, by = 1),
+#'     income = seq(min(georgia$income), max(georgia$income), by = 1),
 #'     pop.at.risk.male = 1
 #' )
 #'
 #' p <- predict(fit, newdata, type = "response")
-#' plot(newdata$income, p$mean * 100e3,
-#'      main = "Deaths per 100,000",
+#' plot(newdata$income, p$mean * 1e3,
+#'      main = "Deaths per 1,000",
 #'      ylab = NA,
 #'      xlab = "Median county income ($1,000s)")
 #'
@@ -280,24 +298,25 @@ spatial.geostan_fit <- function(object, summary = TRUE, ...) {
 #' @export
 #' @method predict geostan_fit
 #' @rdname geostan_fit
-predict.geostan_fit <- function(object, newdata, summary = TRUE, type = c("link", "response"), ...) {
+predict.geostan_fit <- function(object, newdata, alpha = mean(as.matrix(object, pars = "intercept")), center = object$x_center, summary = TRUE, type = c("link", "response"), ...) {
     type <- match.arg(type)
     if (missing(newdata)) return (fitted(object, summary = summary, ...))
     f <- object$formula[-2]
-    X <- model.matrix(f, newdata)
-    X[,-1] <- scale(as.matrix(X[,-1]), center = object$x_center, scale = FALSE)
-    A <- as.matrix(object, pars = "intercept")
-    B <- as.matrix(object, pars = "beta")
-    B <- cbind(A, B)    
+    X <- as.matrix(model.matrix(f, newdata)[,-1])    
+    X <- scale(X, center = center, scale = FALSE)
+    B <- as.matrix(object, pars = "beta") 
     M <- nrow(B)
     N <- nrow(X)
     P <- matrix(NA, nrow = M, ncol = N)
-    for (m in 1:M) P[m,] <- X %*% B[m,]
+    for (m in 1:M) P[m,] <- alpha + X %*% B[m,] 
     if (type == "response") {
         if (object$family$link == "log") P <- exp(P)
         if (object$family$link == "logit") P <- inv_logit(P)
     }
-    if (summary) P <- post_summary(P)
+    if (summary) {
+        P <- post_summary(P)
+        P <- cbind(newdata, alpha = alpha, P)
+    }
     return (P)
 }
 
