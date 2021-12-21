@@ -328,6 +328,8 @@ lisa <- function(x, w, type = TRUE) {
 #' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
 #' @param name The name to use on the plot labels; default to "y" or, if \code{y} is a \code{geostan_fit} object, to "Residuals".
 #' @param plot If \code{FALSE}, return a list of \code{gg} plots.
+#' @param mc Character string indicating how to plot the residual Moran coefficient: if `mc = "scatter"`, then \code{\link[geostan]{moran_plot}} will be used with the marginal residuals; if `mc = "hist"`, then a histogram of Moran coefficient values will be returned, where each plotted value represents the degree of residual autocorrelation in a draw from the join posterior distribution of model parameters.
+#' 
 #' @param style Style of connectivity matrix; if `w` is not provided, `style` is passed to \code{\link[geostan]{shape2mat}} and defaults to "W" for row-standardized.
 #' @param w An optional spatial connectivity matrix; if not provided, one will be created using \code{\link[geostan]{shape2mat}}.
 #' 
@@ -335,7 +337,7 @@ lisa <- function(x, w, type = TRUE) {
 #'
 #' @param ... Additional arguments passed to \code{\link[geostan]{residuals.geostan_fit}}. For binomial and Poisson models, this includes the option to view the outcome variable as a rate (the default) rather than a count; for \code{\link[geostan]{stan_car}} models with auto-Gaussian likelihood (`fit$family$family = "auto_gaussian"), the residuals will be detrended by default, but this can be changed using `detrend = FALSE`.
 #' 
-#' @return A grid of spatial diagnostic plots. When provided with a numeric vector, this function plots a histogram, Moran scatter plot, and map. When provided with a fitted `geostan` model, the function returns a point-interval plot of observed values against fitted values (mean and 95 percent credible interval), a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals, and a map of the mean posterior residuals (means of the marginal distributions).
+#' @return A grid of spatial diagnostic plots. When provided with a numeric vector, this function plots a histogram, Moran scatter plot, and map. When provided with a fitted `geostan` model, the function returns a point-interval plot of observed values against fitted values (mean and 95 percent credible interval), either a Moran scatter plot of residuals or a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals, and a map of the mean posterior residuals (means of the marginal distributions).
 #'
 #' If `plot = TRUE`, the `ggplots` are drawn using \code{\link[gridExtra]{grid.arrange}}; otherwise, they are returned in a list. For the `geostan_fit` method, the underlying data for the Moran coefficient will also be returned if `plot = FALSE`.
 #'
@@ -366,6 +368,7 @@ sp_diag <- function(y,
                    shape,
                    name = "y",
                    plot = TRUE,
+                   mc = c("scatter", "hist"),
                    style = c("W", "B"),
                    w = shape2mat(shape, match.arg(style)),
                    binwidth = function(x) 0.5 * sd(x),
@@ -390,13 +393,14 @@ sp_diag.geostan_fit <- function(y,
                             shape,
                             name = "Residual",
                             plot = TRUE,
+                            mc = c("scatter", "hist"),                            
                             style = c("W", "B"),
                             w = shape2mat(shape, match.arg(style)),
                             binwidth = function(x) 0.5 * stats::sd(x),
                             rates = TRUE,
                             size = 0.15,
                             ...) {
-
+    mc <- match.arg(mc)
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
     outcome <- y$data[,1] 
     fits <- fitted(y, summary = TRUE, rates = rates)
@@ -428,10 +432,14 @@ sp_diag.geostan_fit <- function(y,
                              label = signs::signs) +
         theme_void()
     # residual autocorrelation
+
     R <- residuals(y, summary = FALSE)    
     R.mc <- apply(R, 1, mc, w = w)
     if (length(unique(R.mc)) == 1) {
         g.mc <- moran_plot(R[1,], w, xlab = name)
+    }
+    if (mc == "scatter") {
+        g.mc <- moran_plot(marginal_residual, w, xlab = name)
     } else {
         R.mc.mu <- mean(R.mc)
         g.mc <- ggplot() +
@@ -503,6 +511,9 @@ sp_diag.numeric <- function(y,
 #' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf}.
 #' @param probs Lower and upper quantiles of the credible interval to plot. 
 #' @param plot If \code{FALSE}, return a list of \code{ggplot}s and a \code{data.frame} with the raw data values alongside a posterior summary of the modeled variable.
+#'
+#' @param mc Character string indicating how to plot the Moran coefficient for the delta values: if `mc = "scatter"`, then \code{\link[geostan]{moran_plot}} will be used with the marginal residuals; if `mc = "hist"`, then a histogram of Moran coefficient values will be returned, where each plotted value represents the degree of residual autocorrelation in a draw from the join posterior distribution of delta values.
+#' 
 #' @param size Size of points and lines, passed to \code{geom_pointrange}.
 #' @param index Integer value; use this if you wish to identify observations with the largest `n=index` absolute Delta values; data on the top `n=index` observations ordered by absolute Delta value will be printed to the console and the plots will be labeled with the indices of the identified observations.
 #' 
@@ -559,6 +570,7 @@ me_diag <- function(fit,
                     shape,
                     probs = c(0.025, 0.975),
                     plot = TRUE,
+                    mc = c("scatter", "hist"),
                     size = 0.25,
                     index = 0,
                     style = c("W", "B"),
@@ -568,13 +580,15 @@ me_diag <- function(fit,
     stopifnot(length(varname) == 1)    
     if (!varname %in% colnames(fit$data)) stop("varname is not found in colnames(fit$data). Provide the name of the variable as it appears in the model formula")
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
+    mc <- match.arg(mc)
     x.raw <- as.numeric(fit$data[,varname])
     probs = sort(probs)
     width = paste0(100 * (probs[2] - probs[1]), "%")     
     p.lwr <- paste0(100 * probs[1], "%")
     p.upr <- paste0(100 * probs[2], "%")
-    x <- as.matrix(fit)
-    x.samples <- x[,grep(paste0("^x_", varname), colnames(x))]
+    N <- nrow(fit$data)
+    par_names <- paste0("x_", varname, "[", 1:N, "]")    
+    x.samples <- as.matrix(fit, pars = par_names)
     x.mu <- apply(x.samples, 2, mean)
     x.ci <- apply(x.samples, 2, quantile, probs = probs)
     x.lwr <- x.ci[p.lwr, ]
@@ -610,18 +624,22 @@ me_diag <- function(fit,
         theme_classic()
     delta.mat <- t(apply(x.samples, 1, .resid, y = x.raw))
     df$Delta <- apply(delta.mat, 2, mean)
-    D.mc <- apply(delta.mat, 1, mc, w = w)
-    D.mc.mu <- mean(D.mc)
-    g.mc <- ggplot() +
-        geom_histogram(aes(D.mc),
-                       binwidth = binwidth(as.numeric(D.mc)),
-                       fill = "gray20",
-                       col = "gray90") +
-        scale_x_continuous(labels = signs::signs) +
-        theme_classic() +
-        labs(
-            x = expression(paste('MC (', Delta, ')')),
-            subtitle = paste0("Mean MC = ", round(D.mc.mu, 3)))    
+    if (mc == "scatter") {
+        g.mc <- moran_plot(df$Delta, w, xlab = bquote(hat(Delta)))
+        } else {    
+            D.mc <- apply(delta.mat, 1, mc, w = w)
+            D.mc.mu <- mean(D.mc)    
+            g.mc <- ggplot() +
+                geom_histogram(aes(D.mc),
+                               binwidth = binwidth(as.numeric(D.mc)),
+                               fill = "gray20",
+                               col = "gray90") +
+                scale_x_continuous(labels = signs::signs) +
+                theme_classic() +
+                labs(
+                    x = expression(paste('MC (', Delta, ')')),
+                    subtitle = paste0("Mean MC = ", round(D.mc.mu, 3)))
+    }
     map.delta <- ggplot(shape) +
         geom_sf(aes(fill = df$Delta),
                 lwd = 0.05,
