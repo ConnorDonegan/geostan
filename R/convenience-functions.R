@@ -328,7 +328,8 @@ lisa <- function(x, w, type = TRUE) {
 #' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
 #' @param name The name to use on the plot labels; default to "y" or, if \code{y} is a \code{geostan_fit} object, to "Residuals".
 #' @param plot If \code{FALSE}, return a list of \code{gg} plots.
-#' @param mc Character string indicating how to plot the residual Moran coefficient: if `mc = "scatter"`, then \code{\link[geostan]{moran_plot}} will be used with the marginal residuals; if `mc = "hist"`, then a histogram of Moran coefficient values will be returned, where each plotted value represents the degree of residual autocorrelation in a draw from the join posterior distribution of model parameters.
+#' 
+#' @param mc_style Character string indicating how to plot the residual Moran coefficient (only used if `y` is a fitted model): if `mc = "scatter"`, then \code{\link[geostan]{moran_plot}} will be used with the marginal residuals; if `mc = "hist"`, then a histogram of Moran coefficient values will be returned, where each plotted value represents the degree of residual autocorrelation in a draw from the join posterior distribution of model parameters.
 #' 
 #' @param style Style of connectivity matrix; if `w` is not provided, `style` is passed to \code{\link[geostan]{shape2mat}} and defaults to "W" for row-standardized.
 #' @param w An optional spatial connectivity matrix; if not provided, one will be created using \code{\link[geostan]{shape2mat}}.
@@ -368,7 +369,7 @@ sp_diag <- function(y,
                    shape,
                    name = "y",
                    plot = TRUE,
-                   mc = c("scatter", "hist"),
+                   mc_style = c("scatter", "hist"),
                    style = c("W", "B"),
                    w = shape2mat(shape, match.arg(style)),
                    binwidth = function(x) 0.5 * sd(x),
@@ -393,14 +394,14 @@ sp_diag.geostan_fit <- function(y,
                             shape,
                             name = "Residual",
                             plot = TRUE,
-                            mc = c("scatter", "hist"),                            
+                            mc_style = c("scatter", "hist"),                            
                             style = c("W", "B"),
                             w = shape2mat(shape, match.arg(style)),
                             binwidth = function(x) 0.5 * stats::sd(x),
                             rates = TRUE,
                             size = 0.15,
                             ...) {
-    mc <- match.arg(mc)
+    mc_style <- match.arg(mc_style, c("scatter", "hist"))
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
     outcome <- y$data[,1] 
     fits <- fitted(y, summary = TRUE, rates = rates)
@@ -432,13 +433,9 @@ sp_diag.geostan_fit <- function(y,
                              label = signs::signs) +
         theme_void()
     # residual autocorrelation
-
     R <- residuals(y, summary = FALSE)    
     R.mc <- apply(R, 1, mc, w = w)
-    if (length(unique(R.mc)) == 1) {
-        g.mc <- moran_plot(R[1,], w, xlab = name)
-    }
-    if (mc == "scatter") {
+    if (mc_style == "scatter") {
         g.mc <- moran_plot(marginal_residual, w, xlab = name)
     } else {
         R.mc.mu <- mean(R.mc)
@@ -453,6 +450,9 @@ sp_diag.geostan_fit <- function(y,
                 x = "Residual MC",
                 subtitle = paste0("MC (mean) = ", round(R.mc.mu, 2)))
     }
+    if (length(unique(R.mc)) == 1) {
+        g.mc <- moran_plot(R[1,], w, xlab = name)
+    }    
     if (plot) {
         return( gridExtra::grid.arrange(ovf, g.mc, map.y, ncol = 3) )
     } else {        
@@ -512,7 +512,7 @@ sp_diag.numeric <- function(y,
 #' @param probs Lower and upper quantiles of the credible interval to plot. 
 #' @param plot If \code{FALSE}, return a list of \code{ggplot}s and a \code{data.frame} with the raw data values alongside a posterior summary of the modeled variable.
 #'
-#' @param mc Character string indicating how to plot the Moran coefficient for the delta values: if `mc = "scatter"`, then \code{\link[geostan]{moran_plot}} will be used with the marginal residuals; if `mc = "hist"`, then a histogram of Moran coefficient values will be returned, where each plotted value represents the degree of residual autocorrelation in a draw from the join posterior distribution of delta values.
+#' @param mc_style Character string indicating how to plot the Moran coefficient for the delta values: if `mc = "scatter"`, then \code{\link[geostan]{moran_plot}} will be used with the marginal residuals; if `mc = "hist"`, then a histogram of Moran coefficient values will be returned, where each plotted value represents the degree of residual autocorrelation in a draw from the join posterior distribution of delta values.
 #' 
 #' @param size Size of points and lines, passed to \code{geom_pointrange}.
 #' @param index Integer value; use this if you wish to identify observations with the largest `n=index` absolute Delta values; data on the top `n=index` observations ordered by absolute Delta value will be printed to the console and the plots will be labeled with the indices of the identified observations.
@@ -570,7 +570,7 @@ me_diag <- function(fit,
                     shape,
                     probs = c(0.025, 0.975),
                     plot = TRUE,
-                    mc = c("scatter", "hist"),
+                    mc_style = c("scatter", "hist"),
                     size = 0.25,
                     index = 0,
                     style = c("W", "B"),
@@ -580,7 +580,7 @@ me_diag <- function(fit,
     stopifnot(length(varname) == 1)    
     if (!varname %in% colnames(fit$data)) stop("varname is not found in colnames(fit$data). Provide the name of the variable as it appears in the model formula")
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
-    mc <- match.arg(mc)
+    mc_style <- match.arg(mc_style, c("scatter", "hist"))
     x.raw <- as.numeric(fit$data[,varname])
     probs = sort(probs)
     width = paste0(100 * (probs[2] - probs[1]), "%")     
@@ -624,11 +624,11 @@ me_diag <- function(fit,
         theme_classic()
     delta.mat <- t(apply(x.samples, 1, .resid, y = x.raw))
     df$Delta <- apply(delta.mat, 2, mean)
-    if (mc == "scatter") {
+    D.mc <- apply(delta.mat, 1, mc, w = w)
+    D.mc.mu <- mean(D.mc)        
+    if (mc_style == "scatter") {
         g.mc <- moran_plot(df$Delta, w, xlab = bquote(hat(Delta)))
         } else {    
-            D.mc <- apply(delta.mat, 1, mc, w = w)
-            D.mc.mu <- mean(D.mc)    
             g.mc <- ggplot() +
                 geom_histogram(aes(D.mc),
                                binwidth = binwidth(as.numeric(D.mc)),

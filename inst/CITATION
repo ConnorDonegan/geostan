@@ -5,9 +5,9 @@ bibentry(
   author= "Donegan, Connor",
   url = "https://connordonegan.github.io/geostan/",
   year = 2021,
-  note = "R package version 0.1.1",
+  note = "R package version 0.1.2",
   textVersion = paste(
-        "Donegan, Connor (2021). geostan: Bayesian spatial analysis. R package version 0.1.0.",
+        "Donegan, Connor (2021). geostan: Bayesian spatial analysis. R package version 0.1.2.",
          "https://connordonegan.github.io/geostan/"
 )
 )

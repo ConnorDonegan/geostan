@@ -18,7 +18,7 @@ mc(x, w, digits = 3, warn = TRUE)
 
 \item{digits}{Number of digits to round results to.}
 
-\item{warn}{If `FALSE`, no warning will be printed to inform you when observations with zero neighbors have been dropped.}
+\item{warn}{If \code{FALSE}, no warning will be printed to inform you when observations with zero neighbors have been dropped.}
 }
 \value{
 The Moran coefficient, a numeric value.

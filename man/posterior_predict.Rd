@@ -11,16 +11,16 @@ posterior_predict(object, S, summary = FALSE, width = 0.95, car_parts, seed)
 
 \item{S}{Optional; number of samples to take from the posterior distribution. The default, and maximum, is the total number of samples stored in the model.}
 
-\item{summary}{Should the predictive distribution be summarized by its means and central quantile intervals? If \code{summary = FALSE}, an `S` x `N` matrix of samples will be returned. If \code{summary = TRUE}, then a `data.frame` with the means and `100*width` credible intervals is returned.}
+\item{summary}{Should the predictive distribution be summarized by its means and central quantile intervals? If \code{summary = FALSE}, an \code{S} x \code{N} matrix of samples will be returned. If \code{summary = TRUE}, then a \code{data.frame} with the means and \code{100*width} credible intervals is returned.}
 
-\item{width}{Only used if \code{summary = TRUE}, to set the quantiles for the credible intervals. Defaults to `width = 0.95`.}
+\item{width}{Only used if \code{summary = TRUE}, to set the quantiles for the credible intervals. Defaults to \code{width = 0.95}.}
 
-\item{car_parts}{Data for CAR model specification; only required for \code{\link[geostan]{stan_car}} with `family = auto_gaussian()`.}
+\item{car_parts}{Data for CAR model specification; only required for \code{\link[geostan]{stan_car}} with \code{family = auto_gaussian()}.}
 
 \item{seed}{A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution.}
 }
 \value{
-A matrix of size S x N containing samples from the posterior predictive distribution, where S is the number of samples drawn and N is the number of observations. If `summary = TRUE`, a `data.frame` with N rows and 3 columns is returned (with column names `mu`, `lwr`, and `upr`).
+A matrix of size S x N containing samples from the posterior predictive distribution, where S is the number of samples drawn and N is the number of observations. If \code{summary = TRUE}, a \code{data.frame} with N rows and 3 columns is returned (with column names \code{mu}, \code{lwr}, and \code{upr}).
 }
 \description{
 Draw samples from the posterior predictive distribution of a fitted \code{geostan} model.

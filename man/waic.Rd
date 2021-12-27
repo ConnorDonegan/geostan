@@ -12,7 +12,7 @@ waic(fit, pointwise = FALSE, digits = 2)
 \arguments{
 \item{fit}{An \code{geostan_fit} object or any Stan model with a parameter named "log_lik", the pointwise log likelihood of the observations.}
 
-\item{pointwise}{Logical (defaults to `FALSE`), should a vector of values for each observation be returned?}
+\item{pointwise}{Logical (defaults to \code{FALSE}), should a vector of values for each observation be returned?}
 
 \item{digits}{Round results to this many digits.}
 }

@@ -4,9 +4,6 @@
     <loc>https://connordonegan.github.io/geostan/404.html</loc>
   </url>
   <url>
-    <loc>https://connordonegan.github.io/geostan/LICENSE.html</loc>
-  </url>
-  <url>
     <loc>https://connordonegan.github.io/geostan/articles/index.html</loc>
   </url>
   <url>
@@ -28,19 +25,10 @@
     <loc>https://connordonegan.github.io/geostan/reference/aple.html</loc>
   </url>
   <url>
-    <loc>https://connordonegan.github.io/geostan/reference/append_priors.html</loc>
-  </url>
-  <url>
     <loc>https://connordonegan.github.io/geostan/reference/auto_gaussian.html</loc>
   </url>
   <url>
-    <loc>https://connordonegan.github.io/geostan/reference/count_neighbors.html</loc>
-  </url>
-  <url>
     <loc>https://connordonegan.github.io/geostan/reference/edges.html</loc>
-  </url>
-  <url>
-    <loc>https://connordonegan.github.io/geostan/reference/exp_pars.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/expected_mc.html</loc>
@@ -79,9 +67,6 @@
     <loc>https://connordonegan.github.io/geostan/reference/n_eff.html</loc>
   </url>
   <url>
-    <loc>https://connordonegan.github.io/geostan/reference/ohio.html</loc>
-  </url>
-  <url>
     <loc>https://connordonegan.github.io/geostan/reference/posterior_predict.html</loc>
   </url>
   <url>
@@ -92,9 +77,6 @@
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/prep_me_data.html</loc>
-  </url>
-  <url>
-    <loc>https://connordonegan.github.io/geostan/reference/prep_sp_me_data.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/priors.html</loc>
@@ -118,28 +100,16 @@
     <loc>https://connordonegan.github.io/geostan/reference/sp_diag.html</loc>
   </url>
   <url>
-    <loc>https://connordonegan.github.io/geostan/reference/spatial.html</loc>
-  </url>
-  <url>
     <loc>https://connordonegan.github.io/geostan/reference/stan_car.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/stan_esf.html</loc>
   </url>
   <url>
-    <loc>https://connordonegan.github.io/geostan/reference/stan_example.html</loc>
-  </url>
-  <url>
     <loc>https://connordonegan.github.io/geostan/reference/stan_glm.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/stan_icar.html</loc>
-  </url>
-  <url>
-    <loc>https://connordonegan.github.io/geostan/reference/student_t.html</loc>
-  </url>
-  <url>
-    <loc>https://connordonegan.github.io/geostan/reference/theil.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/waic.html</loc>

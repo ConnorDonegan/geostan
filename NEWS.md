@@ -4,7 +4,7 @@
 
 geostan now supports Poisson models with censored count data, a common problem in public health research where small area disease and mortality counts are censored below a threshold value. Model for censored outcome data can now be implemented using the `censor_point` argument found in all of the model fitting functions (stan_glm, stan_car, stan_esf, stan_icar).
 
-## measurement error models improved
+## Measurement error models improved
 
 The measurement error models have been updated in three important respects:
 

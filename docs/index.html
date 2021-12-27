@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" type="image/png" sizes="120x120" href="apple-touch-icon-120x120.png">
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="apple-touch-icon-60x60.png">
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/sandstone/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
 <script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
@@ -46,7 +46,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2</span>
       </span>
     </div>
 
@@ -55,20 +55,8 @@
 <li>
   <a href="reference/index.html">Reference</a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-    Articles
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="articles/measuring-sa.html">Measuring and visualizing spatial autocorrelation</a>
-    </li>
-    <li>
-      <a href="articles/spatial-me-models.html">Working with American Community Survey data</a>
-    </li>
-  </ul>
+  <a href="articles/index.html">Articles</a>
 </li>
 <li>
   <a href="news/index.html">Changelog</a>
@@ -76,7 +64,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/ConnorDonegan/geostan/">
+  <a href="https://github.com/ConnorDonegan/geostan/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
      
   </a>
@@ -93,63 +81,69 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="geostan-" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
-<a href="#geostan-" class="anchor" aria-hidden="true"></a>geostan <img src="reference/figures/logo.png" align="right" width="160">
-</h1></div>
-<p>The <strong>geostan</strong> R package supports a complete spatial analysis workflow with hierarchical Bayesian models (HBMs) for areal data and a variety of functions for visualizing spatial data and model results.</p>
-<p><strong>geostan</strong> is an interface to <a href="https://mc-stan.org" class="external-link">Stan</a>, a state-of-the-art platform for Bayesian inference.</p>
-<div id="disease-mapping-and-spatial-regression" class="section level3">
-<h3 class="hasAnchor">
-<a href="#disease-mapping-and-spatial-regression" class="anchor" aria-hidden="true"></a>Disease mapping and spatial regression</h3>
-<p>Model small-area incidence rates with mortality or disease data recorded across areal units like counties or census tracts.</p>
+
+<p><img src="reference/figures/logo.png" align="right" width="160"></p>
+<div class="section level2">
+<h2 id="geostan-bayesian-spatial-analysis">geostan: Bayesian spatial analysis<a class="anchor" aria-label="anchor" href="#geostan-bayesian-spatial-analysis"></a>
+</h2>
+<p>The <strong>geostan</strong> R package supports a complete spatial analysis workflow with hierarchical Bayesian models (HBMs) for areal data, including a variety of functions for visualizing spatial data and model results.</p>
+<p>The package is designed primarily to support public health research with spatial data; see the <a href="https://connordonegan.github.io/surveil" class="external-link"><strong>surveil</strong></a> R package for time series analysis of public health surveillance data.</p>
+<p><strong>geostan</strong> is an interface to <a href="https://mc-stan.org" class="external-link"><strong>Stan</strong></a>, a state-of-the-art platform for Bayesian inference.</p>
+<div class="section level3">
+<h3 id="disease-mapping-and-spatial-regression">Disease mapping and spatial regression<a class="anchor" aria-label="anchor" href="#disease-mapping-and-spatial-regression"></a>
+</h3>
+<p>Model small-area incidence rates with mortality or disease data recorded across areal units like states, counties, or census tracts.</p>
 </div>
-<div id="observational-uncertainty" class="section level3">
-<h3 class="hasAnchor">
-<a href="#observational-uncertainty" class="anchor" aria-hidden="true"></a>Observational uncertainty</h3>
-<p>Incorporate information on data reliability into any <strong>geostan</strong> model. Built specifically for American Community Survey (ACS) data.</p>
+<div class="section level3">
+<h3 id="observational-uncertainty">Observational uncertainty<a class="anchor" aria-label="anchor" href="#observational-uncertainty"></a>
+</h3>
+<p>Incorporate information on data reliability, such as standard errors of American Community Survey estimates, into any <strong>geostan</strong> model.</p>
 </div>
-<div id="spatial-analysis-tools" class="section level3">
-<h3 class="hasAnchor">
-<a href="#spatial-analysis-tools" class="anchor" aria-hidden="true"></a>Spatial analysis tools</h3>
-<p>Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model criticism.</p>
+<div class="section level3">
+<h3 id="censored-observations">Censored observations<a class="anchor" aria-label="anchor" href="#censored-observations"></a>
+</h3>
+<p>Vital statistics and disease surveillance systems like CDC Wonder censor case counts that fall below a threshold number; <strong>geostan</strong> can provide probability distributions for disease or mortality risk across all areas, censored or not.</p>
 </div>
-<div id="custom-stan-models" class="section level3">
-<h3 class="hasAnchor">
-<a href="#custom-stan-models" class="anchor" aria-hidden="true"></a>Custom Stan models</h3>
+<div class="section level3">
+<h3 id="spatial-analysis-tools">Spatial analysis tools<a class="anchor" aria-label="anchor" href="#spatial-analysis-tools"></a>
+</h3>
+<p>Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics. Visual diagnostics also support the evaluation of survey data quality and observational error models.</p>
+</div>
+<div class="section level3">
+<h3 id="the-rstan-ecosystem">The RStan ecosystem<a class="anchor" aria-label="anchor" href="#the-rstan-ecosystem"></a>
+</h3>
+<p>Compatible with a suite of high-quality R packages for Bayesian inference and model evaluation.</p>
+</div>
+<div class="section level3">
+<h3 id="custom-spatial-models">Custom spatial models<a class="anchor" aria-label="anchor" href="#custom-spatial-models"></a>
+</h3>
 <p>Tools for building custom spatial models in <a href="https://mc-stan.org/" class="external-link">Stan</a>.</p>
 </div>
-<div id="rstan-ecosystem" class="section level3">
-<h3 class="hasAnchor">
-<a href="#rstan-ecosystem" class="anchor" aria-hidden="true"></a>RStan ecosystem</h3>
-<p>Compatible with a suite of high-quality R packages for Bayesian inference.</p>
 </div>
-<div id="installation" class="section level2">
-<h2 class="hasAnchor">
-<a href="#installation" class="anchor" aria-hidden="true"></a>Installation</h2>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
 <p>Install <strong>geostan</strong> using:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="va"><a href="https://github.com/eddelbuettel/drat" class="external-link">drat</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"drat"</span><span class="op">)</span>
 <span class="fu">drat</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/drat/man/addRepo.html" class="external-link">addRepo</a></span><span class="op">(</span><span class="st">"connordonegan"</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"geostan"</span><span class="op">)</span></code></pre></div>
 </div>
-</div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li>Browse source code at <br><a href="https://github.com/ConnorDonegan/geostan/">https://​github.com/​ConnorDonegan/​geostan/​</a>
-</li>
+<li><a href="https://github.com/ConnorDonegan/geostan/" class="external-link">Browse source code</a></li>
 </ul>
 </div>
 
 <div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
-<li><a href="LICENSE.html">Full license</a></li>
-<li><small>GPL (&gt;= 3)</small></li>
+<li>GPL (&gt;= 3)</li>
 </ul>
 </div>
 
@@ -157,15 +151,15 @@
 <div class="citation">
 <h2 data-toc-skip>Citation</h2>
 <ul class="list-unstyled">
-<li><a href="authors.html">Citing geostan</a></li>
+<li><a href="authors.html#citation">Citing geostan</a></li>
 </ul>
 </div>
 
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Connor Donegan <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0002-9698-5443" target="orcid.widget" aria-label="ORCID"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
-<li><a href="authors.html">More on authors...</a></li>
+<li>Connor Donegan <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0002-9698-5443" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li><a href="authors.html">More about authors...</a></li>
 </ul>
 </div>
 
@@ -182,7 +176,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 1.6.1.9001.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
 </div>
 
       </footer>

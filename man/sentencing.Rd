@@ -7,28 +7,28 @@
 \format{
 A spatial polygons data frame with the following attributes:
 \describe{
- \item{name}{County name}
- \item{wpop}{White population total for years 1905-1910}
- \item{bpop}{Black population total for years 1905-1910}
- \item{sents}{Number of state prison sentences, 1905-1910}
- \item{plantation_belt}{Binary indicator for inclusion in the plantation belt}
- \item{pct_ag_1910}{Percent of land area in agriculture, 1910}
- \item{expected_sents}{Expected sentences given demographic information and state level sentencing rates by race}
- \item{sir_raw}{Standardized incident ratio (observed/expected sentences)}
+\item{name}{County name}
+\item{wpop}{White population total for years 1905-1910}
+\item{bpop}{Black population total for years 1905-1910}
+\item{sents}{Number of state prison sentences, 1905-1910}
+\item{plantation_belt}{Binary indicator for inclusion in the plantation belt}
+\item{pct_ag_1910}{Percent of land area in agriculture, 1910}
+\item{expected_sents}{Expected sentences given demographic information and state level sentencing rates by race}
+\item{sir_raw}{Standardized incident ratio (observed/expected sentences)}
 }
 }
 \source{
 Donegan, Connor. "The Making of Florida's 'Criminal Class': Race, Modernity and the Convict Leasing Program." Florida Historical Quarterly 97.4 (2019): 408-434. \url{https://osf.io/2wj7s/}.
 
 Mullen, Lincoln A. and Bratt, Jordon. "USABoundaries: Historical and Contemporary Boundaries of the United States of America,"
- Journal of Open Source Software 3, no. 23 (2018): 314, \doi{10.21105/joss.00314}.
+Journal of Open Source Software 3, no. 23 (2018): 314, \doi{10.21105/joss.00314}.
 }
 \usage{
 sentencing
 }
 \description{
 A spatial polygons data frame of historical 1910 county boundaries of Florida with aggregated state prison sentencing counts and census data.
- Sentencing and population counts are aggregates over the period 1905-1910, where populations were interpolated linearly between decennial censuses of 1900 and 1910.
+Sentencing and population counts are aggregates over the period 1905-1910, where populations were interpolated linearly between decennial censuses of 1900 and 1910.
 }
 \examples{
 \dontrun{

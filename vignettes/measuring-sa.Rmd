@@ -129,32 +129,28 @@ fit <- stan_glm(deaths.male ~ offset(log(pop.at.risk.male)),
                 C = C,
                 refresh = 0 # this line silences Stan's printing
                 )
+```
+
+For a summary of model results:
+
+```{r}
 print(fit)
 ```
 
-Because **geostan** uses Bayesian inference and a Markov chain Monte Carlo (MCMC) algorithm from the Stan modeling language to draw samples from the posterior distribution of parameters, the `fit` object contains not just summaries of results (as printed above) but also full probability distributions for each parameter. We can plot the posterior distribution of any model parameter; below is the probability distribution for the intercept, which is the mean log-county mortality rate. We can see it is centered on $-4.183$, which is a mortality rate of $e^{-4.183} = 153$ per 10,000. 
+The printed summary of results shows that the posterior probability distribution for the intercept, which in this case represents the mean log-mortality rate, is centered on $-4.183$, which is a mortality rate of $e^{-4.183} = 153$ per 10,000. The `2.5%` and `97.5%` columns provide the bounds on the 95\% credible interval (CI) for each parameter; the CI for the intercept is [-4.22, -4.14].^[Stan will print important warning messages when Markov chain Monte Carlo (MCMC) diagnostics indicate any cause for concern, such as "Bulk Effective Samples Size (ESS) is too low." Looking at the printed results, we can see that we kept a total of 4,000 MCMC samples for inference. If we then look at the "n_eff" (i.e., ESS) column in the table of results, we see that the effective sample size is smaller that the nominal sample size of 4,000 (this is almost always the case, due to serial autocorrelation in the MCMC samples). To see diagnostics for all model parameters at once, you can use the following function calls: `rstan::stan_ess(fit$stanfit)`, `rstan::stan_mcse(fit$stanfit)`, and `rstan::stan_rhat(fit$stanfit)` (and see the corresponding help pages, `?rstan::stan_rhat`.)]
 
-When necessary, Stan will print important warning messages, such as "Bulk Effective Samples Size (ESS) is too low." Looking at the printed results above, we can see that we kept a total of 4,000 MCMC samples for inference. If we then look at the "n_eff" (i.e., ESS) column in the table of results, we see that the effective sample size is smaller that the nominal sample size of 4,000 (due to serial autocorrelation in the MCMC samples). If the MCMC samples are an approximation of the exact posterior distribution, then the more samples we draw the closer our approximation will be. The Monte Carlo standard error of the estimates ("se_mean") tells us how close we are. To evaluate all model parameters (which you should always do), you can use the following function calls: `rstan::stan_ess(fit$stanfit)`, `rstan::stan_mcse(fit$stanfit)`, and `rstan::stan_rhat(fit$stanfit)` (and see the corresponding help pages, `?rstan::stan_rhat`.)
-
-```{r}
-plot(fit, pars = "intercept")
-```
-
-With MCMC samples, we can easily extrapolate our inferences from the posterior distribution of parameters to any function of those parameters [@mackay_2003]. This means we can obtain a posterior distribution for every county mortality rate, and for the difference between the modeled mortality rates (fitted values) and the crude mortality rates (i.e., the residuals: $\text{observed} - \text{modeled}$), and, further, for any function of those residuals. These are generally referred to as 'quantities of interest.'
-
-Quantities of interest can be useful for model criticism as well as for making inferences from a model. For example, we can measure the degree of spatial autocorrelation in the MCMC samples of residuals, resulting in a probability distribution for the residual autocorrelation. Or, if we wanted to measure health inequality across counties as a function of the county mortality rates, we could calculate that inequality measure for each MCMC sample of fitted values to obtain a probability distribution for the degree of inequality.
-
-Now provide the fitted model, `fit`, and the spatial data, `georgia`, to the `sp_diag` function to see a set of spatial model diagnostics:
+Provide the fitted model, `fit`, and the spatial data, `georgia`, to the `sp_diag` function to see a set of spatial model diagnostics:
 
 ```{r fig.width = 7.5}
 sp_diag(fit, georgia)
 ```
+The point-interval plot on the left shows the raw mortality rates (the raw outcome data) on the x-axis, the fitted values on the y-axis, and a 'perfect fit' (slope = 1, intercept = 0) line for reference. We can see that a number of the fitted values have posterior means that deviate from the observations; but this "shrinkage" towards the mean is not necessarily a problem. In fact, it is often desirable insofar as it indicates that these are counties for which our data provide very little evidence as to what the risk of death is (i.e., the population is very small). (For an introductory discussion of information pooling and other topics as well, see @mcelreath_2016). 
 
-The point-interval plot on the left shows the raw mortality rates (the raw outcome data) on the x-axis, the fitted values on the y-axis, and a 'perfect fit' (slope = 1, intercept = 0) line for reference. We can see that a number of the fitted values have posterior means that deviate from the observations; but this "shrinkage" towards the mean is not necessarily a problem. In fact, it is often desirable insofar as it indicates that these are counties for which our data provide very little evidence as to what the risk of death is (i.e., the population is very small). (For a good introductory discussion of information pooling and many other topics as well, see @mcelreath_2016). 
+The middle panel is a Moran scatter plot of the model residuals, and the map shows the mean residual for each county. The residuals have been taken at their marginal posterior means. However, there is more than one way to measure residual autocorrelation. For an alternative visualization that uses the entire posterior distribution of parameters and provides an estimate of the residual Moran coefficient that will match the printed model results above (`MC = 0.022`), try `sp_diag(fit, georgia, mc_style = "hist")`.
 
-The middle panel represents spatial autocorrelation in the residuals as measured by the Moran coefficient (i.e., autocorrelation in the joint probability distribution of residuals), and the map shows the mean residual for each county (marginal posterior means). In this case, the MC histogram shows that there is a small amount of residual autocorrelation, while the map indicates that this derives mainly from a north-south/metropolitan-rural trend. The trend in the residuals helps us see that shrinking towards the mean mortality rate is less than ideal in this case because we can see that county mortality rates are higher in the southern half of the state than in the greater Atlanta metropolitan area. 
+In this case, there is a very small amount of residual autocorrelation, and the map indicates that this derives from a slight north-south/metropolitan-rural trend. The trend in the residuals helps us see that shrinking towards the mean mortality rate is less than ideal in this case because we can see that county mortality rates are higher in the southern half of the state than in the greater Atlanta metropolitan area. 
 
-We could probably do better than shrinking towards the mean by using one of **geostan**'s spatial models (see the examples in `?stan_car`) or by adding one or more (substantively meaningful) covariates. 
+We could extend this model by using one of **geostan**'s spatial models (see the examples in `?stan_car`) or by adding one or more (substantively meaningful) covariates. 
 
 
 ## References

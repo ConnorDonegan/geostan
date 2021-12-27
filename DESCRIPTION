@@ -15,10 +15,12 @@ Description: For Bayesian inference with spatial data, provides exploratory anal
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
 Biarch: true
 Depends: 
     R (>= 3.4.0)
-Imports:
+Imports: 
     spdep (>= 1.1-8),
     sf,
     ggplot2 (>= 3.0.0),
@@ -33,20 +35,14 @@ Imports:
     utils,
     Matrix (>= 1.3),
     Rcpp (>= 0.12.0),
-    RcppParallel,	    
+    RcppParallel (>= 5.0.1),
     rstan (>= 2.18.1),
-    rstantools (>= 2.0.0)
+    rstantools (>= 2.1.1)
 LinkingTo: 
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
     RcppEigen (>= 0.3.3.3.0),
+    RcppParallel (>= 5.0.1),
     rstan (>= 2.18.1),
-    StanHeaders (>= 2.18.0),
-    RcppParallel     
-Suggests:
-    testthat,
-    knitr,
-    rmarkdown
+    StanHeaders (>= 2.18.0)
 SystemRequirements: GNU make
-RoxygenNote: 7.1.1
-VignetteBuilder: knitr

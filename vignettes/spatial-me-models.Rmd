@@ -166,7 +166,7 @@ We get three plots:
 
 * A point-interval plot showing the ACS estimates on the horizontal axis against a summary of the posterior distribution on the vertical axis. This provides an indication of 1) the amount of uncertainty present in each $x_i$, and 2) the degree to which the mean of the posterior probability distribution for $x_i$ may differ from the raw survey estimates ($\delta_i$). 
 
-* A histogram of Moran coefficients calculated for each MCMC sample. The mean of the samples is printed at the top. Zero spatial autocorrelation is indicated by a small negative value (unlike the correlation coefficient, the midpoint of the MC is $-1/(n-1)$ [@chun_2013]).
+* A Moran scatter plot of the $\delta_i$ values.  Zero spatial autocorrelation is indicated by a small negative value (unlike the correlation coefficient, the midpoint of the MC is $-1/(n-1)$ [@chun_2013]). (Alternatively, autocorrelation can be visualized with a histogram of Moran coefficients that are calculated for each MCMC sample; se the `mc_style` argument.)
 
 * A map of the posterior mean for each $\delta_i$ value.
 
@@ -205,7 +205,7 @@ print(fit$stanfit, pars = "x_ICE[91]")
 # plot(fit, pars = "x_ICE[91]")
 # plot(fit$stanfit, pars = "x_ICE[91]")
 ```
-Given the socioeconomic and demographic information on Clinch County, one could argue that the model is being overly conservative by shrinking towards the mean value. However, by examining full posterior distributions, we see in this case that the results are not particularly vulnerable to this concer due to the fact that the model is still positing that the raw estimate *and* more extreme values are quite plausible. Of course, this was already apparent from examination of the `me_diag` plots.
+Given the socioeconomic and demographic information on Clinch County, one could argue that the model is being overly conservative by shrinking towards the mean value. However, by examining full posterior distributions, we see in this case that the results are not particularly vulnerable to this concern due to the fact that the model is still positing that the raw estimate *and* more extreme values are quite plausible. Of course, this was already apparent from examination of the `me_diag` plots.
 
 ### Working with MCMC samples from ME models
 
@@ -253,7 +253,7 @@ Incorporating these ME models into any other **geostan** model is as simple as r
 
 At this point, we can introduce a more appropriate model for the mortality data. We will use a Poisson likelihood for the counts of deaths, provide the log-population at risk as an offset term, and pool information across counties using a non-spatial Gaussian model for the log-rates, $\boldsymbol \phi$:
 $$y_i \sim Pois(e^{log(P_i) + \phi_i}) \\ \boldsymbol \phi \sim Gauss(\alpha + \boldsymbol x \beta, I \tau^2),$$
-where $\alpha$ is the mean log-mortality rate and $\beta$ is the regression coefficient on the modeled ICE, $\boldsymbol x$. $\tau^2$ is the variance of the log-mortality rates around the fitted regression line, $\alpha + X\beta$. This model for $\boldsymbol \phi$ is equivalent to a CAR model with $\rho=0$ and $M=I\tau^2$.
+where $\alpha$ is the mean log-mortality rate and $\beta$ is the regression coefficient on the modeled ICE, $\boldsymbol x$. $\tau^2$ is the variance of the log-mortality rates around the fitted regression line, $\alpha + X\beta$. This model for $\boldsymbol \phi$ is equivalent to a CAR model with $\rho=0$ and $M=I\tau^2$ (a constant variance).
 
 ```{r eval = TRUE}
 fit_2 <- stan_glm(deaths.male ~ offset(log(pop.at.risk.male)) + ICE, 
@@ -285,7 +285,6 @@ ggplot(georgia) +
   geom_point(aes(ICE, log(rate.male), col = ICE.se),
              shape = 6,
              lwd = 2) +
-# geom_label(label = row.names(georgia), aes(ICE, log(rate.male), col = ICE.se)) +
   labs(x = "ICE Estimate", y = "Crude log mortality") +
   scale_colour_gradient(low = "white", high = "darkred", name = "SE(ICE)") +
   theme(panel.background = element_rect(fill = 'gray20'),

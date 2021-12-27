@@ -1,6 +1,7 @@
+^rcppExports.cpp$
+^stanExports_*
+
 ^\.travis\.yml$
-rccpExports.cpp
-stanExports_*
 ^data-raw$
 .Rhistory
 README.Rmd
@@ -18,5 +19,4 @@ tests/testthat/test-rstan-conformity-results
 NEWS.md
 index.html
 cran-comments.md
-
 ^CRAN-RELEASE$

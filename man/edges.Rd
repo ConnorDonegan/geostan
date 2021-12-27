@@ -12,7 +12,7 @@ edges(C, unique_pairs_only = TRUE)
 \item{unique_pairs_only}{By default, only unique pairs of nodes (i, j) will be included in the output.}
 }
 \value{
-Returns a \code{data.frame} with three columns. The first two columns (\code{node1} and \code{node2}) contain the indices of connected pairs of nodes; only unique pairs of nodes are included (unless `unique_pairs_only = FALSE`). The third column (\code{weight}) contains the corresponding matrix element, \code{C[node1, node2]}.
+Returns a \code{data.frame} with three columns. The first two columns (\code{node1} and \code{node2}) contain the indices of connected pairs of nodes; only unique pairs of nodes are included (unless \code{unique_pairs_only = FALSE}). The third column (\code{weight}) contains the corresponding matrix element, \code{C[node1, node2]}.
 }
 \description{
 Creates a list of connected nodes following the graph representation of a spatial connectivity matrix.

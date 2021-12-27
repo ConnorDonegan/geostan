@@ -1,18 +1,22 @@
 template:
   params:
-    bootswatch: flatly
+    bootswatch: sandstone 
     ganalytics: UA-116873024-1
 destination: docs
 url: https://connordonegan.github.io/geostan/
 home:
   title: Bayesian Spatial Analysis
+articles:
+- title: "Package vignettes"
+  contents:
+  - measuring-sa
+  - spatial-me-models
 reference:
 - title: "Package overview"
 - contents:
   - geostan-package
 - title: "Spatial analysis"
-  desc: >
-    Functions for measuring and visualizing spatial autocorrelation and dispersion, including model diagnostics
+  desc: Functions for measuring and visualizing spatial autocorrelation and dispersion, including model diagnostics
 - contents: 
   - aple
   - lisa
