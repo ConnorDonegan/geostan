@@ -257,13 +257,8 @@ For example, the US Centers for Disease Control and Prevention's CDC WONDER data
 }
 }
 \examples{
-\donttest{
-library(rstan)
-library(bayesplot)
-library(sf)
-\dontrun{
-options(mc.cores = parallel::detectCores())
-}
+# for parallel processing of models:
+#options(mc.cores = parallel::detectCores())
 data(sentencing)
 
 C <- shape2mat(sentencing, "B")
@@ -272,33 +267,22 @@ fit.bym <- stan_icar(sents ~ offset(log_e),
                      family = poisson(),
                      data = sentencing,
                      type = "bym",
-                     C = C
- )
+                     C = C,
+                     chains = 2, iter = 600) # for speed only
 
+# spatial diagnostics
+sp_diag(fit.bym, sentencing)
+                                       
 # check effective sample size and convergence
+library(rstan)
 rstan::stan_ess(fit.bym$stanfit)
 rstan::stan_rhat(fit.bym$stanfit)
 
-# see some spatial diagnostics
-sp_diag(fit.bym, sentencing)
+# calculate log-standardized incidence ratios 
+# (observed/exected case counts)
+library(ggplot2)
+library(sf)
 
-# posterior predictive distribution
-yrep <- posterior_predict(fit.bym, S = 100)
-y <- sentencing$sents
-bayesplot::ppc_dens_overlay(y, yrep)
-
-# map the smooth spatial term
-sp.trend <- spatial(fit.bym)$mean
-ggplot( st_as_sf(sentencing) ) +
-  geom_sf(aes(fill = sp.trend)) +
-  scale_fill_gradient2(
-   low = "navy",
-   high = "darkred"
-  ) +
-  theme_void()
-
-# calculate log-standardized sentencing ratios (log-SSRs)
-## (like Standardized Incidence Ratios: observed/exected case counts)
 f <- fitted(fit.bym)$mean
 SSR <- f / sentencing$expected_sents
 log.SSR <- log( SSR, base = 2)
@@ -317,8 +301,6 @@ ggplot( st_as_sf(sentencing) ) +
    legend.key.height = unit(0.35, "cm"),
    legend.key.width = unit(1.5, "cm")
   )
-}
-
 }
 \seealso{
 \link[geostan]{shape2mat}, \link[geostan]{stan_car}, \link[geostan]{stan_esf}, \link[geostan]{stan_glm}, \link[geostan]{prep_icar_data}

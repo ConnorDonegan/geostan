@@ -98,15 +98,15 @@ to_index <- function(id, n) {
   res[order(res$rowid), c("id", "idx")]
 }
 
-#' Summarize samples from an geostan_fit object
+#' Summarize samples from an geostan_fit object; NA values are removed when calculating summary statistics to accomodate residuals of models with censored observations.
 #' @import stats
 #' @noRd
 #' @param samples matrix of MCMC samples
 #' 
 post_summary <- function(samples) {
-    qs = apply(samples, 2, quantile, probs = c(0.025, 0.2, 0.50, 0.80, 0.975))
-    ms <- apply(samples, 2, mean)
-    sds <- apply(samples, 2, sd)
+    qs = apply(samples, 2, quantile, probs = c(0.025, 0.2, 0.50, 0.80, 0.975), na.rm = TRUE)
+    ms <- apply(samples, 2, mean, na.rm = TRUE)
+    sds <- apply(samples, 2, sd, na.rm = TRUE)
     x <- as.data.frame(cbind(mean = ms, sd = sds, t(qs)))
     return (x)
 }

@@ -9,16 +9,18 @@ Chun, Yongwan, and Daniel A. Griffith. Spatial statistics and geostatistics: the
 Cliff, Andrew David, and J. Keith Ord. Spatial processes: models & applications. Taylor & Francis, 1981.
 }
 \usage{
-mc(x, w, digits = 3, warn = TRUE)
+mc(x, w, digits = 3, warn = TRUE, na.rm = FALSE)
 }
 \arguments{
 \item{x}{Numeric vector of input values, length n.}
 
-\item{w}{An n x n spatial connectivity matrix. See \link[geostan]{shape2mat}.}
+\item{w}{An n x n spatial connectivity matrix. See \code{\link[geostan]{shape2mat}}.}
 
 \item{digits}{Number of digits to round results to.}
 
-\item{warn}{If \code{FALSE}, no warning will be printed to inform you when observations with zero neighbors have been dropped.}
+\item{warn}{If \code{FALSE}, no warning will be printed to inform you when observations with zero neighbors or \code{NA} values have been dropped.}
+
+\item{na.rm}{If \code{na.rm = TRUE}, observations with \code{NA} values will be dropped from both \code{x} and \code{w}.}
 }
 \value{
 The Moran coefficient, a numeric value.
@@ -30,13 +32,11 @@ The Moran coefficient, a measure of spatial autocorrelation (also known as Globa
 If any observations with no neighbors are found (i.e. \code{any(Matrix::rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
 }
 \examples{
-
 library(sf)
 data(georgia)
 w <- shape2mat(georgia, style = "W")
 x <- georgia$ICE
 mc(x, w)
-
 }
 \seealso{
 \link[geostan]{moran_plot}, \link[geostan]{lisa}, \link[geostan]{aple}

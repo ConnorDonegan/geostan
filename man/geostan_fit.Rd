@@ -102,25 +102,22 @@ Be aware that in non-linear models (including Poisson and Binomial models) margi
 }
 }
 \examples{
-\donttest{
-library(ggplot2)
-library(sf)
 data(sentencing)
 
 # spatial weights matrix with binary coding scheme
 C <- shape2mat(sentencing, style = "B")
+cars <- prep_car_data(C)
 
 # log-expected number of sentences
 ## expected counts are based on county racial composition and mean sentencing rates
 log_e <- log(sentencing$expected_sents)
 
 # fit spatial Poisson model with unstructured 'random effects'
-fit <- stan_glm(sents ~ offset(log_e),
-                   re = ~ name,
+fit <- stan_car(sents ~ offset(log_e),
+                   car_parts = cars,
                    family = poisson(),
                    data = sentencing,
-                   C = C,
-                   chains = 2, iter = 500) # for speed only
+                   chains = 2, iter = 600) # for speed only
 
 # print and plot results
 print(fit)
@@ -135,12 +132,14 @@ f = fitted(fit)
 # spatial diagnostics
 sp_diag(fit, sentencing)
 
-# county `random effects' 
+# spatial trend, county `random effects' 
 sp = spatial(fit)
 
 # posterior predictive distribution
-yrep <- posterior_predict(fit, S = 100)
-bayesplot::ppc_dens_overlay(sentencing$sents, yrep)
+yrep <- posterior_predict(fit, S = 65)
+plot(density(yrep[1,]), col = "gray30")
+for (i in 2:nrow(yrep)) lines(density(yrep[i,]), col = "gray30")
+lines(density(sentencing$sents), col = "darkred", lwd = 2)
 
 # extract matrix of samples from posterior distribution of parameters
 ## alpha_re are the unstructured area random effects
@@ -154,16 +153,16 @@ head(S.monitor)
 ## marginal effects
 data(georgia)
 C <- shape2mat(georgia, style = "B")
-cp <- prep_car_data(C)
+cars <- prep_car_data(C)
 georgia$income <- georgia$income/1e3
 
 fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)) + log(income),
                 slx = ~ log(income),
                 centerx = TRUE,
-                car_parts = cp,
+                car_parts = cars,
                 data = georgia,
                 family = poisson(),
-                chains = 2, iter = 500) # for speed only
+                chains = 2, iter = 600) # for speed only
 
 newdata <- data.frame(
     income = seq(min(georgia$income), max(georgia$income), by = 1),
@@ -172,12 +171,10 @@ newdata <- data.frame(
 
 p <- predict(fit, newdata, type = "response")
 plot(newdata$income, p$mean * 1e3,
+    type = 'l',
      main = "Deaths per 1,000",
      ylab = NA,
-     xlab = "Median county income ($1,000s)")
-
-}
-
+     xlab = "Median county income ($1,000s)") 
 }
 \seealso{
 \code{\link[geostan]{posterior_predict}}, \code{\link[geostan]{stan_glm}}, \code{\link[geostan]{stan_esf}}, \code{\link[geostan]{stan_icar}}, \code{\link[geostan]{stan_car}}

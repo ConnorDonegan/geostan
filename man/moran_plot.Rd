@@ -16,7 +16,8 @@ moran_plot(
   col = "darkred",
   size = 2,
   alpha = 1,
-  lwd = 0.5
+  lwd = 0.5,
+  na.rm = FALSE
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ moran_plot(
 \item{alpha}{Symbol transparency.}
 
 \item{lwd}{Width of the regression line.}
+
+\item{na.rm}{If \code{na.rm = TRUE}, any observations of \code{x} with \code{NA} values will be dropped from \code{x} and from \code{w}.}
 }
 \value{
 Returns a \code{gg} plot, a scatter plot with \code{x} on the horizontal and its spatially lagged values on the vertical axis (i.e. a Moran scatter plot).
@@ -50,12 +53,10 @@ For details on the symbol parameters see the documentation for \link[ggplot2]{ge
 If any observations with no neighbors are found (i.e. \code{any(Matrix::rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
 }
 \examples{
-\dontrun{
 data(georgia)
-x <- georgia$ICE
+x <- georgia$income
 w <- shape2mat(georgia, "W")
 moran_plot(x, w)
-}
 }
 \seealso{
 \link[geostan]{mc}, \link[geostan]{lisa}, \link[geostan]{aple}

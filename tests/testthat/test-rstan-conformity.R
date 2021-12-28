@@ -1,5 +1,4 @@
 skip("Run interactively to avoid crashing R session.")
-
 ## uncomment to run test
 #devtools::load_all("~/dev/geostan")
 library(rstan)
@@ -233,14 +232,15 @@ generated quantities {
 
 
 rm(list=ls())
-test_that("geostan model results match raw rstan results: non-spatial ME model", {
-    ME <- list(se = data.frame(ICE = georgia$ICE.se))  
-    ME$prior <- list(location = normal(location = 0,
+test_that("geostan model results match raw rstan results: non-spatial ME model", { 
+    me_prior <- list(location = normal(location = 0,
                                        scale = 0.5),
                  scale = student_t(df = 10,
                                     location = 0,
                                     scale = 1)
-                 )    
+                 )
+    ME <- prep_me_data(se = data.frame(ICE = georgia$ICE.se),
+                       prior = me_prior) 
     fit4.a <- stan_glm(log(rate.male) ~ ICE,
                      data = georgia,
                      ME = ME,

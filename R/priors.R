@@ -1,5 +1,3 @@
-
-
 #' Prior distributions
 #' 
 #' @details
@@ -17,32 +15,30 @@
 #' @return An object of class `prior` which will be used internally by **geostan** to set parameters of prior distributions. 
 #' 
 #' @examples
-#'
+#' data(georgia)
 #' prior <- list()
 #' prior$beta <- normal(c(0, 0), c(1, 1))
 #' prior$intercept <- normal(-5, 3)
-#' \dontrun{
 #' fit <- stan_glm(deaths.male ~ offset(log(pop.at.risk.male)) + ICE + college,
 #'                 re = ~ GEOID,
 #'                 data = georgia,
 #'                 family = poisson(),
 #'                 prior = prior,
-#'                 prior_only = TRUE)
+#'                 prior_only = TRUE,
+#'                 chains = 2, iter = 600) # for speed only
 #' plot(fit)
-#' }
 #'
-#' ME <- list()
-#' ME$se <- data.frame(insurance = georgia$insurance.se)
-#' ME$prior <- list()
-#' ME$prior$df <- gamma(3, 0.2)
-#' ME$prior$location <- normal(50, 50)
-#' ME$prior$scale <- student_t(12, 10, 20)
-#' \dontrun{
+#' se <- data.frame(insurance = georgia$insurance.se)
+#' prior <- list()
+#' prior$df <- gamma(3, 0.2)
+#' prior$location <- normal(50, 50)
+#' prior$scale <- student_t(12, 10, 20)
+#' ME <- prep_me_data(se = se, prior = prior)
 #' fit <- stan_glm(log(rate.male) ~ insurance, 
 #'                 data = georgia,
 #'                 ME = ME,
-#'                 prior_only = TRUE)
-#' }
+#'                 prior_only = TRUE,
+#'                chains = 2, iter = 600) # for speed only
 #' @name priors
 #' @md
 #' 

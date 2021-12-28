@@ -31,9 +31,7 @@ A spatial polygons data frame of historical 1910 county boundaries of Florida wi
 Sentencing and population counts are aggregates over the period 1905-1910, where populations were interpolated linearly between decennial censuses of 1900 and 1910.
 }
 \examples{
-\dontrun{
 data(sentencing)
 head(sentencing@data)
-}
 }
 \keyword{datasets}

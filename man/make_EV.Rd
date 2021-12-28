@@ -29,22 +29,20 @@ Extract eigenfunctions of a connectivity matrix for spatial filtering
 Returns a set of eigenvectors related to the Moran coefficient (MC), limited to those eigenvectors with |MC| > \code{threshold} if \code{nsa = TRUE} or MC > \code{threshold} if \code{nsa = FALSE}, optionally with corresponding eigenvalues.
 }
 \examples{
-
 library(ggplot2)
-library(sf)
 data(georgia)
 C <- shape2mat(georgia, style = "B")
 EV <- make_EV(C)
 head(EV)
 
-\dontrun{
 ggplot(georgia) +
   geom_sf(aes(fill = EV[,1])) +
   scale_fill_gradient2()
 
-fit <- stan_esf(log(rate.male) ~ 1, data = georgia, EV = EV, C = C)
-sp_diag(fit, georgia)
-}
+fit <- stan_esf(log(rate.male) ~ 1,
+                data = georgia,
+                EV = EV,
+              chains = 1, iter = 800) # for speed only
 }
 \seealso{
 \link[geostan]{stan_esf}, \link[geostan]{mc}

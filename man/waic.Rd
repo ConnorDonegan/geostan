@@ -23,13 +23,10 @@ A vector of length 3 with \code{WAIC}, a rough measure of the effective number o
 Widely Application Information Criteria (WAIC) for model comparison
 }
 \examples{
-
-\donttest{
 data(georgia)
-fit <- stan_glm(log(rate.male) ~ 1, data = georgia)
+fit <- stan_glm(log(rate.male) ~ 1, data = georgia,
+                chains = 2, iter = 800) # for speed only
 waic(fit)
-}
-
 }
 \seealso{
 \code{\link[loo]{waic}} \code{\link[loo]{loo}}

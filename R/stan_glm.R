@@ -159,23 +159,22 @@
 #' Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. *OSF Preprints*. \doi{10.31219/osf.io/3ey65}.
 #' 
 #' @examples
-#' \donttest{
-#' library(ggplot2)
-#' library(sf)
 #' data(sentencing)
 #'
 #' sentencing$log_e <- log(sentencing$expected_sents)
 #' fit.pois <- stan_glm(sents ~ offset(log_e),
 #'                      re = ~ name,
 #'                      family = poisson(),
-#'                      data = sentencing
-#'  )
+#'                      data = sentencing,
+#'                     chains = 2, iter = 800) # for speed only
 #'
 #' # MCMC diagnostics plot: Rhat values should all by very near 1
 #' rstan::stan_rhat(fit.pois$stanfit)
-#'  # see effective sample size for all parameters and generated quantities
-#'  # (including residuals, predicted values, etc.)
+#' 
+#' # effective sample size for all parameters and generated quantities
+#' # (including residuals, predicted values, etc.)
 #' rstan::stan_ess(fit.pois$stanfit)
+#' 
 #' # or for a particular parameter
 #' rstan::stan_ess(fit.pois$stanfit, "alpha_re")
 #'
@@ -183,12 +182,11 @@
 #' sp_diag(fit.pois, sentencing)
 #' 
 #' ## Posterior predictive distribution                                       
-#' library(bayesplot)
-#' yrep <- posterior_predict(fit.pois, S = 75)
+#' yrep <- posterior_predict(fit.pois, S = 65)
 #' y <- sentencing$sents
-#' ppc_dens_overlay(y, yrep)
-#' }
-#' 
+#' plot(density(yrep[1,]))
+#' for (i in 2:nrow(yrep)) lines(density(yrep[i,]), col = "gray30")
+#' lines(density(sentencing$sents), col = "darkred", lwd = 2)
 #' @importFrom rstan extract_sparse_parts
 stan_glm <- function(formula,
                      slx,
@@ -362,7 +360,7 @@ stan_glm <- function(formula,
     }
     if (!missing(C) && (inherits(C, "matrix") | inherits(C, "Matrix"))) {
         R <- resid(out, summary = FALSE)
-        out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )
+        out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )
     }        
     return(out)
 }

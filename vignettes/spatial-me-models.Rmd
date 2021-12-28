@@ -69,7 +69,7 @@ ggplot() +
                  )
 ```
 
-No we can see that a number of these estimates are not particularly reliable. 
+We can see more clearly that sampling error may be adding a considerable amount of noise to the data and that a number of these estimates are not particularly reliable. 
 
 ## Modeling errors of observation
 
@@ -112,10 +112,10 @@ The default prior for $\rho$ is uniform across its entire support (determined by
 These ME models can be implemented using any of the **geostan** model fitting functions (`stan_glm`, `stan_car`, `stan_esf`, and `stan_icar`). These functions have a formula interface, so that the basic user experience is similar to using `base::glm`. For example, if we were to fit a linear model to the log-mortality rates, we could start with the following code:
 
 ```{r eval = FALSE}
-fit <- stan_glm(log(rate.male) ~ ICE, data = georgia, prior_only = TRUE)
+fit <- stan_glm(log(rate.male) ~ ICE, data = georgia)
 ```
 
-For now, we are just going to use `stan_glm` to set up our ME models. To tell `stan_glm` to ignore the outcome data and fit the ME model described above, we add `prior_only = TRUE`.
+For now, we are just going to use `stan_glm` to set up our ME models. 
 
 The `prep_me_data` function creates a list of data in the correct format for `geostan`'s ME models. The only required argument is a data frame of standard errors (`se`). To use a CAR model for the covariates, we just have to provide the necessary data for `geostan`'s CAR model, which we can easily obtain using the `prep_car_data` function. Since the ICE can only range from -1 to 1, it may be important to restrict the parameter space to that range. We can do this using the `bounds` argument, which defaults to `(-Inf, Inf)`.^[Practically, it is not always necessary to enforce these restrictions; if you are sure that the model does not approach the boundary points, that is, you can see that none of the estimates plus/minus two standard errors approach the boundaries, it can be more efficient to ignore the restriction. One of the limitations of these models is that all of the covariates have the same restrictions on their parameter space. Thus, if you can safely ignore the restrictions, you also have greater freedom to include other covariates.]
 
@@ -170,7 +170,7 @@ We get three plots:
 
 * A map of the posterior mean for each $\delta_i$ value.
 
-From the point-interval plot, we can see that a few of the counties with low ICE estimates have posterior distributions that have shifted slightly towards the mean. However, notice that the model still places substantial probability on values of the ICE that are *more* extreme than the raw ACS estimates. 
+From the point-interval plot, we can see that a few of the counties with low ICE estimates have posterior distributions that have shifted slightly towards the mean. However, the model still places substantial probability on values of the ICE that are *more* extreme than the raw ACS estimates. 
 
 Large $|\delta_i|$ values can provide a warning that your data may be of low quality; strong social or spatial patterns in $\delta_i$, on the other hand, should prompt you to ask further questions about the adequacy of the model. 
 
@@ -197,15 +197,7 @@ georgia[c(91, 105, 90, 39), c("NAME", "population", "white", "black", "hisp", "a
 
 The somewhat large $\delta_i$ values for these counties are a result of the combination of fairly unreliable estimates (large standard errors) while also being local outliers. We can see that these are low population areas that also have low income, few college grads, and fairly high percent Black populations. 
 
-Notice that the ACS estimate for the ICE in Clinch County is $-0.40$ (SE = 0.048), implying a 95\% margin of error ranging from -0.5 to -0.3 (quite a wide range). Here is our probability distribution for the ICE in Clinch County:
-
-```{r}
-print(fit$stanfit, pars = "x_ICE[91]")
-# or visualize with:
-# plot(fit, pars = "x_ICE[91]")
-# plot(fit$stanfit, pars = "x_ICE[91]")
-```
-Given the socioeconomic and demographic information on Clinch County, one could argue that the model is being overly conservative by shrinking towards the mean value. However, by examining full posterior distributions, we see in this case that the results are not particularly vulnerable to this concern due to the fact that the model is still positing that the raw estimate *and* more extreme values are quite plausible. Of course, this was already apparent from examination of the `me_diag` plots.
+By looking closer at results, we can consider if the model is being overly conservative by shrinking towards the mean value or shows any other conspicuous patterns. In this case the results are not concerning, largely because the amount of 'shrinkage' toward the mean is so minimal.
 
 ### Working with MCMC samples from ME models
 

@@ -114,11 +114,10 @@
 <span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>ICE <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">ICE.se</span>, college <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">college.se</span><span class="op">)</span>
 <span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu">prep_me_data</span><span class="op">(</span><span class="va">se</span><span class="op">)</span>
 
-<span class="co">## for a spatial prior model (generally recommended)</span>
+<span class="co">## for a spatial prior model (often recommended)</span>
 <span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span>
 <span class="va">cars</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span>
 <span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu">prep_me_data</span><span class="op">(</span><span class="va">se</span>, car_parts <span class="op">=</span> <span class="va">cars</span><span class="op">)</span>
-
 </code></pre></div>
     </div>
   </div>

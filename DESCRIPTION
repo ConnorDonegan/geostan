@@ -24,7 +24,6 @@ Imports:
     spdep (>= 1.1-8),
     sf,
     ggplot2 (>= 3.0.0),
-    bayesplot,
     methods,
     graphics,
     stats,
@@ -37,7 +36,7 @@ Imports:
     Rcpp (>= 0.12.0),
     RcppParallel (>= 5.0.1),
     rstan (>= 2.18.1),
-    rstantools (>= 2.1.1)
+    rstantools (>= 2.1.1)    
 LinkingTo: 
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
@@ -45,4 +44,11 @@ LinkingTo:
     RcppParallel (>= 5.0.1),
     rstan (>= 2.18.1),
     StanHeaders (>= 2.18.0)
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown,
+    bayesplot    
 SystemRequirements: GNU make
+VignetteBuilder: knitr
+

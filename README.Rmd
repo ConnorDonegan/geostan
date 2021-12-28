@@ -16,17 +16,16 @@ knitr::opts_chunk$set(
 )
 ```
 
-
 <img src="man/figures/logo.png" align="right" width="160" />
 
 ## geostan: Bayesian spatial analysis
 
 The **geostan** R package supports a complete spatial analysis
 workflow with hierarchical Bayesian models (HBMs) for areal
-data, including a variety of functions for visualizing spatial data and model results.
+data, including a suite of functions for visualizing spatial data and model results.
 
 The package is designed primarily to support public health research with spatial data;
-see the [**surveil**](https://connordonegan.github.io/surveil) R package for time series analysis of public health surveillance data.
+see the [**surveil**](https://connordonegan.github.io/surveil/) R package for time series analysis of public health surveillance data.
 
 **geostan** is an interface to [**Stan**](https://mc-stan.org), a state-of-the-art platform for Bayesian inference. 
 
@@ -40,7 +39,7 @@ Incorporate information on data reliability, such as standard errors of American
 
 ### Censored observations
 
-Vital statistics and disease surveillance systems like CDC Wonder censor case counts that fall below a threshold number; **geostan** can provide probability distributions for disease or mortality risk across all areas, censored or not.
+Vital statistics and disease surveillance systems like CDC Wonder censor case counts that fall below a threshold number; **geostan** can model disease or mortality risk with censored observations.
 
 ### Spatial analysis tools
 
@@ -56,10 +55,51 @@ Tools for building custom spatial models in [Stan](https://mc-stan.org/).
 
 ## Installation
 
-Install **geostan** using:
+Install **geostan** from R using:
 
 ``` r
 if (!require(drat)) install.packages("drat")
 drat::addRepo("connordonegan")
 install.packages("geostan")
 ```
+
+## Usage
+
+Load the package and the `georgia` county mortality data set:
+```{r}
+library(geostan)
+data(georgia)
+```
+
+The `sp_diag` function provides visual summaries of spatial data, including a histogram, Moran scatter plot, and map:
+
+```{r fig.width = 8}
+sp_diag(georgia$rate.female, georgia)
+```
+
+There are three censored observations in the `georgia` female mortality data, which means there were 9 or fewer deaths in those counties. The following code fits a spatial conditional autoregressive (CAR) model to the data. By using the `censor_point` argument we include our information on the censored observations:
+
+```{r}
+A <- shape2mat(georgia)
+cars <- prep_car_data(A)
+fit <- stan_car(deaths.female ~ offset(log(pop.at.risk.female)),
+                censor_point = 9,
+		data = georgia,
+		car_parts = cars,
+		family = poisson(),
+		cores = 4, # for multi-core processing
+		refresh = 0) # to silence some printing
+```
+The `sp_diag` function will also provide visual diagnostics for spatial models:
+```{r fig.width = 8}
+sp_diag(fit, georgia)
+```
+(For an altnerative measure of residual spatial autocorrelation, which corresponds to the printed results below, see `sp_diag(fit, georgia, mc_style = "hist").)
+
+The `print` method returns a summary of the probability distributoins for model parameters, including Markov chain Monte Carlo (MCMC) diagnostics from Stan (Monte Carlo standard errors of the mean `se_mean`, effective sample size `n_eff`, and the R-hat statistic `Rhat`):
+
+```{r}
+print(fit)
+```
+
+For more demonstrations and discussions, see the package vignettes on spatial autocorrelation and spatial measurement error models. 

@@ -197,10 +197,6 @@ For example, the US Centers for Disease Control and Prevention's CDC WONDER data
 }
 }
 \examples{
-\donttest{
-library(ggplot2)
-library(sf)
-library(bayesplot)
 data(sentencing)
 
 # spatial weights matrix with binary coding scheme
@@ -216,31 +212,21 @@ fit.esf <- stan_esf(sents ~ offset(log_e),
                    family = poisson(),
                    data = sentencing,
                    C = C,
-                   refresh = 0
-)
+                   chains = 2, iter = 800) # for speed only
 
 # spatial diagnostics 
 sp_diag(fit.esf, sentencing)
+plot(fit.esf)
 
 # plot marginal posterior distributions of beta_ev (eigenvector coefficients)
 plot(fit.esf, pars = "beta_ev")
 
-# plot the marginal posterior distributions of the spatial filter (ESF * beta_ev)
-plot(fit.esf, pars = "beta_ev")
+# plot the marginal posterior distributions of the spatial filter 
+plot(fit.esf, pars = "esf")
 
-# posterior predictive distribution
-yrep <- posterior_predict(fit.esf, S = 75)
-y <- sentencing$sents
-bayesplot::ppc_dens_overlay(y, yrep) 
-
-# map the spatial filter
-sp.filter <- spatial(fit.esf)$mean
-st_as_sf(sentencing) \%>\%
- ggplot() +
- geom_sf(aes(fill = sp.filter)) +
- scale_fill_gradient2()
-
-# calculate log-standardized sentencing ratios (log-SSRs)
+# calculate log-standardized incidence ratios 
+library(ggplot2)
+library(sf)
 f <- fitted(fit.esf)$mean
 SSR <-  f / sentencing$expected_sents
 log.SSR <- log( SSR, base = 2 )
@@ -263,9 +249,6 @@ st_as_sf(sentencing) \%>\%
    legend.key.height = unit(0.35, "cm"),
    legend.key.width = unit(1.5, "cm")
  )
-
-} 
-
 }
 \author{
 Connor Donegan, \email{Connor.Donegan@UTDallas.edu}

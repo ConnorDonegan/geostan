@@ -217,17 +217,12 @@
 #' 
 #'
 #' @examples
-#' 
 #' \donttest{
-#' 
-#' library(ggplot2)
 #' library(bayesplot)
-#' library(sf)
 #' # for automatic parallel processing
-#' ##options(mc.cores = parallel::detectCores())
-#' 
+#' #options(mc.cores = parallel::detectCores())
 #'
-#' # model incidence or mortality rates
+#' # model mortality rates
 #' data(georgia)
 #' C <- shape2mat(georgia, style = "B")
 #' cp <- prep_car_data(C)
@@ -243,71 +238,12 @@
 #' sp_diag(fit, georgia)
 #'
 #' # censored count outcomes
-#' # (increasing adapt_delta to 0.99 can help
-#' #  to avoid divergent transitions, when needed)
 #' sum(is.na(georgia$deaths.female))
 #' fit <- stan_car(deaths.female ~ offset(log(pop.at.risk.female)),
 #'                 car_parts = cp,
 #'                 data = georgia,
 #'                 family = poisson(),
-#'     ##   control = list(adapt_delta = 0.99, max_treedepth=12),
 #'                 censor_point = 9)
-#' 
-#' # model observed/expected incidence
-#' # in this case, prison sentences 
-#' data(sentencing)
-#'
-#' C <- shape2mat(sentencing, style = "B")
-#' cp <- prep_car_data(C, style = "WCAR")
-#' log_e <- log(sentencing$expected_sents)
-#' fit.car <- stan_car(sents ~ offset(log_e),
-#'                     family = poisson(),
-#'                     data = sentencing,
-#'                     car_parts = cp)
-#'
-#' # MCMC diagnostics
-#' rstan::stan_rhat(fit.car$stanfit)
-#' rstan::stan_ess(fit.car$stanfit)
-#'
-#' # Spatial diagnostics
-#' sp_diag(fit.car, sentencing)
-#' 
-#' # posterior predictive distribution
-#' yrep <- posterior_predict(fit.car, S = 75)
-#' y <- sentencing$sents
-#' bayesplot::ppc_dens_overlay(y, yrep)
-#'
-#' # examine posterior distributions of CAR parameters
-#' plot(fit.car, pars = c("car_scale", "car_rho"))
-#'
-#' # map the spatial autocorrelation term, phi
-#' sp.trend <- spatial(fit.car)$mean
-#' ggplot(sf::st_as_sf(sentencing)) +
-#'   geom_sf(aes(fill = sp.trend)) +
-#'   scale_fill_gradient2()
-#'  
-#' # calculate log-standardized sentencing ratios (log-SSRs)
-#' # (like Standardized Incidence Ratios: observed/exected case counts)
-#' SSR <- fitted(fit.car)$mean
-#' log.SSR <- log( SSR, base = 2 )
-#' ggplot(sf::st_as_sf(sentencing)) +
-#'  geom_sf(aes(fill = log.SSR)) +
-#'  scale_fill_gradient2(
-#'    midpoint = 0,
-#'    name = NULL,
-#'    breaks = seq(-3, 3, by = 0.5),
-#'    low = "navy",
-#'    high = "darkred"
-#'    ) +
-#'  labs(title = "Log-Standardized Sentencing Ratios",
-#'       subtitle = "log( Fitted/Expected ), base 2"
-#'       ) +
-#'  theme_void() +
-#'  theme(
-#'    legend.position = "bottom",
-#'    legend.key.height = unit(0.35, "cm"),
-#'    legend.key.width = unit(1.5, "cm")
-#'  )
 #'
 #' ## DCAR specification (inverse-distance based)
 #' library(sf)
@@ -327,9 +263,7 @@
 #'                family = poisson())
 #'
 #' sp_diag(fit, georgia)
-#' 
 #' }
-#'
 #' @export
 #' @md
 #' @importFrom rstan extract_sparse_parts
@@ -524,7 +458,7 @@ stan_car <- function(formula,
     }
     out$C <- Matrix::Matrix(C)    
     R <- resid(out, summary = FALSE)
-    out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )    
+    out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )    
     return (out)
 }
 

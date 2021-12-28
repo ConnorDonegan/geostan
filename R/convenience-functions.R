@@ -23,11 +23,11 @@
 #' n_eff(100, 0.5)
 #' n_eff(100, 0.9)
 #' n_eff(100, 1)
-#'
-#' \dontrun{
+#' 
 #' rho <- seq(0, 1, by = 0.01)
-#' plot(rho, n_eff(100, rho), type = 'l')
-#' }
+#' plot(rho, n_eff(100, rho),
+#'      type = 'l',
+#'      ylab = "Effective Sample Size")
 #' @export
 #' 
 n_eff <- function(n, rho) {
@@ -60,14 +60,12 @@ n_eff <- function(n, rho) {
 #'
 #' Li, Honfei and Calder, Catherine A. and Cressie, Noel (2007). Beyond Moran's I: testing for spatial dependence based on the spatial autoregressive model. Geographical Analysis: 39(4): 357-375.
 #' 
-#' @examples
-#' 
+#' @examples 
 #' library(sf)
 #' data(georgia)
 #' w <- shape2mat(georgia, "W")
 #' x <- georgia$ICE
 #' aple(x, w)
-#'
 #' @importFrom Matrix t
 aple <- function(x, w, digits = 3) {
     check_sa_data(x, w)
@@ -107,7 +105,6 @@ aple <- function(x, w, digits = 3) {
 #' @seealso \code{\link[geostan]{aple}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{lisa}}, \code{\link[geostan]{shape2mat}}
 #' 
 #' @examples
-#' 
 #' data(georgia)
 #' w <- shape2mat(georgia, "W")
 #' x <- sim_sar(w = w, rho = 0.5)
@@ -116,7 +113,6 @@ aple <- function(x, w, digits = 3) {
 #' x <- sim_sar(w = w, rho = 0.7, m = 10)
 #' dim(x)
 #' apply(x, 1, aple, w = w)
-#' 
 #' @importFrom MASS mvrnorm
 #' 
 sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
@@ -139,10 +135,10 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' @export
 #' 
 #' @param x Numeric vector of input values, length n.
-#' @param w An n x n spatial connectivity matrix. See \link[geostan]{shape2mat}. 
+#' @param w An n x n spatial connectivity matrix. See \code{\link[geostan]{shape2mat}}. 
 #' @param digits Number of digits to round results to.
-#' @param warn If `FALSE`, no warning will be printed to inform you when observations with zero neighbors have been dropped. 
-#' 
+#' @param warn If `FALSE`, no warning will be printed to inform you when observations with zero neighbors or `NA` values have been dropped. 
+#' @param na.rm If `na.rm = TRUE`, observations with `NA` values will be dropped from both `x` and `w`. 
 #' @return The Moran coefficient, a numeric value.
 #'
 #' @details If any observations with no neighbors are found (i.e. \code{any(Matrix::rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
@@ -150,25 +146,30 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' @seealso \link[geostan]{moran_plot}, \link[geostan]{lisa}, \link[geostan]{aple}
 #' 
 #' @examples
-#' 
 #' library(sf)
 #' data(georgia)
 #' w <- shape2mat(georgia, style = "W")
 #' x <- georgia$ICE
 #' mc(x, w)
-#'
 #' @source
 #'
 #' Chun, Yongwan, and Daniel A. Griffith. Spatial statistics and geostatistics: theory and applications for geographic information science and technology. Sage, 2013.
 #' 
 #' Cliff, Andrew David, and J. Keith Ord. Spatial processes: models & applications. Taylor & Francis, 1981.
+#' 
 #' @importFrom Matrix rowSums
 #' 
-mc <- function(x, w, digits = 3, warn = TRUE) {
-    check_sa_data(x, w)
+mc <- function(x, w, digits = 3, warn = TRUE, na.rm = FALSE) {
+    check_sa_data(x, w) 
+    na_idx <- which(is.na(x))   
+    if (na.rm == TRUE && length(na_idx) > 0) {   
+        if (warn) message(length(na_idx), " NA values found in x. They will be dropped from the data before calculating the Moran coefficient. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.")
+        x <- x[-na_idx]
+        w <- w[-na_idx, -na_idx]
+    }
     if (any(Matrix::rowSums(w) == 0)) {
         zero.idx <- which(Matrix::rowSums(w) == 0)
-        if (warn) message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data.")
+        if (warn) message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data before calculating the Moran coefficient. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.")
         x <- x[-zero.idx]
         w <- w[-zero.idx, -zero.idx]
     }
@@ -196,7 +197,8 @@ mc <- function(x, w, digits = 3, warn = TRUE) {
 #' @param col Symbol color. 
 #' @param size Symbol size.
 #' @param alpha Symbol transparency.
-#' @param lwd Width of the regression line. 
+#' @param lwd Width of the regression line.
+#' @param na.rm If `na.rm = TRUE`, any observations of `x` with `NA` values will be dropped from `x` and from `w`.
 #' @details For details on the symbol parameters see the documentation for \link[ggplot2]{geom_point}.
 #'
 #' If any observations with no neighbors are found (i.e. \code{any(Matrix::rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
@@ -210,23 +212,27 @@ mc <- function(x, w, digits = 3, warn = TRUE) {
 #' Anselin, Luc. "Local indicators of spatial association—LISA." Geographical analysis 27, no. 2 (1995): 93-115.
 #' 
 #' @examples
-#' \dontrun{
 #' data(georgia)
-#' x <- georgia$ICE
+#' x <- georgia$income
 #' w <- shape2mat(georgia, "W")
 #' moran_plot(x, w)
-#' }
 #' @import ggplot2
 #' @importFrom signs signs
 #' @importFrom Matrix rowSums
-moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 20, col = "darkred", size = 2, alpha = 1, lwd = 0.5) {
+moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 20, col = "darkred", size = 2, alpha = 1, lwd = 0.5, na.rm = FALSE) {
     check_sa_data(x, w)
+    na_idx <- which(is.na(x))
+    if (na.rm == TRUE && length(na_idx) > 0) {   
+        message(length(na_idx), " NA values found in x. They will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.")
+        x <- x[-na_idx]
+        w <- w[-na_idx, -na_idx]
+    }
     if (any(Matrix::rowSums(w) == 0)) {
         zero.idx <- which(Matrix::rowSums(w) == 0)
-        message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data.")
+        message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.")
         x <- x[-zero.idx]
         w <- w[-zero.idx, -zero.idx]
-    }    
+    }
     x <- x - mean(x)
     xlag <- as.numeric(w %*% x)
     sub <- paste0("MC = ", round(mc(x, w),3))
@@ -285,20 +291,16 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
 #' Anselin, Luc. "Local indicators of spatial association—LISA." Geographical Analysis 27, no. 2 (1995): 93-115.
 #'
 #' @examples
-#' 
 #' library(ggplot2)
 #' library(sf)
-#' 
 #' data(georgia)
 #' w <- shape2mat(georgia, "W")
 #' x <- georgia$ICE
 #' li = lisa(x, w)
 #' head(li)
-#' \dontrun{
 #' ggplot(georgia, aes(fill = li$Li)) +
 #'   geom_sf() +
 #'   scale_fill_gradient2()
-#'  }
 #' @importFrom Matrix rowSums
 lisa <- function(x, w, type = TRUE) {
     check_sa_data(x, w)
@@ -328,7 +330,7 @@ lisa <- function(x, w, type = TRUE) {
 #' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
 #' @param name The name to use on the plot labels; default to "y" or, if \code{y} is a \code{geostan_fit} object, to "Residuals".
 #' @param plot If \code{FALSE}, return a list of \code{gg} plots.
-#' 
+#'
 #' @param mc_style Character string indicating how to plot the residual Moran coefficient (only used if `y` is a fitted model): if `mc = "scatter"`, then \code{\link[geostan]{moran_plot}} will be used with the marginal residuals; if `mc = "hist"`, then a histogram of Moran coefficient values will be returned, where each plotted value represents the degree of residual autocorrelation in a draw from the join posterior distribution of model parameters.
 #' 
 #' @param style Style of connectivity matrix; if `w` is not provided, `style` is passed to \code{\link[geostan]{shape2mat}} and defaults to "W" for row-standardized.
@@ -346,22 +348,18 @@ lisa <- function(x, w, type = TRUE) {
 #' 
 #'
 #' @examples
-#' \dontrun{
 #' data(georgia)
 #' sp_diag(georgia$college, georgia)
 #'
-#' bin_fn <- function(y) mad(y)
+#' bin_fn <- function(y) mad(y, na.rm = TRUE)
 #' sp_diag(georgia$college, georgia, binwidth = bin_fn)
 #' 
-#' fit <- stan_glm(log(rate.male) ~ 1, data = georgia)
+#' fit <- stan_glm(log(rate.male) ~ 1, data = georgia, iter = 800)
 #' sp_diag(fit, georgia)
 #'
-#' cp <- prep_car_data(shape2mat(georgia))
-#' fit2 <- stan_car(log(rate.male) ~ 1, data = georgia, car_parts = cp)
+#' fit2 <- stan_car(log(rate.male) ~ log(income), data = georgia,
+#'                  chains = 2, iter = 600) # for speed only
 #' sp_diag(fit2, georgia)
-#' sp_diag(fit2, georgia, detrend = FALSE)
-#' }
-#'
 #' @importFrom stats sd
 #' @export
 #' @md
@@ -372,7 +370,7 @@ sp_diag <- function(y,
                    mc_style = c("scatter", "hist"),
                    style = c("W", "B"),
                    w = shape2mat(shape, match.arg(style)),
-                   binwidth = function(x) 0.5 * sd(x),
+                   binwidth = function(x) 0.5 * sd(x, na.rm = TRUE),
                    ...
                    ) {
     if (inherits(y, "integer")) y <- as.numeric(y)
@@ -397,7 +395,7 @@ sp_diag.geostan_fit <- function(y,
                             mc_style = c("scatter", "hist"),                            
                             style = c("W", "B"),
                             w = shape2mat(shape, match.arg(style)),
-                            binwidth = function(x) 0.5 * stats::sd(x),
+                            binwidth = function(x) 0.5 * stats::sd(x, na.rm = TRUE),
                             rates = TRUE,
                             size = 0.15,
                             ...) {
@@ -424,7 +422,7 @@ sp_diag.geostan_fit <- function(y,
              y = "Fitted") +
         theme_classic()
     # map of marginal residuals
-    marginal_residual <- residuals(y, summary = TRUE, ...)$mean    
+    marginal_residual <- apply(residuals(y, summary = FALSE, ...), 2, mean, na.rm = TRUE)
     map.y <- ggplot(shape) +
         geom_sf(aes(fill = marginal_residual),
                 lwd = 0.05,
@@ -433,15 +431,14 @@ sp_diag.geostan_fit <- function(y,
                              label = signs::signs) +
         theme_void()
     # residual autocorrelation
-    R <- residuals(y, summary = FALSE)    
-    R.mc <- apply(R, 1, mc, w = w)
+    R <- residuals(y, summary = FALSE, ...)    
+    R.mc <- apply(R, 1, mc, w = w, warn = FALSE, na.rm = TRUE)
     if (mc_style == "scatter") {
-        g.mc <- moran_plot(marginal_residual, w, xlab = name)
+        g.mc <- moran_plot(marginal_residual, w, xlab = name, na.rm = TRUE)
     } else {
         R.mc.mu <- mean(R.mc)
         g.mc <- ggplot() +
             geom_histogram(aes(R.mc),
-                                        #     binwidth = binwidth(as.numeric(R.mc)),
                            fill = "gray20",
                            col = "gray90") +
             scale_x_continuous(labels = signs::signs) +
@@ -451,7 +448,7 @@ sp_diag.geostan_fit <- function(y,
                 subtitle = paste0("MC (mean) = ", round(R.mc.mu, 2)))
     }
     if (length(unique(R.mc)) == 1) {
-        g.mc <- moran_plot(R[1,], w, xlab = name)
+        g.mc <- moran_plot(R[1,], w, xlab = name, na.rm = TRUE)
     }    
     if (plot) {
         return( gridExtra::grid.arrange(ovf, g.mc, map.y, ncol = 3) )
@@ -459,7 +456,6 @@ sp_diag.geostan_fit <- function(y,
         return (list(fitted_plot = ovf, mc_plot = g.mc, residual_map = map.y, mc_data = R.mc))
         }
  }
-
 
 #' @export
 #' @method sp_diag numeric
@@ -473,9 +469,10 @@ sp_diag.numeric <- function(y,
                             shape,
                             name = "y",
                             plot = TRUE,
+                            mc_style = c("scatter", "hist"),            
                             style = c("W", "B"),
                             w = shape2mat(shape, match.arg(style)),
-                            binwidth = function(x) 0.5 * stats::sd(x),
+                            binwidth = function(x) 0.5 * stats::sd(x, na.rm = TRUE),
                             ...) {
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
     stopifnot(length(y) == nrow(shape))
@@ -495,7 +492,7 @@ sp_diag.numeric <- function(y,
         scale_fill_gradient2(name = name,
                              label = signs::signs) +
         theme_void()
-    g.mc <- moran_plot(y, w, xlab = name)
+    g.mc <- moran_plot(y, w, xlab = name, na.rm = TRUE)
     if (plot) {
         return( gridExtra::grid.arrange(hist.y, g.mc, map.y, ncol = 3) )
     } else return (list(residual_histogram = hist.y, mc_plot = g.mc, residual_map = map.y))
@@ -531,33 +528,31 @@ sp_diag.numeric <- function(y,
 #' Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). ``Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure.'' *Int. J. Env. Res. and Public Health* 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: \url{https://github.com/ConnorDonegan/survey-HBM}.
 #' 
 #' @examples
-#' \dontrun{
 #' library(sf)
 #' data(georgia)
+#' 
 #' ## binary adjacency matrix
 #' A <- shape2mat(georgia, "B")
 #' ## prepare data for the CAR model, using WCAR specification
-#' cp <- prep_car_data(A, type = "WCAR")
+#' cars <- prep_car_data(A, type = "WCAR")
 #' ## provide list of data for the measurement error model
-#' ME <- list(se = data.frame(ICE = georgia$ICE.se),
-#'            spatial = TRUE,
-#'            car_parts = cp
-#'          )
+#' ME <- prep_me_data(se = data.frame(ICE = georgia$ICE.se),
+#'                    car_parts = cars)
 #' ## sample from the prior probability model only, including the ME model
 #' fit <- stan_glm(log(rate.male) ~ ICE,
 #'                 ME = ME,
-#'                 C = C,
 #'                 data = georgia, 
 #'                 prior_only = TRUE,
-#'                 refresh = 0
+#'                 iter = 800, # for speed only
+#'                 chains = 2, # for speed only
+#'                 refresh = 0 # silence some printing
 #'                 )
+#' 
 #' ## see ME diagnostics
 #' me_diag(fit, "ICE", georgia)
 #' ## see index values for the largest (absolute) delta values
 #'  ## (differences between raw estimate and the posterior mean)
 #' me_diag(fit, "ICE", georgia, index = 3)
-#' }
-#'
 #' @export
 #' @md
 #' @importFrom sf st_as_sf
@@ -697,22 +692,20 @@ me_diag <- function(fit,
 #'
 #' @seealso \link[geostan]{stan_esf}, \link[geostan]{mc}
 #' @examples
-#' 
 #' library(ggplot2)
-#' library(sf)
 #' data(georgia)
 #' C <- shape2mat(georgia, style = "B")
 #' EV <- make_EV(C)
 #' head(EV)
 #'
-#' \dontrun{
 #' ggplot(georgia) +
 #'   geom_sf(aes(fill = EV[,1])) +
 #'   scale_fill_gradient2()
 #' 
-#' fit <- stan_esf(log(rate.male) ~ 1, data = georgia, EV = EV, C = C)
-#' sp_diag(fit, georgia)
-#' }
+#' fit <- stan_esf(log(rate.male) ~ 1,
+#'                 data = georgia,
+#'                 EV = EV,
+#'               chains = 1, iter = 800) # for speed only
 #' @importFrom Matrix isSymmetric t
 make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
     if (!Matrix::isSymmetric(C)) {
@@ -776,8 +769,7 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #'
 #' Haining, R. P., & Li, G. (2020). Regression Modelling Wih Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.
 #'
-#' @examples
-#' 
+#' @examples 
 #' data(georgia)
 #'
 #' ## binary adjacency matrix
@@ -799,7 +791,6 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' dim(Cst)
 #' EVst <- make_EV(Cst)
 #' dim(EVst)
-#' 
 #' @importFrom Matrix sparseMatrix rowSums
 #' @importFrom spdep poly2nb
 #' @export
@@ -855,7 +846,6 @@ count_neighbors <- function(z) {
 #' @param msg A warning message to print.
 #' @return A row-standardized matrix, W (i.e., all row sums equal 1, or zero).
 #' @examples
-#' 
 #' A <- shape2mat(georgia)
 #' head(Matrix::summary(A))
 #' Matrix::rowSums(A)
@@ -863,7 +853,6 @@ count_neighbors <- function(z) {
 #' W <- row_standardize(A)
 #' head(Matrix::summary(W))
 #' Matrix::rowSums(W)
-#' 
 #' @importFrom Matrix rowSums
 #' @export
 row_standardize <- function(C, warn = TRUE, msg = "Row standardizing connectivity matrix") {
@@ -875,22 +864,20 @@ row_standardize <- function(C, warn = TRUE, msg = "Row standardizing connectivit
     return (W)
 }
 
-#' auto Gaussian family for CAR models
+#' Auto-Gaussian family for CAR models
 #'
 #' @export
 #' @description create a family object for the auto-Gaussian CAR specification
 #' @return An object of class \code{family}
 #' @seealso \code{\link[geostan]{stan_car}}
 #' @examples
-#' 
-#' \donttest{
 #' cp = prep_car_data(shape2mat(georgia))
 #' fit <- stan_car(log(rate.male) ~ 1,
 #'                 data = georgia,
 #'                 car_parts = cp,
-#'                 family = auto_gaussian())
-#' }
-#' 
+#'                 family = auto_gaussian(),
+#'                 chains = 2, iter = 800) # for speed only
+#' print(fit)
 auto_gaussian <- function() {
     family <- list(family = "auto_gaussian", link = "identity")
     class(family) <- "family"
@@ -910,13 +897,10 @@ auto_gaussian <- function() {
 #' @seealso \code{\link[loo]{waic}} \code{\link[loo]{loo}}
 #'
 #' @examples
-#' 
-#' \donttest{
 #' data(georgia)
-#' fit <- stan_glm(log(rate.male) ~ 1, data = georgia)
+#' fit <- stan_glm(log(rate.male) ~ 1, data = georgia,
+#'                 chains = 2, iter = 800) # for speed only
 #' waic(fit)
-#' }
-#' 
 #' @source
 #'
 #' Watanabe, S. (2010). Asymptotic equivalence of Bayes cross validation and widely application information criterion in singular learning theory. Journal of Machine Learning Research 11, 3571-3594.
@@ -949,12 +933,10 @@ waic <- function(fit, pointwise = FALSE, digits = 2) {
 #' @return Returns a numeric value.
 #'
 #' @examples
-#' 
 #' data(georgia)
 #' C <- shape2mat(georgia)
 #' X <- model.matrix(~ ICE + college, georgia)
 #' expected_mc(X, C)
-#' 
 expected_mc <- function(X, C) {
     C <- as.matrix(C)
     n = nrow(X)
@@ -980,7 +962,6 @@ expected_mc <- function(X, C) {
 #'
 #' @seealso \code{\link[geostan]{shape2mat}}, \code{\link[geostan]{prep_icar_data}}, \code{\link[geostan]{stan_icar}}
 #' @examples
-#' 
 #' data(sentencing)
 #' C <- shape2mat(sentencing)
 #' nbs <- edges(C)
@@ -989,7 +970,6 @@ expected_mc <- function(X, C) {
 #' ## similar to:
 #' head(Matrix::summary(C))
 #' head(Matrix::summary(shape2mat(georgia, "W")))
-#' 
 #' @importFrom Matrix summary
 #' @export
 edges <- function(C, unique_pairs_only = TRUE) {
@@ -1024,26 +1004,22 @@ edges <- function(C, unique_pairs_only = TRUE) {
 #' @export
 #' @importFrom truncnorm rtruncnorm
 #' @examples
-#' 
 #' data(georgia)
 #' x = georgia$college
 #' se = georgia$college.se
 #'
 #' lse1 = se_log(x, se)
 #' lse2 = se_log(x, se, method = "delta")
-#' \dontrun{
 #' plot(lse1, lse2); abline(0, 1)
-#' }
 #' 
 #' # the monte carlo method
 #' x = 10
 #' se = 2
-#' z = rnorm(n = 30e3, mean = x,  sd = se)
+#' z = rnorm(n = 20e3, mean = x,  sd = se)
 #' l.z = log(z)
 #' sd(l.z)
 #' se_log(x, se, method = "mc")
 #' se_log(x, se, method = "delta")
-#' 
 se_log <- function(x, se, method = c("mc", "delta"), nsim = 5e3, bounds = c(0, Inf)) {
     stopifnot(length(x) == length(se))
     method <- match.arg(method)
@@ -1078,7 +1054,7 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 5e3, bounds = c(0, I
 #' \item{group_size}{number of nodes per group}
 #' \item{n_edges}{number of connections between nodes (unique pairs only)}
 #' \item{node1}{first node}
-#' \item{node2}{second node. (node1[i] and node2[i] form a connected pair)}
+#' \item{node2}{second node. (`node1[i]` and `node2[i]` form a connected pair)}
 #' \item{weight}{The element \code{C[node1, node2]}.}
 #' \item{group_idx}{indices for each observation belonging each group, ordered by group.}
 #' \item{m}{number of disconnected regions requiring their own intercept.}
@@ -1089,21 +1065,19 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 5e3, bounds = c(0, I
 #'
 #' @details
 #'
-#' This is used internally to prepare data for \link[geostan]{stan_icar} models. It can also be helpful for fitting custom ICAR models outside of \code{geostan}. 
+#' This is used internally to prepare data for \code{\link[geostan]{stan_icar}} models. It can also be helpful for fitting custom ICAR models outside of \code{geostan}. 
 #' 
 #' @seealso \code{\link[geostan]{edges}}, \code{\link[geostan]{shape2mat}}, \code{\link[geostan]{stan_icar}}, \code{\link[geostan]{prep_car_data}}
 #'
 #' @examples
-#' 
 #' data(sentencing)
 #' C <- shape2mat(sentencing)
 #' icar.data.list <- prep_icar_data(C)
-#'
 #' @source
 #'
 #' Besag, Julian, Jeremy York, and Annie Mollié. 1991. “Bayesian Image Restoration, with Two Applications in Spatial Statistics.” Annals of the Institute of Statistical Mathematics 43 (1): 1–20.
 #' 
-#' Donegan, Connor. Flexible Functions for ICAR, BYM, and BYM2 Models in Stan. Code Repository. 2021. Available online: \url{https://github.com/ConnorDonegan/Stan-IAR} (accessed Sept. 10, 2021).
+#' Donegan, Connor. Flexible Functions for ICAR, BYM, and BYM2 Models in Stan. Code Repository. 2021. Available online: \url{https://github.com/ConnorDonegan/Stan-IAR/} (accessed Sept. 10, 2021).
 #'
 #' Freni-Sterrantino, Anna, Massimo Ventrucci, and Håvard Rue. 2018. “A Note on Intrinsic Conditional Autoregressive Models for Disconnected Graphs.” Spatial and Spatio-Temporal Epidemiology 26: 25–34.
 #'
@@ -1183,9 +1157,9 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #'
 #' The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188).
 #'
-#' The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For `A`, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of `A` will be converted to: `d_{ij} = (a_{ij} + gamma)^(-k)` (Cliff and Ord 1981, p. 144). Default values are `k=1` and `gamma=0`. Following Cressie (2015), these values will be standardized by the maximum `d_{ij}` value. The conditional variances will be proportional to the inverse of the row sums of the transformed distance matrix: `M_{ii} = (sum_i^N d_{ij})^(-1)`.
+#' The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For `A`, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of `A` will be converted to: `d_{ij} = (a_{ij} + gamma)^(-k)` (Cliff and Ord 1981, p. 144). Default values are `k=1` and `gamma=0`. Following Cressie (2015), these values will be standardized by the maximum `d_{ij}` value. The conditional variances will be proportional to the inverse of the row sums of the transformed distance matrix: `M_{ii} = (sum_i^N d_{ij})^(-1)` (Donegan 2021).
 #'
-#' For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 \[1993\]) and Haining and Li (2020).
+#' For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 \[1993\]), Haining and Li (2020), and Donegan (2021).
 #'
 #' When using \code{\link[geostan]{stan_car}}, always use `cmat = TRUE` (the default).
 #'
@@ -1199,24 +1173,27 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #'
 #' Cressie N, Wikle CK (2011). Statistics for Spatio-Temporal Data. John Wiley & Sons.
 #'
+#' Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. *OSF Preprints*. \doi{10.31219/osf.io/3ey65}.
+#'
 #' Haining RP, Li G (2020). Modelling Spatial and Spatio-Temporal Data: A Bayesian Approach. CRC Press.
 #'
 #' @return A list containing all of the data elements required by the CAR model in \code{\link[geostan]{stan_car}}.
 #'
 #' @examples
-#'
 #' data(georgia)
 #'
-#' ## binary adjacency matrix
+#' ## use a binary adjacency matrix
 #' A <- shape2mat(georgia, style = "B")
 #'
 #' ## get list of data for Stan
 #' cp <- prep_car_data(A, "WCAR")
 #' 1 / range(cp$lambda)
 #' 
-#' \donttest{
 #' ## pass the data to stan_car
-#' fit = stan_car(log(rate.male) ~ 1, data = georgia, car_parts = cp)
+#' fit = stan_car(log(rate.male) ~ 1,
+#'                    data = georgia,
+#'                    car_parts = cp,
+#'                    chains = 2, iter = 800) # for speed only
 #' 
 #' # ACAR specification
 #' cp <- prep_car_data(A, "ACAR")
@@ -1226,8 +1203,6 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' D <- sf::st_distance(sf::st_centroid(georgia))
 #' A <- D * A
 #' cp <- prep_car_data(A, "DCAR", k = 1)
-#' }
-#' 
 #' @export
 #' @md
 #' @importFrom rstan extract_sparse_parts
@@ -1364,11 +1339,10 @@ get_shp <- function(url, folder = "shape") {
 #' se <- data.frame(ICE = georgia$ICE.se, college = georgia$college.se)
 #' ME <- prep_me_data(se)
 #' 
-#' ## for a spatial prior model (generally recommended)
+#' ## for a spatial prior model (often recommended)
 #' A <- shape2mat(georgia, "B")
 #' cars <- prep_car_data(A)
 #' ME <- prep_me_data(se, car_parts = cars)
-#' 
 #' @export
 #' @md
 prep_me_data <- function(se, bounds = c(-Inf, Inf), car_parts, prior, logit = rep(FALSE, times = ncol(se))) {
@@ -1434,14 +1408,15 @@ prep_me_data <- function(se, bounds = c(-Inf, Inf), car_parts, prior, logit = re
 #' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In *Electronic Journal of Statistics*, 11(2):5018-5051.
 #' 
 #' @examples
-#'
 #' C <- shape2mat(georgia, "B")
 #' c(p0 <- exp_pars(log(rate.male) ~ college, georgia, C))
-#' 
+#'
 #' \donttest{
-#'  fit <- stan_esf(log(rate.male) ~ college, data = georgia, p0 = p0, iter = 1e3, C = C)
+#' # for the model:
+#' fit <- stan_esf(log(rate.male) ~ college,
+#'                 data = georgia,
+#'                 C = C)
 #' }
-#' 
 #' @importFrom stats model.matrix residuals lm
 #' 
 #' @importFrom Matrix summary

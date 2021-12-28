@@ -42,13 +42,11 @@
 #'  \item{geometry}{simple features geometry for county boundaries}  
 #' }
 #' @examples
-#' \dontrun{
 #' data(georgia)
 #' head(georgia)
 #' 
 #' library(sf)
 #' plot(georgia[,'rate.female'])
-#' }
 "georgia"
 
 
@@ -73,9 +71,7 @@
 #'  \item{sir_raw}{Standardized incident ratio (observed/expected sentences)}
 #' }
 #' @examples
-#' \dontrun{
 #' data(sentencing)
 #' head(sentencing@data)
-#' }
 "sentencing"
 

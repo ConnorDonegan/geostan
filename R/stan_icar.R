@@ -241,13 +241,8 @@
 #' Riebler, A., Sorbye, S. H., Simpson, D., & Rue, H. (2016). An intuitive Bayesian spatial model for disease mapping that accounts for scaling. Statistical Methods in Medical Research, 25(4), 1145-1165.
 #'
 #' @examples
-#' \donttest{
-#' library(rstan)
-#' library(bayesplot)
-#' library(sf)
-#' \dontrun{
-#' options(mc.cores = parallel::detectCores())
-#' }
+#' # for parallel processing of models:
+#' #options(mc.cores = parallel::detectCores())
 #' data(sentencing)
 #'
 #' C <- shape2mat(sentencing, "B")
@@ -256,33 +251,22 @@
 #'                      family = poisson(),
 #'                      data = sentencing,
 #'                      type = "bym",
-#'                      C = C
-#'  )
+#'                      C = C,
+#'                      chains = 2, iter = 600) # for speed only
 #'
+#' # spatial diagnostics
+#' sp_diag(fit.bym, sentencing)
+#'                                        
 #' # check effective sample size and convergence
+#' library(rstan)
 #' rstan::stan_ess(fit.bym$stanfit)
 #' rstan::stan_rhat(fit.bym$stanfit)
-#'
-#' # see some spatial diagnostics
-#' sp_diag(fit.bym, sentencing)
-#'
-#' # posterior predictive distribution
-#' yrep <- posterior_predict(fit.bym, S = 100)
-#' y <- sentencing$sents
-#' bayesplot::ppc_dens_overlay(y, yrep)
 #' 
-#' # map the smooth spatial term
-#' sp.trend <- spatial(fit.bym)$mean
-#' ggplot( st_as_sf(sentencing) ) +
-#'   geom_sf(aes(fill = sp.trend)) +
-#'   scale_fill_gradient2(
-#'    low = "navy",
-#'    high = "darkred"
-#'   ) +
-#'   theme_void()
-#'
-#' # calculate log-standardized sentencing ratios (log-SSRs)
-#' ## (like Standardized Incidence Ratios: observed/exected case counts)
+#' # calculate log-standardized incidence ratios 
+#' # (observed/exected case counts)
+#' library(ggplot2)
+#' library(sf)
+#' 
 #' f <- fitted(fit.bym)$mean
 #' SSR <- f / sentencing$expected_sents
 #' log.SSR <- log( SSR, base = 2)
@@ -301,8 +285,6 @@
 #'    legend.key.height = unit(0.35, "cm"),
 #'    legend.key.width = unit(1.5, "cm")
 #'   )
-#' }
-#'
 #' @export
 #' @md
 #' @importFrom rstan extract_sparse_parts
@@ -484,7 +466,7 @@ stan_icar <- function(formula,
     out$spatial <- data.frame(par = "phi", method = toupper(type))
     ## ICAR OUTPUT [STOP] --------
     R <- resid(out, summary = FALSE)
-    out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )    
+    out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )    
     return (out)
 }
 

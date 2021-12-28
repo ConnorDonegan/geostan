@@ -117,33 +117,31 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
+
 <span class="co">## binary adjacency matrix</span>
 <span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span>
 <span class="co">## prepare data for the CAR model, using WCAR specification</span>
-<span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span>, type <span class="op">=</span> <span class="st">"WCAR"</span><span class="op">)</span>
+<span class="va">cars</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span>, type <span class="op">=</span> <span class="st">"WCAR"</span><span class="op">)</span>
 <span class="co">## provide list of data for the measurement error model</span>
-<span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>ICE <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">ICE.se</span><span class="op">)</span>,
-           spatial <span class="op">=</span> <span class="cn">TRUE</span>,
-           car_parts <span class="op">=</span> <span class="va">cp</span>
-         <span class="op">)</span>
+<span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_me_data.html">prep_me_data</a></span><span class="op">(</span>se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>ICE <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">ICE.se</span><span class="op">)</span>,
+                   car_parts <span class="op">=</span> <span class="va">cars</span><span class="op">)</span>
 <span class="co">## sample from the prior probability model only, including the ME model</span>
 <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="va">ICE</span>,
                 ME <span class="op">=</span> <span class="va">ME</span>,
-                C <span class="op">=</span> <span class="va">C</span>,
                 data <span class="op">=</span> <span class="va">georgia</span>, 
                 prior_only <span class="op">=</span> <span class="cn">TRUE</span>,
-                refresh <span class="op">=</span> <span class="fl">0</span>
+                iter <span class="op">=</span> <span class="fl">800</span>, <span class="co"># for speed only</span>
+                chains <span class="op">=</span> <span class="fl">2</span>, <span class="co"># for speed only</span>
+                refresh <span class="op">=</span> <span class="fl">0</span> <span class="co"># silence some printing</span>
                 <span class="op">)</span>
+
 <span class="co">## see ME diagnostics</span>
 <span class="fu">me_diag</span><span class="op">(</span><span class="va">fit</span>, <span class="st">"ICE"</span>, <span class="va">georgia</span><span class="op">)</span>
 <span class="co">## see index values for the largest (absolute) delta values</span>
  <span class="co">## (differences between raw estimate and the posterior mean)</span>
 <span class="fu">me_diag</span><span class="op">(</span><span class="va">fit</span>, <span class="st">"ICE"</span>, <span class="va">georgia</span>, index <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
-<span class="op">}</span>
-
 </code></pre></div>
     </div>
   </div>

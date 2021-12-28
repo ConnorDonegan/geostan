@@ -79,6 +79,8 @@
 <p>Cressie N (2015 [1993]). Statistics for Spatial Data. Revised edition. John Wiley &amp; Sons.</p>
 <p>Cressie N, Perrin O, Thomas-Agnan C (2005). “Likelihood-based estimation for Gaussian MRFs.” Statistical Methodology, 2(1), 1–16.</p>
 <p>Cressie N, Wikle CK (2011). Statistics for Spatio-Temporal Data. John Wiley &amp; Sons.</p>
+<p>Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. <em>OSF Preprints</em>. doi: <a href="https://doi.org/10.31219/osf.io/3ey65" class="external-link">10.31219/osf.io/3ey65</a>
+.</p>
 <p>Haining RP, Li G (2020). Modelling Spatial and Spatio-Temporal Data: A Bayesian Approach. CRC Press.</p>
     </div>
     <div id="arguments">
@@ -110,26 +112,27 @@
 <p>where <code>I</code> is the identity matrix, <code>rho</code> is a spatial autocorrelation parameter, <code>C</code> is a connectivity matrix, and <code>M * tau^2</code> is a diagonal matrix with conditional variances on the diagonal. <code>tau^2</code> is a (scalar) scale parameter.</p>
 <p>In the WCAR specification, <code>C</code> is the row-standardized version of <code>A</code>. This means that the non-zero elements of <code>A</code> will be converted to <code>1/N_i</code> where <code>N_i</code> is the number of neighbors for the <code>i</code>th site (obtained using <code>Matrix::rowSums(A)</code>. The conditional variances (on the diagonal of <code>M * tau^2</code>), are also proportional to <code>1/N_i</code>.</p>
 <p>The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188).</p>
-<p>The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For <code>A</code>, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of <code>A</code> will be converted to: <code>d_{ij} = (a_{ij} + gamma)^(-k)</code> (Cliff and Ord 1981, p. 144). Default values are <code>k=1</code> and <code>gamma=0</code>. Following Cressie (2015), these values will be standardized by the maximum <code>d_{ij}</code> value. The conditional variances will be proportional to the inverse of the row sums of the transformed distance matrix: <code>M_{ii} = (sum_i^N d_{ij})^(-1)</code>.</p>
-<p>For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 [1993]) and Haining and Li (2020).</p>
+<p>The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For <code>A</code>, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of <code>A</code> will be converted to: <code>d_{ij} = (a_{ij} + gamma)^(-k)</code> (Cliff and Ord 1981, p. 144). Default values are <code>k=1</code> and <code>gamma=0</code>. Following Cressie (2015), these values will be standardized by the maximum <code>d_{ij}</code> value. The conditional variances will be proportional to the inverse of the row sums of the transformed distance matrix: <code>M_{ii} = (sum_i^N d_{ij})^(-1)</code> (Donegan 2021).</p>
+<p>For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 [1993]), Haining and Li (2020), and Donegan (2021).</p>
 <p>When using <code><a href="stan_car.html">stan_car</a></code>, always use <code>cmat = TRUE</code> (the default).</p>
     </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
 
-<span class="co">## binary adjacency matrix</span>
+<span class="co">## use a binary adjacency matrix</span>
 <span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span>
 
 <span class="co">## get list of data for Stan</span>
 <span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu">prep_car_data</span><span class="op">(</span><span class="va">A</span>, <span class="st">"WCAR"</span><span class="op">)</span>
 <span class="fl">1</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">cp</span><span class="op">$</span><span class="va">lambda</span><span class="op">)</span>
 
-<span class="co"># \donttest{</span>
 <span class="co">## pass the data to stan_car</span>
-<span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="stan_car.html">stan_car</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>, data <span class="op">=</span> <span class="va">georgia</span>, car_parts <span class="op">=</span> <span class="va">cp</span><span class="op">)</span>
+<span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="stan_car.html">stan_car</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,
+                   data <span class="op">=</span> <span class="va">georgia</span>,
+                   car_parts <span class="op">=</span> <span class="va">cp</span>,
+                   chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">800</span><span class="op">)</span> <span class="co"># for speed only</span>
 
 <span class="co"># ACAR specification</span>
 <span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu">prep_car_data</span><span class="op">(</span><span class="va">A</span>, <span class="st">"ACAR"</span><span class="op">)</span>
@@ -139,8 +142,6 @@
 <span class="va">D</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_measures.html" class="external-link">st_distance</a></span><span class="op">(</span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_unary.html" class="external-link">st_centroid</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span><span class="op">)</span>
 <span class="va">A</span> <span class="op">&lt;-</span> <span class="va">D</span> <span class="op">*</span> <span class="va">A</span>
 <span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu">prep_car_data</span><span class="op">(</span><span class="va">A</span>, <span class="st">"DCAR"</span>, k <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
-<span class="co"># }</span>
-
 </code></pre></div>
     </div>
   </div>

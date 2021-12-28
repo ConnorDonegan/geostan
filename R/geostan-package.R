@@ -1,6 +1,6 @@
 #' The geostan R package.
 #'
-#' @description Bayesian spatial modeling powered by Stan. \code{geostan} offers access to a variety of hierarchical spatial models using the R formula interface. It is designed primarily for spatial epidemiology and public health research but is generally applicable to modeling areal data. Unique features of the package include its suitability for inference with small area estimates from the American Community Survey (using spatial observational error models), and its eigenvector spatial filtering methodology.
+#' @description Bayesian spatial modeling powered by Stan. **geostan** provides access to a variety of hierarchical spatial models using the R formula interface, supporting a complete spatial analysis workflow with a suite of spatial analysis tools. It is designed primarily for public health research but is generally applicable to modeling areal data. Unique features of the package include its spatial measurement error modeling strategy (for inference with small area estimates such as those from the American Community Survey), its fast proper CAR models, and its eigenvector spatial filtering methodology.
 #'
 #' @docType package
 #' @name geostan-package

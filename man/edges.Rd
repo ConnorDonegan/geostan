@@ -21,7 +21,6 @@ Creates a list of connected nodes following the graph representation of a spatia
 This is used internally for \code{\link[geostan]{stan_icar}} and it is also helpful for creating the scaling factor for BYM2 models fit with \code{\link[geostan]{stan_icar}}.
 }
 \examples{
-
 data(sentencing)
 C <- shape2mat(sentencing)
 nbs <- edges(C)
@@ -30,7 +29,6 @@ head(nbs)
 ## similar to:
 head(Matrix::summary(C))
 head(Matrix::summary(shape2mat(georgia, "W")))
-
 }
 \seealso{
 \code{\link[geostan]{shape2mat}}, \code{\link[geostan]{prep_icar_data}}, \code{\link[geostan]{stan_icar}}

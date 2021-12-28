@@ -180,10 +180,6 @@
 #' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In *Electronic Journal of Statistics*, 11(2):5018-5051.
 #' 
 #' @examples
-#' \donttest{
-#' library(ggplot2)
-#' library(sf)
-#' library(bayesplot)
 #' data(sentencing)
 #'
 #' # spatial weights matrix with binary coding scheme
@@ -199,32 +195,22 @@
 #'                    family = poisson(),
 #'                    data = sentencing,
 #'                    C = C,
-#'                    refresh = 0
-#' )
+#'                    chains = 2, iter = 800) # for speed only
 #' 
 #' # spatial diagnostics 
 #' sp_diag(fit.esf, sentencing)
-#'
+#' plot(fit.esf)
+#' 
 #' # plot marginal posterior distributions of beta_ev (eigenvector coefficients)
 #' plot(fit.esf, pars = "beta_ev")
 #'
-#' # plot the marginal posterior distributions of the spatial filter (ESF * beta_ev)
-#' plot(fit.esf, pars = "beta_ev")
+#' # plot the marginal posterior distributions of the spatial filter 
+#' plot(fit.esf, pars = "esf")
 #'
-#' # posterior predictive distribution
-#' yrep <- posterior_predict(fit.esf, S = 75)
-#' y <- sentencing$sents
-#' bayesplot::ppc_dens_overlay(y, yrep) 
-#'
-#' # map the spatial filter
-#' sp.filter <- spatial(fit.esf)$mean
-#' st_as_sf(sentencing) %>%
-#'  ggplot() +
-#'  geom_sf(aes(fill = sp.filter)) +
-#'  scale_fill_gradient2()
-#'
-#' # calculate log-standardized sentencing ratios (log-SSRs)
-# (like Standardized Incidence Ratios: observed/exected case counts)
+#' # calculate log-standardized incidence ratios 
+#  # (observed/exected counts)
+#' library(ggplot2)
+#' library(sf)
 #' f <- fitted(fit.esf)$mean
 #' SSR <-  f / sentencing$expected_sents
 #' log.SSR <- log( SSR, base = 2 )
@@ -247,9 +233,6 @@
 #'    legend.key.height = unit(0.35, "cm"),
 #'    legend.key.width = unit(1.5, "cm")
 #'  )
-#'
-#' } 
-#'
 #' @export
 #' @md
 #' @importFrom rstan extract_sparse_parts
@@ -443,7 +426,7 @@ stan_esf <- function(formula,
     if (out$ME$has_me) out$ME <- c(out$ME, ME)
     out$spatial <- data.frame(par = "esf", method = "ESF")
     R <- resid(out, summary = FALSE)
-    out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C) )    
+    out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )    
   return (out)
 }
 

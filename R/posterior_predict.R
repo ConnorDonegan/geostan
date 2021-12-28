@@ -18,23 +18,16 @@
 #'
 #' 
 #' @examples
-#' \dontrun{
 #'  fit <- stan_glm(sents ~ offset(log(expected_sents)),
-#'                  data = sentencing,
-#'                  family = poisson(),
-#'                  chains = 1)
-#'  yrep <- posterior_predict(fit, S = 100)
-#'  bayesplot::ppc_dens_overlay(y = sentencing$sents, yrep = yrep)
-#'
-#'  fit2 <- stan_glm(sents ~ offset(log(expected_sents)),
 #'                   re = ~ name,
 #'                   data = sentencing,
 #'                   family = poisson(),
-#'                   chains = 1)
-#'  yrep <- posterior_predict(fit2, S = 100)
-#'  bayesplot::ppc_dens_overlay(y = sentencing$sents, yrep = yrep)
-#'  sp_diag(fit2, sentencing)
-#'  }
+#'                   chains = 2, iter = 600) # for speed only
+#' 
+#'  yrep <- posterior_predict(fit, S = 65)
+#'  plot(density(yrep[1,]))
+#'  for (i in 2:nrow(yrep)) lines(density(yrep[i,]), col = 'gray30')
+#'  lines(density(sentencing$sents), col = 'darkred', lwd = 2)
 posterior_predict <- function(object, 
                 S,
                 summary = FALSE,
