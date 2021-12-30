@@ -63,6 +63,14 @@ drat::addRepo("connordonegan")
 install.packages("geostan")
 ```
 
+For Windows users, **geostan** has been built for R version 4.0 or 4.1; Mac users require require R 4.1.
+
+Linux users can install from drat repo as stated above or with:
+
+``` r
+remotes::install_github("connordonegan/geostan")
+```
+
 ## Usage
 
 Load the package and the `georgia` county mortality data set (ages 55-64, years 2014-2018):

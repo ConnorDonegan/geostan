@@ -60,6 +60,15 @@ drat::addRepo("connordonegan")
 install.packages("geostan")
 ```
 
+For Windows users, **geostan** has been built for R version 4.0 or 4.1;
+Mac users require require R 4.1.
+
+Linux users can install from drat repo as stated above or with:
+
+``` r
+remotes::install_github("connordonegan/geostan")
+```
+
 ## Usage
 
 Load the package and the `georgia` county mortality data set (ages
@@ -67,6 +76,12 @@ Load the package and the `georgia` county mortality data set (ages
 
 ``` r
 library(geostan)
+#> This is geostan version 0.2.0
+#> 
+#> Attaching package: 'geostan'
+#> The following object is masked from 'package:base':
+#> 
+#>     gamma
 data(georgia)
 ```
 
@@ -142,8 +157,8 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.00164375 
-#> WAIC:  1289.84 
+#> Residual Moran Coefficient:  -7.3e-05 
+#> WAIC:  1290 
 #> Observations:  159 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
@@ -151,11 +166,11 @@ print(fit)
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-#> intercept -4.670   0.002 0.096 -4.847 -4.714 -4.673 -4.630 -4.481  1825 1.002
-#> car_rho    0.924   0.001 0.059  0.772  0.894  0.935  0.968  0.996  3123 0.999
-#> car_scale  0.457   0.001 0.036  0.392  0.431  0.455  0.481  0.533  3965 0.999
+#> intercept -4.670   0.002 0.097 -4.837 -4.715 -4.674 -4.631 -4.486  1650 1.001
+#> car_rho    0.923   0.001 0.058  0.776  0.897  0.936  0.966  0.995  3554 1.000
+#> car_scale  0.456   0.001 0.035  0.392  0.432  0.454  0.479  0.530  4324 1.000
 #> 
-#> Samples were drawn using NUTS(diag_e) at Wed Dec 29 16:54:08 2021.
+#> Samples were drawn using NUTS(diag_e) at Wed Dec 29 20:16:42 2021.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
