@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
       </span>
     </div>
 
@@ -145,7 +145,8 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="co"># \donttest{</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
 <span class="va">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>
 <span class="va">prior</span><span class="op">$</span><span class="va">beta</span> <span class="op">&lt;-</span> <span class="fu">normal</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span>
 <span class="va">prior</span><span class="op">$</span><span class="va">intercept</span> <span class="op">&lt;-</span> <span class="fu">normal</span><span class="op">(</span><span class="op">-</span><span class="fl">5</span>, <span class="fl">3</span><span class="op">)</span>
@@ -169,9 +170,7 @@
                 ME <span class="op">=</span> <span class="va">ME</span>,
                 prior_only <span class="op">=</span> <span class="cn">TRUE</span>,
                chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span>
-<span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span>
-<span class="va">fit</span> <span class="op">=</span> <span class="fu"><a href="stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>, data <span class="op">=</span> <span class="va">georgia</span>, family <span class="op">=</span> <span class="fu">student_t</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
-<span class="op">}</span>
+<span class="co"># }</span>
 </code></pre></div>
     </div>
   </div>

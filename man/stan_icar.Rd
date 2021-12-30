@@ -257,10 +257,10 @@ For example, the US Centers for Disease Control and Prevention's CDC WONDER data
 }
 }
 \examples{
+\donttest{
 # for parallel processing of models:
 #options(mc.cores = parallel::detectCores())
 data(sentencing)
-
 C <- shape2mat(sentencing, "B")
 log_e <- log(sentencing$expected_sents)
 fit.bym <- stan_icar(sents ~ offset(log_e),
@@ -268,7 +268,7 @@ fit.bym <- stan_icar(sents ~ offset(log_e),
                      data = sentencing,
                      type = "bym",
                      C = C,
-                     chains = 2, iter = 600) # for speed only
+                     chains = 2, iter = 800) # for speed only
 
 # spatial diagnostics
 sp_diag(fit.bym, sentencing)
@@ -283,7 +283,7 @@ rstan::stan_rhat(fit.bym$stanfit)
 library(ggplot2)
 library(sf)
 
-f <- fitted(fit.bym)$mean
+f <- fitted(fit.bym, rates = FALSE)$mean
 SSR <- f / sentencing$expected_sents
 log.SSR <- log( SSR, base = 2)
 
@@ -301,6 +301,7 @@ ggplot( st_as_sf(sentencing) ) +
    legend.key.height = unit(0.35, "cm"),
    legend.key.width = unit(1.5, "cm")
   )
+}
 }
 \seealso{
 \link[geostan]{shape2mat}, \link[geostan]{stan_car}, \link[geostan]{stan_esf}, \link[geostan]{stan_glm}, \link[geostan]{prep_icar_data}

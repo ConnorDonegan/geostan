@@ -93,64 +93,13 @@ Methods for fitted geostan models: extract residuals, fitted values, posterior p
 \details{
 \subsection{predict.geostan_fit}{
 
-The purpose of the predict method is to explore marginal effects of (combinations of) covariates. The method sets the intercept equal to its posterior mean (i.e., \code{alpha = mean(as.matrix(object, pars = "intercept"))}); the only source of uncertainty in the results is the posterior distribution of the coefficients, which can be obtained using \code{Beta = as.matrix(object, pars = "beta")}. The results returned by \code{predict.geostan_fit} are obtain by (a summary of):\preformatted{  for (m in 1:M) preds[m,] = alpha + X * Beta[m,] 
-}
-
-where \code{M} is the number of MCMC samples in the model (\code{M = nrow(Beta)}) and \code{preds} is a matrix of predicted values.
+The purpose of the predict method is to explore marginal effects of (combinations of) covariates. The method sets the intercept equal to its posterior mean (i.e., \code{alpha = mean(as.matrix(object, pars = "intercept"))}); the only source of uncertainty in the results is the posterior distribution of the coefficients, which can be obtained using \code{Beta = as.matrix(object, pars = "beta")}.
 
 Be aware that in non-linear models (including Poisson and Binomial models) marginal effects of each covariate are sensitive to the level of other covariates in the model. If the model includes any spatially-lagged covariates (introduced using the \code{slx} argument) or a spatial autocorrelation term, these terms will essentially be fixed at zero for the purposes of calculating marginal effects. To explore the impact of these (missing) terms, you can add their values to the linear predictor using the \code{alpha} argument.
 }
 }
 \examples{
-data(sentencing)
-
-# spatial weights matrix with binary coding scheme
-C <- shape2mat(sentencing, style = "B")
-cars <- prep_car_data(C)
-
-# log-expected number of sentences
-## expected counts are based on county racial composition and mean sentencing rates
-log_e <- log(sentencing$expected_sents)
-
-# fit spatial Poisson model with unstructured 'random effects'
-fit <- stan_car(sents ~ offset(log_e),
-                   car_parts = cars,
-                   family = poisson(),
-                   data = sentencing,
-                   chains = 2, iter = 600) # for speed only
-
-# print and plot results
-print(fit)
-plot(fit)
-
-# residuals
-r = resid(fit)
-
-# fitted values
-f = fitted(fit)
-
-# spatial diagnostics
-sp_diag(fit, sentencing)
-
-# spatial trend, county `random effects' 
-sp = spatial(fit)
-
-# posterior predictive distribution
-yrep <- posterior_predict(fit, S = 65)
-plot(density(yrep[1,]), col = "gray30")
-for (i in 2:nrow(yrep)) lines(density(yrep[i,]), col = "gray30")
-lines(density(sentencing$sents), col = "darkred", lwd = 2)
-
-# extract matrix of samples from posterior distribution of parameters
-## alpha_re are the unstructured area random effects
-S.matrix <- as.matrix(fit, pars = "alpha_re")
-
-# array of samples
-S.array <- as.array(fit, pars = c("intercept", "alpha_re", "alpha_tau"))
-S.monitor <- rstan::monitor(S.array, print = FALSE, warmup = 0)
-head(S.monitor)
-
-## marginal effects
+\donttest{
 data(georgia)
 C <- shape2mat(georgia, style = "B")
 cars <- prep_car_data(C)
@@ -164,6 +113,36 @@ fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)) + log(income),
                 family = poisson(),
                 chains = 2, iter = 600) # for speed only
 
+
+# print and plot results
+print(fit)
+plot(fit)
+
+# residuals
+r = resid(fit)
+
+# fitted values 
+# (Poisson model defaults to rates)
+f1 = fitted(fit)
+f2 = fitted(fit, rates = FALSE)
+
+# spatial diagnostics
+sp_diag(fit, georgia)
+
+# spatial trend, county `random effects' 
+sp = spatial(fit)
+
+# posterior predictive distribution
+yrep <- posterior_predict(fit, S = 65)
+plot(density(yrep[1,]), col = "gray30")
+for (i in 2:nrow(yrep)) lines(density(yrep[i,]), col = "gray30")
+lines(density(georgia$deaths.male), col = "darkred", lwd = 2)
+
+# array of samples; MCMC diagnostics
+S.array <- as.array(fit, pars = c("intercept", "car_scale", "car_rho"))
+S.monitor <- rstan::monitor(S.array, print = FALSE, warmup = 0)
+head(S.monitor)
+
 newdata <- data.frame(
     income = seq(min(georgia$income), max(georgia$income), by = 1),
     pop.at.risk.male = 1
@@ -174,7 +153,8 @@ plot(newdata$income, p$mean * 1e3,
     type = 'l',
      main = "Deaths per 1,000",
      ylab = NA,
-     xlab = "Median county income ($1,000s)") 
+     xlab = "Median county income ($1,000s)")
+}
 }
 \seealso{
 \code{\link[geostan]{posterior_predict}}, \code{\link[geostan]{stan_glm}}, \code{\link[geostan]{stan_esf}}, \code{\link[geostan]{stan_icar}}, \code{\link[geostan]{stan_car}}

@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
       </span>
     </div>
 
@@ -319,7 +319,6 @@
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="co"># \donttest{</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mc-stan.org/bayesplot/" class="external-link">bayesplot</a></span><span class="op">)</span>
 <span class="co"># for automatic parallel processing</span>
 <span class="co">#options(mc.cores = parallel::detectCores())</span>
 
@@ -353,17 +352,11 @@
 <span class="va">A</span> <span class="op">&lt;-</span> <span class="va">D</span> <span class="op">*</span> <span class="va">A</span>
 <span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span>, <span class="st">"DCAR"</span>, k <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
 
-<span class="co"># view distance against inverse distance: (A+gamma)^(-k) / max(C)</span>
-<span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span>,
-    <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">cp</span><span class="op">$</span><span class="va">C</span><span class="op">)</span>
-    <span class="op">)</span>
-
 <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">stan_car</span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span>,
                data <span class="op">=</span> <span class="va">georgia</span>,
                car <span class="op">=</span> <span class="va">cp</span>,
                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>
-
-<span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
 <span class="co"># }</span>
 </code></pre></div>
     </div>

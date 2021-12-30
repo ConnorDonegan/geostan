@@ -241,10 +241,10 @@
 #' Riebler, A., Sorbye, S. H., Simpson, D., & Rue, H. (2016). An intuitive Bayesian spatial model for disease mapping that accounts for scaling. Statistical Methods in Medical Research, 25(4), 1145-1165.
 #'
 #' @examples
+#' \donttest{
 #' # for parallel processing of models:
 #' #options(mc.cores = parallel::detectCores())
 #' data(sentencing)
-#'
 #' C <- shape2mat(sentencing, "B")
 #' log_e <- log(sentencing$expected_sents)
 #' fit.bym <- stan_icar(sents ~ offset(log_e),
@@ -252,7 +252,7 @@
 #'                      data = sentencing,
 #'                      type = "bym",
 #'                      C = C,
-#'                      chains = 2, iter = 600) # for speed only
+#'                      chains = 2, iter = 800) # for speed only
 #'
 #' # spatial diagnostics
 #' sp_diag(fit.bym, sentencing)
@@ -267,7 +267,7 @@
 #' library(ggplot2)
 #' library(sf)
 #' 
-#' f <- fitted(fit.bym)$mean
+#' f <- fitted(fit.bym, rates = FALSE)$mean
 #' SSR <- f / sentencing$expected_sents
 #' log.SSR <- log( SSR, base = 2)
 #'
@@ -285,6 +285,7 @@
 #'    legend.key.height = unit(0.35, "cm"),
 #'    legend.key.width = unit(1.5, "cm")
 #'   )
+#' }
 #' @export
 #' @md
 #' @importFrom rstan extract_sparse_parts

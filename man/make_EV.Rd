@@ -38,11 +38,6 @@ head(EV)
 ggplot(georgia) +
   geom_sf(aes(fill = EV[,1])) +
   scale_fill_gradient2()
-
-fit <- stan_esf(log(rate.male) ~ 1,
-                data = georgia,
-                EV = EV,
-              chains = 1, iter = 800) # for speed only
 }
 \seealso{
 \link[geostan]{stan_esf}, \link[geostan]{mc}

@@ -46,7 +46,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
       </span>
     </div>
 
@@ -132,7 +132,7 @@
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
-<p>Load the package and the <code>georgia</code> county mortality data set:</p>
+<p>Load the package and the <code>georgia</code> county mortality data set (ages 55-64, years 2014-2018):</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></code></pre></div>
@@ -142,9 +142,9 @@
 <span class="co">#&gt; 3 NA values found in x. They will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.</span>
 <span class="co">#&gt; Warning: Removed 3 rows containing non-finite values (stat_bin).</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-3-1.png" style="display: block; margin: auto;"></p>
-<p>There are three censored observations in the <code>georgia</code> female mortality data, which means there were 9 or fewer deaths in those counties. The following code fits a spatial conditional autoregressive (CAR) model to the data. By using the <code>censor_point</code> argument we include our information on the censored observations:</p>
+<p>There are three censored observations in the <code>georgia</code> female mortality data, which means there were 9 or fewer deaths in those counties. The following code fits a spatial conditional autoregressive (CAR) model to female county mortality data. By using the <code>censor_point</code> argument we include our information on the censored observations to obtain results for all counties:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
+<code class="sourceCode R"><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span>
 <span class="va">cars</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span>
 <span class="co">#&gt; Range of permissible rho values:  -1.661134 1</span>
 <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="va">deaths.female</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.female</span><span class="op">)</span><span class="op">)</span>,
@@ -169,13 +169,13 @@
 <span class="co">#&gt; Distribution: uniform</span>
 <span class="co">#&gt;   lower upper</span>
 <span class="co">#&gt; 1  -1.7     1</span></code></pre></div>
-<p>The <code>sp_diag</code> function will also provide visual diagnostics for spatial models:</p>
+<p>Passing a fitted model to the <code>sp_diag</code> function will return a set of diagnostics for spatial models:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span>
+<code class="sourceCode R"><span class="fu"><a href="reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span>, w <span class="op">=</span> <span class="va">A</span><span class="op">)</span>
 <span class="co">#&gt; 3 NA values found in x. They will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.</span>
 <span class="co">#&gt; Warning: Removed 3 rows containing missing values (geom_pointrange).</span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;"> (For an altnerative measure of residual spatial autocorrelation, which corresponds to the printed results below, see `sp_diag(fit, georgia, mc_style = “hist”).)</p>
-<p>The <code>print</code> method returns a summary of the probability distributoins for model parameters, including Markov chain Monte Carlo (MCMC) diagnostics from Stan (Monte Carlo standard errors of the mean <code>se_mean</code>, effective sample size <code>n_eff</code>, and the R-hat statistic <code>Rhat</code>):</p>
+<p><img src="reference/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;"> For an altnerative measure of residual spatial autocorrelation, see <code>sp_diag(fit, georgia, mc_style = "hist")</code>.</p>
+<p>The <code>print</code> method returns a summary of the probability distributoins for model parameters, as well as Markov chain Monte Carlo (MCMC) diagnostics from Stan (Monte Carlo standard errors of the mean <code>se_mean</code>, effective sample size <code>n_eff</code>, and the R-hat statistic <code>Rhat</code>):</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
 <span class="co">#&gt; Spatial Model Results </span>
@@ -183,8 +183,8 @@
 <span class="co">#&gt; Spatial method (outcome):  CAR </span>
 <span class="co">#&gt; Likelihood function:  poisson </span>
 <span class="co">#&gt; Link function:  log </span>
-<span class="co">#&gt; Residual Moran Coefficient:  0.00222225 </span>
-<span class="co">#&gt; WAIC:  1292.67 </span>
+<span class="co">#&gt; Residual Moran Coefficient:  0.00164375 </span>
+<span class="co">#&gt; WAIC:  1289.84 </span>
 <span class="co">#&gt; Observations:  159 </span>
 <span class="co">#&gt; Data models (ME): none</span>
 <span class="co">#&gt; Inference for Stan model: foundation.</span>
@@ -192,15 +192,15 @@
 <span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat</span>
-<span class="co">#&gt; intercept -4.668   0.004 0.102 -4.850 -4.718 -4.673 -4.627 -4.466   720 1.006</span>
-<span class="co">#&gt; car_rho    0.926   0.001 0.057  0.785  0.898  0.938  0.968  0.996  2986 1.000</span>
-<span class="co">#&gt; car_scale  0.458   0.001 0.035  0.394  0.434  0.456  0.480  0.529  3338 1.000</span>
+<span class="co">#&gt; intercept -4.670   0.002 0.096 -4.847 -4.714 -4.673 -4.630 -4.481  1825 1.002</span>
+<span class="co">#&gt; car_rho    0.924   0.001 0.059  0.772  0.894  0.935  0.968  0.996  3123 0.999</span>
+<span class="co">#&gt; car_scale  0.457   0.001 0.036  0.392  0.431  0.455  0.481  0.533  3965 0.999</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Mon Dec 27 19:56:54 2021.</span>
+<span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Wed Dec 29 16:54:08 2021.</span>
 <span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span>
 <span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span>
 <span class="co">#&gt; convergence, Rhat=1).</span></code></pre></div>
-<p>For more demonstrations and discussions, see the package vignettes on spatial autocorrelation and spatial measurement error models.</p>
+<p>Methods for extracting fitted values, residuals, marginal effects, the posterior predictive distribution, and samples from the joint posterior distribution of parameters are also available. For more demonstrations and discussion, see the package vignettes on spatial autocorrelation and spatial measurement error models.</p>
 </div>
 
   </div>

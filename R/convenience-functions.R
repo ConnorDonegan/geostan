@@ -348,18 +348,18 @@ lisa <- function(x, w, type = TRUE) {
 #' 
 #'
 #' @examples
+#' \donttest{
 #' data(georgia)
 #' sp_diag(georgia$college, georgia)
 #'
 #' bin_fn <- function(y) mad(y, na.rm = TRUE)
 #' sp_diag(georgia$college, georgia, binwidth = bin_fn)
 #' 
-#' fit <- stan_glm(log(rate.male) ~ 1, data = georgia, iter = 800)
+#' fit <- stan_glm(log(rate.male) ~ log(income),
+#'                 data = georgia,
+#'                 chains = 2, iter = 800) # for speed only
 #' sp_diag(fit, georgia)
-#'
-#' fit2 <- stan_car(log(rate.male) ~ log(income), data = georgia,
-#'                  chains = 2, iter = 600) # for speed only
-#' sp_diag(fit2, georgia)
+#' }
 #' @importFrom stats sd
 #' @export
 #' @md
@@ -528,13 +528,13 @@ sp_diag.numeric <- function(y,
 #' Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). ``Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure.'' *Int. J. Env. Res. and Public Health* 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: \url{https://github.com/ConnorDonegan/survey-HBM}.
 #' 
 #' @examples
+#' \donttest{
 #' library(sf)
 #' data(georgia)
-#' 
 #' ## binary adjacency matrix
 #' A <- shape2mat(georgia, "B")
 #' ## prepare data for the CAR model, using WCAR specification
-#' cars <- prep_car_data(A, type = "WCAR")
+#' cars <- prep_car_data(A, style = "WCAR")
 #' ## provide list of data for the measurement error model
 #' ME <- prep_me_data(se = data.frame(ICE = georgia$ICE.se),
 #'                    car_parts = cars)
@@ -553,6 +553,7 @@ sp_diag.numeric <- function(y,
 #' ## see index values for the largest (absolute) delta values
 #'  ## (differences between raw estimate and the posterior mean)
 #' me_diag(fit, "ICE", georgia, index = 3)
+#' }
 #' @export
 #' @md
 #' @importFrom sf st_as_sf
@@ -701,11 +702,6 @@ me_diag <- function(fit,
 #' ggplot(georgia) +
 #'   geom_sf(aes(fill = EV[,1])) +
 #'   scale_fill_gradient2()
-#' 
-#' fit <- stan_esf(log(rate.male) ~ 1,
-#'                 data = georgia,
-#'                 EV = EV,
-#'               chains = 1, iter = 800) # for speed only
 #' @importFrom Matrix isSymmetric t
 make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
     if (!Matrix::isSymmetric(C)) {
@@ -1185,17 +1181,11 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' ## use a binary adjacency matrix
 #' A <- shape2mat(georgia, style = "B")
 #'
-#' ## get list of data for Stan
+#' ## WCAR specification
 #' cp <- prep_car_data(A, "WCAR")
 #' 1 / range(cp$lambda)
 #' 
-#' ## pass the data to stan_car
-#' fit = stan_car(log(rate.male) ~ 1,
-#'                    data = georgia,
-#'                    car_parts = cp,
-#'                    chains = 2, iter = 800) # for speed only
-#' 
-#' # ACAR specification
+#' ## ACAR specification
 #' cp <- prep_car_data(A, "ACAR")
 #'
 #' ## DCAR specification (inverse-distance based)

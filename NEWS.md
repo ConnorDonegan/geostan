@@ -1,4 +1,4 @@
-# geostan 0.1.2
+# geostan 0.2.0
 
 ## Major changes
 

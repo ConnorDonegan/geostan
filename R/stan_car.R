@@ -218,7 +218,6 @@
 #'
 #' @examples
 #' \donttest{
-#' library(bayesplot)
 #' # for automatic parallel processing
 #' #options(mc.cores = parallel::detectCores())
 #'
@@ -251,18 +250,12 @@
 #' D <- sf::st_distance(sf::st_centroid(georgia))
 #' A <- D * A
 #' cp <- prep_car_data(A, "DCAR", k = 1)
-#'
-#' # view distance against inverse distance: (A+gamma)^(-k) / max(C)
-#' plot(as.numeric(A),
-#'     as.numeric(cp$C)
-#'     )
-#'
+#' 
 #' fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)),
 #'                data = georgia,
 #'                car = cp,
 #'                family = poisson())
-#'
-#' sp_diag(fit, georgia)
+#' print(fit)
 #' }
 #' @export
 #' @md

@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
       </span>
     </div>
 
@@ -72,7 +72,7 @@
 <span class="op">)</span>
 
 <span class="co"># S3 method for geostan_fit</span>
-<span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">pars</span>, plotfun <span class="op">=</span> <span class="st">"hist"</span>, fill <span class="op">=</span> <span class="st">"steelblue4"</span>, <span class="va">...</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">pars</span>, plotfun <span class="op">=</span> <span class="st">"hist"</span>, fill <span class="op">=</span> <span class="st">"steelblue4"</span>, <span class="va">...</span><span class="op">)</span>
 
 <span class="co"># S3 method for geostan_fit</span>
 <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span>
@@ -153,9 +153,7 @@ The <code>predict</code> method is designed for reviewing marginal effects of co
 <h3 id="predict-geostan-fit">predict.geostan_fit<a class="anchor" aria-label="anchor" href="#predict-geostan-fit"></a></h3>
 
 
-<p>The purpose of the predict method is to explore marginal effects of (combinations of) covariates. The method sets the intercept equal to its posterior mean (i.e., <code>alpha = mean(as.matrix(object, pars = "intercept"))</code>); the only source of uncertainty in the results is the posterior distribution of the coefficients, which can be obtained using <code>Beta = as.matrix(object, pars = "beta")</code>. The results returned by <code>predict.geostan_fit</code> are obtain by (a summary of):</p><div class="sourceCode"><pre><code><span class="kw">for</span> <span class="op">(</span><span class="va">m</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">M</span><span class="op">)</span> <span class="va">preds</span><span class="op">[</span><span class="va">m</span>,<span class="op">]</span> <span class="op">=</span> <span class="va">alpha</span> <span class="op">+</span> <span class="va">X</span> <span class="op">*</span> <span class="va">Beta</span><span class="op">[</span><span class="va">m</span>,<span class="op">]</span></code></pre></div>
-
-<p>where <code>M</code> is the number of MCMC samples in the model (<code>M = nrow(Beta)</code>) and <code>preds</code> is a matrix of predicted values.</p>
+<p>The purpose of the predict method is to explore marginal effects of (combinations of) covariates. The method sets the intercept equal to its posterior mean (i.e., <code>alpha = mean(as.matrix(object, pars = "intercept"))</code>); the only source of uncertainty in the results is the posterior distribution of the coefficients, which can be obtained using <code>Beta = as.matrix(object, pars = "beta")</code>.</p>
 <p>Be aware that in non-linear models (including Poisson and Binomial models) marginal effects of each covariate are sensitive to the level of other covariates in the model. If the model includes any spatially-lagged covariates (introduced using the <code>slx</code> argument) or a spatial autocorrelation term, these terms will essentially be fixed at zero for the purposes of calculating marginal effects. To explore the impact of these (missing) terms, you can add their values to the linear predictor using the <code>alpha</code> argument.</p>
 </div>
 
@@ -167,55 +165,7 @@ The <code>predict</code> method is designed for reviewing marginal effects of co
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">)</span>
-
-<span class="co"># spatial weights matrix with binary coding scheme</span>
-<span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">sentencing</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span>
-<span class="va">cars</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span>
-
-<span class="co"># log-expected number of sentences</span>
-<span class="co">## expected counts are based on county racial composition and mean sentencing rates</span>
-<span class="va">log_e</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">$</span><span class="va">expected_sents</span><span class="op">)</span>
-
-<span class="co"># fit spatial Poisson model with unstructured 'random effects'</span>
-<span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_car.html">stan_car</a></span><span class="op">(</span><span class="va">sents</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="va">log_e</span><span class="op">)</span>,
-                   car_parts <span class="op">=</span> <span class="va">cars</span>,
-                   family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,
-                   data <span class="op">=</span> <span class="va">sentencing</span>,
-                   chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span>
-
-<span class="co"># print and plot results</span>
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-<span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-
-<span class="co"># residuals</span>
-<span class="va">r</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-
-<span class="co"># fitted values</span>
-<span class="va">f</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-
-<span class="co"># spatial diagnostics</span>
-<span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">sentencing</span><span class="op">)</span>
-
-<span class="co"># spatial trend, county `random effects' </span>
-<span class="va">sp</span> <span class="op">=</span> <span class="fu">spatial</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-
-<span class="co"># posterior predictive distribution</span>
-<span class="va">yrep</span> <span class="op">&lt;-</span> <span class="fu"><a href="posterior_predict.html">posterior_predict</a></span><span class="op">(</span><span class="va">fit</span>, S <span class="op">=</span> <span class="fl">65</span><span class="op">)</span>
-<span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html" class="external-link">density</a></span><span class="op">(</span><span class="va">yrep</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"gray30"</span><span class="op">)</span>
-<span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">yrep</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html" class="external-link">density</a></span><span class="op">(</span><span class="va">yrep</span><span class="op">[</span><span class="va">i</span>,<span class="op">]</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"gray30"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html" class="external-link">density</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">$</span><span class="va">sents</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"darkred"</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
-
-<span class="co"># extract matrix of samples from posterior distribution of parameters</span>
-<span class="co">## alpha_re are the unstructured area random effects</span>
-<span class="va">S.matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">fit</span>, pars <span class="op">=</span> <span class="st">"alpha_re"</span><span class="op">)</span>
-
-<span class="co"># array of samples</span>
-<span class="va">S.array</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">as.array</a></span><span class="op">(</span><span class="va">fit</span>, pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"intercept"</span>, <span class="st">"alpha_re"</span>, <span class="st">"alpha_tau"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">S.monitor</span> <span class="op">&lt;-</span> <span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/monitor.html" class="external-link">monitor</a></span><span class="op">(</span><span class="va">S.array</span>, print <span class="op">=</span> <span class="cn">FALSE</span>, warmup <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">S.monitor</span><span class="op">)</span>
-
-<span class="co">## marginal effects</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="co"># \donttest{</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
 <span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span>
 <span class="va">cars</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span>
@@ -229,17 +179,48 @@ The <code>predict</code> method is designed for reviewing marginal effects of co
                 family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,
                 chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span>
 
+
+<span class="co"># print and plot results</span>
+<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
+
+<span class="co"># residuals</span>
+<span class="va">r</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
+
+<span class="co"># fitted values </span>
+<span class="co"># (Poisson model defaults to rates)</span>
+<span class="va">f1</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
+<span class="va">f2</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span>, rates <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+
+<span class="co"># spatial diagnostics</span>
+<span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span>
+
+<span class="co"># spatial trend, county `random effects' </span>
+<span class="va">sp</span> <span class="op">=</span> <span class="fu">spatial</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
+
+<span class="co"># posterior predictive distribution</span>
+<span class="va">yrep</span> <span class="op">&lt;-</span> <span class="fu"><a href="posterior_predict.html">posterior_predict</a></span><span class="op">(</span><span class="va">fit</span>, S <span class="op">=</span> <span class="fl">65</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html" class="external-link">density</a></span><span class="op">(</span><span class="va">yrep</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"gray30"</span><span class="op">)</span>
+<span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">yrep</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html" class="external-link">density</a></span><span class="op">(</span><span class="va">yrep</span><span class="op">[</span><span class="va">i</span>,<span class="op">]</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"gray30"</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html" class="external-link">density</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">deaths.male</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"darkred"</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
+
+<span class="co"># array of samples; MCMC diagnostics</span>
+<span class="va">S.array</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">as.array</a></span><span class="op">(</span><span class="va">fit</span>, pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"intercept"</span>, <span class="st">"car_scale"</span>, <span class="st">"car_rho"</span><span class="op">)</span><span class="op">)</span>
+<span class="va">S.monitor</span> <span class="op">&lt;-</span> <span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/monitor.html" class="external-link">monitor</a></span><span class="op">(</span><span class="va">S.array</span>, print <span class="op">=</span> <span class="cn">FALSE</span>, warmup <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">S.monitor</span><span class="op">)</span>
+
 <span class="va">newdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>
     income <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span><span class="op">)</span>, by <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,
     pop.at.risk.male <span class="op">=</span> <span class="fl">1</span>
 <span class="op">)</span>
 
 <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">newdata</span>, type <span class="op">=</span> <span class="st">"response"</span><span class="op">)</span>
-<span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">newdata</span><span class="op">$</span><span class="va">income</span>, <span class="va">p</span><span class="op">$</span><span class="va">mean</span> <span class="op">*</span> <span class="fl">1e3</span>,
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">newdata</span><span class="op">$</span><span class="va">income</span>, <span class="va">p</span><span class="op">$</span><span class="va">mean</span> <span class="op">*</span> <span class="fl">1e3</span>,
     type <span class="op">=</span> <span class="st">'l'</span>,
      main <span class="op">=</span> <span class="st">"Deaths per 1,000"</span>,
      ylab <span class="op">=</span> <span class="cn">NA</span>,
-     xlab <span class="op">=</span> <span class="st">"Median county income ($1,000s)"</span><span class="op">)</span> 
+     xlab <span class="op">=</span> <span class="st">"Median county income ($1,000s)"</span><span class="op">)</span>
+<span class="co"># }</span>
 </code></pre></div>
     </div>
   </div>

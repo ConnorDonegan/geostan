@@ -15,6 +15,7 @@
 #' @return An object of class `prior` which will be used internally by **geostan** to set parameters of prior distributions. 
 #' 
 #' @examples
+#' \donttest{
 #' data(georgia)
 #' prior <- list()
 #' prior$beta <- normal(c(0, 0), c(1, 1))
@@ -39,6 +40,7 @@
 #'                 ME = ME,
 #'                 prior_only = TRUE,
 #'                chains = 2, iter = 600) # for speed only
+#' }
 #' @name priors
 #' @md
 #' 
@@ -73,15 +75,9 @@ normal <- function(location = 0, scale, variable = NULL) {
 #' @param df Degrees of freedom, positive numeric value(s)
 #' 
 #' @return
-#'
 #' ### Student's t
 #' 
 #' Return value for \code{student_t} depends on the input; if no arguments are provided (specifically, if the scale parameter is missing), this will return an object of class 'family'; if at least the scale parameter is provided, `student_t` will return an object of class `prior` containing parameter values for the Student's t distribution.
-#' 
-#' @examples
-#' \dontrun{
-#' fit = stan_glm(log(rate.male) ~ 1, data = georgia, family = student_t())
-#' }
 #' @rdname priors
 #' @export
 #' @md

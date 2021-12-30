@@ -180,8 +180,8 @@
 #' Piironen, J and A. Vehtari (2017). Sparsity information and regularization in the horseshoe and other shrinkage priors. In *Electronic Journal of Statistics*, 11(2):5018-5051.
 #' 
 #' @examples
+#' \donttest{
 #' data(sentencing)
-#'
 #' # spatial weights matrix with binary coding scheme
 #' C <- shape2mat(sentencing, style = "B")
 #'
@@ -211,7 +211,7 @@
 #  # (observed/exected counts)
 #' library(ggplot2)
 #' library(sf)
-#' f <- fitted(fit.esf)$mean
+#' f <- fitted(fit.esf, rates = FALSE)$mean
 #' SSR <-  f / sentencing$expected_sents
 #' log.SSR <- log( SSR, base = 2 )
 #'
@@ -227,12 +227,8 @@
 #'  labs(title = "Log-Standardized Sentencing Ratios",
 #'       subtitle = "log( Fitted/Expected ), base 2"
 #'  ) +
-#'  theme_void() +
-#'  theme(
-#'    legend.position = "bottom",
-#'    legend.key.height = unit(0.35, "cm"),
-#'    legend.key.width = unit(1.5, "cm")
-#'  )
+#'  theme_void()
+#' }
 #' @export
 #' @md
 #' @importFrom rstan extract_sparse_parts

@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
       </span>
     </div>
 
@@ -105,11 +105,6 @@ Setting <code>nsa = TRUE</code> will result in a candidate set of EVs that conta
 <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">EV</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
   <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient2</a></span><span class="op">(</span><span class="op">)</span>
-
-<span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_esf.html">stan_esf</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,
-                data <span class="op">=</span> <span class="va">georgia</span>,
-                EV <span class="op">=</span> <span class="va">EV</span>,
-              chains <span class="op">=</span> <span class="fl">1</span>, iter <span class="op">=</span> <span class="fl">800</span><span class="op">)</span> <span class="co"># for speed only</span>
 </code></pre></div>
     </div>
   </div>

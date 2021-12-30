@@ -65,7 +65,7 @@ install.packages("geostan")
 
 ## Usage
 
-Load the package and the `georgia` county mortality data set:
+Load the package and the `georgia` county mortality data set (ages 55-64, years 2014-2018):
 ```{r}
 library(geostan)
 data(georgia)
@@ -77,10 +77,10 @@ The `sp_diag` function provides visual summaries of spatial data, including a hi
 sp_diag(georgia$rate.female, georgia)
 ```
 
-There are three censored observations in the `georgia` female mortality data, which means there were 9 or fewer deaths in those counties. The following code fits a spatial conditional autoregressive (CAR) model to the data. By using the `censor_point` argument we include our information on the censored observations:
+There are three censored observations in the `georgia` female mortality data, which means there were 9 or fewer deaths in those counties. The following code fits a spatial conditional autoregressive (CAR) model to female county mortality data. By using the `censor_point` argument we include our information on the censored observations to obtain results for all counties:
 
 ```{r}
-A <- shape2mat(georgia)
+A <- shape2mat(georgia, style = "B")
 cars <- prep_car_data(A)
 fit <- stan_car(deaths.female ~ offset(log(pop.at.risk.female)),
                 censor_point = 9,
@@ -90,16 +90,17 @@ fit <- stan_car(deaths.female ~ offset(log(pop.at.risk.female)),
 		cores = 4, # for multi-core processing
 		refresh = 0) # to silence some printing
 ```
-The `sp_diag` function will also provide visual diagnostics for spatial models:
+Passing a fitted model to the `sp_diag` function will return a set of diagnostics for spatial models:
 ```{r fig.width = 8}
-sp_diag(fit, georgia)
+sp_diag(fit, georgia, w = A)
 ```
-(For an altnerative measure of residual spatial autocorrelation, which corresponds to the printed results below, see `sp_diag(fit, georgia, mc_style = "hist").)
+For an altnerative measure of residual spatial autocorrelation, see `sp_diag(fit, georgia, mc_style = "hist")`.
 
-The `print` method returns a summary of the probability distributoins for model parameters, including Markov chain Monte Carlo (MCMC) diagnostics from Stan (Monte Carlo standard errors of the mean `se_mean`, effective sample size `n_eff`, and the R-hat statistic `Rhat`):
+The `print` method returns a summary of the probability distributoins for model parameters, as well as Markov chain Monte Carlo (MCMC) diagnostics from Stan (Monte Carlo standard errors of the mean `se_mean`, effective sample size `n_eff`, and the R-hat statistic `Rhat`):
 
 ```{r}
 print(fit)
 ```
 
-For more demonstrations and discussions, see the package vignettes on spatial autocorrelation and spatial measurement error models. 
+Methods for extracting fitted values, residuals, marginal effects, the posterior predictive distribution, and samples from the joint posterior distribution of parameters are also available. For more demonstrations and discussion, see the package vignettes on spatial autocorrelation and spatial measurement error models.
+

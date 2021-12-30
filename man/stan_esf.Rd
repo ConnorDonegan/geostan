@@ -197,8 +197,8 @@ For example, the US Centers for Disease Control and Prevention's CDC WONDER data
 }
 }
 \examples{
+\donttest{
 data(sentencing)
-
 # spatial weights matrix with binary coding scheme
 C <- shape2mat(sentencing, style = "B")
 
@@ -227,7 +227,7 @@ plot(fit.esf, pars = "esf")
 # calculate log-standardized incidence ratios 
 library(ggplot2)
 library(sf)
-f <- fitted(fit.esf)$mean
+f <- fitted(fit.esf, rates = FALSE)$mean
 SSR <-  f / sentencing$expected_sents
 log.SSR <- log( SSR, base = 2 )
 
@@ -243,12 +243,8 @@ st_as_sf(sentencing) \%>\%
  labs(title = "Log-Standardized Sentencing Ratios",
       subtitle = "log( Fitted/Expected ), base 2"
  ) +
- theme_void() +
- theme(
-   legend.position = "bottom",
-   legend.key.height = unit(0.35, "cm"),
-   legend.key.width = unit(1.5, "cm")
- )
+ theme_void()
+}
 }
 \author{
 Connor Donegan, \email{Connor.Donegan@UTDallas.edu}

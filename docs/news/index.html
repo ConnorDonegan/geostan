@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
       </span>
     </div>
 
@@ -57,15 +57,15 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="0.1.2" id="geostan-012">geostan 0.1.2<a class="anchor" aria-label="anchor" href="#geostan-012"></a></h2>
+<h2 class="page-header" data-toc-text="0.2.0" id="geostan-020">geostan 0.2.0<a class="anchor" aria-label="anchor" href="#geostan-020"></a></h2>
 <div class="section level3">
-<h3 id="major-changes-0-1-2">Major changes<a class="anchor" aria-label="anchor" href="#major-changes-0-1-2"></a></h3>
+<h3 id="major-changes-0-2-0">Major changes<a class="anchor" aria-label="anchor" href="#major-changes-0-2-0"></a></h3>
 <div class="section level4">
-<h4 id="models-for-censored-disease-and-mortality-data-0-1-2">Models for censored disease and mortality data<a class="anchor" aria-label="anchor" href="#models-for-censored-disease-and-mortality-data-0-1-2"></a></h4>
+<h4 id="models-for-censored-disease-and-mortality-data-0-2-0">Models for censored disease and mortality data<a class="anchor" aria-label="anchor" href="#models-for-censored-disease-and-mortality-data-0-2-0"></a></h4>
 <p>geostan now supports Poisson models with censored count data, a common problem in public health research where small area disease and mortality counts are censored below a threshold value. Model for censored outcome data can now be implemented using the <code>censor_point</code> argument found in all of the model fitting functions (stan_glm, stan_car, stan_esf, stan_icar).</p>
 </div>
 <div class="section level4">
-<h4 id="measurement-error-models-improved-0-1-2">Measurement error models improved<a class="anchor" aria-label="anchor" href="#measurement-error-models-improved-0-1-2"></a></h4>
+<h4 id="measurement-error-models-improved-0-2-0">Measurement error models improved<a class="anchor" aria-label="anchor" href="#measurement-error-models-improved-0-2-0"></a></h4>
 <p>The measurement error models have been updated in three important respects:</p>
 <ul><li>There is now a prep_me_data function which must be used to create the list of data for the ME models. See <code><a href="../reference/prep_me_data.html">?prep_me_data</a></code>.</li>
 <li>For covariates that are proportions or rates, the ME models now have an option for using a logit transformation on the variable. Again, see <code><a href="../reference/prep_me_data.html">?prep_me_data</a></code> for usage.</li>
@@ -74,13 +74,13 @@
 </div>
 </div>
 <div class="section level3">
-<h3 id="minor-changes-0-1-2">Minor changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-1-2"></a></h3>
+<h3 id="minor-changes-0-2-0">Minor changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-2-0"></a></h3>
 <div class="section level4">
-<h4 id="a-predict-method-for-marginal-effects-0-1-2">A predict method for marginal effects<a class="anchor" aria-label="anchor" href="#a-predict-method-for-marginal-effects-0-1-2"></a></h4>
+<h4 id="a-predict-method-for-marginal-effects-0-2-0">A predict method for marginal effects<a class="anchor" aria-label="anchor" href="#a-predict-method-for-marginal-effects-0-2-0"></a></h4>
 <p>A <code>predict</code> method has been introduced for fitted geostan models; this is designed for calculating marginal effects. Fitted values of the model are still returned using <code>fitted</code> and the posterior predictive distribution is still accessible via <code>posterior_predict</code>.</p>
 </div>
 <div class="section level4">
-<h4 id="centering-covariates-with-measurement-error-models-0-1-2">Centering covariates with measurement error models<a class="anchor" aria-label="anchor" href="#centering-covariates-with-measurement-error-models-0-1-2"></a></h4>
+<h4 id="centering-covariates-with-measurement-error-models-0-2-0">Centering covariates with measurement error models<a class="anchor" aria-label="anchor" href="#centering-covariates-with-measurement-error-models-0-2-0"></a></h4>
 <p>The <code>centerx</code> argument has been updated to handle measurement error models for covariates. The centering now happens inside the Stan model so that the means of the modeled covariates (latent variables) are used instead of the raw data mean.</p>
 </div>
 </div>
