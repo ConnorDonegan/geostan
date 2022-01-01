@@ -42,7 +42,7 @@ data("georgia")
 
 If we pass these estimates and the simple features object to `sp_diag` function, it returns a histogram, Moran scatter plot, and map of the estimates:
 
-```{r fig.width = 7}
+```{r fig.width = 8}
 sp_diag(georgia$college, georgia, name = "College (%)")
 ```
 
@@ -141,10 +141,10 @@ The printed summary of results shows that the posterior probability distribution
 
 Provide the fitted model, `fit`, and the spatial data, `georgia`, to the `sp_diag` function to see a set of spatial model diagnostics:
 
-```{r fig.width = 7.5}
+```{r fig.width = 8}
 sp_diag(fit, georgia)
 ```
-The point-interval plot on the left shows the raw mortality rates (the raw outcome data) on the x-axis, the fitted values on the y-axis, and a 'perfect fit' (slope = 1, intercept = 0) line for reference. We can see that a number of the fitted values have posterior means that deviate from the observations; but this "shrinkage" towards the mean is not necessarily a problem. In fact, it is often desirable insofar as it indicates that these are counties for which our data provide very little evidence as to what the risk of death is (i.e., the population is very small). (For an introductory discussion of information pooling and other topics as well, see @mcelreath_2016). 
+The point-interval plot on the left shows the raw mortality rates (the raw outcome data) on the x-axis, the fitted values on the y-axis, and a 'perfect fit' (slope = 1, intercept = 0) line for reference. We can see that a number of the fitted values have posterior means that deviate from the observations; but this "shrinkage" towards the mean is not necessarily a problem. In fact, it is often desirable insofar as it indicates that these are counties for which our data provide very little evidence as to what the risk of death is (i.e., the population is very small). (For discussions of information pooling and other topics as well, see @mcelreath_2016 and @haining_2020). 
 
 The middle panel is a Moran scatter plot of the model residuals, and the map shows the mean residual for each county. The residuals have been taken at their marginal posterior means. However, there is more than one way to measure residual autocorrelation. For an alternative visualization that uses the entire posterior distribution of parameters and provides an estimate of the residual Moran coefficient that will match the printed model results above (`MC = 0.022`), try `sp_diag(fit, georgia, mc_style = "hist")`.
 

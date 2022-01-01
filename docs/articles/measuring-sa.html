@@ -46,7 +46,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0.9000</span>
       </span>
     </div>
 
@@ -110,7 +110,7 @@
 <p>If we pass these estimates and the simple features object to <code>sp_diag</code> function, it returns a histogram, Moran scatter plot, and map of the estimates:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="va">georgia</span>, name <span class="op">=</span> <span class="st">"College (%)"</span><span class="op">)</span></code></pre></div>
-<p><img src="measuring-sa_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;"></p>
+<p><img src="measuring-sa_files/figure-html/unnamed-chunk-2-1.png" width="768" style="display: block; margin: auto;"></p>
 <p>The Moran plot is a visualization of the degree of spatial autocorrelation (SA): on the horizontal axis are the <code>college</code> estimates while the vertical axis represents the mean neighboring value. The Moran coefficient, an index of SA, is printed at the top (MC=0.42) The expected value of the MC under no spatial autocorrelation is <span class="math inline">\(-1/(n-1)\)</span> <span class="citation">(Chun and Griffith <a href="#ref-chun_2013">2013</a>)</span>.</p>
 <p>The map shows that the contrast between the greater Atlanta metropolitan area and the rural counties is a prominent, if not the predominant, spatial pattern. It may help to compare the mean of the variable (which is just 18%):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -197,7 +197,10 @@
 <span class="co">#&gt; *Setting prior parameters for alpha_tau</span>
 <span class="co">#&gt; Distribution: student_t</span>
 <span class="co">#&gt;   df location scale</span>
-<span class="co">#&gt; 1 10        0     3</span></code></pre></div>
+<span class="co">#&gt; 1 10        0     3</span>
+<span class="co">#&gt; Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
+<span class="co">#&gt; Running the chains for more iterations may help. See</span>
+<span class="co">#&gt; https://mc-stan.org/misc/warnings.html#bulk-ess</span></code></pre></div>
 <p>For a summary of model results:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
@@ -207,8 +210,8 @@
 <span class="co">#&gt; Spatial method (outcome):  Exchangeable </span>
 <span class="co">#&gt; Likelihood function:  poisson </span>
 <span class="co">#&gt; Link function:  log </span>
-<span class="co">#&gt; Residual Moran Coefficient:  0.02408075 </span>
-<span class="co">#&gt; WAIC:  1320.64 </span>
+<span class="co">#&gt; Residual Moran Coefficient:  0.02345775 </span>
+<span class="co">#&gt; WAIC:  1318.53 </span>
 <span class="co">#&gt; Observations:  159 </span>
 <span class="co">#&gt; Data models (ME): none</span>
 <span class="co">#&gt; Inference for Stan model: foundation.</span>
@@ -216,10 +219,10 @@
 <span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat</span>
-<span class="co">#&gt; intercept -4.179   0.001 0.021 -4.221 -4.194 -4.179 -4.164 -4.139   446 1.009</span>
-<span class="co">#&gt; alpha_tau  0.248   0.000 0.016  0.219  0.237  0.247  0.258  0.282  4539 0.999</span>
+<span class="co">#&gt; intercept -4.180   0.001 0.021 -4.223 -4.194 -4.180 -4.165 -4.138   265 1.005</span>
+<span class="co">#&gt; alpha_tau  0.247   0.000 0.016  0.220  0.236  0.247  0.258  0.280  3924 1.000</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Wed Dec 29 17:38:44 2021.</span>
+<span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Fri Dec 31 18:40:02 2021.</span>
 <span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span>
 <span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span>
 <span class="co">#&gt; convergence, Rhat=1).</span></code></pre></div>
@@ -227,7 +230,7 @@
 <p>Provide the fitted model, <code>fit</code>, and the spatial data, <code>georgia</code>, to the <code>sp_diag</code> function to see a set of spatial model diagnostics:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span></code></pre></div>
-<p><img src="measuring-sa_files/figure-html/unnamed-chunk-13-1.png" width="720" style="display: block; margin: auto;"> The point-interval plot on the left shows the raw mortality rates (the raw outcome data) on the x-axis, the fitted values on the y-axis, and a ‘perfect fit’ (slope = 1, intercept = 0) line for reference. We can see that a number of the fitted values have posterior means that deviate from the observations; but this “shrinkage” towards the mean is not necessarily a problem. In fact, it is often desirable insofar as it indicates that these are counties for which our data provide very little evidence as to what the risk of death is (i.e., the population is very small). (For an introductory discussion of information pooling and other topics as well, see <span class="citation">McElreath (<a href="#ref-mcelreath_2016">2016</a>)</span>).</p>
+<p><img src="measuring-sa_files/figure-html/unnamed-chunk-13-1.png" width="768" style="display: block; margin: auto;"> The point-interval plot on the left shows the raw mortality rates (the raw outcome data) on the x-axis, the fitted values on the y-axis, and a ‘perfect fit’ (slope = 1, intercept = 0) line for reference. We can see that a number of the fitted values have posterior means that deviate from the observations; but this “shrinkage” towards the mean is not necessarily a problem. In fact, it is often desirable insofar as it indicates that these are counties for which our data provide very little evidence as to what the risk of death is (i.e., the population is very small). (For discussions of information pooling and other topics as well, see <span class="citation">McElreath (<a href="#ref-mcelreath_2016">2016</a>)</span> and <span class="citation">Haining and Li (<a href="#ref-haining_2020">2020</a>)</span>).</p>
 <p>The middle panel is a Moran scatter plot of the model residuals, and the map shows the mean residual for each county. The residuals have been taken at their marginal posterior means. However, there is more than one way to measure residual autocorrelation. For an alternative visualization that uses the entire posterior distribution of parameters and provides an estimate of the residual Moran coefficient that will match the printed model results above (<code>MC = 0.022</code>), try <code>sp_diag(fit, georgia, mc_style = "hist")</code>.</p>
 <p>In this case, there is a very small amount of residual autocorrelation, and the map indicates that this derives from a slight north-south/metropolitan-rural trend. The trend in the residuals helps us see that shrinking towards the mean mortality rate is less than ideal in this case because we can see that county mortality rates are higher in the southern half of the state than in the greater Atlanta metropolitan area.</p>
 <p>We could extend this model by using one of <strong>geostan</strong>’s spatial models (see the examples in <code><a href="../reference/stan_car.html">?stan_car</a></code>) or by adding one or more (substantively meaningful) covariates.</p>
@@ -244,6 +247,9 @@
 </div>
 <div id="ref-griffith_2005">
 <p>Griffith, Daniel A. 2005. “Effective Geographic Sample Size in the Presence of Spatial Autocorrelation.” <em>Annals of the Association of American Geographers</em> 95 (4): 740–60.</p>
+</div>
+<div id="ref-haining_2020">
+<p>Haining, Robert, and Guangquan Li. 2020. <em>Modelling Spatial and Spatial-Temporal Data: A Bayesian Approach</em>. CRC Press.</p>
 </div>
 <div id="ref-mcelreath_2016">
 <p>McElreath, Richard. 2016. <em>Statistical Rethinking: A Bayesian Course with Eexamples in R and Stan</em>. CRC Press.</p>
