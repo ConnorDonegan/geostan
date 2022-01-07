@@ -157,8 +157,8 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  -7.3e-05 
-#> WAIC:  1290 
+#> Residual Moran Coefficient:  0.00122275 
+#> WAIC:  1292.04 
 #> Observations:  159 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
@@ -166,11 +166,11 @@ print(fit)
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-#> intercept -4.670   0.002 0.097 -4.837 -4.715 -4.674 -4.631 -4.486  1650 1.001
-#> car_rho    0.923   0.001 0.058  0.776  0.897  0.936  0.966  0.995  3554 1.000
-#> car_scale  0.456   0.001 0.035  0.392  0.432  0.454  0.479  0.530  4324 1.000
+#> intercept -4.676   0.002 0.085 -4.846 -4.719 -4.676 -4.633 -4.502  2286 1.001
+#> car_rho    0.924   0.001 0.058  0.776  0.895  0.937  0.966  0.995  3307 1.000
+#> car_scale  0.457   0.001 0.036  0.392  0.432  0.455  0.480  0.533  3893 1.000
 #> 
-#> Samples were drawn using NUTS(diag_e) at Wed Dec 29 20:16:42 2021.
+#> Samples were drawn using NUTS(diag_e) at Thu Jan  6 19:29:22 2022.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -179,5 +179,7 @@ print(fit)
 Methods for extracting fitted values, residuals, marginal effects, the
 posterior predictive distribution, and samples from the joint posterior
 distribution of parameters are also available. For more demonstrations
-and discussion, see the package vignettes on spatial autocorrelation and
-spatial measurement error models.
+and discussion, see the package [help
+pages](https://connordonegan.github.io/geostan/reference/index.html) and
+[vignettes](https://connordonegan.github.io/geostan/articles/index.html)
+on spatial autocorrelation and spatial measurement error models.

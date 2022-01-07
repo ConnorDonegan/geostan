@@ -110,5 +110,5 @@ The `print` method returns a summary of the probability distributoins for model 
 print(fit)
 ```
 
-Methods for extracting fitted values, residuals, marginal effects, the posterior predictive distribution, and samples from the joint posterior distribution of parameters are also available. For more demonstrations and discussion, see the package vignettes on spatial autocorrelation and spatial measurement error models.
+Methods for extracting fitted values, residuals, marginal effects, the posterior predictive distribution, and samples from the joint posterior distribution of parameters are also available. For more demonstrations and discussion, see the package [help pages](https://connordonegan.github.io/geostan/reference/index.html) and [vignettes](https://connordonegan.github.io/geostan/articles/index.html) on spatial autocorrelation and spatial measurement error models.
 
