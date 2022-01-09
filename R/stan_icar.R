@@ -8,8 +8,8 @@
 #' 
 #' @param re To include a varying intercept (or "random effects") term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re} is a vector of parameters added to the linear predictor of the model, and:
 #' ```
-#'        alpha_re ~ N(0, alpha_tau)
-#'        alpha_tau ~ Student_t(d.f., location, scale).
+#' alpha_re ~ N(0, alpha_tau)
+#' alpha_tau ~ Student_t(d.f., location, scale).
 #' ```
 #' Before using this term, read the \code{Details} section and the \code{type} argument. Specifically, if you use `type = bym`, then an observational-level `re` term is already included in the model. (Similar for `type = bym2`.)
 #' 
@@ -62,9 +62,9 @@
 #'
 #' For Poisson models for count data, y, the basic model specification (`type = "icar"`) is:
 #' ```
-#'         y ~ Poisson(exp(offset + mu + phi))
-#'         phi ~ ICAR(spatial_scale)
-#'         spatial_scale ~ Gaussian(0, 1)
+#' y ~ Poisson(exp(offset + mu + phi))
+#' phi ~ ICAR(spatial_scale)
+#' spatial_scale ~ Gaussian(0, 1)
 #' ```
 #'  where `mu` contains an intercept and potentially covariates. The spatial trend, `phi`, has a mean of zero and a single scale parameter, `spatial_scale`.
 #' 
@@ -74,25 +74,25 @@
 #'
 #' Often, an observational-level random effect term, `theta`, is added to capture (heterogeneous or unstructured) deviations from `mu + phi`. The combined term is referred to as a convolution term:
 #' ```
-#'         convolution = phi + theta.
+#'  convolution = phi + theta.
 #' ```
 #' This is known as the BYM model (Besag et al. 1991), and can be specified using `type = "bym"`:
 #' ```
-#'         y ~ Poisson(exp(offset + mu + phi + theta))
-#'         phi ~ ICAR(spatial_scale)
-#'         theta ~ Gaussian(0, theta_scale)
-#'         spatial_scale ~ Gaussian(0, 1)
-#'         theta_scale ~ Gaussian(0, 1)
+#' y ~ Poisson(exp(offset + mu + phi + theta))
+#' phi ~ ICAR(spatial_scale)
+#' theta ~ Gaussian(0, theta_scale)
+#' spatial_scale ~ Gaussian(0, 1)
+#' theta_scale ~ Gaussian(0, 1)
 #' ```
 #'
 #' ### 'bym2'
 #' 
 #' Riebler et al. (2016) introduce a variation on the BYM model (`type = "bym2"`). This specification combines `phi` and `theta` using a mixing parameter, `rho`, that controls the proportion of the variation that is attributable to the spatially autocorrelated term, `phi`, rather than the spatially unstructured term, `theta`. The terms share a single scale parameter:
 #' ```
-#'         convolution = [sqrt(rho/scale_factor) * phi_tilde + sqrt(1 - rho) * theta_tilde] * spatial_scale.
-#'         phi_tilde ~ Gaussian(0, 1)
-#'         theta_tilde ~ Gaussian(0, 1)
-#'         spatial_scale ~ Gaussian(0, 1)
+#' convolution = [sqrt(rho/scale_factor) * phi_tilde + sqrt(1 - rho) * theta_tilde] * spatial_scale.
+#' phi_tilde ~ Gaussian(0, 1)
+#' theta_tilde ~ Gaussian(0, 1)
+#' spatial_scale ~ Gaussian(0, 1)
 #' ```
 #' The two `_tilde` terms are standard normal deviates, `rho` is restricted to values between zero and one, and `scale_factor` is a constant term provided by the user. By default, `scale_factor` is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure, `C`. This implies that the same prior distribution assigned to the `spatial_scale` will differ in its implications if `C` is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to `spatial_scale`.
 #'
@@ -163,26 +163,26 @@
 #' 
 #' The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates (Donegan et al. 2021; Donegan 2021). With estimates, `x`, and their standard errors, `se`, the ME models have one of the the following two specifications, depending on the user input:
 #' ```
-#'        x ~ Gauss(x_true, se)
-#'        x_true ~ MVGauss(mu, Sigma)
-#'        Sigma = (I - rho * C)^(-1) M * tau^2
-#'        mu ~ Gauss(0, 100)
-#'        tau ~ student_t(10, 0, 40)
-#'        rho ~ uniform(lower_bound, upper_bound)
+#' x ~ Gauss(x_true, se)
+#' x_true ~ MVGauss(mu, Sigma)
+#' Sigma = (I - rho * C)^(-1) M * tau^2
+#' mu ~ Gauss(0, 100)
+#' tau ~ student_t(10, 0, 40)
+#' rho ~ uniform(lower_bound, upper_bound)
 #' ```
-#' where the covariance matrix, `Sigma`, has the conditional autoregressive specification, and `tau` is the scale parameter. If `ME$car_parts` is not provided by the user, then a non-spatial model will be used instead:
+#' where the covariance matrix, `Sigma`, has the conditional autoregressive specification, and `tau` is the scale parameter. For non-spatial ME models, the following is used instead:
 #' ```
-#'        x ~ Gauss(x_true, se)
-#'        x_true ~ student_t(df, mu, sigma)
-#'        df ~ gamma(3, 0.2)
-#'        mu ~ Gauss(0, 100)
-#'        sigma ~ student_t(10, 0, 40)
+#' x ~ Gauss(x_true, se)
+#' x_true ~ student_t(df, mu, sigma)
+#' df ~ gamma(3, 0.2)
+#' mu ~ Gauss(0, 100)
+#' sigma ~ student_t(10, 0, 40)
 #' ```
 #' 
 #' For strongly skewed variables, such census tract poverty rates, it can be advantageous to apply a logit transformation to `x_true` before applying the CAR or Student t prior model. When the `logit` argument is used, the model becomes:
 #' ```
-#'        x ~ Gauss(x_true, se)
-#'       logit(x_true) ~ MVGauss(mu, Sigma)
+#' x ~ Gauss(x_true, se)
+#' logit(x_true) ~ MVGauss(mu, Sigma)
 #' ```
 #' and similar for the Student t model.
 #'
@@ -192,11 +192,11 @@
 #'
 #' Internally, `geostan` will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:
 #' ```
-#'  p(y_i | data, model) = Poisson(y_i | fitted_i), 
+#' p(y_i | data, model) = Poisson(y_i | fitted_i), 
 #' ```
 #' as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:
 #' ```
-#'   p(y_j | data, model) = sum_{m=0}^censor_point Poisson( c_m | fitted_j),
+#' p(y_j | data, model) = sum_{m=0}^censor_point Poisson( c_m | fitted_j),
 #' ```
 #' 
 #' For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide `censor_point = 9` and then the likelihood statmenet for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model paramters). See Donegan (2021) for additional discussion, references, and Stan code.

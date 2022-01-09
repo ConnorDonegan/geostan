@@ -51,8 +51,8 @@ stan_esf(
 
 \item{slx}{Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally). When setting priors for \code{beta}, remember to include priors for any SLX terms.}
 
-\item{re}{To include a varying intercept (or "random effects") term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re} is a vector of parameters added to the linear predictor of the model, and:\preformatted{       alpha_re ~ N(0, alpha_tau)
-       alpha_tau ~ Student_t(d.f., location, scale).
+\item{re}{To include a varying intercept (or "random effects") term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re} is a vector of parameters added to the linear predictor of the model, and:\preformatted{alpha_re ~ N(0, alpha_tau)
+alpha_tau ~ Student_t(d.f., location, scale).
 }}
 
 \item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.}
@@ -131,14 +131,14 @@ Eigenvector spatial filtering (ESF) is a method for spatial regression analysis.
 
 ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \code{C}. The resulting eigenvectors, \code{EV}, are mutually orthogonal and uncorrelated map patterns. The spatial filter is \code{EV * beta_ev}, where \code{beta_ev} is a vector of coefficients.
 
-ESF decomposes the data into a global mean, \code{alpha}, global patterns contributed by covariates, \code{X * beta}, spatial trends, \code{EV * beta_ev}, and residual variation. Thus, for \code{family=gaussian()},\preformatted{        Y ~ Gauss(alpha + X * beta + EV * beta_ev, sigma).
+ESF decomposes the data into a global mean, \code{alpha}, global patterns contributed by covariates, \code{X * beta}, spatial trends, \code{EV * beta_ev}, and residual variation. Thus, for \code{family=gaussian()},\preformatted{Y ~ Gauss(alpha + X * beta + EV * beta_ev, sigma).
 }
 
-An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:\preformatted{        Y ~ Poisson(exp(offset + Mu))
-        Mu = alpha + EV * beta_ev + A
-        A ~ Guass(0, tau)
-        tau ~ student(20, 0, 2)
-        beta_ev ~ horseshoe(.)
+An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:\preformatted{Y ~ Poisson(exp(offset + Mu))
+Mu = alpha + EV * beta_ev + A
+A ~ Guass(0, tau)
+tau ~ student(20, 0, 2)
+beta_ev ~ horseshoe(.)
 }
 
 The \code{\link[geostan]{spatial.geostan_fit}} method will return \code{EV * beta}.
@@ -161,23 +161,23 @@ For measurement error (ME) models, the SLX argument is the only way to include s
 
 \subsection{Measurement error (ME) models}{
 
-The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates (Donegan et al. 2021; Donegan 2021). With estimates, \code{x}, and their standard errors, \code{se}, the ME models have one of the the following two specifications, depending on the user input:\preformatted{       x ~ Gauss(x_true, se)
-       x_true ~ MVGauss(mu, Sigma)
-       Sigma = (I - rho * C)^(-1) M * tau^2
-       mu ~ Gauss(0, 100)
-       tau ~ student_t(10, 0, 40)
-       rho ~ uniform(lower_bound, upper_bound)
+The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates (Donegan et al. 2021; Donegan 2021). With estimates, \code{x}, and their standard errors, \code{se}, the ME models have one of the the following two specifications, depending on the user input:\preformatted{x ~ Gauss(x_true, se)
+x_true ~ MVGauss(mu, Sigma)
+Sigma = (I - rho * C)^(-1) M * tau^2
+mu ~ Gauss(0, 100)
+tau ~ student_t(10, 0, 40)
+rho ~ uniform(lower_bound, upper_bound)
 }
 
-where the covariance matrix, \code{Sigma}, has the conditional autoregressive specification, and \code{tau} is the scale parameter. If \code{ME$car_parts} is not provided by the user, then a non-spatial model will be used instead:\preformatted{       x ~ Gauss(x_true, se)
-       x_true ~ student_t(df, mu, sigma)
-       df ~ gamma(3, 0.2)
-       mu ~ Gauss(0, 100)
-       sigma ~ student_t(10, 0, 40)
+where the covariance matrix, \code{Sigma}, has the conditional autoregressive specification, and \code{tau} is the scale parameter. For non-spatial ME models, the following is used instead:\preformatted{x ~ Gauss(x_true, se)
+x_true ~ student_t(df, mu, sigma)
+df ~ gamma(3, 0.2)
+mu ~ Gauss(0, 100)
+sigma ~ student_t(10, 0, 40)
 }
 
-For strongly skewed variables, such census tract poverty rates, it can be advantageous to apply a logit transformation to \code{x_true} before applying the CAR or Student t prior model. When the \code{logit} argument is used, the model becomes:\preformatted{       x ~ Gauss(x_true, se)
-      logit(x_true) ~ MVGauss(mu, Sigma)
+For strongly skewed variables, such census tract poverty rates, it can be advantageous to apply a logit transformation to \code{x_true} before applying the CAR or Student t prior model. When the \code{logit} argument is used, the model becomes:\preformatted{x ~ Gauss(x_true, se)
+logit(x_true) ~ MVGauss(mu, Sigma)
 }
 
 and similar for the Student t model.
@@ -187,10 +187,10 @@ and similar for the Student t model.
 
 Vital statistics systems and disease surveillance programs typically suppress case counts when they are smaller than a specific theshold value. In such cases, the observation of a censored count is not the same as a missing value; instead, you are informed that the value is an integer somewhere between zero and the threshold value. For Poisson models (\verb{family = poisson())}), you can use the \code{censor_point} argument to encode this information into your model.
 
-Internally, \code{geostan} will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:\preformatted{ p(y_i | data, model) = Poisson(y_i | fitted_i), 
+Internally, \code{geostan} will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:\preformatted{p(y_i | data, model) = Poisson(y_i | fitted_i), 
 }
 
-as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:\preformatted{  p(y_j | data, model) = sum_\{m=0\}^censor_point Poisson( c_m | fitted_j),
+as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:\preformatted{p(y_j | data, model) = sum_\{m=0\}^censor_point Poisson( c_m | fitted_j),
 }
 
 For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide \code{censor_point = 9} and then the likelihood statmenet for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model paramters). See Donegan (2021) for additional discussion, references, and Stan code.

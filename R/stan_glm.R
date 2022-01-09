@@ -13,8 +13,8 @@
 #' 
 #' @param re To include a varying intercept (or "random effects") term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re} is a vector of parameters added to the linear predictor of the model, and:
 #' ```
-#'        alpha_re ~ N(0, alpha_tau)
-#'        alpha_tau ~ Student_t(d.f., location, scale).
+#' alpha_re ~ N(0, alpha_tau)
+#' alpha_tau ~ Student_t(d.f., location, scale).
 #' ```
 #' 
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
@@ -63,18 +63,18 @@
 #'
 #' For the Poisson model, `Y` is specified as the outcome and the log of the population at risk, `log(P)`, needs to be provided as an offset term. For such a case, disease incidence across the collection of areas could be modeled as:
 #' ```
-#'         Y ~ Poisson(exp(log(P) + eta))
-#'         eta = alpha + A
-#'         A ~ Guass(0, tau)
-#'         tau ~ student(20, 0, 2),
+#' Y ~ Poisson(exp(log(P) + eta))
+#' eta = alpha + A
+#' A ~ Guass(0, tau)
+#' tau ~ student(20, 0, 2),
 #' ```
 #' where `alpha` is the mean log-risk (incidence rate) and `A` is a vector of (so-called) random effects, which enable partial pooling of information across observations. Covariates can be added to the model for the log-rates, such that `eta = alpha + X * beta + A`. See the example section of this document for a demonstration (where the denominator of the outcome is the expected count, rather than population at risk).
 #'
-#' Note that the denominator for the rates is specified as a log-offset to provide a consistent, formula-line interface to the model. However, an equivalent, and perhaps more intuitive, specification is the following:
+#' Note that the denominator for the rates is specified as a log-offset to provide a consistent, formula-line interface to the model. An equivalent, and perhaps more intuitive, specification is the following:
 #' ```
-#'         Y ~ Poisson(P * exp(eta))
+#' Y ~ Poisson(P * exp(eta))
 #' ```
-#' where `P` is still the population at risk and `exp(eta)` is the level of risk (expressed as a rate). This translation is derived from the rules for manipulating exponents: `P * exp(eta) = exp(log(P)) * exp(eta) = exp(log(P) + eta)`.
+#' where `P` is still the population at risk and `exp(eta)` is the incidence rate (risk). 
 #'
 #' ### Spatially lagged covariates (SLX)
 #' 
@@ -94,26 +94,26 @@
 #' 
 #' The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates (Donegan et al. 2021; Donegan 2021). With estimates, `x`, and their standard errors, `se`, the ME models have one of the the following two specifications, depending on the user input:
 #' ```
-#'        x ~ Gauss(x_true, se)
-#'        x_true ~ MVGauss(mu, Sigma)
-#'        Sigma = (I - rho * C)^(-1) M * tau^2
-#'        mu ~ Gauss(0, 100)
-#'        tau ~ student_t(10, 0, 40)
-#'        rho ~ uniform(lower_bound, upper_bound)
+#' x ~ Gauss(x_true, se)
+#' x_true ~ MVGauss(mu, Sigma)
+#' Sigma = (I - rho * C)^(-1) M * tau^2
+#' mu ~ Gauss(0, 100)
+#' tau ~ student_t(10, 0, 40)
+#' rho ~ uniform(lower_bound, upper_bound)
 #' ```
-#' where the covariance matrix, `Sigma`, has the conditional autoregressive specification, and `tau` is the scale parameter. If `ME$car_parts` is not provided by the user, then a non-spatial model will be used instead:
+#' where the covariance matrix, `Sigma`, has the conditional autoregressive specification, and `tau` is the scale parameter. For non-spatial ME models, the following is used instead:
 #' ```
-#'        x ~ Gauss(x_true, se)
-#'        x_true ~ student_t(df, mu, sigma)
-#'        df ~ gamma(3, 0.2)
-#'        mu ~ Gauss(0, 100)
-#'        sigma ~ student_t(10, 0, 40)
+#' x ~ Gauss(x_true, se)
+#' x_true ~ student_t(df, mu, sigma)
+#' df ~ gamma(3, 0.2)
+#' mu ~ Gauss(0, 100)
+#' sigma ~ student_t(10, 0, 40)
 #' ```
 #'
 #' For strongly skewed variables, such census tract poverty rates, it can be advantageous to apply a logit transformation to `x_true` before applying the CAR or Student t prior model. When the `logit` argument is used, the model becomes:
 #' ```
-#'        x ~ Gauss(x_true, se)
-#'       logit(x_true) ~ MVGauss(mu, Sigma)
+#' x ~ Gauss(x_true, se)
+#' logit(x_true) ~ MVGauss(mu, Sigma)
 #' ```
 #' and similar for the Student t model.
 #'
@@ -123,11 +123,11 @@
 #'
 #' Internally, `geostan` will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:
 #' ```
-#'  p(y_i | data, model) = Poisson(y_i | fitted_i), 
+#' p(y_i | data, model) = Poisson(y_i | fitted_i), 
 #' ```
 #' as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:
 #' ```
-#'   p(y_j | data, model) = sum_{m=0}^censor_point Poisson( c_m | fitted_j),
+#' p(y_j | data, model) = sum_{m=0}^censor_point Poisson( c_m | fitted_j),
 #' ```
 #' 
 #' For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide `censor_point = 9` and then the likelihood statmenet for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model paramters). See Donegan (2021) for additional discussion, references, and Stan code.

@@ -8,8 +8,8 @@
 #' 
 #' @param re To include a varying intercept (or "random effects") term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re} is a vector of parameters added to the linear predictor of the model, and:
 #' ```
-#'        alpha_re ~ N(0, alpha_tau)
-#'        alpha_tau ~ Student_t(d.f., location, scale).
+#' alpha_re ~ N(0, alpha_tau)
+#' alpha_tau ~ Student_t(d.f., location, scale).
 #' ```
 #' 
 #' @param C Spatial connectivity matrix which will be used to calculate eigenvectors, if `EV` is not provided by the user. Typically, the binary connectivity matrix is best for calculating eigenvectors (i.e., using `C = shape2mat(shape, style = "B")`). This matrix will also be used to calculate residual spatial autocorrelation and any user specified \code{slx} terms; it will be row-standardized before calculating \code{slx} terms. See \code{\link[geostan]{shape2mat}}.
@@ -64,15 +64,15 @@
 #' ESF decomposes the data into a global mean, `alpha`, global patterns contributed by covariates, `X * beta`, spatial trends, `EV * beta_ev`, and residual variation. Thus, for `family=gaussian()`,
 #' 
 #' ```
-#'         Y ~ Gauss(alpha + X * beta + EV * beta_ev, sigma).
+#' Y ~ Gauss(alpha + X * beta + EV * beta_ev, sigma).
 #'```
 #' An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:
 #' ```
-#'         Y ~ Poisson(exp(offset + Mu))
-#'         Mu = alpha + EV * beta_ev + A
-#'         A ~ Guass(0, tau)
-#'         tau ~ student(20, 0, 2)
-#'         beta_ev ~ horseshoe(.)
+#' Y ~ Poisson(exp(offset + Mu))
+#' Mu = alpha + EV * beta_ev + A
+#' A ~ Guass(0, tau)
+#' tau ~ student(20, 0, 2)
+#' beta_ev ~ horseshoe(.)
 #' ```
 #' 
 #' The \code{\link[geostan]{spatial.geostan_fit}} method will return `EV * beta`.
@@ -99,26 +99,26 @@
 #' 
 #' The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates (Donegan et al. 2021; Donegan 2021). With estimates, `x`, and their standard errors, `se`, the ME models have one of the the following two specifications, depending on the user input:
 #' ```
-#'        x ~ Gauss(x_true, se)
-#'        x_true ~ MVGauss(mu, Sigma)
-#'        Sigma = (I - rho * C)^(-1) M * tau^2
-#'        mu ~ Gauss(0, 100)
-#'        tau ~ student_t(10, 0, 40)
-#'        rho ~ uniform(lower_bound, upper_bound)
+#' x ~ Gauss(x_true, se)
+#' x_true ~ MVGauss(mu, Sigma)
+#' Sigma = (I - rho * C)^(-1) M * tau^2
+#' mu ~ Gauss(0, 100)
+#' tau ~ student_t(10, 0, 40)
+#' rho ~ uniform(lower_bound, upper_bound)
 #' ```
-#' where the covariance matrix, `Sigma`, has the conditional autoregressive specification, and `tau` is the scale parameter. If `ME$car_parts` is not provided by the user, then a non-spatial model will be used instead:
+#' where the covariance matrix, `Sigma`, has the conditional autoregressive specification, and `tau` is the scale parameter. For non-spatial ME models, the following is used instead:
 #' ```
-#'        x ~ Gauss(x_true, se)
-#'        x_true ~ student_t(df, mu, sigma)
-#'        df ~ gamma(3, 0.2)
-#'        mu ~ Gauss(0, 100)
-#'        sigma ~ student_t(10, 0, 40)
+#' x ~ Gauss(x_true, se)
+#' x_true ~ student_t(df, mu, sigma)
+#' df ~ gamma(3, 0.2)
+#' mu ~ Gauss(0, 100)
+#' sigma ~ student_t(10, 0, 40)
 #' ```
 #' 
 #' For strongly skewed variables, such census tract poverty rates, it can be advantageous to apply a logit transformation to `x_true` before applying the CAR or Student t prior model. When the `logit` argument is used, the model becomes:
 #' ```
-#'        x ~ Gauss(x_true, se)
-#'       logit(x_true) ~ MVGauss(mu, Sigma)
+#' x ~ Gauss(x_true, se)
+#' logit(x_true) ~ MVGauss(mu, Sigma)
 #' ```
 #' and similar for the Student t model.
 #'
@@ -128,11 +128,11 @@
 #'
 #' Internally, `geostan` will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:
 #' ```
-#'  p(y_i | data, model) = Poisson(y_i | fitted_i), 
+#' p(y_i | data, model) = Poisson(y_i | fitted_i), 
 #' ```
 #' as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:
 #' ```
-#'   p(y_j | data, model) = sum_{m=0}^censor_point Poisson( c_m | fitted_j),
+#' p(y_j | data, model) = sum_{m=0}^censor_point Poisson( c_m | fitted_j),
 #' ```
 #' 
 #' For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide `censor_point = 9` and then the likelihood statmenet for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model paramters). See Donegan (2021) for additional discussion, references, and Stan code.

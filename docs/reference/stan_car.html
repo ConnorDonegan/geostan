@@ -99,8 +99,8 @@
 <dt>slx</dt>
 <dd><p>Formula to specify any spatially-lagged covariates. As in, <code>~ x1 + x2</code> (the intercept term will be removed internally). When setting priors for <code>beta</code>, remember to include priors for any SLX terms.</p></dd>
 <dt>re</dt>
-<dd><p>To include a varying intercept (or "random effects") term, <code>alpha_re</code>, specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re</code> is a vector of parameters added to the linear predictor of the model, and:</p><div class="sourceCode"><pre><code>       alpha_re ~ N(0, alpha_tau)
-       alpha_tau ~ Student_t(d.f., location, scale).
+<dd><p>To include a varying intercept (or "random effects") term, <code>alpha_re</code>, specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re</code> is a vector of parameters added to the linear predictor of the model, and:</p><div class="sourceCode"><pre><code>alpha_re ~ N(0, alpha_tau)
+alpha_tau ~ Student_t(d.f., location, scale).
 </code></pre></div>
 
 <p>With the CAR model, any <code>alpha_re</code> term should be at a <em>different</em> level or scale than the observations; that is, at a different scale than the autocorrelation structure of the CAR model itself.</p></dd>
@@ -208,13 +208,13 @@
 <h3 id="auto-gaussian">Auto-Gaussian<a class="anchor" aria-label="anchor" href="#auto-gaussian"></a></h3>
 
 
-<p>When <code>family = auto_gaussian()</code>, the CAR model is specified as follows:</p><div class="sourceCode"><pre><code>        Y ~ MVGauss(Mu, Sigma)
-        Sigma = (I - rho C)^-1 * M * tau^2
+<p>When <code>family = auto_gaussian()</code>, the CAR model is specified as follows:</p><div class="sourceCode"><pre><code>Y ~ MVGauss(Mu, Sigma)
+Sigma = (I - rho C)^-1 * M * tau^2
 </code></pre></div>
 
 <p>where <code>Mu</code> is the mean vector (with intercept, covariates, etc.), <code>C</code> is a spatial connectivity matrix, and <code>M</code> is a known diagonal matrix with diagonal entries proportional to the conditional variances. <code>C</code> and <code>M</code> are provided by <code><a href="prep_car_data.html">prep_car_data</a></code>.</p>
 <p>The covariance matrix of the CAR model, <code>Sigma</code>, contains two parameters: <code>car_rho</code> (rho), which controls the degree of spatial autocorrelation, and the scale parameter, <code>car_scale</code> (tau). The range of permissible values for <code>rho</code> depends on the specification of <code>C</code> and <code>M</code>; for options, see <code><a href="prep_car_data.html">prep_car_data</a></code> and Cressie and Wikle (2011, pp. 184-188).</p>
-<p>The auto-Gaussian model contains an implicit spatial trend (i.e., autocorrelation) component which is calculated as follows (Cressie 2015, p. 564):</p><div class="sourceCode"><pre><code>        trend = rho * C * (Y - Mu).
+<p>The auto-Gaussian model contains an implicit spatial trend (i.e., autocorrelation) component which is calculated as follows (Cressie 2015, p. 564):</p><div class="sourceCode"><pre><code>trend = rho * C * (Y - Mu).
 </code></pre></div>
 
 <p>This term can be extracted from a fitted auto-Gaussian model using the <code><a href="geostan_fit.html">spatial</a></code> method.</p>
@@ -227,17 +227,17 @@
 <h3 id="poisson">Poisson<a class="anchor" aria-label="anchor" href="#poisson"></a></h3>
 
 
-<p>For <code>family = poisson()</code>, the model is specified as:</p><div class="sourceCode"><pre><code>        Y ~ Poisson(exp(offset + lambda))
-        lambda ~ MVGauss(Mu, Sigma)
-        Sigma = (I - rho C)^-1 * M * tau^2
+<p>For <code>family = poisson()</code>, the model is specified as:</p><div class="sourceCode"><pre><code>Y ~ Poisson(exp(offset + lambda))
+lambda ~ MVGauss(Mu, Sigma)
+Sigma = (I - rho C)^-1 * M * tau^2
 </code></pre></div>
 
 <p>These models are most often used to calculate small area incidence rates (mortality or disease incidence rates); the user provided offset should be, then, the natural logarithm of the denominator in the rates, e.g., log-population at risk.</p>
 <p>For Poisson models, the <code><a href="geostan_fit.html">spatial</a></code> method returns the parameter vector <code>phi</code>, which is the log-risk minus the intercept and any covariates:</p><div class="sourceCode"><pre><code><span class="va">phi</span> <span class="op">=</span> <span class="va">lambda</span> <span class="op">-</span> <span class="va">Mu.</span></code></pre></div>
 
-<p>This is the spatial autocorrelation component. This is equivalent to specifying the model as:</p><div class="sourceCode"><pre><code>        Y ~ Poisson(exp(offset + Mu + phi))
-        phi ~ MVGauss(0, Sigma)
-        Sigma = (I - rho C)^-1 * M * tau^2.
+<p>This is the spatial autocorrelation component. This is equivalent to specifying the model as:</p><div class="sourceCode"><pre><code>Y ~ Poisson(exp(offset + Mu + phi))
+phi ~ MVGauss(0, Sigma)
+Sigma = (I - rho C)^-1 * M * tau^2.
 </code></pre></div>
 
 <p>In the Poisson CAR model, <code>phi</code> contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from <code>phi</code>, you can do so by calculating (following Cressie 2015, p. 564):</p><div class="sourceCode"><pre><code><span class="va">trend</span> <span class="op">=</span> <span class="va">rho</span> <span class="op">*</span> <span class="va">C</span> <span class="op">*</span> <span class="va">phi.</span></code></pre></div>
@@ -248,9 +248,9 @@
 <h3 id="binomial">Binomial<a class="anchor" aria-label="anchor" href="#binomial"></a></h3>
 
 
-<p>For <code>family = binomial()</code>, the model is specified as:</p><div class="sourceCode"><pre><code>        Y ~ Binomial(N, theta)
-        logit(theta) ~ MVGauss(Mu, Sigma)
-        Sigma = (I - rho C)^-1 * M * tau^2
+<p>For <code>family = binomial()</code>, the model is specified as:</p><div class="sourceCode"><pre><code>Y ~ Binomial(N, theta)
+logit(theta) ~ MVGauss(Mu, Sigma)
+Sigma = (I - rho C)^-1 * M * tau^2
 </code></pre></div>
 
 <p>where outcome data <code>Y</code> are counts, <code>N</code> is the number of trials, and <code>theta</code> is the 'success' rate. Note that the model formula should be structured as: <code>cbind(sucesses, failures) ~ x</code>, such that <code>trials = successes + failures</code>.</p>
@@ -276,22 +276,22 @@
 <h3 id="measurement-error-me-models">Measurement error (ME) models<a class="anchor" aria-label="anchor" href="#measurement-error-me-models"></a></h3>
 
 
-<p>The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. With estimates, <code>x</code>, and their standard errors, <code>se</code>, the ME models have one of the the following two specifications, depending on the user input:</p><div class="sourceCode"><pre><code>       x ~ Gauss(x_true, se)
-       x_true ~ MVGauss(mu, Sigma)
-       Sigma = (I - rho C)^(-1) M * tau^2
-       mu ~ Gauss(0, 100)
-       tau ~ student_t(10, 0, 40)
-       rho ~ uniform(lower_bound, upper_bound)
+<p>The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. With estimates, <code>x</code>, and their standard errors, <code>se</code>, the ME models have one of the the following two specifications, depending on the user input:</p><div class="sourceCode"><pre><code>x ~ Gauss(x_true, se)
+x_true ~ MVGauss(mu, Sigma)
+Sigma = (I - rho C)^(-1) M * tau^2
+mu ~ Gauss(0, 100)
+tau ~ student_t(10, 0, 40)
+rho ~ uniform(lower_bound, upper_bound)
 </code></pre></div>
 
-<p>where the covariance matrix, <code>Sigma</code>, has the conditional autoregressive specification, and <code>tau</code> is the scale parameter. If <code>ME$car_parts</code> is not provided by the user, then a non-spatial model will be used instead:</p><div class="sourceCode"><pre><code><span class="va">x</span> <span class="op">~</span> <span class="fu">Gauss</span><span class="op">(</span><span class="va">x_true</span>, <span class="va">se</span><span class="op">)</span>
-       <span class="va">x_true</span> <span class="op">~</span> <span class="fu"><a href="../reference/priors.html">student_t</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">mu</span>, <span class="va">sigma</span><span class="op">)</span>
-       <span class="va">df</span> <span class="op">~</span> <span class="fu"><a href="../reference/priors.html">gamma</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0.2</span><span class="op">)</span>
-       <span class="va">mu</span> <span class="op">~</span> <span class="fu">Gauss</span><span class="op">(</span><span class="fl">0</span>, <span class="fl">100</span><span class="op">)</span>
-       <span class="va">sigma</span> <span class="op">~</span> <span class="fu"><a href="../reference/priors.html">student_t</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">0</span>, <span class="fl">40</span><span class="op">)</span></code></pre></div>
+<p>where the covariance matrix, <code>Sigma</code>, has the conditional autoregressive specification, and <code>tau</code> is the scale parameter. For non-spatial ME models, the following is used instead:</p><div class="sourceCode"><pre><code><span class="va">x</span> <span class="op">~</span> <span class="fu">Gauss</span><span class="op">(</span><span class="va">x_true</span>, <span class="va">se</span><span class="op">)</span>
+<span class="va">x_true</span> <span class="op">~</span> <span class="fu"><a href="../reference/priors.html">student_t</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">mu</span>, <span class="va">sigma</span><span class="op">)</span>
+<span class="va">df</span> <span class="op">~</span> <span class="fu"><a href="../reference/priors.html">gamma</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0.2</span><span class="op">)</span>
+<span class="va">mu</span> <span class="op">~</span> <span class="fu">Gauss</span><span class="op">(</span><span class="fl">0</span>, <span class="fl">100</span><span class="op">)</span>
+<span class="va">sigma</span> <span class="op">~</span> <span class="fu"><a href="../reference/priors.html">student_t</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">0</span>, <span class="fl">40</span><span class="op">)</span></code></pre></div>
 
 <p>For strongly skewed variables, such census tract poverty rates, it can be advantageous to apply a logit transformation to <code>x_true</code> before applying the CAR or Student t prior model. When the <code>logit</code> argument is used, the model becomes:</p><div class="sourceCode"><pre><code><span class="va">x</span> <span class="op">~</span> <span class="fu">Gauss</span><span class="op">(</span><span class="va">x_true</span>, <span class="va">se</span><span class="op">)</span>
-      <span class="fu">logit</span><span class="op">(</span><span class="va">x_true</span><span class="op">)</span> <span class="op">~</span> <span class="fu">MVGauss</span><span class="op">(</span><span class="va">mu</span>, <span class="va">Sigma</span><span class="op">)</span></code></pre></div>
+<span class="fu">logit</span><span class="op">(</span><span class="va">x_true</span><span class="op">)</span> <span class="op">~</span> <span class="fu">MVGauss</span><span class="op">(</span><span class="va">mu</span>, <span class="va">Sigma</span><span class="op">)</span></code></pre></div>
 
 <p>and similar for the Student t model.</p>
 </div>
@@ -301,10 +301,10 @@
 
 
 <p>Vital statistics systems and disease surveillance programs typically suppress case counts when they are smaller than a specific theshold value. In such cases, the observation of a censored count is not the same as a missing value; instead, you are informed that the value is an integer somewhere between zero and the threshold value. For Poisson models (<code>family = poisson())</code>), you can use the <code>censor_point</code> argument to encode this information into your model.</p>
-<p>Internally, <code>geostan</code> will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:</p><div class="sourceCode"><pre><code> p(y_i | data, model) = Poisson(y_i | fitted_i), 
+<p>Internally, <code>geostan</code> will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:</p><div class="sourceCode"><pre><code>p(y_i | data, model) = Poisson(y_i | fitted_i), 
 </code></pre></div>
 
-<p>as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:</p><div class="sourceCode"><pre><code>  p(y_j | data, model) = sum_{m=0}^censor_point Poisson( c_m | fitted_j),
+<p>as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:</p><div class="sourceCode"><pre><code>p(y_j | data, model) = sum_{m=0}^censor_point Poisson( c_m | fitted_j),
 </code></pre></div>
 
 <p>For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide <code>censor_point = 9</code> and then the likelihood statmenet for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model paramters). See Donegan (2021) for additional discussion, references, and Stan code.</p>

@@ -8,8 +8,8 @@
 #' 
 #' @param re To include a varying intercept (or "random effects") term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re} is a vector of parameters added to the linear predictor of the model, and:
 #' ```
-#'        alpha_re ~ N(0, alpha_tau)
-#'        alpha_tau ~ Student_t(d.f., location, scale).
+#' alpha_re ~ N(0, alpha_tau)
+#' alpha_tau ~ Student_t(d.f., location, scale).
 #' ```
 #' With the CAR model, any \code{alpha_re} term should be at a *different* level or scale than the observations; that is, at a different scale than the autocorrelation structure of the CAR model itself.
 #'
@@ -62,8 +62,8 @@
 #'
 #' When \code{family = auto_gaussian()}, the CAR model is specified as follows:
 #' ```
-#'         Y ~ MVGauss(Mu, Sigma)
-#'         Sigma = (I - rho C)^-1 * M * tau^2
+#' Y ~ MVGauss(Mu, Sigma)
+#' Sigma = (I - rho C)^-1 * M * tau^2
 #' ```
 #' where \code{Mu} is the mean vector (with intercept, covariates, etc.), \code{C} is a spatial connectivity matrix, and \code{M} is a known diagonal matrix with diagonal entries proportional to the conditional variances. `C` and `M` are provided by \code{\link[geostan]{prep_car_data}}.
 #'
@@ -71,13 +71,13 @@
 #'
 #' The auto-Gaussian model contains an implicit spatial trend (i.e., autocorrelation) component which is calculated as follows (Cressie 2015, p. 564):
 #' ```
-#'         trend = rho * C * (Y - Mu).
+#' trend = rho * C * (Y - Mu).
 #' ```
 #' This term can be extracted from a fitted auto-Gaussian model using the \code{\link[geostan]{spatial}} method.
 #'
 #' When applied to a fitted auto-Gaussian model, the \code{\link[geostan]{residuals.geostan_fit}} method returns `de-trended' residuals by default. That is,
 #' ```
-#'         residual = Y - Mu - trend.
+#' residual = Y - Mu - trend.
 #' ```
 #' To obtain "raw" residuals (`Y - Mu`), use `residuals(fit, detrend = FALSE)`.
 #' 
@@ -86,41 +86,41 @@
 #' For \code{family = poisson()}, the model is specified as:
 #'
 #' ```
-#'         Y ~ Poisson(exp(offset + lambda))
-#'         lambda ~ MVGauss(Mu, Sigma)
-#'         Sigma = (I - rho C)^-1 * M * tau^2
+#' Y ~ Poisson(exp(offset + lambda))
+#' lambda ~ MVGauss(Mu, Sigma)
+#' Sigma = (I - rho C)^-1 * M * tau^2
 #' ```
 #' These models are most often used to calculate small area incidence rates (mortality or disease incidence rates); the user provided offset should be, then, the natural logarithm of the denominator in the rates, e.g., log-population at risk.
 #' 
 #' For Poisson models, the \code{\link[geostan]{spatial}} method returns the parameter vector \code{phi}, which is the log-risk minus the intercept and any covariates:
 #'  ```
-#'         phi = lambda - Mu.
+#' phi = lambda - Mu.
 #' ```
 #' This is the spatial autocorrelation component. This is equivalent to specifying the model as:
 #' ```
-#'         Y ~ Poisson(exp(offset + Mu + phi))
-#'         phi ~ MVGauss(0, Sigma)
-#'         Sigma = (I - rho C)^-1 * M * tau^2.
+#' Y ~ Poisson(exp(offset + Mu + phi))
+#' phi ~ MVGauss(0, Sigma)
+#' Sigma = (I - rho C)^-1 * M * tau^2.
 #' ```
 #' 
 #' In the Poisson CAR model, `phi` contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \code{phi}, you can do so by calculating (following Cressie 2015, p. 564):
 #' ```
-#'         trend = rho * C * phi.
+#' trend = rho * C * phi.
 #' ```
 #' 
 #' ### Binomial
 #' 
 #' For `family = binomial()`, the model is specified as:
 #'``` 
-#'         Y ~ Binomial(N, theta)
-#'         logit(theta) ~ MVGauss(Mu, Sigma)
-#'         Sigma = (I - rho C)^-1 * M * tau^2
+#' Y ~ Binomial(N, theta)
+#' logit(theta) ~ MVGauss(Mu, Sigma)
+#' Sigma = (I - rho C)^-1 * M * tau^2
 #'```
 #' where outcome data `Y` are counts, `N` is the number of trials, and `theta` is the 'success' rate. Note that the model formula should be structured as: `cbind(sucesses, failures) ~ x`, such that `trials = successes + failures`.
 #' 
 #' For fitted Binomial models, the \code{\link[geostan]{spatial}} method will return the parameter vector \code{phi}, equivalent to:
 #'```
-#'         phi = logit(theta) - Mu.
+#' phi = logit(theta) - Mu.
 #'```
 #'
 #' ### Spatially lagged covariates (SLX)
@@ -141,26 +141,25 @@
 #' 
 #' The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. With estimates, `x`, and their standard errors, `se`, the ME models have one of the the following two specifications, depending on the user input:
 #' ```
-#'        x ~ Gauss(x_true, se)
-#'        x_true ~ MVGauss(mu, Sigma)
-#'        Sigma = (I - rho C)^(-1) M * tau^2
-#'        mu ~ Gauss(0, 100)
-#'        tau ~ student_t(10, 0, 40)
-#'        rho ~ uniform(lower_bound, upper_bound)
+#' x ~ Gauss(x_true, se)
+#' x_true ~ MVGauss(mu, Sigma)
+#' Sigma = (I - rho C)^(-1) M * tau^2
+#' mu ~ Gauss(0, 100)
+#' tau ~ student_t(10, 0, 40)
+#' rho ~ uniform(lower_bound, upper_bound)
 #' ```
-#' where the covariance matrix, `Sigma`, has the conditional autoregressive specification, and `tau` is the scale parameter. If `ME$car_parts` is not provided by the user, then a non-spatial model will be used instead:
+#' where the covariance matrix, `Sigma`, has the conditional autoregressive specification, and `tau` is the scale parameter. For non-spatial ME models, the following is used instead:
 #' ```
-#'        x ~ Gauss(x_true, se)
-#'        x_true ~ student_t(df, mu, sigma)
-#'        df ~ gamma(3, 0.2)
-#'        mu ~ Gauss(0, 100)
-#'        sigma ~ student_t(10, 0, 40)
+#' x ~ Gauss(x_true, se)
+#' x_true ~ student_t(df, mu, sigma)
+#' df ~ gamma(3, 0.2)
+#' mu ~ Gauss(0, 100)
+#' sigma ~ student_t(10, 0, 40)
 #' ```
-#'
 #' For strongly skewed variables, such census tract poverty rates, it can be advantageous to apply a logit transformation to `x_true` before applying the CAR or Student t prior model. When the `logit` argument is used, the model becomes:
 #' ```
-#'        x ~ Gauss(x_true, se)
-#'       logit(x_true) ~ MVGauss(mu, Sigma)
+#' x ~ Gauss(x_true, se)
+#' logit(x_true) ~ MVGauss(mu, Sigma)
 #' ```
 #' and similar for the Student t model.
 #'
@@ -170,11 +169,11 @@
 #'
 #' Internally, `geostan` will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:
 #' ```
-#'  p(y_i | data, model) = Poisson(y_i | fitted_i), 
+#' p(y_i | data, model) = Poisson(y_i | fitted_i), 
 #' ```
 #' as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:
 #' ```
-#'   p(y_j | data, model) = sum_{m=0}^censor_point Poisson( c_m | fitted_j),
+#' p(y_j | data, model) = sum_{m=0}^censor_point Poisson( c_m | fitted_j),
 #' ```
 #' 
 #' For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide `censor_point = 9` and then the likelihood statmenet for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model paramters). See Donegan (2021) for additional discussion, references, and Stan code.
