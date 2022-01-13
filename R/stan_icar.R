@@ -453,7 +453,7 @@ stan_icar <- function(formula,
     samples <- rstan::sampling(stanmodels$foundation, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init = inits, ...)
     ## OUTPUT -------------        
     out <- clean_results(samples, pars, is_student, has_re, Wx, xraw, me.list$x_me_idx)
-    out$data <- ModData
+    out$data <- data.frame(as.matrix(ModData))
     out$family <- family
     out$formula <- formula
     out$slx <- slx
