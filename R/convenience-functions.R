@@ -222,10 +222,14 @@ mc <- function(x, w, digits = 3, warn = TRUE, na.rm = FALSE) {
 moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 20, col = "darkred", size = 2, alpha = 1, lwd = 0.5, na.rm = FALSE) {
     check_sa_data(x, w)
     na_idx <- which(is.na(x))
-    if (na.rm == TRUE && length(na_idx) > 0) {   
-        message(length(na_idx), " NA values found in x. They will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.")
-        x <- x[-na_idx]
-        w <- w[-na_idx, -na_idx]
+    if (length(na_idx) > 0) {
+        if (na.rm == TRUE) {   
+            message(length(na_idx), " NA values found in x. They will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.")
+            x <- x[-na_idx]
+            w <- w[-na_idx, -na_idx]
+        } else {
+            stop("NA values found in moran_plot(x, ...). Use moran_plot(x, na.rm = TRUE, ...)")
+        }
     }
     if (any(Matrix::rowSums(w) == 0)) {
         zero.idx <- which(Matrix::rowSums(w) == 0)
