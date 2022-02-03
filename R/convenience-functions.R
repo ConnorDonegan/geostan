@@ -1155,13 +1155,15 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #'
 #' In the WCAR specification, `C` is the row-standardized version of `A`. This means that the non-zero elements of `A` will be converted to `1/N_i` where `N_i` is the number of neighbors for the `i`th site (obtained using `Matrix::rowSums(A)`. The conditional variances (on the diagonal of `M * tau^2`), are also proportional to `1/N_i`. 
 #'
-#' The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188).
+#' The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188) and Donegan (2021). 
 #'
-#' The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For `A`, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of `A` will be converted to: `d_{ij} = (a_{ij} + gamma)^(-k)` (Cliff and Ord 1981, p. 144). Default values are `k=1` and `gamma=0`. Following Cressie (2015), these values will be standardized by the maximum `d_{ij}` value. The conditional variances will be proportional to the inverse of the row sums of the transformed distance matrix: `M_{ii} = (sum_i^N d_{ij})^(-1)` (Donegan 2021).
+#' The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For `A`, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of `A` will be converted to: `d_{ij} = (a_{ij} + gamma)^(-k)` (Cliff and Ord 1981, p. 144; Donegan 2021). Default values are `k=1` and `gamma=0`. Following Cressie (2015), these values will be scaled (divided) by their maximum value. For further details, see the DCAR_A specification in Donegan (2021).
 #'
 #' For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 \[1993\]), Haining and Li (2020), and Donegan (2021).
 #'
 #' When using \code{\link[geostan]{stan_car}}, always use `cmat = TRUE` (the default).
+#'
+#' Details on CAR model specifications can be found in Table 1 of Donegan (2021).
 #'
 #' @source
 #'
@@ -1222,16 +1224,14 @@ prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), k = 1, gamma = 0
         dinv <- A
         dinv[dinv>0] <- (dinv[dinv>0] + gamma)^(-k)
         max.dinv <- max(dinv)
-        dinv <- dinv / max.dinv
-        # conditional variance proportional to total d^-k
-        dinv.sums <- Matrix::rowSums(dinv)
-        M_diag <- 1 / dinv.sums
-        # C scaled by sqrt of ratio of total distances
+        dinv <- dinv / max.dinv        
+        Ni <- apply(A, 1, function(x) sum(x>0))
+        M_diag <- 1 / Ni
+        C <- Matrix::Matrix(0, nrow = n, ncol = n)                
         A.idx <- Matrix::summary(dinv)
-        C <- Matrix::Matrix(0, nrow = n, ncol = n)        
         for (m in 1:nrow(A.idx)) {
             i <- A.idx[m, "i"]; j <- A.idx[m, "j"]
-            C[i,j] <- dinv[i,j] * sqrt(dinv.sums[j] / dinv.sums[i])
+            C[i,j] <- dinv[i,j] * sqrt(Ni[j] / Ni[i])
         }
     }
     if (style == "WCAR") {
