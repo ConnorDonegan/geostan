@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.1</span>
       </span>
     </div>
 
@@ -111,10 +111,11 @@
 
 <p>where <code>I</code> is the identity matrix, <code>rho</code> is a spatial autocorrelation parameter, <code>C</code> is a connectivity matrix, and <code>M * tau^2</code> is a diagonal matrix with conditional variances on the diagonal. <code>tau^2</code> is a (scalar) scale parameter.</p>
 <p>In the WCAR specification, <code>C</code> is the row-standardized version of <code>A</code>. This means that the non-zero elements of <code>A</code> will be converted to <code>1/N_i</code> where <code>N_i</code> is the number of neighbors for the <code>i</code>th site (obtained using <code>Matrix::rowSums(A)</code>. The conditional variances (on the diagonal of <code>M * tau^2</code>), are also proportional to <code>1/N_i</code>.</p>
-<p>The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188).</p>
-<p>The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For <code>A</code>, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of <code>A</code> will be converted to: <code>d_{ij} = (a_{ij} + gamma)^(-k)</code> (Cliff and Ord 1981, p. 144). Default values are <code>k=1</code> and <code>gamma=0</code>. Following Cressie (2015), these values will be standardized by the maximum <code>d_{ij}</code> value. The conditional variances will be proportional to the inverse of the row sums of the transformed distance matrix: <code>M_{ii} = (sum_i^N d_{ij})^(-1)</code> (Donegan 2021).</p>
+<p>The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188) and Donegan (2021).</p>
+<p>The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For <code>A</code>, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of <code>A</code> will be converted to: <code>d_{ij} = (a_{ij} + gamma)^(-k)</code> (Cliff and Ord 1981, p. 144; Donegan 2021). Default values are <code>k=1</code> and <code>gamma=0</code>. Following Cressie (2015), these values will be scaled (divided) by their maximum value. For further details, see the DCAR_A specification in Donegan (2021).</p>
 <p>For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 [1993]), Haining and Li (2020), and Donegan (2021).</p>
 <p>When using <code><a href="stan_car.html">stan_car</a></code>, always use <code>cmat = TRUE</code> (the default).</p>
+<p>Details on CAR model specifications can be found in Table 1 of Donegan (2021).</p>
     </div>
 
     <div id="ref-examples">
