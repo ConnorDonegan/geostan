@@ -1,3 +1,9 @@
+# geostan 0.2.1
+
+## Minor changes
+
+The distance-based CAR models that are prepared by the `prep_car_data` function have changed slightly. The conditional variances were previously a function of the sum of neighboring inverse distances (in keeping with the specification of the connectivity matrix); this can lead to very skewed frequency distributions of the conditional variances. Now, the conditional variances are equal to the inverse of the number of neighboring sites. This is in keeping with the more common CAR model specifications.
+
 # geostan 0.2.0
 
 ## Major changes
