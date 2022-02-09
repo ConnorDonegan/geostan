@@ -5,9 +5,16 @@
 
 ## geostan: Bayesian spatial analysis
 
-The **geostan** R package supports a complete spatial analysis workflow
-with hierarchical Bayesian models (HBMs) for areal data, including a
-suite of functions for visualizing spatial data and model results.
+The [**geostan**](https://connordonegan.github.io/geostan/) R package
+supports a complete spatial analysis workflow with Bayesian models for
+areal data, including a suite of functions for visualizing spatial data
+and model results. Methods for extracting fitted values, residuals,
+marginal effects, the posterior predictive distribution, and samples
+from the joint posterior distribution of parameters are also available.
+For demonstrations and discussion, see the package [help
+pages](https://connordonegan.github.io/geostan/reference/index.html) and
+[vignettes](https://connordonegan.github.io/geostan/articles/index.html)
+on spatial autocorrelation and spatial measurement error models.
 
 The package is designed primarily to support public health research with
 spatial data; see the
@@ -52,18 +59,13 @@ Tools for building custom spatial models in
 
 ## Installation
 
-Install **geostan** from R using:
+Install **geostan** from CRAN using:
 
 ``` r
-if (!require(drat)) install.packages("drat")
-drat::addRepo("connordonegan")
 install.packages("geostan")
 ```
 
-For Windows users, **geostan** has been built for R version 4.0 or 4.1;
-Mac users require require R 4.1.
-
-Linux users can install from drat repo as stated above or with:
+Linux users may also install from source:
 
 ``` r
 remotes::install_github("connordonegan/geostan")
@@ -76,12 +78,6 @@ Load the package and the `georgia` county mortality data set (ages
 
 ``` r
 library(geostan)
-#> This is geostan version 0.2.0
-#> 
-#> Attaching package: 'geostan'
-#> The following object is masked from 'package:base':
-#> 
-#>     gamma
 data(georgia)
 ```
 
@@ -141,10 +137,8 @@ sp_diag(fit, georgia, w = A)
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
-For an altnerative measure of residual spatial autocorrelation, see
-`sp_diag(fit, georgia, mc_style = "hist")`.
 
-The `print` method returns a summary of the probability distributoins
+The `print` method returns a summary of the probability distributions
 for model parameters, as well as Markov chain Monte Carlo (MCMC)
 diagnostics from Stan (Monte Carlo standard errors of the mean
 `se_mean`, effective sample size `n_eff`, and the R-hat statistic
@@ -157,8 +151,8 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.00122275 
-#> WAIC:  1292.04 
+#> Residual Moran Coefficient:  -0.00128325 
+#> WAIC:  1289.77 
 #> Observations:  159 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
@@ -166,20 +160,16 @@ print(fit)
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-#> intercept -4.676   0.002 0.085 -4.846 -4.719 -4.676 -4.633 -4.502  2286 1.001
-#> car_rho    0.924   0.001 0.058  0.776  0.895  0.937  0.966  0.995  3307 1.000
-#> car_scale  0.457   0.001 0.036  0.392  0.432  0.455  0.480  0.533  3893 1.000
+#> intercept -4.673   0.002 0.086 -4.844 -4.716 -4.674 -4.631 -4.503  1802 1.003
+#> car_rho    0.923   0.001 0.059  0.775  0.893  0.937  0.968  0.995  3220 1.000
+#> car_scale  0.458   0.001 0.035  0.393  0.434  0.456  0.480  0.530  3506 0.999
 #> 
-#> Samples were drawn using NUTS(diag_e) at Thu Jan  6 19:29:22 2022.
+#> Samples were drawn using NUTS(diag_e) at Tue Feb  8 21:37:39 2022.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
 ```
 
-Methods for extracting fitted values, residuals, marginal effects, the
-posterior predictive distribution, and samples from the joint posterior
-distribution of parameters are also available. For more demonstrations
-and discussion, see the package [help
+More demonstrations can be found in the package [help
 pages](https://connordonegan.github.io/geostan/reference/index.html) and
-[vignettes](https://connordonegan.github.io/geostan/articles/index.html)
-on spatial autocorrelation and spatial measurement error models.
+[vignettes](https://connordonegan.github.io/geostan/articles/index.html).

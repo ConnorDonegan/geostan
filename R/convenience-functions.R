@@ -1329,14 +1329,25 @@ get_shp <- function(url, folder = "shape") {
 #' @examples
 #' data(georgia)
 #'
-#' ## for a non-spatial prior model 
-#' se <- data.frame(ICE = georgia$ICE.se, college = georgia$college.se)
+#' ## for a non-spatial prior model for two covariates
+#' se <- data.frame(ICE = georgia$ICE.se,
+#'                  college = georgia$college.se)
 #' ME <- prep_me_data(se)
+#'
+#' ## see default priors
+#' print(ME$prior)
+#'
+#' ## set prior for the scale parameters
+#' ME <- prep_me_data(se,
+#'                    prior = list(scale = student_t(df = c(10, 10),
+#'                                                   location = c(0, 0),
+#'                                                   scale = c(20, 20))))
 #' 
 #' ## for a spatial prior model (often recommended)
 #' A <- shape2mat(georgia, "B")
 #' cars <- prep_car_data(A)
-#' ME <- prep_me_data(se, car_parts = cars)
+#' ME <- prep_me_data(se,
+#'                    car_parts = cars)
 #' @export
 #' @md
 prep_me_data <- function(se, bounds = c(-Inf, Inf), car_parts, prior, logit = rep(FALSE, times = ncol(se))) {

@@ -1,7 +1,7 @@
 
 bibentry(
   bibtype = "Manual",
-  title= "geostan: Bayesian Spatial Analysis",
+  title= "geostan: {B}ayesian spatial analysis",
   author= "Connor Donegan",
   url = "https://connordonegan.github.io/geostan/",
   year = 2021,
@@ -14,7 +14,7 @@ bibentry(
 
 bibentry(
   bibtype    = "Article",
-  title    = "Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure",
+  title    = "Modeling community health with areal data: {B}ayesian inference with survey standard errors and spatial structure",
   author   = "Connor Donegan and Yongwan Chun and Daniel A. Griffith",
   journal  = "Int J Env Res Public Health",
   year     = "2021",
