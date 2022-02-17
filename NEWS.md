@@ -1,3 +1,9 @@
+# geostan 0.2.2
+
+## Minor changes
+
+ - stan_car now has an option to provide the connectivity matrix C, which is used to calculate spatial-lag of X (SLX) terms and residual spatial autocorrelation. Previously, there was no option to provide this matrix, as it was taken from the car_parts argument. However, that choice is only appropriate when the WCAR specification is used. Now, if C is missing and the WCAR specification has not be used a warning will appear.
+
 # geostan 0.2.1
 
 ## Minor changes

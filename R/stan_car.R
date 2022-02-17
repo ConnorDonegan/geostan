@@ -16,6 +16,8 @@
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' 
 #' @param car_parts A list of data for the CAR model, as returned by \code{\link[geostan]{prep_car_data}}.
+#'
+#' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will automatically be row-standardized before calculating \code{slx} terms.  See \code{\link[geostan]{shape2mat}}.
 #' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{auto_gaussian()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}; if `family = gaussian()` is provided, it will automatically be converted to `auto_gaussian()`.
 #'
@@ -265,6 +267,7 @@ stan_car <- function(formula,
                      re,
                      data,
                      car_parts,
+                     C,
                      family = gaussian(),
                      prior = NULL,                      
                      ME = NULL,                     
@@ -285,7 +288,15 @@ stan_car <- function(formula,
     stopifnot(!missing(data))
     check_car_parts(car_parts)
     stopifnot(length(car_parts$Delta_inv) == nrow(data))
-    C <- car_parts$C        
+    if (!missing(C)) {
+        stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
+        stopifnot(all(dim(C) == nrow(data)))
+    } else {
+        C <- car_parts$C
+        if (car_parts$WCAR == 0) {
+            message("Warning: Consider providing the matrix C explicitly using the C argument (see ?shape2mat). The matrix C is used for calculating spatial-lag of X (SLX) terms and residual spatial autocorrelation. Since you did not provide C, the matrix is being taken from car_parts$C. Since you did not use the WCAR specification of the CAR model, this car_parts$C matrix may not be the appropriate choice for these purposes.")
+        }
+    }
     tmpdf <- as.data.frame(data)
     n <- nrow(tmpdf)    
     family_int <- family_2_int(family)        
