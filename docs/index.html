@@ -86,7 +86,7 @@
 <div class="section level2">
 <h2 id="geostan-bayesian-spatial-analysis">geostan: Bayesian spatial analysis<a class="anchor" aria-label="anchor" href="#geostan-bayesian-spatial-analysis"></a>
 </h2>
-<p>The <a href="https://connordonegan.github.io/geostan/"><strong>geostan</strong></a> R package supports a complete spatial analysis workflow with Bayesian models for areal data, including a suite of functions for visualizing spatial data and model results. Methods for extracting fitted values, residuals, marginal effects, the posterior predictive distribution, and samples from the joint posterior distribution of parameters are also available. For demonstrations and discussion, see the package <a href="https://connordonegan.github.io/geostan/reference/index.html">help pages</a> and <a href="https://connordonegan.github.io/geostan/articles/index.html">vignettes</a> on spatial autocorrelation and spatial measurement error models.</p>
+<p>The <a href="https://connordonegan.github.io/geostan/"><strong>geostan</strong></a> R package supports a complete spatial analysis workflow with Bayesian models for areal data, including a suite of functions for visualizing spatial data and model results. For demonstrations and discussion, see the package <a href="https://connordonegan.github.io/geostan/reference/index.html">help pages</a> and <a href="https://connordonegan.github.io/geostan/articles/index.html">vignettes</a> on spatial autocorrelation and spatial measurement error models.</p>
 <p>The package is designed primarily to support public health research with spatial data; see the <a href="https://connordonegan.github.io/surveil/" class="external-link"><strong>surveil</strong></a> R package for time series analysis of public health surveillance data.</p>
 <p><strong>geostan</strong> is an interface to <a href="https://mc-stan.org" class="external-link"><strong>Stan</strong></a>, a state-of-the-art platform for Bayesian inference.</p>
 <div class="section level3">
@@ -136,6 +136,12 @@
 <p>Load the package and the <code>georgia</code> county mortality data set (ages 55-64, years 2014-2018):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span>
+<span class="co">#&gt; This is geostan version 0.2.1</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Attaching package: 'geostan'</span>
+<span class="co">#&gt; The following object is masked from 'package:base':</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     gamma</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></code></pre></div>
 <p>The <code>sp_diag</code> function provides visual summaries of spatial data, including a histogram, Moran scatter plot, and map:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -184,8 +190,8 @@
 <span class="co">#&gt; Spatial method (outcome):  CAR </span>
 <span class="co">#&gt; Likelihood function:  poisson </span>
 <span class="co">#&gt; Link function:  log </span>
-<span class="co">#&gt; Residual Moran Coefficient:  -0.00128325 </span>
-<span class="co">#&gt; WAIC:  1289.77 </span>
+<span class="co">#&gt; Residual Moran Coefficient:  0.003423 </span>
+<span class="co">#&gt; WAIC:  1292.63 </span>
 <span class="co">#&gt; Observations:  159 </span>
 <span class="co">#&gt; Data models (ME): none</span>
 <span class="co">#&gt; Inference for Stan model: foundation.</span>
@@ -193,11 +199,11 @@
 <span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat</span>
-<span class="co">#&gt; intercept -4.673   0.002 0.086 -4.844 -4.716 -4.674 -4.631 -4.503  1802 1.003</span>
-<span class="co">#&gt; car_rho    0.923   0.001 0.059  0.775  0.893  0.937  0.968  0.995  3220 1.000</span>
-<span class="co">#&gt; car_scale  0.458   0.001 0.035  0.393  0.434  0.456  0.480  0.530  3506 0.999</span>
+<span class="co">#&gt; intercept -4.670   0.005 0.117 -4.844 -4.719 -4.675 -4.630 -4.494   631 1.009</span>
+<span class="co">#&gt; car_rho    0.924   0.001 0.058  0.781  0.895  0.937  0.967  0.996  3078 1.000</span>
+<span class="co">#&gt; car_scale  0.457   0.001 0.036  0.392  0.432  0.456  0.481  0.533  3582 1.000</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Tue Feb  8 21:37:39 2022.</span>
+<span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Sun Apr  3 14:55:57 2022.</span>
 <span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span>
 <span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span>
 <span class="co">#&gt; convergence, Rhat=1).</span></code></pre></div>
@@ -210,6 +216,7 @@
     <div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
+<li><a href="https://cloud.r-project.org/package=geostan" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/ConnorDonegan/geostan/" class="external-link">Browse source code</a></li>
 </ul>
 </div>
