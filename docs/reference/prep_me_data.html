@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.1</span>
       </span>
     </div>
 
@@ -110,14 +110,25 @@
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
 
-<span class="co">## for a non-spatial prior model </span>
-<span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>ICE <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">ICE.se</span>, college <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">college.se</span><span class="op">)</span>
+<span class="co">## for a non-spatial prior model for two covariates</span>
+<span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>ICE <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">ICE.se</span>,
+                 college <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">college.se</span><span class="op">)</span>
 <span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu">prep_me_data</span><span class="op">(</span><span class="va">se</span><span class="op">)</span>
+
+<span class="co">## see default priors</span>
+<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ME</span><span class="op">$</span><span class="va">prior</span><span class="op">)</span>
+
+<span class="co">## set prior for the scale parameters</span>
+<span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu">prep_me_data</span><span class="op">(</span><span class="va">se</span>,
+                   prior <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>scale <span class="op">=</span> <span class="fu"><a href="priors.html">student_t</a></span><span class="op">(</span>df <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">10</span><span class="op">)</span>,
+                                                  location <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,
+                                                  scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
 
 <span class="co">## for a spatial prior model (often recommended)</span>
 <span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span>
 <span class="va">cars</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span>
-<span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu">prep_me_data</span><span class="op">(</span><span class="va">se</span>, car_parts <span class="op">=</span> <span class="va">cars</span><span class="op">)</span>
+<span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu">prep_me_data</span><span class="op">(</span><span class="va">se</span>,
+                   car_parts <span class="op">=</span> <span class="va">cars</span><span class="op">)</span>
 </code></pre></div>
     </div>
   </div>

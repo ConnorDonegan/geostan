@@ -8,10 +8,8 @@
 The [**geostan**](https://connordonegan.github.io/geostan/) R package
 supports a complete spatial analysis workflow with Bayesian models for
 areal data, including a suite of functions for visualizing spatial data
-and model results. Methods for extracting fitted values, residuals,
-marginal effects, the posterior predictive distribution, and samples
-from the joint posterior distribution of parameters are also available.
-For demonstrations and discussion, see the package [help
+and model results. For demonstrations and discussion, see the package
+[help
 pages](https://connordonegan.github.io/geostan/reference/index.html) and
 [vignettes](https://connordonegan.github.io/geostan/articles/index.html)
 on spatial autocorrelation and spatial measurement error models.
@@ -78,6 +76,12 @@ Load the package and the `georgia` county mortality data set (ages
 
 ``` r
 library(geostan)
+#> This is geostan version 0.2.1
+#> 
+#> Attaching package: 'geostan'
+#> The following object is masked from 'package:base':
+#> 
+#>     gamma
 data(georgia)
 ```
 
@@ -151,8 +155,8 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  -0.00128325 
-#> WAIC:  1289.77 
+#> Residual Moran Coefficient:  0.003423 
+#> WAIC:  1292.63 
 #> Observations:  159 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
@@ -160,11 +164,11 @@ print(fit)
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-#> intercept -4.673   0.002 0.086 -4.844 -4.716 -4.674 -4.631 -4.503  1802 1.003
-#> car_rho    0.923   0.001 0.059  0.775  0.893  0.937  0.968  0.995  3220 1.000
-#> car_scale  0.458   0.001 0.035  0.393  0.434  0.456  0.480  0.530  3506 0.999
+#> intercept -4.670   0.005 0.117 -4.844 -4.719 -4.675 -4.630 -4.494   631 1.009
+#> car_rho    0.924   0.001 0.058  0.781  0.895  0.937  0.967  0.996  3078 1.000
+#> car_scale  0.457   0.001 0.036  0.392  0.432  0.456  0.481  0.533  3582 1.000
 #> 
-#> Samples were drawn using NUTS(diag_e) at Tue Feb  8 21:37:39 2022.
+#> Samples were drawn using NUTS(diag_e) at Sun Apr  3 14:55:57 2022.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
