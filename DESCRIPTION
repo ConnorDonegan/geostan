@@ -2,7 +2,7 @@ Package: geostan
 Title: Bayesian Spatial Analysis
 Version: 0.2.1
 URL: https://connordonegan.github.io/geostan/, https://github.com/ConnorDonegan/geostan/
-Authors@R: 
+Authors@R:
     c(person(given = "Connor",
            family = "Donegan",
            role = c("aut", "cre"),
@@ -18,10 +18,11 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Biarch: true
-Depends: 
+Depends:
     R (>= 3.4.0)
-Imports: 
+Imports:
     spdep (>= 1.1-8),
+    spatialreg,
     sf,
     ggplot2 (>= 3.0.0),
     methods,
@@ -34,10 +35,8 @@ Imports:
     utils,
     Matrix (>= 1.3),
     Rcpp (>= 0.12.0),
-    RcppParallel (>= 5.0.1),
-    rstan (>= 2.18.1),
-    rstantools (>= 2.1.1)    
-LinkingTo: 
+    rstan (>= 2.18.1)
+LinkingTo:
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
     RcppEigen (>= 0.3.3.3.0),
@@ -48,7 +47,7 @@ Suggests:
     testthat,
     knitr,
     rmarkdown,
-    bayesplot    
+    bayesplot
 SystemRequirements: GNU make
 VignetteBuilder: knitr
 
