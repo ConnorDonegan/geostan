@@ -11,8 +11,9 @@
       for (j in 1:dx_me) {
         target += normal_lpdf(x_me[j] | x_true[j], sigma_me[j]);
 	if (use_logit[j] > 0) x_true_transform[j] = logit(x_true[j]);
+        vector[n] mu_x_true_tmp = rep_vector(mu_x_true[j], n);
 	target += auto_normal_lpdf(x_true_transform[j] |
-				   rep_vector(mu_x_true[j], n),
+				   mu_x_true_tmp,
 				   sigma_x_true[j],
 				   car_rho_x_true[j],
 				   Ax_w, Ax_v, Ax_u,
