@@ -2,16 +2,16 @@
   vector[n] x_true_transform[dx_me];
   x_true_transform = x_true;
   target += normal_lpdf(intercept | prior_alpha[1], prior_alpha[2]);
-  if (dx_all) target += normal_lpdf(append_row(gamma, beta) | prior_beta_location, prior_beta_scale);  
+  if (dx_all) target += normal_lpdf(append_row(gamma, beta) | prior_beta_location, prior_beta_scale);
   if (has_sigma) target += student_t_lpdf(sigma | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
-  if (is_student) target += gamma_lpdf(nu[1] | prior_t_nu[1], prior_t_nu[2]);  
+  if (is_student) target += gamma_lpdf(nu[1] | prior_t_nu[1], prior_t_nu[2]);
 // data models (observational uncertainty)
   if (dx_me) {
     if (spatial_me) {
       for (j in 1:dx_me) {
+        vector[n] mu_x_true_tmp = rep_vector(mu_x_true[j], n);
         target += normal_lpdf(x_me[j] | x_true[j], sigma_me[j]);
 	if (use_logit[j] > 0) x_true_transform[j] = logit(x_true[j]);
-        vector[n] mu_x_true_tmp = rep_vector(mu_x_true[j], n);
 	target += auto_normal_lpdf(x_true_transform[j] |
 				   mu_x_true_tmp,
 				   sigma_x_true[j],
@@ -19,12 +19,12 @@
 				   Ax_w, Ax_v, Ax_u,
 				   Cidx,
 				   Delta_inv, log_det_Delta_inv,
-				   lambda, n, WCAR);	    
+				   lambda, n, WCAR);
       }
     } else {
       for (j in 1:dx_me) {
 	target += normal_lpdf(x_me[j] | x_true[j], sigma_me[j]);
-	if (use_logit[j] > 0) x_true_transform[j] = logit(x_true[j]);	
+	if (use_logit[j] > 0) x_true_transform[j] = logit(x_true[j]);
 	target += student_t_lpdf(x_true_transform[j] | nu_x_true[j], mu_x_true[j], sigma_x_true[j]);
 	target += gamma_lpdf(nu_x_true[j] | prior_nux_true_alpha[j], prior_nux_true_beta[j]);
       }
@@ -47,7 +47,7 @@
     }
     if (is_binomial) target += binomial_lpmf(y_int | trials, fitted);
 }
-  
+
   // ICAR
   if (type) {
     if (has_theta) {
