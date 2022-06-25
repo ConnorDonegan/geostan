@@ -1,7 +1,7 @@
 
 context("SA indices")
 test_that("SA indices produce the same results as spdep when expected", {
-
+                                       
     skip_on_cran()
 #    skip_if_not_installed("spatialreg")
     d=10
@@ -10,7 +10,7 @@ test_that("SA indices produce the same results as spdep when expected", {
     W <- shape2mat(georgia, style = "W")
     C <- shape2mat(georgia, style = "B")
     nb <- spdep::poly2nb(georgia)
-    lw.W <- spdep::nb2listw(nb, style = "W")
+    lw.W <- spdep::nb2listw(nb, style = "W")    
     lw.C <- spdep::nb2listw(nb, style = "B")
     x <- sim_sar(w=W, rho = 0.7)
     n <- length(x)
@@ -24,8 +24,8 @@ test_that("SA indices produce the same results as spdep when expected", {
     expect_equal(mc.spdep, mc.geostan)
     ## test APLE (estimate of SAR SA parameter)
     x <- as.numeric(scale(x))
-    aple.spdep <- round(spatialreg::aple(x, lw.W), d)
+    aple.spdep <- round(spdep::aple(x, lw.W), d)
     aple.geostan <- geostan::aple(x, W, digits = d)
-    expect_equal(aple.spdep, aple.geostan)
+    expect_equal(aple.spdep, aple.geostan)    
 })
 
