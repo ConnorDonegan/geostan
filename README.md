@@ -69,6 +69,10 @@ Linux users may also install from source:
 remotes::install_github("connordonegan/geostan")
 ```
 
+Then run:
+
+    rstantools::rstan_config()
+
 ## Usage
 
 Load the package and the `georgia` county mortality data set (ages
@@ -155,8 +159,8 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.003423 
-#> WAIC:  1292.63 
+#> Residual Moran Coefficient:  0.000228 
+#> WAIC:  1292.1 
 #> Observations:  159 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
@@ -164,11 +168,11 @@ print(fit)
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-#> intercept -4.670   0.005 0.117 -4.844 -4.719 -4.675 -4.630 -4.494   631 1.009
-#> car_rho    0.924   0.001 0.058  0.781  0.895  0.937  0.967  0.996  3078 1.000
-#> car_scale  0.457   0.001 0.036  0.392  0.432  0.456  0.481  0.533  3582 1.000
+#> intercept -4.674   0.002 0.089 -4.846 -4.718 -4.674 -4.631 -4.496  1648 1.002
+#> car_rho    0.923   0.001 0.058  0.778  0.895  0.935  0.966  0.995  3618 1.000
+#> car_scale  0.457   0.001 0.035  0.393  0.432  0.455  0.480  0.531  3855 1.000
 #> 
-#> Samples were drawn using NUTS(diag_e) at Sun Apr  3 14:55:57 2022.
+#> Samples were drawn using NUTS(diag_e) at Thu Jun 30 12:41:42 2022.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).

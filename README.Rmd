@@ -63,6 +63,10 @@ Linux users may also install from source:
 ``` r
 remotes::install_github("connordonegan/geostan")
 ```
+Then run:
+```
+rstantools::rstan_config()
+```
 
 ## Usage
 
