@@ -163,13 +163,13 @@ mc <- function(x, w, digits = 3, warn = TRUE, na.rm = FALSE) {
     check_sa_data(x, w) 
     na_idx <- which(is.na(x))   
     if (na.rm == TRUE && length(na_idx) > 0) {   
-        if (warn) message(length(na_idx), " NA values found in x. They will be dropped from the data before calculating the Moran coefficient. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.")
+        if (warn) message(length(na_idx), " NA values found in x. They will be removed from the data before calculating the Moran coefficient. If matrix w was row-standardized, it may not longer be. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.")
         x <- x[-na_idx]
         w <- w[-na_idx, -na_idx]
     }
     if (any(Matrix::rowSums(w) == 0)) {
         zero.idx <- which(Matrix::rowSums(w) == 0)
-        if (warn) message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data before calculating the Moran coefficient. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.")
+        if (warn) message(length(zero.idx), " observations with no neighbors found. They will be removed from the data before calculating the Moran coefficient.")
         x <- x[-zero.idx]
         w <- w[-zero.idx, -zero.idx]
     }
