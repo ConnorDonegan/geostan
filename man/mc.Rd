@@ -4,7 +4,7 @@
 \alias{mc}
 \title{The Moran coefficient}
 \source{
-Chun, Yongwan, and Daniel A. Griffith. Spatial statistics and geostatistics: theory and applications for geographic information science and technology. Sage, 2013.
+Chun, Yongwan, and Daniel A. Griffith. Spatial Statistics and Geostatistics: Theory and Applications for Geographic Information Science and Technology. Sage, 2013.
 
 Cliff, Andrew David, and J. Keith Ord. Spatial processes: models & applications. Taylor & Francis, 1981.
 }
