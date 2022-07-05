@@ -145,21 +145,24 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
 #' Local Moran's I 
 #'
 #' @export
-#' @description A local indicator of spatial association (LISA) based on Moran's I (the Moran coefficient) for exploratory data analysis. The interpretation of LISA values depends on the type of association, which may be negative or positive. However, local Moran's I is best suited for detecting clustering behavior (positive autocorrelation).
+#' @description A local indicator of spatial association (LISA) based on Moran's I (the Moran coefficient) for exploratory data analysis. The interpretation of LISA values depends on the type of spatial autocorrelation, which may be negative or positive. 
 #'
 #' @param x Numeric vector of length `n`.
 #' @param w An `n x n` spatial connectivity matrix. See \link[geostan]{shape2mat}. If \code{w} is not row standardized (\code{all(Matrix::rowSums(w) == 1)}), it will automatically be row-standardized.
 #' @param type Return the type of association also (High-High, Low-Low, High-Low, and Low-High)? Defaults to \code{FALSE}.
-#'
+#' @param scale If `TRUE`, then `x` will automatically be standardized using `scale(x, center = TRUE, scale = TRUE)`. If `FALSE`, then the variate will be centered but not scaled, using `scale(x, center = TRUE, scale = FALSE)`.
+#' @param digits Number of digits to round results to.
 #' @details
 #'
-#' The values of `x` will be standardized with \code{z = scale(x)} first and \code{w} will be row-standardized if needed. The LISA values are the product of each \code{z} value with their respective mean surrounding value \code{lagz = w \%*\% z}; \code{lisa = z * lagz}. These are for exploratory analysis and model diagnostics. The function uses Equation 7 from Anselin (1995).
+#' The values of `x` will automatically be centered first with \code{z = scale(x, center = TRUE, scale = scale)} (with user control over the `scale` argument). The LISA values are the product of each \code{z} value with the weighted sum of their respective surrounding value: \deqn{I_i = z_i \sum_j w_{ij} z_j} (or in R code: \code{lisa = z * (w \%*\% z)}). These are for exploratory analysis and model diagnostics. 
 #'
-#' An above-average value (i.e. positive z-value) with positive mean spatial lag indicates local positive spatial autocorrelation and is designated type "High-High"; a low value surrounded by high values indicates negative spatial autocorrelation and is designated type "Low-High", and so on.
+#' An above-average value (i.e. positive z-value) with positive mean spatial lag indicates local positive spatial autocorrelation and is designated type "High-High"; a low value surrounded by high values indicates negative spatial autocorrelation and is designated type "Low-High", and so on. 
 #' 
+#' This function uses Equation 7 from Anselin (1995). Note that the `spdep` package uses Formula 12, which divides the same value by a constant term \eqn{\sum_i z_i^2/n}. So the `geostan` version can be made equal to the `spdep` version by dividing by that value.
+#'
 #' @return If \code{type = FALSE} a numeric vector of lisa values for exploratory analysis of local spatial autocorrelation. If \code{type = TRUE}, a \code{data.frame} with columns \code{Li} (the lisa value) and \code{type}. 
 #'
-#' @seealso \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{aple}}
+#' @seealso \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{aple}}, \code{\link[geostan]{lg}}, \code{\link[geostan]{gr}}
 #'
 #' @source
 #'
@@ -177,22 +180,53 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
 #'   geom_sf() +
 #'   scale_fill_gradient2()
 #' @importFrom Matrix rowSums
-lisa <- function(x, w, type = TRUE) {
+lisa <- function(x, w, type = TRUE, scale = TRUE, digits = 3) {
     check_sa_data(x, w)
-    if (!all(round(Matrix::rowSums(w), 10) %in% c(0, 1))) w <- row_standardize(w)
-    z <- scale(x)
-    lag <- as.numeric(w %*% z)
-    zi <- as.numeric(z * lag)
+    z <- scale(x, center = TRUE, scale = scale)
+    lagz <- as.numeric(w %*% z)
+    zi <- as.numeric(z * lagz)
     if (any(Matrix::rowSums(w) == 0)) {
         zero.idx <- which(Matrix::rowSums(w) == 0)
         zi[zero.idx] <- NA        
         message(length(zero.idx), " observations with no neighbors found. Their LISA values are being set to NA.")
     }     
+    zi <- round(zi, digits)
     if (!type) return (zi)
-    type <- ifelse(z > 0 & lag > 0, "HH",
-         ifelse(z < 0 & lag > 0, "LH",
-         ifelse(z < 0 & lag < 0, "LL",
-         ifelse(z > 0 & lag < 0, "HL", NA
+    type <- ifelse(z > 0 & lagz > 0, "HH",
+         ifelse(z < 0 & lagz > 0, "LH",
+         ifelse(z < 0 & lagz < 0, "LL",
+         ifelse(z > 0 & lagz < 0, "HL", NA
                 ))))
     return (data.frame(Li = zi, type = type))
+}
+
+
+
+#' Expected value of the residual Moran coefficient
+#'
+#' @description Expected value for the Moran coefficient of model residuals under the null hypothesis of no spatial autocorrelation.
+#' 
+#' @export
+#' 
+#' @param X model matrix, including column of ones.
+#' @param C Connectivity matrix.
+#' 
+#' @source
+#' 
+#'  Chun, Yongwan and Griffith, Daniel A. (2013). Spatial statistics and geostatistics. Sage, p. 18.
+#' 
+#' @return Returns a numeric value.
+#'
+#' @examples
+#' data(georgia)
+#' C <- shape2mat(georgia)
+#' X <- model.matrix(~ ICE + college, georgia)
+#' expected_mc(X, C)
+expected_mc <- function(X, C) {
+    C <- as.matrix(C)
+    n = nrow(X)
+    k = ncol(X)    
+    under <- (n-k) * sum(rowSums(C))
+    mc = -n * sum(diag( solve(t(X) %*% X) %*% t(X) %*% C %*% X )) / under
+    return(as.numeric(mc))
 }
