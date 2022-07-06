@@ -325,7 +325,7 @@ sp_diag.numeric <- function(y,
 #'
 #' @param binwidth A function with a single argument that will be passed to the `binwidth` argument in \code{\link[ggplot2]{geom_histogram}}. The default is to set the width of bins to `0.5 * sd(x)`.
 #' 
-#' @return A grid of spatial diagnostic plots for measurement error models comparing the raw observations to the posterior distribution of the true values. Includes a point-interval plot, a histogram of Moran coefficient values for the posterior distribution of Delta values (`Delta = z - x`, where `z` are the survey estimates and `x` are the modeled true values), and a map of the posterior mean of the Delta values. 
+#' @return A grid of spatial diagnostic plots for measurement error models comparing the raw observations to the posterior distribution of the true values. Includes a point-interval plot of raw values and modeled values; a Moran scatter plot for `delta = z - x` where `z` are the survey estimates and `x` are the modeled values; and a map of the delta values (take at their posterior means). 
 #'
 #' @seealso \code{\link[geostan]{sp_diag}}, \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{aple}}
 #' 
@@ -718,36 +718,6 @@ waic <- function(fit, pointwise = FALSE, digits = 2) {
   res <- c(WAIC = sum(waic), Eff_pars = sum(p_waic), Lpd = sum(lpd))
   return(round(res, digits))
 }
-
-#' Expected value of the residual Moran coefficient.
-#'
-#' @description Expected value for the Moran coefficient of model residuals under the null hypothesis of no spatial autocorrelation.
-#' 
-#' @export
-#' 
-#' @param X model matrix, including column of ones.
-#' @param C Connectivity matrix.
-#' 
-#' @source
-#' 
-#'  Chun, Yongwan and Griffith, Daniel A. (2013). Spatial statistics and geostatistics. Sage, p. 18.
-#' 
-#' @return Returns a numeric value.
-#'
-#' @examples
-#' data(georgia)
-#' C <- shape2mat(georgia)
-#' X <- model.matrix(~ ICE + college, georgia)
-#' expected_mc(X, C)
-expected_mc <- function(X, C) {
-    C <- as.matrix(C)
-    n = nrow(X)
-    k = ncol(X)    
-    under <- (n-k) * sum(rowSums(C))
-    mc = -n * sum(diag( solve(t(X) %*% X) %*% t(X) %*% C %*% X )) / under
-    return(as.numeric(mc))
-}
-
 
 #' Edge list
 #'
