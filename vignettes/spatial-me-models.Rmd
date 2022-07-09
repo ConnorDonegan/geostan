@@ -53,7 +53,7 @@ $$ p(\boldsymbol x | \mathcal{M}) = Gauss(\boldsymbol x | \mu \boldsymbol 1, \bo
 where the bold symbols are used to indicate an object is a column vector or matrix. 
 
 The equation above states that the unknown values $\boldsymbol x$ are spatially correlated, with a mean value of $\mu$ and covariance matrix $$\boldsymbol \Sigma = (I - \rho C)^{-1} M,$$
-where $\rho$ is a spatial autocorrelation parameter, $I$ is the $n \times n$ identity matrix, and $C$ is a spatial connectivity matrix. $M$ is an $n \times n$ diagonal matrix; its diagonal contains the row-sums of $C$ multiplied by a scale parameter $\tau$.
+where $\rho$ is a spatial autocorrelation parameter, $I$ is the $n \times n$ identity matrix, and $C$ is a spatial connectivity matrix. $M$ is an $n \times n$ diagonal matrix; its diagonal contains the row-sums of $C$ multiplied by a scale parameter $\tau$ [@donegan_2022, Table 1 WCAR specification].
 
 If $\boldsymbol x$ is a rate variable---e.g., the poverty rate---it can be important to use a logit-transformation [@logan_2020] as follows:
 $$ p(logit(\boldsymbol x) | \mathcal{M}) = Gauss(logit(\boldsymbol x) | \mu \boldsymbol 1, \boldsymbol \Sigma) $$
@@ -239,7 +239,7 @@ abline(h = 0)
 ## Non-spatial ME models
 
 If the `ME` list doesn't have a slot with `car_parts`, **geostan** will automatically use a non-spatial Student's t model instead of the CAR model:
-$$ p(\boldsymbol x | \mathcal{M}) = Student_t(\boldsymbol x | \nu, \mu \boldsymbol 1, \sigma) $$
+$$ p(\boldsymbol x | \mathcal{M}) = Student(\boldsymbol x | \nu, \mu \boldsymbol 1, \sigma) $$
 
 
 ```{r eval = FALSE}

@@ -76,84 +76,13 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="va">cp</span> <span class="op">=</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Range of permissible rho values:  -1.661134 1 </span>
-<span class="r-in"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_car.html">stan_car</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,</span>
-<span class="r-in">                data <span class="op">=</span> <span class="va">georgia</span>,</span>
-<span class="r-in">                car_parts <span class="op">=</span> <span class="va">cp</span>,</span>
-<span class="r-in">                family <span class="op">=</span> <span class="fu">auto_gaussian</span><span class="op">(</span><span class="op">)</span>,</span>
-<span class="r-in">                chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">800</span><span class="op">)</span> <span class="co"># for speed only</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior parameters for intercept</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: normal</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   location scale</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     -4.2     5</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior for CAR scale parameter (car_scale)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: student_t</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   df location scale</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 10        0     3</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior for CAR spatial autocorrelation parameter (rho)</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: uniform</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   lower upper</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  -1.7     1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Gradient evaluation took 6.2e-05 seconds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.62 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Adjust your expectations accordingly!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration:   1 / 800 [  0%]  (Warmup)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 401 / 800 [ 50%]  (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 800 / 800 [100%]  (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:  Elapsed Time: 0.142574 seconds (Warm-up)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.10563 seconds (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.248204 seconds (Total)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'foundation' NOW (CHAIN 2).</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Gradient evaluation took 4.7e-05 seconds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.47 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Adjust your expectations accordingly!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration:   1 / 800 [  0%]  (Warmup)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 401 / 800 [ 50%]  (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 800 / 800 [100%]  (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:  Elapsed Time: 0.197465 seconds (Warm-up)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                0.172812 seconds (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                0.370277 seconds (Total)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Spatial Model Results </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Formula: log(rate.male) ~ 1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x555bdc89fda8&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Spatial method (outcome):  CAR </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Likelihood function:  auto_gaussian </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Link function:  identity </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Residual Moran Coefficient:  -0.19181 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> WAIC:  4.48 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Observations:  159 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Data models (ME): none</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Inference for Stan model: foundation.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 chains, each with iter=800; warmup=400; thin=1; </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> post-warmup draws per chain=400, total post-warmup draws=800.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> intercept -4.162   0.003 0.058 -4.284 -4.194 -4.163 -4.130 -4.035   466 1.006</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> car_rho    0.854   0.005 0.094  0.638  0.801  0.871  0.925  0.978   359 1.001</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> car_scale  0.526   0.002 0.032  0.471  0.503  0.523  0.546  0.589   229 1.005</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Samples were drawn using NUTS(diag_e) at Wed Jul  6 19:48:16 2022.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> For each parameter, n_eff is a crude measure of effective sample size,</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> and Rhat is the potential scale reduction factor on split chains (at </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> convergence, Rhat=1).</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="va">cp</span> <span class="op">=</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span><span class="op">)</span>
+<span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_car.html">stan_car</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,
+                data <span class="op">=</span> <span class="va">georgia</span>,
+                car_parts <span class="op">=</span> <span class="va">cp</span>,
+                family <span class="op">=</span> <span class="fu">auto_gaussian</span><span class="op">(</span><span class="op">)</span>,
+                chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">800</span><span class="op">)</span> <span class="co"># for speed only</span>
+<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
 </code></pre></div>
     </div>
   </div>
@@ -168,8 +97,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
-2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
 </div>
 
       </footer></div>

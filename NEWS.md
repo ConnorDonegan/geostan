@@ -8,6 +8,7 @@
 
 ## Minor changes
 
+ - geostan models can now be used with the bridgesampling package for model camparison with Bayes factors (e.g., use `bridge_sampler(geostan_fit$stanfit)`). By default, geostan only collects MCMC samples for parameters that are expected to be of some interest for users. To become compatible with bridgesampling, the `keep_all` argument was added to all of the model fitting functions. See the bridgesampling package documentation for details, including the [Stan vignette](https://cran.r-project.org/web/packages/bridgesampling/vignettes/bridgesampling_example_stan.html) and [others](https://cran.r-project.org/web/packages/bridgesampling/index.html).
  - stan_car now has an option to provide the connectivity matrix C, which is used to calculate spatial-lag of X (SLX) terms and residual spatial autocorrelation. Previously, there was no option to provide this matrix, as it was taken from the car_parts argument. However, that choice is only appropriate when the WCAR specification is used. Now, if C is missing and the WCAR specification has not been used a warning will appear.
  - Previously, the `lisa` function would automatically center and scale the variate before computing local Moran's I. Now, the variate will be centered and scaled by default but the user has the option to turn the scaling off (so the variate will be centered, but not divided by its standard deviation). This function also row-standardized the spatial weights matrix automatically, but there was no reason why. That's not done anymore.
 

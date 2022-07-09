@@ -41,6 +41,7 @@ stan_esf(
   chains = 4,
   iter = 2000,
   refresh = 500,
+  keep_all = FALSE,
   pars = NULL,
   control = NULL,
   ...
@@ -96,6 +97,8 @@ alpha_tau ~ Student_t(d.f., location, scale).
 \item{iter}{Number of samples per chain. Default \code{iter = 2000}.}
 
 \item{refresh}{Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.}
+
+\item{keep_all}{If \code{keep_all = TRUE} then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors and the \code{bridgesampling} package.}
 
 \item{pars}{Optional; specify any additional parameters you'd like stored from the Stan model.}
 
