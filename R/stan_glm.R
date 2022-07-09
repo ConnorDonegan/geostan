@@ -50,6 +50,7 @@
 #' @param iter Number of samples per chain. 
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples; set \code{refresh=0} to silence this.
 #' @param pars Specify any additional parameters you'd like stored from the Stan model.
+#' @param keep_all  If `keep_all = TRUE` then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors and the `bridgesampling` package.
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. 
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' 
@@ -202,6 +203,7 @@ stan_glm <- function(formula,
                      chains = 4,
                      iter = 2e3, 
                      refresh = 1e3,
+                     keep_all = FALSE,
                      pars = NULL,
                      control = NULL,
                      ...) {
@@ -340,8 +342,13 @@ stan_glm <- function(formula,
         FRAME <- sys.nframe()
         inits <- init_fn_builder(FRAME_NUMBER = FRAME)
     } 
-    ## CALL STAN -------------    
-    samples <- rstan::sampling(stanmodels$foundation, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init = inits, ...) 
+    ## CALL STAN -------------
+    if (keep_all == TRUE) {
+        xparsx <- NA
+    } else {
+        xparsx <- pars
+    }    
+    samples <- rstan::sampling(stanmodels$foundation, data = standata, iter = iter, chains = chains, refresh = refresh, pars = xparsx, control = control, init = inits, ...) 
     ## OUTPUT -------------    
     out <- clean_results(samples, pars, is_student, has_re, Wx, xraw, me.list$x_me_idx)
     out$data <- data.frame(as.matrix(ModData))

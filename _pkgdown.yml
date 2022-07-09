@@ -19,13 +19,15 @@ reference:
   desc: Functions for measuring and visualizing spatial autocorrelation and dispersion, including model diagnostics
 - contents: 
   - aple
+  - expected_mc
+  - gr
+  - lg
   - lisa
   - mc
   - me_diag
   - moran_plot
   - n_eff
   - sp_diag
-  - expected_mc
   - row_standardize
 - title: "Models"
   desc: "Model fitting functions and methods"

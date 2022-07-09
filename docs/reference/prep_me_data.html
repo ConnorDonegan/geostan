@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.0</span>
       </span>
     </div>
 
@@ -80,7 +80,7 @@
 <dt>car_parts</dt>
 <dd><p>A list of data required for spatial CAR models, as created by <code><a href="prep_car_data.html">prep_car_data</a></code>; optional. If omitted, the measurement error model will be a non-spatial Student's t model.</p></dd>
 <dt>prior</dt>
-<dd><p>A named list of prior distributions (see <code><a href="priors.html">priors</a></code>). If none are provided, default priors will be assigned. The liste of priors may include the following parameters:</p><dl><dt>df</dt>
+<dd><p>A named list of prior distributions (see <code><a href="priors.html">priors</a></code>). If none are provided, default priors will be assigned. The list of priors may include the following parameters:</p><dl><dt>df</dt>
 <dd><p>If using a non-spatial ME model, the degrees of freedom (df) for the Student's t model is assigned a gamma prior with default parameters of <code>gamma(alpha = 3, beta = 0.2)</code>. Provide values for each covariate in <code>se</code>, listing the values in the same order as the columns of <code>se</code>.</p></dd>
 
 

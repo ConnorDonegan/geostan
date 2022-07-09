@@ -41,6 +41,7 @@ stan_esf(
   chains = 4,
   iter = 2000,
   refresh = 500,
+  keep_all = FALSE,
   pars = NULL,
   control = NULL,
   ...
@@ -96,6 +97,8 @@ alpha_tau ~ Student_t(d.f., location, scale).
 \item{iter}{Number of samples per chain. Default \code{iter = 2000}.}
 
 \item{refresh}{Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.}
+
+\item{keep_all}{If \code{keep_all = TRUE} then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors and the \code{bridgesampling} package.}
 
 \item{pars}{Optional; specify any additional parameters you'd like stored from the Stan model.}
 
@@ -193,7 +196,7 @@ Internally, \code{geostan} will keep the index values of each censored observati
 as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:\preformatted{p(y_j | data, model) = sum_\{m=0\}^censor_point Poisson( c_m | fitted_j),
 }
 
-For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide \code{censor_point = 9} and then the likelihood statement for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model paramters). See Donegan (2021) for additional discussion, references, and Stan code.
+For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide \code{censor_point = 9} and then the likelihood statement for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model parameters). See Donegan (2021) for additional discussion, references, and Stan code.
 }
 }
 \examples{

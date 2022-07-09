@@ -1,6 +1,6 @@
+## comment "skip..." and un-comment "devtools::load_all(..." to run test
 skip("Run interactively to avoid crashing R session.")
-## uncomment to run test
-#devtools::load_all("~/dev/geostan")
+##devtools::load_all("~/dev/geostan")
 library(rstan)
 library(testthat)
 context("RStan conformity")
@@ -26,7 +26,10 @@ test_that("geostan model results match raw rstan results: gaussian glm", {
                      family = gaussian(),
                      chains = 1,
                      iter= 6e3
-                     )    
+                     )
+    
+    Sys.sleep(1)
+    
     mod1 <- "
 data {
     int n;
@@ -54,6 +57,7 @@ generated quantities {
 }
 
 "
+
   m1 <- rstan::stan_model(model_code = mod1)
    fit1.b <- stan(model_code = mod1,
                    data = list(n = nrow(georgia),
@@ -90,8 +94,12 @@ test_that("geostan model results match raw rstan results: Poisson rates", {
                          alpha_tau = student_t(df=10, location = 0, scale = 1)
                          ),                                     
                      family = poisson(),
-                     cores = 5
+                     chains = 4,
+                     iter = 2e3
                      )
+        
+    Sys.sleep(1)
+    
 mod2 <- "
 data {
     int n;
@@ -122,6 +130,7 @@ generated quantities {
 }
 
 "
+    
     m2 <- rstan::stan_model(model_code = mod2)
     fit2.b <- rstan::sampling(m2,
                    data = list(n = nrow(georgia),
@@ -131,9 +140,9 @@ generated quantities {
                                log_at_risk = log(georgia$pop.at.risk.male)
                                ),
                    chains = 4,
-                   cores = 4,
                    iter = 2e3
                    )
+    
     a = fit2$summary$mean
     a = as.numeric(a)
     pars <- c("intercept", "beta", "alpha_tau")
@@ -153,8 +162,10 @@ generated quantities {
     for (i in 1:length(f2)) expect_equal(f2[i], f2.b[i], tol = 0.01)
 })
 
-rm(list = ls() )
+rm(list = ls())
+
 test_that("geostan model results match raw rstan results: Binomial rates", {
+    
     fit3 <- stan_glm(cbind(deaths.male, pop.at.risk.male - deaths.male) ~ college + ICE,
                      re = ~ GEOID,
                      data = georgia,
@@ -164,9 +175,10 @@ test_that("geostan model results match raw rstan results: Binomial rates", {
                                                     scale = c(10, 10)),
                                   alpha_tau = student_t(10, 0, 1)
                                   ),
-                     centerx = TRUE,
-                     cores = 4
+                     centerx = TRUE
                      )
+        
+    Sys.sleep(4)
     
 mod3 <- "
 data {
@@ -207,8 +219,7 @@ generated quantities {
                                x = scale(model.matrix(~ 0 + college + ICE, georgia), center = T, scale = F)
                                ),
                    chains = 4,
-                   iter = 2e3,
-                   cores = 4
+                   iter = 2e3
                    )
     a = fit3$summary$mean
     a = as.numeric(a)
@@ -248,8 +259,12 @@ test_that("geostan model results match raw rstan results: non-spatial ME model",
                                   beta = normal(location = 0, scale = 2),
                                   sigma = student_t(10, 0, 1)
                                   ),
-                     cores = 4
+                     chains = 4,
+                     iter = 2e3
                      )
+    
+    Sys.sleep(1)
+        
 mod4 <- "
 data {
     int n;
@@ -290,7 +305,6 @@ model {
                                se = georgia$ICE.se
                                ),
                    chains = 4,
-                   cores = 4,
                    iter = 2e3
                    )
                                         # nu_x_true

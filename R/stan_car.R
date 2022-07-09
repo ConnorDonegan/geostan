@@ -16,6 +16,8 @@
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' 
 #' @param car_parts A list of data for the CAR model, as returned by \code{\link[geostan]{prep_car_data}}.
+#'
+#' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will automatically be row-standardized before calculating \code{slx} terms. See \code{\link[geostan]{shape2mat}}.
 #' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{auto_gaussian()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}; if `family = gaussian()` is provided, it will automatically be converted to `auto_gaussian()`.
 #'
@@ -46,6 +48,7 @@
 #' @param iter Number of samples per chain. 
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Set \code{refresh=0} to silence this.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
+#' @param keep_all  If `keep_all = TRUE` then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors and the `bridgesampling` package.
 #' @param control A named list of parameters to control the sampler's behavior. See \code{\link[rstan]{stan}} for details. 
 #' 
 #' @param ... Other arguments passed to \code{\link[rstan]{sampling}}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
@@ -265,6 +268,7 @@ stan_car <- function(formula,
                      re,
                      data,
                      car_parts,
+                     C,
                      family = gaussian(),
                      prior = NULL,                      
                      ME = NULL,                     
@@ -274,6 +278,7 @@ stan_car <- function(formula,
                      chains = 4,
                      iter = 2e3,
                      refresh = 500,
+                     keep_all = FALSE,
                      pars = NULL,
                      control = NULL,
                      ...
@@ -285,7 +290,15 @@ stan_car <- function(formula,
     stopifnot(!missing(data))
     check_car_parts(car_parts)
     stopifnot(length(car_parts$Delta_inv) == nrow(data))
-    C <- car_parts$C        
+    if (!missing(C)) {
+        stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
+        stopifnot(all(dim(C) == nrow(data)))
+    } else {
+        C <- car_parts$C
+        if (car_parts$WCAR == 0) {
+            message("Consider providing the matrix C explicitly using the C argument. The matrix C is used for calculating spatial-lag of X (SLX) terms and residual spatial autocorrelation. Since you did not provide C, the matrix is being taken from car_parts$C.")
+        }
+    }
     tmpdf <- as.data.frame(data)
     n <- nrow(tmpdf)    
     family_int <- family_2_int(family)        
@@ -431,7 +444,12 @@ stan_car <- function(formula,
     }     
     ## CALL STAN -------------  
     standata$car <- 1
-    samples <- rstan::sampling(stanmodels$foundation, data = standata, iter = iter, chains = chains, refresh = refresh, pars = pars, control = control, init = inits, ...)
+    if (keep_all == TRUE) {
+        xparsx <- NA
+    } else {
+        xparsx <- pars
+    }
+    samples <- rstan::sampling(stanmodels$foundation, data = standata, iter = iter, chains = chains, refresh = refresh, pars = xparsx, control = control, init = inits, ...)
     ## OUTPUT -------------
     out <- clean_results(samples, pars, is_student, has_re, Wx, xraw, me.list$x_me_idx)
     out$data <- data.frame(as.matrix(ModData))

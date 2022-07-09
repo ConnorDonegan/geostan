@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.0</span>
       </span>
     </div>
 
@@ -53,7 +53,7 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>The Moran coefficient</h1>
-    <small class="dont-index">Source: <a href="https://github.com/ConnorDonegan/geostan/blob/HEAD/R/convenience-functions.R" class="external-link"><code>R/convenience-functions.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/ConnorDonegan/geostan/blob/HEAD/R/moran.R" class="external-link"><code>R/moran.R</code></a></small>
     <div class="hidden name"><code>mc.Rd</code></div>
     </div>
 
@@ -67,7 +67,7 @@
 
     <div id="source">
     <h2>Source</h2>
-    <p>Chun, Yongwan, and Daniel A. Griffith. Spatial statistics and geostatistics: theory and applications for geographic information science and technology. Sage, 2013.</p>
+    <p>Chun, Yongwan, and Daniel A. Griffith. Spatial Statistics and Geostatistics: Theory and Applications for Geographic Information Science and Technology. Sage, 2013.</p>
 <p>Cliff, Andrew David, and J. Keith Ord. Spatial processes: models &amp; applications. Taylor &amp; Francis, 1981.</p>
     </div>
     <div id="arguments">
@@ -89,11 +89,14 @@
     </div>
     <div id="details">
     <h2>Details</h2>
-    <p>If any observations with no neighbors are found (i.e. <code>any(Matrix::rowSums(w) == 0)</code>) they will be dropped automatically and a message will print stating how many were dropped.</p>
+    <p>The formula for the Moran coefficient (MC) is
+$$MC = \frac{n}{K}\frac{\sum_i \sum_j w_{ij} (y_i - \overline{y})(y_j - \overline{y})}{\sum_i (y_i - \overline{y})^2}$$
+where \(n\) is the number of observations and \(K\) is the sum of all values in the spatial connectivity matrix \(W\), i.e., the sum of all row-sums: \(K = \sum_i \sum_j w_{ij}\).</p>
+<p>If any observations with no neighbors are found (i.e. <code>any(Matrix::rowSums(w) == 0)</code>) they will be dropped automatically and a message will print stating how many were dropped. The alternative is for those observations to have a spatial lage of zero---but zero is not a neutral value, see the Moran scatter plot.</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
-    <div class="dont-index"><p><a href="moran_plot.html">moran_plot</a>, <a href="lisa.html">lisa</a>, <a href="aple.html">aple</a></p></div>
+    <div class="dont-index"><p><a href="moran_plot.html">moran_plot</a>, <a href="lisa.html">lisa</a>, <a href="aple.html">aple</a>, <a href="gr.html">gr</a>, <a href="lg.html">lg</a></p></div>
     </div>
 
     <div id="ref-examples">

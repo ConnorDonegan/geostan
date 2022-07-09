@@ -6,9 +6,8 @@ man/*.Rd
 .Rhistory
 *~$
 cran-comments.md
-
-src/geostan.so
-src/geostan.dll
+src/
+R/stanmodels.R
 man/*.Rd
 .Rhistory
 cran-comments.md

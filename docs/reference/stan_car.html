@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.0</span>
       </span>
     </div>
 
@@ -68,6 +68,7 @@
   <span class="va">re</span>,
   <span class="va">data</span>,
   <span class="va">car_parts</span>,
+  <span class="va">C</span>,
   family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">gaussian</a></span><span class="op">(</span><span class="op">)</span>,
   prior <span class="op">=</span> <span class="cn">NULL</span>,
   ME <span class="op">=</span> <span class="cn">NULL</span>,
@@ -77,6 +78,7 @@
   chains <span class="op">=</span> <span class="fl">4</span>,
   iter <span class="op">=</span> <span class="fl">2000</span>,
   refresh <span class="op">=</span> <span class="fl">500</span>,
+  keep_all <span class="op">=</span> <span class="cn">FALSE</span>,
   pars <span class="op">=</span> <span class="cn">NULL</span>,
   control <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">...</span>
@@ -88,7 +90,7 @@
     <p>Cressie, Noel (2015 (1993)). <em>Statistics for Spatial Data</em>. Wiley Classics, Revised Edition.</p>
 <p>Cressie, Noel and Wikle, Christopher (2011). <em>Statistics for Spatio-Temporal Data</em>. Wiley.</p>
 <p>Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. <em>Int. J. Env. Res. and Public Health</em> 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: <a href="https://github.com/ConnorDonegan/survey-HBM" class="external-link">https://github.com/ConnorDonegan/survey-HBM</a>.</p>
-<p>Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. <em>OSF Preprints</em>. doi: <a href="https://doi.org/10.31219/osf.io/3ey65" class="external-link">10.31219/osf.io/3ey65</a>
+<p>Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. <em>OSF Preprints</em>. <a href="https://doi.org/10.31219/osf.io/3ey65" class="external-link">doi:10.31219/osf.io/3ey65</a>
 .</p>
 <p>Haining, Robert and Li, Guangquan (2020). <em>Modelling Spatial and Spatial-Temporal Data: A Bayesian Approach</em>. CRC Press.</p>
     </div>
@@ -108,6 +110,8 @@ alpha_tau ~ Student_t(d.f., location, scale).
 <dd><p>A <code>data.frame</code> or an object coercible to a data frame by <code>as.data.frame</code> containing the model data.</p></dd>
 <dt>car_parts</dt>
 <dd><p>A list of data for the CAR model, as returned by <code><a href="prep_car_data.html">prep_car_data</a></code>.</p></dd>
+<dt>C</dt>
+<dd><p>Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified <code>slx</code> terms; it will automatically be row-standardized before calculating <code>slx</code> terms. See <code><a href="shape2mat.html">shape2mat</a></code>.</p></dd>
 <dt>family</dt>
 <dd><p>The likelihood function for the outcome variable. Current options are <code><a href="auto_gaussian.html">auto_gaussian()</a></code>, <code>binomial(link = "logit")</code>, and <code>poisson(link = "log")</code>; if <code>family = gaussian()</code> is provided, it will automatically be converted to <code><a href="auto_gaussian.html">auto_gaussian()</a></code>.</p></dd>
 <dt>prior</dt>
@@ -147,6 +151,8 @@ alpha_tau ~ Student_t(d.f., location, scale).
 <dd><p>Number of samples per chain.</p></dd>
 <dt>refresh</dt>
 <dd><p>Stan will print the progress of the sampler every <code>refresh</code> number of samples. Set <code>refresh=0</code> to silence this.</p></dd>
+<dt>keep_all</dt>
+<dd><p>If <code>keep_all = TRUE</code> then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors and the <code>bridgesampling</code> package.</p></dd>
 <dt>pars</dt>
 <dd><p>Optional; specify any additional parameters you'd like stored from the Stan model.</p></dd>
 <dt>control</dt>

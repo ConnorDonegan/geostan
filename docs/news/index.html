@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.0</span>
       </span>
     </div>
 
@@ -56,6 +56,21 @@
       <small>Source: <a href="https://github.com/ConnorDonegan/geostan/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.3.0" id="geostan-030">geostan 0.3.0<a class="anchor" aria-label="anchor" href="#geostan-030"></a></h2>
+<div class="section level3">
+<h3 id="new-additions-0-3-0">New additions<a class="anchor" aria-label="anchor" href="#new-additions-0-3-0"></a></h3>
+<ul><li>New exploratory spatial data analysis functions have been added: the Geary Ratio (GR) and the local Geary’s C. These complement the Moran coefficient and local Moran’s I.</li>
+<li>The vignette on spatial autocorrelation has been updated and expanded, including with a short discussion of exploratory spatial data analysis (ESDA).</li>
+<li>The vignette on spatial measurement error models/working with ACS data has been completely re-written.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="minor-changes-0-3-0">Minor changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-3-0"></a></h3>
+<ul><li>geostan models can now be used with the bridgesampling package for model camparison with Bayes factors (e.g., use <code>bridge_sampler(geostan_fit$stanfit)</code>). By default, geostan only collects MCMC samples for parameters that are expected to be of some interest for users. To become compatible with bridgesampling, the <code>keep_all</code> argument was added to all of the model fitting functions. See the bridgesampling package documentation for details, including the <a href="https://cran.r-project.org/web/packages/bridgesampling/vignettes/bridgesampling_example_stan.html" class="external-link">Stan vignette</a> and <a href="https://cran.r-project.org/web/packages/bridgesampling/index.html" class="external-link">others</a>.</li>
+<li>stan_car now has an option to provide the connectivity matrix C, which is used to calculate spatial-lag of X (SLX) terms and residual spatial autocorrelation. Previously, there was no option to provide this matrix, as it was taken from the car_parts argument. However, that choice is only appropriate when the WCAR specification is used. Now, if C is missing and the WCAR specification has not been used a warning will appear.</li>
+<li>Previously, the <code>lisa</code> function would automatically center and scale the variate before computing local Moran’s I. Now, the variate will be centered and scaled by default but the user has the option to turn the scaling off (so the variate will be centered, but not divided by its standard deviation). This function also row-standardized the spatial weights matrix automatically, but there was no reason why. That’s not done anymore.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.2.1" id="geostan-021">geostan 0.2.1<small>2022-02-09</small><a class="anchor" aria-label="anchor" href="#geostan-021"></a></h2>
 <div class="section level3">

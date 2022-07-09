@@ -1,6 +1,5 @@
 ---
-title: "Measuring and visualizing spatial autocorrelation"
-author: Connor Donegan
+title: "Exploratory spatial data analysis"
 date: September 13, 2021
 output: 
   rmarkdown::html_vignette:
@@ -8,14 +7,14 @@ output:
 header-includes:
    - \usepackage{amsmath}
 vignette: >
-  %\VignetteIndexEntry{Measuring and visualizing spatial autocorrelation}
+  %\VignetteIndexEntry{Exploratory spatial data analysis}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-bibliography: bib.bib
+bibliography: ESDA.bib
 link-citations: yes
 ---
 
-This vignette walks through exploratory spatial analysis functionality in the **geostan** package, which includes methods for measuring and visualizing spatial autocorrelation. The last section introduces a set of diagnostic plots for spatial models.
+This vignette walks through exploratory spatial data analysis (ESDA) functionality in the **geostan** package, which includes methods for measuring and visualizing global and local spatial autocorrelation (SA). It includes a short review of the philosophy of ESDA, and ends with a set of diagnostic plots for spatial models. 
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -33,92 +32,179 @@ From the R console, load **geostan** and the `georgia` data set.
 
 ```{r setup, message = FALSE, warning = FALSE}
 library(geostan)
+library(ggplot2)
+library(gridExtra)
 data("georgia")
 ```
 
 `georgia` is a simple features (`sf`) object with estimates of county population characteristics from the American Community Survey (ACS) for the five year period spanning 2014-2018. Their corresponding standard errors are also here. The column `college` contains ACS estimates for the percent of the population age 25 and older that has obtained a college degree or higher; the standard errors of the survey estimates are in the column named `college.se`. 
 
+## Exploratory spatial data analysis (ESDA)
+
+@good_1983 contrasts exploratory data analysis (EDA) with confirmatory analysis as follows:
+
+> Confirmatory statistics consists of experimental design, significance testing, estimation, and prediction, whereas EDA is concerned mainly with the encouragement of hypothesis formulation. (284)
+
+EDA techniques include all sorts of visual methods (histograms, scatter plots, etc.) that take a set of data, extract a limited summary of it (suppressing most other information), and then return a visual depiction that brings certain dimensions of (non-) variation to the foreground. As @good_1983 continues, "techniques of descriptive statistics are designed to match the salient features of the data set to human cognitive abilities" (287). Rather than 'data-driven' or descriptive, the investigator is explicitly interested in patterns that could be connected to a substantively interesting ("explicable") hypothesis. EDA is also iterative: given some model has been built (or a hypothesis is entertained), one starts the process again by examining residuals and other features of the model. EDA thus suggests a process for model criticism and improvement by way successive approximation [see @gabry_2019]. 
+
+Exploratory spatial data analysis (ESDA) [@koschinsky_2020] includes all of this but also involves techniques that are of particular importance for spatially referenced data. ESDA involves tools for visualizing (residual) spatial patterns, decomposing spatial patterns into different elements across the map, and measuring the extent of spatial patterning in the data. Helpful ESDA tools draw out different spatial patterns from the data and communicate them in ways that are comprehensible to the human mind. 
+
 ## Spatial diagnostic summary
 
-If we pass these estimates and the simple features object to `sp_diag` function, it returns a histogram, Moran scatter plot, and map of the estimates:
+If we pass any variable `x` and its corresponding spatial object (e.g., simple features) to the `sp_diag` function, it returns a histogram, Moran scatter plot, and map of the estimates:
 
 ```{r fig.width = 8}
 sp_diag(georgia$college, georgia, name = "College (%)")
 ```
 
-The Moran plot is a visualization of the degree of spatial autocorrelation (SA): on the horizontal axis are the `college` estimates while the vertical axis represents the mean neighboring value. The Moran coefficient, an index of SA, is printed at the top (MC=0.42) The expected value of the MC under no spatial autocorrelation is $-1/(n-1)$ [@chun_2013]. 
+The Moran plot is a visualization of the degree of SA: on the horizontal axis are the `college` estimates while the vertical axis represents the mean neighboring value. The Moran coefficient, an index of SA, is printed at the top (MC=0.42) The expected value of the MC under no SA is $-1/(n-1)$ [@chun_2013]. The map shows that the contrast between the greater Atlanta metropolitan area and the rural counties is a prominent, if not the predominant, spatial pattern. 
 
-The map shows that the contrast between the greater Atlanta metropolitan area and the rural counties is a prominent, if not the predominant, spatial pattern. It may help to compare the mean of the variable (which is just 18%):
+## Spatial weights matrix
+
+To summarize spatial information for the purpose of data analysis, we use an $N \times N$ matrix, which we will call $W$. Given some focal point/area on the map, the term "neighbor" will refer to any other area that is considered geographically 'near'. The meaning is context specific, but with areal data the most common choice is to say that all areas whose borders touch each other are neighbors. Sometimes a distance threshold is used.
+
+The value stored in the element $w_{ij}$ expresses the degree of connectivity between the $i^{th}$ and $j^{th}$ areas. The diagonal elements of matrix $W$ are all zero (no unit is its own neighbor), and all pairs of observations that are not neighbors also have weights of zero. There are a variety of ways to assign weights to neighbors. The binary coding scheme assigns neighbors a weight of one. In the row-standardized scheme, all neighbors of the $i^{th}$ area have a weight of $w_{ij} = \frac{1}{\delta_i}$ where $\delta_i$ is the number of areas that neighbor the $i^{th}$ area. Weights can also be assigned by taking the inverse of the distance between neighboring areas.
+
+The `shape2mat` function takes a spatial object (simple features or spatial polygons) and creates a sparse matrix representation of the neighborhood structure.^[For the most part, users do not need to know anything about sparse matrix objects to work with them. Objects from the **Matrix** package can typically be treated like objects of class "matrix". Sometimes, however, you may need to make an explicit call the the **Matrix** package to access its methods. For example, `colSums(W)` will produce an error, but `Matrix::colSums(W)` will work as expected.] For a row-standardized coding scheme, we use `style = "W"`. 
 
 ```{r}
-mean(georgia$college)
+W <- shape2mat(georgia, style = "W")
 ```
-with a population-weighted mean (30%):
-```{r}
-weighted.mean(georgia$college, w = georgia$population)
-```
+
+This function uses the `spdep::poly2nb` function to create the neighborhood structure. 
 
 ## The Moran scatter plot
 
-We can create the Moran plot ourselves using the `moran_plot` function and a spatial connectivity matrix. The `shape2mat` function takes a spatial object (simple features or spatial polygons) and creates a sparse matrix representation of the neighborhood structure: counties are considered 'neighbors' if their borders touch each other.^[For the most part, users do not need to know anything about sparse matrix objects to work with them. Objects from the **Matrix** package can typically be treated like objects of class "matrix". Sometimes, however, you may need to make an explicit call the the **Matrix** package to access its methods. For example, `colSums(C)` will produce an error, but `Matrix::colSums(C)` will work as expected.]  To reproduce the Moran plot given by `sp_diag`, we need to provide a row-standardized spatial weights matrix. We do this be setting the second argument, `style`, to "W".
+We can create a Moran scatter plot using the `moran_plot` function. To reproduce the Moran plot given by `sp_diag`, we need to use the row-standardized spatial weights matrix:
 
 ```{r}
-C <- shape2mat(georgia, style = "W")
-moran_plot(georgia$college, C)
+moran_plot(georgia$college, W)
 ```
 
 Similarly, we can calculate the Moran coefficient using `mc`:
+
 ```{r}
-mc(georgia$college, C)
+mc(georgia$college, W)
 ```
 
 Under particular conditions (the variable has been centered by subtracting its own mean from each value, and a row-standardized weights matrix is used), the Moran coefficient is equivalent to the slope of the regression line on the Moran plot.
 
-If we use a binary spatial weights matrix, the vertical axis will show the *sum* of surrounding values:
+If we use a binary spatial weights matrix (`style = "B"`), the vertical axis will show the *sum* of surrounding values:
 
 ```{r}
-moran_plot(georgia$college, shape2mat(georgia, "B"))
+A <- shape2mat(georgia, "B")
+moran_plot(georgia$college, A)
 ```
 
-While positive and negative neighboring values still cancel out as previously, using a binary matrix means that counties with more neighbors contribute more to the MC. 
+When a binary matrix is used, counties with more neighbors contribute more to the MC than counties with fewer neighbors.
 
-The quadrants of the Moran plot are helpful for classifying observations. The first (top right) quadrant represents counties with above-average values that are also surrounded by above-average values; the third (bottom left) quadrant contains low values surrounded by low values. Points in these quadrants contribute *positively* to the MC, and they represent positive spatial autocorrelation. The second (top left) and fourth quadrants represent *negative* spatial autocorrelation since they contain spatial outliers---high (or low) values surrounded by dissimilar values.
+The quadrants of the Moran plot are helpful for classifying observations. The first (top right) quadrant represents counties with above-average values that are also surrounded by above-average values; the third (bottom left) quadrant contains low values surrounded by low values. Points in the first and third quadrants represent *positive* SA. The second (top left) and fourth (bottom right) quadrants represent *negative* SA: they contain spatial outliers, which are dissimilar from their neighbors.
 
-## Local Indicators of Spatial Association
+## The Moran coefficient (MC)
 
-The `lisa` function calculates "local indicators of spatial association" [@anselin_1995]. LISA values are closely related to the Moran plot. If we were to provide standardized values (z-scores) on the Moran plot, the LISA value would be equal to the product of each z-scores and their spatially lagged value. The `lisa` function returns the LISA values and indicates which quadrant of the Moran plot the point is found:
+The formula for the Moran coefficient (MC), an index of SA, is
+$$MC = \frac{n}{K}\frac{\sum_i^n \sum_j^n w_{ij} (y_i - \overline{y})(j_j - \overline{y})}{\sum_i^n (y_i - \overline{y})^2} $$
+where $K$ is the sum of all values in the spatial connectivity matrix $W$ (i.e., the sum of all row-sums: $K = \sum_i \sum_j w_{ij}$). 
+
+The MC is related to the Pearson product moment correlation coefficient. [@chun_2013, 10]. Whereas the correlation coefficient ranges from -1 to 1, the MC does not, except under special circumstances---the range usually expands somewhat. Its expected value under a condition of zero SA is not zero, but instead, $-1/(n-1)$ (which approaches zero as $n$ increases).
+
+It is also important to understand that the MC does not 'behave' similarly to the correlation coefficient. Specifically, for moderate to high levels of autocorrelation, the MC may not be highly sensitive to changes in the degree of autocorrelation; it is more powerful for detecting the presence of autocorrelation. This issue motivated development of an approximate estimator of the spatial autocorrelation parameter from the simultaneous autoregressive (SAR) model, called APLE (approximate-profile likelihood estimator) [@li_2007]. While it is limited to smaller data sets, it is another helpful tool (see `?geostan::aple`).
+
+##  The Geary ratio (GR)
+
+The formula for the Geary ratio (GR, or Geary's C), another index of SA, is
+$$GR = \frac{(n-1)}{2K} \frac{\sum_i^n \sum_j^n w_{ij} (y_i - y_j)^2 }{\sum_i (y_i - \overline{y})^2}$$
+The weighted sum in the numerator of the GR contains the squared differences between each observation and all of their respective neighbors. This means that local outliers and negative SA will cause the numerator to increase. By contrast, positive SA causes the numerator to become smaller. The denominator in the GR is the total sum of squared deviations from the mean of $y$. This means that if there is no SA at all, the GR has an expected value of 1. As the degree of positive SA increases, the GR decreases towards zero; negative SA causes the GR to increase beyond 1. ($1-GR$ is perhaps a more intuitive value [@unwin_1996].) 
+
+The GR and the MC complement each other mathematically [@chun_2013, 12]: the GR can be re-written as $$GR = \mathcal{G} - \frac{n-1}{n}MC$$ where $$\mathcal{G}=\frac{n-1}{2K} \frac{\sum_i^n (y_i - \overline{y})^2 \big(\sum_j^n w_{ij}\big)}{\sum_i^n (y_i - \overline{y})^2}$$
+The GR is more sensitive than the MC to negative SA, and, as such, it is sensitive to local outliers. When a variable does not contain influential local outliers, the sum of its GR and MC values will be equal to about 1. 
+
+The following code calculates the MC and GR for the Georgia county estimates of percent college educated. Both of them indicate a moderate degree of positive SA:
 
 ```{r}
-Li <- lisa(georgia$college, C)
-head(Li)
+x <- georgia$college
+W <- shape2mat(georgia, "W")
+mc(x, W)
+gr(x, W)
+mc(x, W) + gr(x, W)
 ```
 
-"HH" indicates a high value surrounded by high values; "LL" is a low surrounded by low values, and so on. LISAs can be particularly helpful for identifying observations that don't conform to the expectation of positive spatial autocorrelation, which is embedded in many models. Its worth nothing that each of the LISA values (also known as local Moran's I) contribute to the Moran coefficient:
+## Local indicators of spatial association (LISAs)
+
+Local indicators of spatial association (LISA) were introduced by @anselin_1995 for ESDA. The LISA is a class of *local* SA statistics. Every LISA is related to a global SA index, such as the MC and GR. **geostan** contains functions for calculating local Geary's C and a local version of the MC, known as local Moran's I.
+
+The idea of a *local* statistic is to index the amount and type of SA present at every discrete location on the map (e.g., for every county). The sum of all these LISA values is *proportionate* to its corresponding global SA index.
+
+Local Moran's I for the $i^{th}$ unit is
+$$I_i = z_i \sum_j^n w_{ij} z_j$$
+where $z$ is the original variable in deviation form ($z_i = y_i - \overline{y}$), and $W$ is the spatial connectivity matrix. These values are related to the Moran scatter plot: positive $I_i$ values indicate positive SA, corresponding to quadrants I and III of the Moran scatter plot. Negative $I_i$ values indicate negative SA, which appear in quadrants II and IV of the Moran scatter plot.
+
+The local Geary statistic $C_i$ is the weighted sum of squared differences found in the numerator in the GR:
+$$C_i = \sum_j^n w_{ij} (y_i - y_j)^2 $$
+
+The local Geary statistic is very sensitive to local outliers (negative SA), more so than local Moran's I. This makes these two LISAs complementary: $I_i$ is most useful to visualizing clustering behavior, whereas $C_i$ is useful for visualizing local outliers. By default, **geostan** will first scale $y$ using `z <- scale(y, center = TRUE, scale = TRUE)` before calculating either of these LISAs.
+
+The `lisa` function returns local Moran's I values and indicates which quadrant of the Moran plot the point is found:
 
 ```{r}
-c(mc(georgia$college, C), mean(Li$Li))
+W <- shape2mat(georgia, "W")
+x <- log(georgia$income)
+Ii <- lisa(x, W)
+head(Ii)
 ```
+
+"HH" indicates a high value surrounded by high values; "LL" is a low surrounded by low values, and so on. 
+
+The local Geary statistic can be calculated using the `lg` function:
+
+```{r}
+Ci <- lg(x, W)
+head(Ci)
+```
+
+Maps of the two local statistics highlight different qualities: $I_i$ draws attention to clustering, whereas $C_i$ draws attention to discontinuities and outliers:
+
+```{r fig.width = 5}
+Ci_map <- ggplot(georgia) + 
+  geom_sf(aes(fill=Ci)) +
+  # or try: scale_fill_viridis() 
+  scale_fill_gradient(high = "navy",  
+                      low = "white") +
+  theme_void()
+
+Li_map <- ggplot(georgia) + 
+  geom_sf(aes(fill=Ii$Li)) +
+  scale_fill_gradient2(name = "Ii") +
+  theme_void()
+
+gridExtra::grid.arrange(Ci_map, Li_map, nrow = 1)
+```
+
+Due to their complementary strengths, these two indices are best used together.
 
 ## Effective sample size
 
-We can also consider what these spatial patterns mean in terms of the information content of our data; that is, the impact that spatial autocorrelation might have on the amount of evidence that can be garnered from this data in an analysis. This is often described as effective sample size (ESS).
+We can also consider what these spatial patterns mean in terms of the information content of our data; that is, the impact that SA might have on the amount of evidence that can be garnered from this data in an analysis. This is often described as effective sample size (ESS).
 
-The `n_eff` function provides an approximate measure of ESS for spatially autocorrelated data. Based on the simultaneous autoregressive (SAR) model [@griffith_2005], it requires a value of the SA parameter, $\rho$, from the SAR model and the number of observations in our data set. We can get a rough measure of ESS for our ICE data using the following code:
+The `n_eff` function provides an approximate measure of ESS for spatially autocorrelated data [@griffith_2005]. It is based on the simultaneous autoregressive (SAR) model. The function requires a value of the SA parameter, $\rho$, from the SAR model and the number of observations in our data set. We can get a rough measure of ESS for a variable using the following code:
 
 ```{r}
-rho <- aple(georgia$ICE, C)
+x <- log(georgia$income)
+rho <- aple(x, W)
 n <- nrow(georgia)
 ess <- n_eff(rho = rho, n = n)
-c(nominal_n = n, rho = rho, ESS = ess)
+c(nominal_n = n, rho = rho, MC = mc(x, W), ESS = ess)
 ```
 
-This tells us that, given the degree of SA in the ICE estimates, our nominal sample size of 159 observations has about the same information content as 22 independent observations. This should provide some idea as to why it is so perilous to use conventional (non-spatial) statistical methods with spatial data. The odds of observing a strong correlation between any arbitrary pair of spatially patterned variables can be far greater than conventional methods report. 
+This tells us that, given the degree of SA in the ICE estimates ($\rho = .70$), our nominal sample size of 159 observations has the same information content as about 23 independent observations. 
+
+This should provide some idea as to why it is so perilous to use conventional (non-spatial) statistical methods with spatial data. The odds of observing a strong correlation between any arbitrary pair of spatially patterned variables can be far greater than conventional methods report. 
 
 ## Model diagnostics
 
-The `sp_diag` function can also be used to evaluate spatial models. One of the purposes of the function is to identify spatial patterns in the model residuals, because spatial autocorrelation violates a core assumption (independence) of conventional statistical models and because spatial patterns can provide valuable information that we should pay attention to.
+The `sp_diag` function can also be used to evaluate spatial models. One of the purposes of the function is to identify spatial patterns in the model residuals, because SA violates a core assumption (independence) of conventional statistical models and because spatial patterns can provide valuable information that we should pay attention to.
 
-To demonstrate, we first fit a (non-spatial) Poisson model to the Georgia male mortality data. The following code fits a log-linear Poisson model, and it models mortality rates for each county separately (that's provided by the "random effects" argument: `re ~ GEOID`). 
+To demonstrate, we first fit a Poisson model to the Georgia male mortality data. The following code fits a log-linear Poisson model, and it models mortality rates for each county separately (that's provided by the "random effects" argument: `re ~ GEOID`). 
 
 ```{r}
 C <- shape2mat(georgia)
@@ -144,13 +230,14 @@ Provide the fitted model, `fit`, and the spatial data, `georgia`, to the `sp_dia
 ```{r fig.width = 8}
 sp_diag(fit, georgia)
 ```
+
 The point-interval plot on the left shows the raw mortality rates (the raw outcome data) on the x-axis, the fitted values on the y-axis, and a 'perfect fit' (slope = 1, intercept = 0) line for reference. We can see that a number of the fitted values have posterior means that deviate from the observations; but this "shrinkage" towards the mean is not necessarily a problem. In fact, it is often desirable insofar as it indicates that these are counties for which our data provide very little evidence as to what the risk of death is (i.e., the population is very small). (For discussions of information pooling and other topics as well, see @mcelreath_2016 and @haining_2020). 
 
-The middle panel is a Moran scatter plot of the model residuals, and the map shows the mean residual for each county. The residuals have been taken at their marginal posterior means. However, there is more than one way to measure residual autocorrelation. For an alternative visualization that uses the entire posterior distribution of parameters and provides an estimate of the residual Moran coefficient that will match the printed model results above (`MC = 0.022`), try `sp_diag(fit, georgia, mc_style = "hist")`.
+The middle panel is a Moran scatter plot of the model residuals, and the map shows the mean residual for each county.^[The residuals have been taken at their marginal posterior means. However, there is more than one way to measure residual autocorrelation. For an alternative visualization that uses the entire posterior distribution of parameters and provides an estimate of the residual Moran coefficient that will match the printed model results above (`MC = 0.022`), try `sp_diag(fit, georgia, mc_style = "hist")`. For every MCMC sample from the joint distribution of parameters, a vector of residuals is calculated, and these are then used to calculate the Moran coefficient. Using `style = "hist"` will show a histogram depicting all $M$ samples of the residual Moran coefficient.]
 
-In this case, there is a very small amount of residual autocorrelation, and the map indicates that this derives from a slight north-south/metropolitan-rural trend. The trend in the residuals helps us see that shrinking towards the mean mortality rate is less than ideal in this case because we can see that county mortality rates are higher in the southern half of the state than in the greater Atlanta metropolitan area. 
+In this case, there is a small amount of residual autocorrelation, and the map indicates that this derives from a slight north-south/metropolitan-rural trend. The trend in the residuals suggests that shrinking towards the mean mortality rate may be less than ideal in this case---and potentially biased (socially)---because it appears that county-level mortality risk may be somewhat higher in the southern half of the state than in the greater Atlanta metropolitan area. 
 
-We could extend this model by using one of **geostan**'s spatial models (see the examples in `?stan_car`) or by adding one or more (substantively meaningful) covariates. 
+We could extend the model to address this concern by using one of **geostan**'s spatial models (e.g., `stan_car`), by adding one or more (substantively meaningful) covariates, or potentially both. 
 
 
 ## References

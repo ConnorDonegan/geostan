@@ -1,6 +1,5 @@
 ^rcppExports.cpp$
 ^stanExports_*
-
 ^\.travis\.yml$
 ^data-raw$
 .Rhistory

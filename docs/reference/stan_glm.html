@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.0</span>
       </span>
     </div>
 
@@ -77,6 +77,7 @@
   chains <span class="op">=</span> <span class="fl">4</span>,
   iter <span class="op">=</span> <span class="fl">2000</span>,
   refresh <span class="op">=</span> <span class="fl">1000</span>,
+  keep_all <span class="op">=</span> <span class="cn">FALSE</span>,
   pars <span class="op">=</span> <span class="cn">NULL</span>,
   control <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">...</span>
@@ -86,7 +87,7 @@
     <div id="source">
     <h2>Source</h2>
     <p>Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. <em>Int. J. Env. Res. and Public Health</em> 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: <a href="https://github.com/ConnorDonegan/survey-HBM" class="external-link">https://github.com/ConnorDonegan/survey-HBM</a>.</p>
-<p>Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. <em>OSF Preprints</em>. doi: <a href="https://doi.org/10.31219/osf.io/3ey65" class="external-link">10.31219/osf.io/3ey65</a>
+<p>Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. <em>OSF Preprints</em>. <a href="https://doi.org/10.31219/osf.io/3ey65" class="external-link">doi:10.31219/osf.io/3ey65</a>
 .</p>
     </div>
     <div id="arguments">
@@ -141,6 +142,8 @@ alpha_tau ~ Student_t(d.f., location, scale).
 <dd><p>Number of samples per chain.</p></dd>
 <dt>refresh</dt>
 <dd><p>Stan will print the progress of the sampler every <code>refresh</code> number of samples; set <code>refresh=0</code> to silence this.</p></dd>
+<dt>keep_all</dt>
+<dd><p>If <code>keep_all = TRUE</code> then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors and the <code>bridgesampling</code> package.</p></dd>
 <dt>pars</dt>
 <dd><p>Specify any additional parameters you'd like stored from the Stan model.</p></dd>
 <dt>control</dt>
