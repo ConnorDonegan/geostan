@@ -2,7 +2,7 @@
 % Please edit documentation in R/convenience-functions.R
 \name{waic}
 \alias{waic}
-\title{WAIC}
+\title{Widely Applicable Information Criteria (WAIC)}
 \source{
 Watanabe, S. (2010). Asymptotic equivalence of Bayes cross validation and widely application information criterion in singular learning theory. Journal of Machine Learning Research 11, 3571-3594.
 }

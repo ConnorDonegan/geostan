@@ -567,9 +567,11 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' 
 #' @source
 #'
-#' Griffith, D. A. (2012). Space, time, and space-time eigenvector filter specifications that account for autocorrelation. Estadística Espanola, 54(177), 7-34.
+#' Bivand, Roger S. and Pebesma, Edzer and Gomez-Rubio, Virgilio (2013). Applied spatial data analysis with R, Second edition. Springer, NY. https://asdar-book.org/
+#' 
+#' Griffith, Daniel A. (2012). Space, time, and space-time eigenvector filter specifications that account for autocorrelation. Estadística Espanola, 54(177), 7-34.
 #'
-#' Haining, R. P., & Li, G. (2020). Regression Modelling Wih Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.
+#' Haining, Robert P. and Li, Guangquan (2020). Regression Modelling Wih Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.
 #'
 #' @examples 
 #' data(georgia)
@@ -686,7 +688,7 @@ auto_gaussian <- function() {
     return(family)
 }
 
-#' WAIC
+#' Widely Applicable Information Criteria (WAIC)
 #'
 #' @description Widely Application Information Criteria (WAIC) for model comparison
 #' 
@@ -1081,7 +1083,7 @@ get_shp <- function(url, folder = "shape") {
 #' @param se Data frame of standard errors; column names must match (exactly) the variable names used in the model formula. 
 #' @param bounds An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to c(-Inf, Inf) (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.
 #' @param car_parts A list of data required for spatial CAR models, as created by \code{\link[geostan]{prep_car_data}}; optional. If omitted, the measurement error model will be a non-spatial Student's t model.
-#' @param prior A named list of prior distributions (see \code{\link[geostan]{priors}}). If none are provided, default priors will be assigned. The liste of priors may include the following parameters:
+#' @param prior A named list of prior distributions (see \code{\link[geostan]{priors}}). If none are provided, default priors will be assigned. The list of priors may include the following parameters:
 #' \describe{
 #'  \item{df}{If using a non-spatial ME model, the degrees of freedom (df) for the Student's t model is assigned a gamma prior with default parameters of `gamma(alpha = 3, beta = 0.2)`. Provide values for each covariate in `se`, listing the values in the same order as the columns of `se`.}
 #'

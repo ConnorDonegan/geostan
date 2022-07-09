@@ -17,7 +17,7 @@
 #' 
 #' @param car_parts A list of data for the CAR model, as returned by \code{\link[geostan]{prep_car_data}}.
 #'
-#' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will automatically be row-standardized before calculating \code{slx} terms.  See \code{\link[geostan]{shape2mat}}.
+#' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will automatically be row-standardized before calculating \code{slx} terms. See \code{\link[geostan]{shape2mat}}.
 #' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{auto_gaussian()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}; if `family = gaussian()` is provided, it will automatically be converted to `auto_gaussian()`.
 #'
@@ -294,7 +294,7 @@ stan_car <- function(formula,
     } else {
         C <- car_parts$C
         if (car_parts$WCAR == 0) {
-            message("Warning: Consider providing the matrix C explicitly using the C argument (see ?shape2mat). The matrix C is used for calculating spatial-lag of X (SLX) terms and residual spatial autocorrelation. Since you did not provide C, the matrix is being taken from car_parts$C. Since you did not use the WCAR specification of the CAR model, this car_parts$C matrix may not be the appropriate choice for these purposes.")
+            message("Consider providing the matrix C explicitly using the C argument. The matrix C is used for calculating spatial-lag of X (SLX) terms and residual spatial autocorrelation. Since you did not provide C, the matrix is being taken from car_parts$C.")
         }
     }
     tmpdf <- as.data.frame(data)

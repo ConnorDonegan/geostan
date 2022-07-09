@@ -1,6 +1,5 @@
 ---
-title: "Working with American Community Survey data"
-author: Connor Donegan
+title: "Spatial measurement error models"
 date: September 13, 2021
 output: 
   rmarkdown::html_vignette:
@@ -8,10 +7,10 @@ output:
 header-includes:
    - \usepackage{amsmath}
 vignette: >
-  %\VignetteIndexEntry{Working with American Community Survey data}
+  %\VignetteIndexEntry{Spatial measurement error models}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-bibliography: bib.bib
+bibliography: spatial-me.bib
 link-citations: yes
 ---
 
@@ -24,79 +23,43 @@ knitr::opts_chunk$set(echo = TRUE,
                       )
 ```
 
-This vignette introduces users to the spatial measurement error (ME) models implemented in the **geostan** package [@donegan_2021;@donegan_2021b]. These models are particularly appropriate for working with American Community Survey (ACS) data and other large, government-backed surveys.  
+This vignette introduces users to the spatial measurement error (ME) models implemented in the **geostan** package [@donegan_2021]. Variations on this methodology have been examined previously by multiple authors [@bernadinelli_1997;@kang_2009;@logan_2020;@xia_1998].
 
-A premise of this methodology is that the survey includes a systematic spatial sampling design (i.e., the sampling procedure was stratified by areal unit, whether they be block groups, counties, or states). 
+These models are designed for spatial models that use survey estimates as covariates. They are designed for use with American Community Survey (ACS) data and other large, government-backed surveys. A premise of this methodology is that the survey includes a systematic spatial sampling design (i.e., the sampling procedure was stratified by the areal unit of interest, whether they be block groups, counties, or states). 
 
+In a (spatial) regression analysis, measurement/sampling error in covariates will lead to model parameter estimates that are overly-confident and prone to bias (a terrible combination). This can lead to under- or over-estimation of population risks and needs, mainly because the noisy survey-based covariate passes directly into predictive values. This can impact real communities and service providers [see @bazuin_2013].
 
-## Getting started
-
-From the R console, load the **geostan** and **ggplot2** packages.
-
-```{r message = FALSE, warning = FALSE}
-library(geostan)
-library(ggplot2)
-theme_set(theme_classic())
-data(georgia)
-```
-
-The line `data(georgia)` loads the `georgia` data set from the **geostan** package into your working environment. You can learn more about the data by entering `?georgia` to the R console.
-
-## ICE data
-
-This vignette will make use of the index of concentration at the extremes (ICE) [@massey_2001]. The ICE is the difference between the proportion of the population residing in a high income households and the proportion in low income households:
-$$\text{ICE} = \text{Proportion Rich} - \text{Proportion Poor,}$$
-where "rich" and "poor" are defined as the top and bottom quintiles of the US household income distribution ($< \$20,000$ and $>= \$120,000$), respectively. It ranges from -1, for an entirely impoverished population, to 1, for an entirely wealthy population. 
-
-In this vignette, we will examine the ICE standard errors and build a probability model for the actual ICE values. The purpose of the vignette is to provide a guide to critically evaluating both your data and the ME model.
-
-Examining the standard errors directly is informative, but not quite enlightening^[Since the ICE is a composite variable, its standard errors were created using the Census Bureau's variance replicate tables [@census_2019].]:
-
-```{r fig.width = 7}
-sp_diag(georgia$ICE.se, georgia, name = "SE(ICE)")
-```
-
-This shows that there are strong spatial patterns in the reliability of the estimates. For continuous measures like the ICE, it is helpful to scale the standard errors by the scale of the data. Using the median absolute deviation (MAD) is a good option:
-
-```{r}
-c(sd.ice <- sd(georgia$ICE))
-c(mad.ice <- mad(georgia$ICE))
-scaled_se <- georgia$ICE.se / mad.ice
-ggplot() +
-  geom_histogram(aes(scaled_se),
-                 col = 'gray50',
-                binwidth = 0.05
-                 )
-```
-
-We can see more clearly that sampling error may be adding a considerable amount of noise to the data and that a number of these estimates are not particularly reliable. 
+Spatial measurement error models allow us to incorporate knowledge of data quality and human geography into our analyses, so that the final model results are a better reflection of our state of knowledge than they otherwise would be. These models account for sampling error, but cannot address other sources of bias and error that may be present in survey estimates. 
 
 ## Modeling errors of observation
 
-The unknown errors, $\delta_i$, are defined as the difference between the survey estimate, $z_i$, of some variable, and that variable's actual value over the same time period, $x_i$: $$\delta_i = z_i - x_i.$$ For present purposes, we will take for granted the high quality of the Census Bureau's systematic spatial sampling design [on spatial sampling, see @chun_2013], and thus, we do not expect there to be any spatial pattern to the errors, $\delta_i$.^[By definition, any systematic spatial pattern in the errors, $\delta_i$, is not due to sampling error---it is bias (and spatial patterns that arise by chance are already accounted for in the probability model for sampling error). To model bias would require more information than we have; these models take for granted the structural validity of the survey design.] 
+The measurement error (ME) models implemented in **geostan** are hierarchical Bayesian models (HBMs) that incorporate two sources of information: 
 
-Using Bayes' theorem and the information at our disposal, we can create a probability distribution for these errors. Since $\delta_i$ is a simple function of $z_i$ and $x_i$, we need to reason about
-$$p(\boldsymbol x | \boldsymbol z, \mathcal M),$$
-where $\mathcal M$ represents our relevant background knowledge. $\mathcal M$ includes the standard errors, $\boldsymbol s$, as well as the premise that this data was collected using a valid spatial sampling design.
-
-By Bayes' theorem:
-\begin{equation}
-\begin{split} 
-  p(\boldsymbol x | \boldsymbol z, \mathcal M) &\propto p(\boldsymbol z | \boldsymbol x, \mathcal M) p(\boldsymbol x | \mathcal M)   \\
-   &\propto \text{Likelihood} \times \text{prior}
-   \end{split}
-\end{equation}
+  1. A sampling distribution for the survey estimates.
+  2. Generic background knowledge on social variables.
   
-The ME models implemented in **geostan** are hierarchical Bayesian models (HBMs) that incorporate two sources of information: a sampling distribution for the survey estimates, and generic background knowledge on social variables. The former is a likelihood statement that states: for a given true value, $x_i$, and standard error, $s_i$, the probability of obtaining survey estimate $z_i$ is 
-$$z_i \sim Gauss(x_i, s_i).$$
-This reflects the statement that sampling error is not systematically patterned, and it is consistent with conventional 'margins of error' for survey estimates.
+The model treats the true value $\boldsymbol x$ as an unknown parameter or a latent variable. The goal is to obtain a probability distribution for $\boldsymbol x$. That information can then be incorporated into any of **geostan**'s regression or disease mapping models.
+  
+To represent the general social and technical knowledge on which this model is premised, we write $\mathcal{M}$. This background knowledge includes, for example, that the data came from the valid small-area spatial sampling design. 
 
-The relevant background knowledge includes our basic understanding of contemporary society, particularly that extreme conditions are not implausible, but tend to be clustered together (with important exceptions)^[The critical analysis of ME models facilitated by `me_diag` is intended to help identify such situations.]. This information is encoded into a probability distribution for the unknown set of values, $\boldsymbol x$, using the conditional autoregressive (CAR) model:
-$$ \boldsymbol x \sim Gauss(\mu \cdot \boldsymbol 1, \Sigma). $$
-This is a multivariate normal distribution with a constant mean, $\mu$, and covariance matrix $$\boldsymbol \Sigma = (I - \rho C)^{-1} M .$$
-$\Sigma$ contains the spatial connectivity matrix, $\boldsymbol C$. $M$ is a diagonal matrix that contains the scale parameter, $\tau^2$, multiplied by given constant terms. There are numerous ways to specify $C$ and $M$ with the CAR model (see `geostan::prep_car_data`). 
+The sampling distribution (a likelihood statement) states the following: if the true median income value is $x_i$, then the probability of obtaining survey estimate $z_i$ is
+$$ p(z_i | x_i , \mathcal{M}) = Gauss(z_i | x_i, s_i) $$
+where $s_i$ is the standard error of the estimate. This is saying, more directly, that the true value $x_i$ is probably within two standard errors of the estimate.
 
-The parameters $\mu$, $\rho$, and $\tau$ all require prior probability distributions that respect one's background knowledge on the variable of interest; **geostan** uses the following by default:
+Our background knowledge on $x$ is the second component of the model. This is simply the knowledge that social variables tend to be spatially patterned. Specifically, extreme values are not implausible, although they tend to be clustered together. 
+
+This information is encoded into a prior probability distribution for the unknown values $\boldsymbol x$, using the spatial conditional autoregressive (CAR) model:
+$$ p(\boldsymbol x | \mathcal{M}) = Gauss(\boldsymbol x | \mu \boldsymbol 1, \boldsymbol \Sigma) $$
+where the bold symbols are used to indicate an object is a column vector or matrix. 
+
+The equation above states that the unknown values $\boldsymbol x$ are spatially correlated, with a mean value of $\mu$ and covariance matrix $$\boldsymbol \Sigma = (I - \rho C)^{-1} M,$$
+where $\rho$ is a spatial autocorrelation parameter, $I$ is the $n \times n$ identity matrix, and $C$ is a spatial connectivity matrix. $M$ is an $n \times n$ diagonal matrix; its diagonal contains the row-sums of $C$ multiplied by a scale parameter $\tau$.
+
+If $\boldsymbol x$ is a rate variable---e.g., the poverty rate---it can be important to use a logit-transformation [@logan_2020] as follows:
+$$ p(logit(\boldsymbol x) | \mathcal{M}) = Gauss(logit(\boldsymbol x) | \mu \boldsymbol 1, \boldsymbol \Sigma) $$
+
+The CAR parameters $\mu$, $\rho$, and $\tau$ all require prior probability distributions; **geostan** uses the following by default:
+
 \begin{equation} 
 \begin{split}
 \mu &\sim Gauss(0, 100) \\
@@ -105,108 +68,146 @@ The parameters $\mu$, $\rho$, and $\tau$ all require prior probability distribut
 \end{split}
 \end{equation}
 
-The default prior for $\rho$ is uniform across its entire support (determined by the extreme eigenvalues of $C$). 
+The default prior for $\rho$ is uniform across its entire support (determined by the extreme eigenvalues of $C$)
 
-## ME models in **geostan** 
+## Discussion
 
-These ME models can be implemented using any of the **geostan** model fitting functions (`stan_glm`, `stan_car`, `stan_esf`, and `stan_icar`). These functions have a formula interface, so that the basic user experience is similar to using `base::glm`. For example, if we were to fit a linear model to the log-mortality rates, we could start with the following code:
+For a sense of how all of this information gets combined in the model, consider two hypothetical survey estimates. 
 
-```{r eval = FALSE}
-fit <- stan_glm(log(rate.male) ~ ICE, data = georgia)
+The first has a small standard error---it is a reliable data point---and it is also similar to its surrounding counties. In that case, the probability distribution for $x_i$ is going to look similar to the raw estimate and its standard error. Now consider a second county, where the estimate has a large standard error---it is unreliable---and the estimate is also dissimilar from its neighbors. In this case, we ought to consider it quite probable that the estimate $x_i$ is far from the truth. This means that the probability distribution for $x_i$ that comes from our model may be quite different from the raw estimate. That shift is often referred to as "shrinkage," although the shift may be in either direction (up or down).
+
+Finally, when we fit our spatial regression model, the results will automatically average over all the uncertain inferences we make about $\boldsymbol x$. The inferential biases that follow from ignoring measurement/observational uncertainty will be addressed, and the parameter estimates will reflect this additional source of uncertainty. It is important to understand that there may still be un-modeled forms of bias and error in the ACS estimates---due to response bias and other sources---beyond the amount that is attributed to sampling error.
+
+## Getting started
+
+From the R console, load the **geostan** package.
+
+```{r message = FALSE, warning = FALSE}
+library(geostan)
+data(georgia)
 ```
 
-For now, we are just going to use `stan_glm` to set up our ME models. 
+The line `data(georgia)` loads the `georgia` data set from the **geostan** package into your working environment. You can learn more about the data by entering `?georgia` to the R console.
 
-The `prep_me_data` function creates a list of data in the correct format for `geostan`'s ME models. The only required argument is a data frame of standard errors (`se`). To use a CAR model for the covariates, we just have to provide the necessary data for `geostan`'s CAR model, which we can easily obtain using the `prep_car_data` function. Since the ICE can only range from -1 to 1, it may be important to restrict the parameter space to that range. We can do this using the `bounds` argument, which defaults to `(-Inf, Inf)`.^[Practically, it is not always necessary to enforce these restrictions; if you are sure that the model does not approach the boundary points, that is, you can see that none of the estimates plus/minus two standard errors approach the boundaries, it can be more efficient to ignore the restriction. One of the limitations of these models is that all of the covariates have the same restrictions on their parameter space. Thus, if you can safely ignore the restrictions, you also have greater freedom to include other covariates.]
+## Preparing the data
+
+Users can add a spatial ME model to any **geostan** model. A list of data for the ME models can be prepared using the `prep_me_data` function. The function require at least two inputs from the user:
+
+  1. `se` A data frame with survey standard errors.
+  2. `car_parts` A list of data created by the `prep_car_data` function.
+
+It also has optional inputs:
+
+  1. `bounds` A length-two vector giving the minimum and maximum values that the covariate may take on. 
+  2. `prior` A list of prior distributions for the CAR model parameters.
+  3. `logit` A vector of logical values (`TRUE` or `FALSE`) specifying if the variate should be logit transformed. Only use this for rates (between 0 and 1).
+  
+The default prior distributions are designed to be fairly vague relative to ACS variables (including percentages from 0-100), assuming that magnitudes such as income have been log-transformed already. 
+
+The logit-transformation is often required for skewed rates, such as the poverty rate. Note that the user can *not* do this transformation on their own, they must use the `logit` argument in `prep_me_data`.
+
+The `bounds` argument may be needed for rates, which are bounded by zero and one. Even if the logit argument is used, the sampling distribution still needs to be bounded. This functionality has limitations. If the `bounds` argument is used, it will apply to all of the modeled covariates (which might not make sense at all). It also causes the model to slow down. If none of the estimates ($\pm$ two standard errors or so) approach the boundaries, then the `bounds` argument can be safely ignored. This argument should be used if needed, but avoided when possible. 
+
+To demonstrate, take the percent of the population with health insurance coverage `georgia$insurance`. The estimates are stored as percentages; we are going to divide them and their standard errors by 100 to make them rates:
 
 ```{r}
-# use binary weights matrix for prep_car_data
-C <- shape2mat(georgia, style = "B")
-cp <- prep_car_data(C, style = "WCAR")
-ME <- prep_me_data(
-  se = data.frame(ICE = georgia$ICE.se),
-  car_parts = cp,
-  bounds = c(-1, 1)
-)
+georgia$insurance <- georgia$insurance / 100
+georgia$insurance.se <- georgia$insurance.se / 100
 ```
-As noted previously, **geostan** will use its default priors if none are provided. The following code demonstrates setting custom priors for $\mu$ (location) and $\tau$ (scale) (see `?priors` for details):
+
+We want to check if any of the estimates are near their maximum and minimum values (zero and one):
 
 ```{r}
-ME <- prep_me_data(
-  se = data.frame(ICE = georgia$ICE.se),
-  car_parts = cp,
-  bounds = c(-1, 1),
-  prior = list(location = normal(0, 0.5),
-  	       scale = student_t(df = 10, location = 0, scale = 1))
-)
+max(georgia$insurance + georgia$insurance.se*2)
+min(georgia$insurance - georgia$insurance.se*2)
 ```
 
-To sample from our spatial ME model alone, we pass our list of `ME` data to `stan_glm` and use `prior_only = TRUE`:
+None of the estimates are quite pushing against their maximum value (1), and none are anywhere near the minimum (0), so we can ignore the boundary constraint for now. 
+
+Now we need to gather the standard errors `georgia$insurance.se` into a data frame. The column name must match the name of the variable it refers to ("insurance"):
 
 ```{r}
-fit <- stan_glm(log(rate.male) ~ ICE, data = georgia, ME = ME, prior_only = TRUE)
+SE <- data.frame(insurance = georgia$insurance.se)
 ```
 
-Note that `prior_only = TRUE` will prevent `stan_glm` from considering the likelihood of the outcome, `log(rate.male)`; to facilitate a valid workflow, the entire ME model is treated as part of the "prior" by `prior_only`. This allows us to understand the properties of the ME model itself, considered independently from any outcome variable.
+If we had additional survey-based covariates that we were intending to model, we would simply add their standard errors to this data frame.
 
-## Evaluating spatial ME models
-
-### ME diagnostic plots
-
- **geostan** provides a set of diagnostics for its ME models, accessible through the `me_diag` function. The purpose of the diagnostics is partly to evaluate the quality of the data, and partly to interrogate the adequacy of the model. 
- 
-Provide `me_diag` with the fitted model, the name of the variable, and the underlying spatial object:
- 
-```{r fig.width = 7.5}
-# (math symbols in figure labels may not be visible on html versions of this vignette)
-me_diag(fit, 'ICE', georgia)
-```
-
-We get three plots:
-
-* A point-interval plot showing the ACS estimates on the horizontal axis against a summary of the posterior distribution on the vertical axis. This provides an indication of 1) the amount of uncertainty present in each $x_i$, and 2) the degree to which the mean of the posterior probability distribution for $x_i$ may differ from the raw survey estimates ($\delta_i$). 
-
-* A Moran scatter plot of the $\delta_i$ values.  Zero spatial autocorrelation is indicated by a small negative value (unlike the correlation coefficient, the midpoint of the MC is $-1/(n-1)$ [@chun_2013]). (Alternatively, autocorrelation can be visualized with a histogram of Moran coefficients that are calculated for each MCMC sample; se the `mc_style` argument.)
-
-* A map of the posterior mean for each $\delta_i$ value.
-
-From the point-interval plot, we can see that a few of the counties with low ICE estimates have posterior distributions that have shifted slightly towards the mean. However, the model still places substantial probability on values of the ICE that are *more* extreme than the raw ACS estimates. 
-
-Large $|\delta_i|$ values can provide a warning that your data may be of low quality; strong social or spatial patterns in $\delta_i$, on the other hand, should prompt you to ask further questions about the adequacy of the model. 
-
-### Looking closer
-
-To look more closely at the model results, we can have `me_diag` return the index value for the observations with the $k$ largest $\delta_i$ values:
-
-```{r fig.width = 7.5}
-me_diag(fit, 'ICE', georgia, index = 5)
-```
-
-Or, we can have `me_diag` return results as raw data (it will also return a list of `ggplots`):
+To prepare the CAR data, we create a binary spatial connectivity matrix, and then pass it to `prep_car_data` to prepare our list of data for the CAR model:
 
 ```{r}
-delta <- me_diag(fit, 'ICE', georgia, plot = FALSE)$delta_data
-head(delta)
+C <- shape2mat(georgia, "B")
+cars <- prep_car_data(C)
 ```
 
-We can follow up on this information by examining demographic information on the counties with the largest $\delta_i$:
+Now we use `prep_me_data`. We are going to use the logit-transform, since we are working with rates:
 
 ```{r}
-georgia[c(91, 105, 90, 39), c("NAME", "population", "white", "black", "hisp", "ai", "ICE", "ICE.se", "college", "college.se")]
+ME_list <- prep_me_data(se = SE,
+                        car_parts = cars,
+                        logit = TRUE
+                        )
 ```
 
-The somewhat large $\delta_i$ values for these counties are a result of the combination of fairly unreliable estimates (large standard errors) while also being local outliers. We can see that these are low population areas that also have low income, few college grads, and fairly high percent Black populations. 
+Now we are ready to begin modeling the data.
 
-By looking closer at results, we can consider if the model is being overly conservative by shrinking towards the mean value or shows any other conspicuous patterns. In this case the results are not concerning, largely because the amount of 'shrinkage' toward the mean is so minimal.
+## Spatial ME model
+
+The following code chunk sets up a spatial model for male county mortality rates (ages 55-64) using the `insurance` variable as a covariate (without the spatial ME model):
+
+```{r eval = FALSE, message = FALSE}
+fit <- stan_car(log(rate.male) ~ insurance, 
+                data = georgia, 
+                family = auto_gaussian(),
+                car_parts = cars)
+```
+
+In practice, a Poisson model should be used to model rates like this. This little example is only for the purpose of demonstrating the ME models.
+
+To add the spatial ME model to the above specification, we simply provide our `ME_list` to the `ME` argument:
+
+```{r eval = TRUE, message = FALSE}
+fit <- stan_car(log(rate.male) ~ insurance, 
+                ME = ME_list,
+                family = auto_gaussian(),
+                data = georgia, 
+                car_parts = cars,
+                cores = 2, # for speed only
+                iter = 1e3,
+                refresh = 0, # minimizes printing
+                )
+```
+
+Note that for a real analysis, one should almost always use the default number of cores (`core = 4`). 
+
+## Visual diagnostics
+
+It is important to check the models graphically. The `me_diag` provides some useful diagnostics for understanding how the raw estimates compare with the modeled values. 
+
+First, it provides a point-interval scatter plot that compares the raw survey estimates (on the horizontal axis) to the modeled values (on the vertical axis). The probability distributions for the modeled values are represented by their 95% credible intervals. The intervals provide a sense of the *quality* of the ACS data---if the credible intervals on the modeled value are large, this tells us that the data are not particularly reliable. Data quality places a limit on the kinds of inferences that can possibly be made, especially with multivariate data.
+
+The `me_diag` function also provides more direct visual depictions of the difference between the raw survey estimates $z_i$ an the modeled values $x_i$:
+  $$\delta_i = z_i - x_i.$$
+(The $x_i$ are taken at their posterior means.) We want to look for any strong spatial pattern in these $\delta_i$ values, because that would be an indication of a bias. However, the magnitude of the $\delta_i$ value is important to consider---there may be a pattern, but if the amount of shrinkage is very small, that pattern may not matter.
+
+Two figures are provided to evaluate patterns in $\delta_i$: first, a Moran scatter plot and, second, a map. 
+
+```{r fig.width = 8}
+me_diag(fit, 'insurance', georgia)
+```
+
+In this case, the results do not look too concerning insofar as there are no conspicuous patterns. However, a number of the credible intervals on the modeled values are large, which indicates that this data is not of high quality. The fact that some of the $\delta_i$ values are substantial also points to low data quality.
+
+It can be important to understand that the ME models are not independent from the rest of the model. When the modeled covariate $\boldsymbol x$ enters a regression relationship, that regression relationship can impact the probability distribution for $\boldsymbol x$ itself. To examine the ME model in isolation, you can set the `prior_only` argument to `TRUE` (see `?stan_glm` or any of the spatial models).
 
 ### Working with MCMC samples from ME models
 
-**geostan** consists of pre-compiled Stan models, and users can always access the Markov chain Monte Carlo (MCMC) samples returned by Stan. When extracted as a matrix of samples (as below), each row represents a draw from the joint probability distribution for all model parameters, and each column consists of samples from the marginal distribution of each parameter.
+**geostan** consists of pre-compiled Stan models, and users can always access the Markov chain Monte Carlo (MCMC) samples returned by Stan. When extracted as a matrix of samples (as below), each row of the matrix represents a draw from the joint probability distribution for all model parameters, and each column consists of samples from the marginal distribution of each parameter.
 
-The ME models return samples for every $x_i$ as well as the model parameters $\mu$ ("mu_x_true"), $\rho$ ("car_rho_x_true"), and $\tau$ ("sigma_x_true"). We can access these using `as.matrix` (or `as.array` or `as.data.frame`). 
+The ME models return samples for $x_i$ as well as the model parameters $\mu$ ("mu_x_true"), $\rho$ ("car_rho_x_true"), and $\tau$ ("sigma_x_true"). We can access these using `as.matrix` (also `as.array` and `as.data.frame`). 
 ```{r}
 mu.x <- as.matrix(fit, pars = "mu_x_true")
 dim(mu.x)
+head(mu.x)
 mean(mu.x)
 ```
 We can visualize these using `plot` or print a summary:
@@ -220,95 +221,34 @@ x <- as.matrix(fit, pars = "x_true")
 dim(x)
 ```
 
-If we wanted to calculate the mean of each of these marginal distributions, we could use `apply` with `MARGIN = 2` to summarize by column:
+If we wanted to calculate the mean of each of these marginal distributions (one for every $x_i$), we could use `apply` with `MARGIN = 2` to summarize by column:
 
 ```{r}
 x.mu <- apply(x, 2, mean)
 head(x.mu)
 ```
 
+The vector `x.mu` contains estimates (posterior means) for $x_i$. We might want to use these to plot the residuals or fitted values against the predictor:
+
+```{r fig.width = 4, fig.height = 4}
+rs <- resid(fit)$mean
+plot(x.mu, rs)
+abline(h = 0)
+```
+
 ## Non-spatial ME models
 
 If the `ME` list doesn't have a slot with `car_parts`, **geostan** will automatically use a non-spatial Student's t model instead of the CAR model:
+$$ p(\boldsymbol x | \mathcal{M}) = Student_t(\boldsymbol x | \nu, \mu \boldsymbol 1, \sigma) $$
+
 
 ```{r eval = FALSE}
 ME_nsp <- prep_me_data(
-  se = data.frame(ICE = georgia$ICE.se),
-  bounds = c(-1, 1)
+  se = data.frame(insurance = georgia$insurance),
+  logit = TRUE
 )
-fit_nsp <- stan_glm(log(rate.male) ~ ICE, data = georgia, ME = ME_nsp, prior_only = TRUE)
+fit_nsp <- stan_glm(log(rate.male) ~ insurance, data = georgia, ME = ME_nsp, prior_only = TRUE)
 ```
-
-## Spatial regression with a noisy covariate
-
-Incorporating these ME models into any other **geostan** model is as simple as removing the `prior_only` argument (or setting it to `FALSE`). The ME model will automatically be incorporated into the Bayesian regression analysis, such that all of the regression parameters are modeled jointly with the ME model. This means that our observational uncertainty for the ICE will be propagated throughout the regression analysis. 
-
-At this point, we can introduce a more appropriate model for the mortality data. We will use a Poisson likelihood for the counts of deaths, provide the log-population at risk as an offset term, and pool information across counties using a non-spatial Gaussian model for the log-rates, $\boldsymbol \phi$:
-$$y_i \sim Pois(e^{log(P_i) + \phi_i}) \\ \boldsymbol \phi \sim Gauss(\alpha + \boldsymbol x \beta, I \tau^2),$$
-where $\alpha$ is the mean log-mortality rate and $\beta$ is the regression coefficient on the modeled ICE, $\boldsymbol x$. $\tau^2$ is the variance of the log-mortality rates around the fitted regression line, $\alpha + X\beta$. This model for $\boldsymbol \phi$ is equivalent to a CAR model with $\rho=0$ and $M=I\tau^2$ (a constant variance).
-
-```{r eval = TRUE}
-fit_2 <- stan_glm(deaths.male ~ offset(log(pop.at.risk.male)) + ICE, 
-                  re = ~ NAME,   
-                  data = georgia, 
-                  ME = ME, 
-                  family = poisson(), 
-                  refresh = 0)
-```
-
-Printing the model results will show the model specification, the mean Moran coefficient of the residuals, a summary of the posterior distributions of select model parameters, and some MCMC diagnostics from Stan.
-
-```{r}
-print(fit_2)
-```
-
-## Joint probabilities
-
-As stated above, our model is a joint probability distribution for all of the unknown parameters. This means that the probability distribution for $\boldsymbol x$ that we obtained previously will be updated in consideration of the new information (that is, considering the the regression model and the outcome data). 
-
-In the case of our example model, the bivariate regression relationship implies a multivariate normal probability model for $\boldsymbol x$ and $\boldsymbol \phi$ with correlation $\rho_{x \phi}$. 
-
-An important implication of this fact is that the previously stated criteria for evaluating ME models (e.g., regarding spatial autocorrelation) no longer apply, because the results presented here (`fit_2`) are conditioned on quite different information, not just the survey data. This is why it is important to critically evaluate the ME model itself, with `prior_only = TRUE`, before moving to a subsequent stage of analysis. 
-
-To make this more concrete, consider the various outliers in this scatter plot of ICE estimates against crude log-mortality rates:
-
-```{r fig.width = 4.5}
-ggplot(georgia) +
-  geom_point(aes(ICE, log(rate.male), col = ICE.se),
-             shape = 6,
-             lwd = 2) +
-  labs(x = "ICE Estimate", y = "Crude log mortality") +
-  scale_colour_gradient(low = "white", high = "darkred", name = "SE(ICE)") +
-  theme(panel.background = element_rect(fill = 'gray20'),
-        plot.background = element_rect(fill = 'gray80'),
-        legend.background = element_rect(fill = 'gray80')
-        )
-```
-
-Two counties in particular (Wheeler and Echols) stand out for having low ICE estimates, large standard errors on their ICE estimates, and mortality rates that resemble areas with considerably higher ICE values. 
-
-If we look at the posterior distribution of $\boldsymbol x$, we see it has shifted somewhat in light of the regression relationship (try `me_diag(fit_2, 'ICE', georgia, plot = FALSE)`).While generally similar, one of the biggest shifts from the prior-only model is Wheeler County, a noted outlier, which now has a $\hat{\delta}_i$ value (-0.07) that is twice its value in the prior-only model. Wheeler County's high mortality rate renders the low ICE estimate less plausible.^[To be clear, the principle being examined here is a general and integral property of all Bayesian ME models.]
-
-Now here are the posterior means for the ICE and against the posterior means for the log-mortality rates; the darker red color indicates a higher degree of posterior uncertainty in the ICE value:
-
-```{r fig.width = 4.5}
-eta <- fitted(fit_2)
-x <- as.matrix(fit_2, pars = "x_true")
-x.mean <- apply(x, 2, mean)
-x.sd <- apply(x, 2, sd)
-
-ggplot(georgia) +
-  geom_point(aes(x.mean, log(eta$mean), col = x.sd),
-             shape = 6,
-             lwd = 2) +
-  labs(x = "ICE", y = "Log mortality") +
-  scale_colour_gradient(low = "white", high = "darkred", name = "SD(ICE)") +
-  theme(panel.background = element_rect(fill = 'gray20'),
-        plot.background = element_rect(fill = 'gray80'),
-        legend.background = element_rect(fill = 'gray80')
-        )
-```
-
 
 ## References
 

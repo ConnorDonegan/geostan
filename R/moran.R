@@ -12,9 +12,15 @@
 #' @param na.rm If `na.rm = TRUE`, observations with `NA` values will be dropped from both `x` and `w`. 
 #' @return The Moran coefficient, a numeric value.
 #'
-#' @details If any observations with no neighbors are found (i.e. \code{any(Matrix::rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped.
+#' @details
 #'
-#' @seealso \link[geostan]{moran_plot}, \link[geostan]{lisa}, \link[geostan]{aple}
+#' The formula for the Moran coefficient (MC) is
+#' \deqn{MC = \frac{n}{K}\frac{\sum_i \sum_j w_{ij} (y_i - \overline{y})(y_j - \overline{y})}{\sum_i (y_i - \overline{y})^2}}
+#' where \eqn{n} is the number of observations and \eqn{K} is the sum of all values in the spatial connectivity matrix \eqn{W}, i.e., the sum of all row-sums: \eqn{K = \sum_i \sum_j w_{ij}}.
+#'
+#' If any observations with no neighbors are found (i.e. \code{any(Matrix::rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped. The alternative is for those observations to have a spatial lage of zero---but zero is not a neutral value, see the Moran scatter plot. 
+#'
+#' @seealso \link[geostan]{moran_plot}, \link[geostan]{lisa}, \link[geostan]{aple}, \link[geostan]{gr}, \link[geostan]{lg}
 #' 
 #' @examples
 #' library(sf)
@@ -104,7 +110,7 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
     }
     if (any(Matrix::rowSums(w) == 0)) {
         zero.idx <- which(Matrix::rowSums(w) == 0)
-        message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.")
+        message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data before creating the Moran plot.")
         x <- x[-zero.idx]
         w <- w[-zero.idx, -zero.idx]
     }
@@ -145,7 +151,7 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
 #' Local Moran's I 
 #'
 #' @export
-#' @description A local indicator of spatial association (LISA) based on Moran's I (the Moran coefficient) for exploratory data analysis. The interpretation of LISA values depends on the type of spatial autocorrelation, which may be negative or positive. 
+#' @description A local indicator of spatial association (LISA) based on Moran's I (the Moran coefficient) for exploratory data analysis. 
 #'
 #' @param x Numeric vector of length `n`.
 #' @param w An `n x n` spatial connectivity matrix. See \link[geostan]{shape2mat}. If \code{w} is not row standardized (\code{all(Matrix::rowSums(w) == 1)}), it will automatically be row-standardized.

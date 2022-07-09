@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.0</span>
       </span>
     </div>
 
@@ -96,15 +96,65 @@ Setting <code>nsa = TRUE</code> will result in a candidate set of EVs that conta
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
-<span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span>
-<span class="va">EV</span> <span class="op">&lt;-</span> <span class="fu">make_EV</span><span class="op">(</span><span class="va">C</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">EV</span><span class="op">)</span>
-
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">EV</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient2</a></span><span class="op">(</span><span class="op">)</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">EV</span> <span class="op">&lt;-</span> <span class="fu">make_EV</span><span class="op">(</span><span class="va">C</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">EV</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            EV1          EV2         EV3         EV4         EV5         EV6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.053973000  0.158354827 -0.02451495 -0.07999360 -0.05495670 -0.03895408</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.120997679 -0.124986886 -0.05059745  0.07318481  0.02784188  0.11857531</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.157713405 -0.099951835  0.01356943 -0.14334711  0.05341177 -0.03711518</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.120719899 -0.023687383  0.01020668  0.06400989  0.08722122 -0.02438761</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 -0.009716376 -0.031433574  0.01549834 -0.02919731 -0.02628975  0.04268508</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  0.104755936 -0.009807962 -0.07396067  0.13411989 -0.08817770 -0.03317589</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           EV7         EV8          EV9        EV10         EV11        EV12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0.04078584 -0.07913979 -0.073310182  0.05824286  0.165668091 -0.02214353</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.07455461 -0.06418893  0.018371182 -0.04740389  0.114467522 -0.02966357</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  0.14528770 -0.07684324 -0.001716571  0.02772449  0.035922602 -0.03243465</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 -0.01379424 -0.15491366 -0.037879577  0.07212674  0.026300454 -0.06266601</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 -0.05693693  0.04599274 -0.085951636 -0.01862466 -0.008244736  0.01315821</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 -0.07211577 -0.01599899 -0.055539246  0.10582664  0.052396607  0.07686041</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          EV13        EV14         EV15         EV16          EV17        EV18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0.04195817  0.18103782 -0.084938278  0.003033966  0.0530510220  0.05870778</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.04068051 -0.03111605 -0.024452141  0.010425051 -0.0583459853  0.04185440</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -0.01524579 -0.10073778 -0.003287751 -0.110222305  0.0006761951 -0.10313888</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.10693434  0.02403098  0.120988436 -0.077063185  0.0481654363 -0.02438014</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  0.02205978  0.08043488  0.138648306 -0.034792946 -0.0102036565  0.03900379</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  0.05031355 -0.10474824 -0.039351149  0.009688502 -0.1202163789  0.10220094</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          EV19        EV20        EV21        EV22        EV23         EV24</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.09304319  0.08582136 -0.08203149  0.01545984 -0.04469590 -0.090910352</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.05246949  0.04548325 -0.06193518 -0.02841151 -0.04594155 -0.006598782</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -0.10237014  0.07811491  0.06047413  0.01204504 -0.16456457  0.068679862</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.06801384 -0.06532443  0.02101885 -0.13861840  0.11761550  0.041276236</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  0.01777727 -0.04806478  0.13050490  0.08672938 -0.03545406  0.068555451</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 -0.01371599  0.01246201  0.07763896  0.03758763  0.03783776 -0.104185845</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           EV25        EV26        EV27        EV28         EV29        EV30</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.088405271  0.05030406 -0.01005692 -0.06573835 -0.024941839 -0.06591464</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.023410439  0.08774088  0.01783850 -0.15346774  0.079661211 -0.08033607</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -0.058465515 -0.08765154 -0.00465578  0.08994140  0.038271976 -0.09031933</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.002939444  0.01579144  0.11970054 -0.10072935  0.012892342  0.05374701</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 -0.157902347  0.09327591 -0.08298279  0.05408252 -0.062174041 -0.04069685</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  0.005710602 -0.04680732  0.01440013 -0.07482543 -0.006485797 -0.02026172</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          EV31        EV32         EV33         EV34        EV35          EV36</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0.06598855  0.13310230 -0.001088752 -0.136952459  0.04277640  0.0667013728</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  0.09038923  0.04758564 -0.203353242  0.046886471 -0.06338316  0.0084997995</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -0.02407610  0.05049433 -0.014104107 -0.042885282  0.06319263  0.0246407754</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  0.11287042  0.01197097  0.114566809  0.005226204  0.03427603  0.0775606603</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 -0.12699316  0.01330529 -0.023794841 -0.102840746 -0.05690616  0.1238410428</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 -0.02987645 -0.06439507  0.035938065 -0.143761276 -0.10594230 -0.0004267883</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          EV37        EV38         EV39         EV40        EV41        EV42</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  0.13619033  0.02016976 -0.090284979  0.004669381 -0.02585823 -0.13204350</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 -0.20680540 -0.14235190  0.087586221 -0.036857021  0.06712104  0.05734786</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 -0.03353478 -0.07598022 -0.001852868 -0.051778871 -0.03636932  0.08016340</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 -0.03888049 -0.10850519 -0.060287225  0.038069185  0.01381853 -0.18917293</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 -0.20184257  0.01621507 -0.102312521  0.050768030  0.02702793  0.02987741</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  0.05951001 -0.03161532  0.111008436  0.152597569 -0.04076408  0.10672196</span>
+<span class="r-in"></span>
+<span class="r-in"><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span> <span class="op">+</span></span>
+<span class="r-in">  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">EV</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span class="r-in">  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient2</a></span><span class="op">(</span><span class="op">)</span></span>
+<span class="r-plt img"><img src="make_EV-1.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>
   </div>
@@ -119,7 +169,8 @@ Setting <code>nsa = TRUE</code> will result in a candidate set of EVs that conta
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
+2.0.1.</p>
 </div>
 
       </footer></div>

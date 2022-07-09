@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.0</span>
       </span>
     </div>
 
@@ -80,7 +80,7 @@
 <dt>car_parts</dt>
 <dd><p>A list of data required for spatial CAR models, as created by <code><a href="prep_car_data.html">prep_car_data</a></code>; optional. If omitted, the measurement error model will be a non-spatial Student's t model.</p></dd>
 <dt>prior</dt>
-<dd><p>A named list of prior distributions (see <code><a href="priors.html">priors</a></code>). If none are provided, default priors will be assigned. The liste of priors may include the following parameters:</p><dl><dt>df</dt>
+<dd><p>A named list of prior distributions (see <code><a href="priors.html">priors</a></code>). If none are provided, default priors will be assigned. The list of priors may include the following parameters:</p><dl><dt>df</dt>
 <dd><p>If using a non-spatial ME model, the degrees of freedom (df) for the Student's t model is assigned a gamma prior with default parameters of <code>gamma(alpha = 3, beta = 0.2)</code>. Provide values for each covariate in <code>se</code>, listing the values in the same order as the columns of <code>se</code>.</p></dd>
 
 
@@ -108,27 +108,46 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
-
-<span class="co">## for a non-spatial prior model for two covariates</span>
-<span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>ICE <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">ICE.se</span>,
-                 college <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">college.se</span><span class="op">)</span>
-<span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu">prep_me_data</span><span class="op">(</span><span class="va">se</span><span class="op">)</span>
-
-<span class="co">## see default priors</span>
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ME</span><span class="op">$</span><span class="va">prior</span><span class="op">)</span>
-
-<span class="co">## set prior for the scale parameters</span>
-<span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu">prep_me_data</span><span class="op">(</span><span class="va">se</span>,
-                   prior <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>scale <span class="op">=</span> <span class="fu"><a href="priors.html">student_t</a></span><span class="op">(</span>df <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">10</span><span class="op">)</span>,
-                                                  location <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,
-                                                  scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co">## for a spatial prior model (often recommended)</span>
-<span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span>
-<span class="va">cars</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span>
-<span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu">prep_me_data</span><span class="op">(</span><span class="va">se</span>,
-                   car_parts <span class="op">=</span> <span class="va">cars</span><span class="op">)</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## for a non-spatial prior model for two covariates</span></span>
+<span class="r-in"><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>ICE <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">ICE.se</span>,</span>
+<span class="r-in">                 college <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">college.se</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu">prep_me_data</span><span class="op">(</span><span class="va">se</span><span class="op">)</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## see default priors</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">ME</span><span class="op">$</span><span class="va">prior</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $df</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: gamma</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   alpha beta</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     3  0.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     3  0.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $location</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: normal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   location scale</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        0   100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2        0   100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $scale</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: student_t</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   df location scale</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 10        0    40</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 10        0    40</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## set prior for the scale parameters</span></span>
+<span class="r-in"><span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu">prep_me_data</span><span class="op">(</span><span class="va">se</span>,</span>
+<span class="r-in">                   prior <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>scale <span class="op">=</span> <span class="fu"><a href="priors.html">student_t</a></span><span class="op">(</span>df <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">10</span><span class="op">)</span>,</span>
+<span class="r-in">                                                  location <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
+<span class="r-in">                                                  scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">20</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## for a spatial prior model (often recommended)</span></span>
+<span class="r-in"><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">cars</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Range of permissible rho values:  -1.661134 1 </span>
+<span class="r-in"><span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu">prep_me_data</span><span class="op">(</span><span class="va">se</span>,</span>
+<span class="r-in">                   car_parts <span class="op">=</span> <span class="va">cars</span><span class="op">)</span></span>
 </code></pre></div>
     </div>
   </div>

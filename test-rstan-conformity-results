@@ -1,0 +1,10 @@
+# Results from tests/testthat/test-rstan-conformity 
+# Run date: 2022-07-07
+
+
+# Context: geostan results equal Rstan results for normal GLM
+# intercept geostan: -4.226 rstan: -4.229 
+# beta geostan: -1.097 rstan: -1.093 
+# sigma geostan: 0 rstan: 0 
+# intercept geostan: -0.007 rstan: -0.007 
+# beta geostan: 0.179 rstan: 0.179

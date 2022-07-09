@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.0</span>
       </span>
     </div>
 
@@ -79,7 +79,7 @@
 <p>Cressie N (2015 [1993]). Statistics for Spatial Data. Revised edition. John Wiley &amp; Sons.</p>
 <p>Cressie N, Perrin O, Thomas-Agnan C (2005). “Likelihood-based estimation for Gaussian MRFs.” Statistical Methodology, 2(1), 1–16.</p>
 <p>Cressie N, Wikle CK (2011). Statistics for Spatio-Temporal Data. John Wiley &amp; Sons.</p>
-<p>Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. <em>OSF Preprints</em>. doi: <a href="https://doi.org/10.31219/osf.io/3ey65" class="external-link">10.31219/osf.io/3ey65</a>
+<p>Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. <em>OSF Preprints</em>. <a href="https://doi.org/10.31219/osf.io/3ey65" class="external-link">doi:10.31219/osf.io/3ey65</a>
 .</p>
 <p>Haining RP, Li G (2020). Modelling Spatial and Spatio-Temporal Data: A Bayesian Approach. CRC Press.</p>
     </div>
@@ -120,23 +120,29 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
-
-<span class="co">## use a binary adjacency matrix</span>
-<span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span>
-
-<span class="co">## WCAR specification</span>
-<span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu">prep_car_data</span><span class="op">(</span><span class="va">A</span>, <span class="st">"WCAR"</span><span class="op">)</span>
-<span class="fl">1</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">cp</span><span class="op">$</span><span class="va">lambda</span><span class="op">)</span>
-
-<span class="co">## ACAR specification</span>
-<span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu">prep_car_data</span><span class="op">(</span><span class="va">A</span>, <span class="st">"ACAR"</span><span class="op">)</span>
-
-<span class="co">## DCAR specification (inverse-distance based)</span>
-<span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span>
-<span class="va">D</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_measures.html" class="external-link">st_distance</a></span><span class="op">(</span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_unary.html" class="external-link">st_centroid</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span><span class="op">)</span>
-<span class="va">A</span> <span class="op">&lt;-</span> <span class="va">D</span> <span class="op">*</span> <span class="va">A</span>
-<span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu">prep_car_data</span><span class="op">(</span><span class="va">A</span>, <span class="st">"DCAR"</span>, k <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## use a binary adjacency matrix</span></span>
+<span class="r-in"><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## WCAR specification</span></span>
+<span class="r-in"><span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu">prep_car_data</span><span class="op">(</span><span class="va">A</span>, <span class="st">"WCAR"</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Range of permissible rho values:  -1.661134 1 </span>
+<span class="r-in"><span class="fl">1</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">cp</span><span class="op">$</span><span class="va">lambda</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] -1.661134  1.000000</span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## ACAR specification</span></span>
+<span class="r-in"><span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu">prep_car_data</span><span class="op">(</span><span class="va">A</span>, <span class="st">"ACAR"</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Range of permissible rho values:  -0.3283182 0.1634063 </span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## DCAR specification (inverse-distance based)</span></span>
+<span class="r-in"><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_measures.html" class="external-link">st_distance</a></span><span class="op">(</span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_unary.html" class="external-link">st_centroid</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>st_centroid assumes attributes are constant over geometries of x</span>
+<span class="r-in"><span class="va">A</span> <span class="op">&lt;-</span> <span class="va">D</span> <span class="op">*</span> <span class="va">A</span></span>
+<span class="r-in"><span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu">prep_car_data</span><span class="op">(</span><span class="va">A</span>, <span class="st">"DCAR"</span>, k <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> &lt;sparse&gt;[ &lt;logic&gt; ] : .M.sub.i.logical() maybe inefficient</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Range of permissible rho values:  -0.6761887 0.3471584 </span>
 </code></pre></div>
     </div>
   </div>
@@ -151,7 +157,8 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a>
+2.0.1.</p>
 </div>
 
       </footer></div>
