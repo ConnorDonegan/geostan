@@ -157,7 +157,7 @@
 <div class="section level2">
 <h2 id="the-moran-coefficient-mc">The Moran coefficient (MC)<a class="anchor" aria-label="anchor" href="#the-moran-coefficient-mc"></a>
 </h2>
-<p>The formula for the Moran coefficient (MC), an index of SA, is <span class="math display">\[MC = \frac{n}{K}\frac{\sum_i^n \sum_j^n w_{ij} (y_i - \overline{y})(j_j - \overline{y})}{\sum_i^n (y_i - \overline{y})^2} \]</span> where <span class="math inline">\(K\)</span> is the sum of all values in the spatial connectivity matrix <span class="math inline">\(W\)</span> (i.e., the sum of all row-sums: <span class="math inline">\(K = \sum_i \sum_j w_{ij}\)</span>).</p>
+<p>The formula for the Moran coefficient (MC), an index of SA, is <span class="math display">\[MC = \frac{n}{K}\frac{\sum_i^n \sum_j^n w_{ij} (y_i - \overline{y})(y_j - \overline{y})}{\sum_i^n (y_i - \overline{y})^2} \]</span> where <span class="math inline">\(K\)</span> is the sum of all values in the spatial connectivity matrix <span class="math inline">\(W\)</span> (i.e., the sum of all row-sums: <span class="math inline">\(K = \sum_i \sum_j w_{ij}\)</span>).</p>
 <p>The MC is related to the Pearson product moment correlation coefficient. <span class="citation">(Chun and Griffith <a href="#ref-chun_2013">2013</a>, 10)</span>. Whereas the correlation coefficient ranges from -1 to 1, the MC does not, except under special circumstances—the range usually expands somewhat. Its expected value under a condition of zero SA is not zero, but instead, <span class="math inline">\(-1/(n-1)\)</span> (which approaches zero as <span class="math inline">\(n\)</span> increases).</p>
 <p>It is also important to understand that the MC does not ‘behave’ similarly to the correlation coefficient. Specifically, for moderate to high levels of autocorrelation, the MC may not be highly sensitive to changes in the degree of autocorrelation; it is more powerful for detecting the presence of autocorrelation. This issue motivated development of an approximate estimator of the spatial autocorrelation parameter from the simultaneous autoregressive (SAR) model, called APLE (approximate-profile likelihood estimator) <span class="citation">(Li, Calder, and Cressie <a href="#ref-li_2007">2007</a>)</span>. While it is limited to smaller data sets, it is another helpful tool (see <code><a href="../reference/aple.html">?geostan::aple</a></code>).</p>
 </div>
@@ -191,13 +191,13 @@
 <span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span><span class="op">)</span>
 <span class="va">Ii</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/lisa.html">lisa</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">W</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Ii</span><span class="op">)</span>
-<span class="co">#&gt;       Li type</span>
-<span class="co">#&gt; 1  0.139   LL</span>
-<span class="co">#&gt; 2  0.574   LL</span>
-<span class="co">#&gt; 3  1.327   HH</span>
-<span class="co">#&gt; 4  1.473   HH</span>
-<span class="co">#&gt; 5 -0.688   HL</span>
-<span class="co">#&gt; 6  3.282   HH</span></code></pre></div>
+<span class="co">#&gt;           Li type</span>
+<span class="co">#&gt; 1  0.1386529   LL</span>
+<span class="co">#&gt; 2  0.5739574   LL</span>
+<span class="co">#&gt; 3  1.3266778   HH</span>
+<span class="co">#&gt; 4  1.4730497   HH</span>
+<span class="co">#&gt; 5 -0.6875601   HL</span>
+<span class="co">#&gt; 6  3.2815681   HH</span></code></pre></div>
 <p>“HH” indicates a high value surrounded by high values; “LL” is a low surrounded by low values, and so on.</p>
 <p>The local Geary statistic can be calculated using the <code>lg</code> function:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -274,8 +274,8 @@
 <span class="co">#&gt; Spatial method (outcome):  Exchangeable </span>
 <span class="co">#&gt; Likelihood function:  poisson </span>
 <span class="co">#&gt; Link function:  log </span>
-<span class="co">#&gt; Residual Moran Coefficient:  0.02177775 </span>
-<span class="co">#&gt; WAIC:  1320.21 </span>
+<span class="co">#&gt; Residual Moran Coefficient:  0.02450075 </span>
+<span class="co">#&gt; WAIC:  1319.71 </span>
 <span class="co">#&gt; Observations:  159 </span>
 <span class="co">#&gt; Data models (ME): none</span>
 <span class="co">#&gt; Inference for Stan model: foundation.</span>
@@ -283,10 +283,10 @@
 <span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat</span>
-<span class="co">#&gt; intercept -4.179   0.001 0.021 -4.220 -4.193 -4.179 -4.164 -4.136   388 1.022</span>
-<span class="co">#&gt; alpha_tau  0.248   0.000 0.016  0.218  0.237  0.248  0.259  0.281  4220 1.000</span>
+<span class="co">#&gt; intercept -4.181   0.001 0.022 -4.224 -4.197 -4.182 -4.166 -4.138   284 1.013</span>
+<span class="co">#&gt; alpha_tau  0.248   0.000 0.016  0.218  0.236  0.247  0.258  0.280  4147 1.000</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Sat Jul  9 13:00:36 2022.</span>
+<span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Mon Jul 11 11:48:39 2022.</span>
 <span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span>
 <span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span>
 <span class="co">#&gt; convergence, Rhat=1).</span></code></pre></div>

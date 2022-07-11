@@ -103,7 +103,7 @@ The quadrants of the Moran plot are helpful for classifying observations. The fi
 ## The Moran coefficient (MC)
 
 The formula for the Moran coefficient (MC), an index of SA, is
-$$MC = \frac{n}{K}\frac{\sum_i^n \sum_j^n w_{ij} (y_i - \overline{y})(j_j - \overline{y})}{\sum_i^n (y_i - \overline{y})^2} $$
+$$MC = \frac{n}{K}\frac{\sum_i^n \sum_j^n w_{ij} (y_i - \overline{y})(y_j - \overline{y})}{\sum_i^n (y_i - \overline{y})^2} $$
 where $K$ is the sum of all values in the spatial connectivity matrix $W$ (i.e., the sum of all row-sums: $K = \sum_i \sum_j w_{ij}$). 
 
 The MC is related to the Pearson product moment correlation coefficient. [@chun_2013, 10]. Whereas the correlation coefficient ranges from -1 to 1, the MC does not, except under special circumstances---the range usually expands somewhat. Its expected value under a condition of zero SA is not zero, but instead, $-1/(n-1)$ (which approaches zero as $n$ increases).
