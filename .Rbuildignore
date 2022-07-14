@@ -18,3 +18,5 @@ tests/testthat/test-rstan-conformity-results
 index.html
 cran-comments.md
 ^CRAN-RELEASE$
+
+JOSS/*
