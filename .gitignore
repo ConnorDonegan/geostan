@@ -11,4 +11,3 @@ R/stanmodels.R
 man/*.Rd
 .Rhistory
 cran-comments.md
-
