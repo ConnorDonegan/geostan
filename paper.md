@@ -30,7 +30,7 @@ The distinguishing characteristic of spatial data is that maps of the data typic
 
 A major challenge for spatial analysis is data quality, particularly for researchers using survey-based covariates. A single spatial analysis may use dozens, or even thousands, of error-laden survey estimates. Sampling error in ACS estimates is often substantial in magnitude and socially patterned [@folch_2016; @donegan_2021], which can have real consequences on communities and service providers [@bazuin_2013]. Spatial ME models are required to avoid ME biases and unwarranted levels of confidence in results.
 
-Existing R packages with spatial modeling functions include **spatialreg** [@bivand_2015], **INLA** [@rue_2009], **CARBayes** [@lee_2013], **nimble** [@valpine_2017]. Custom spatial models can be built using **rstan** [@stan_2022] or **nimble**, including spatial ME models, but this requires specialized programming and statistical skills. None of the other packages currently offer the spatial ME models that survey-based covariates require.
+Existing R packages with spatial modeling functions include **spatialreg** [@bivand_2015], **INLA** [@rue_2009], **ngspatial** [@hughes_2020], **CARBayes** [@lee_2013], **nimble** [@valpine_2017]. Custom spatial models can be built using **rstan** [@stan_2022] or **nimble**, including spatial ME models, but this requires specialized programming and statistical skills. None of the other packages currently offer the spatial ME models that survey-based covariates require.
 
 # Functionality
 
