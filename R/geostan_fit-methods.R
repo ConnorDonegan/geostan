@@ -115,7 +115,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
    pars <- c(pars, "gamma")
   }
   x.pars <- c("beta", "nu", "sigma")
-  if (any(x.pars %in% names(x$priors))) pars <- c(pars, names(x$priors)[grep(paste0(x.pars, collapse="|"), names(x$priors))])   
+  if (any(x.pars %in% names(x$priors))) pars <- c(pars, names(x$priors)[grep(paste0(x.pars, collapse="$|"), names(x$priors))])   
   if(inherits(x$re$formula, "formula")) {
     cat("Partial pooling (varying intercept): ")
     print(x$re$formula)
@@ -142,7 +142,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
   } else {
       cat("none")
   }
-  if (x$spatial$method == "ESF") {
+  if (x$spatial$method == "HS") {
     cat("\nHorseshoe global shrinkage prior: ", round(x$priors$beta_ev$global_scale, 2), "\n")
   }
   cat("\n")
