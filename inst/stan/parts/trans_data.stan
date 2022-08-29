@@ -15,7 +15,7 @@
   is_student =  family == 2;
   is_poisson =  family == 3;
   is_binomial = family == 4;
-  is_auto_gaussian = family == 5;  
+  is_auto_gaussian = family == 5 || family == 6;  
   has_sigma  =  family < 3;
   has_offset = sum(offset) != 0;
   dx_all = dx_obs + dx_me;

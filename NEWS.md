@@ -1,3 +1,9 @@
+# geostan 0.3.1
+
+## New Additions
+
+The simulataneous autoregressive (SAR) model, also referred to as the spatial error model (SEM), has been implemented. The SAR model can be applied directly to continuous data (as an auto-Gaussian or spatial Gaussian model) or it can be used as prior model for spatially autocorrelated parameters. Details are provided on the documentation page for the `stan_sar` function.
+
 # geostan 0.3.0
 
 ## New additions

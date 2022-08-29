@@ -24,8 +24,8 @@ state-of-the-art platform for Bayesian inference.
 
 ### Disease mapping and spatial regression
 
-Model small-area incidence rates with mortality or disease data recorded
-across areal units like states, counties, or census tracts.
+Statistical models for data recorded across areal units like states,
+counties, or census tracts.
 
 ### Observational uncertainty
 
@@ -80,12 +80,6 @@ Load the package and the `georgia` county mortality data set (ages
 
 ``` r
 library(geostan)
-#> This is geostan version 0.2.1
-#> 
-#> Attaching package: 'geostan'
-#> The following object is masked from 'package:base':
-#> 
-#>     gamma
 data(georgia)
 ```
 
@@ -129,7 +123,7 @@ fit <- stan_car(deaths.female ~ offset(log(pop.at.risk.female)),
 #>   df location scale
 #> 1 10        0     3
 #> 
-#> *Setting prior for CAR spatial autocorrelation parameter (rho)
+#> *Setting prior for CAR spatial autocorrelation parameter (sar_rho)
 #> Distribution: uniform
 #>   lower upper
 #> 1  -1.7     1
@@ -159,8 +153,8 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.000228 
-#> WAIC:  1292.1 
+#> Residual Moran Coefficient:  0.00209675 
+#> WAIC:  1290.65 
 #> Observations:  159 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
@@ -168,11 +162,11 @@ print(fit)
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-#> intercept -4.674   0.002 0.089 -4.846 -4.718 -4.674 -4.631 -4.496  1648 1.002
-#> car_rho    0.923   0.001 0.058  0.778  0.895  0.935  0.966  0.995  3618 1.000
-#> car_scale  0.457   0.001 0.035  0.393  0.432  0.455  0.480  0.531  3855 1.000
+#> intercept -4.677   0.002 0.087 -4.867 -4.717 -4.676 -4.633 -4.504  2275 1.003
+#> car_rho    0.924   0.001 0.057  0.782  0.895  0.937  0.967  0.995  3625 1.000
+#> car_scale  0.456   0.001 0.035  0.391  0.433  0.454  0.479  0.530  3578 1.000
 #> 
-#> Samples were drawn using NUTS(diag_e) at Thu Jun 30 12:41:42 2022.
+#> Samples were drawn using NUTS(diag_e) at Mon Aug 29 17:51:29 2022.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).

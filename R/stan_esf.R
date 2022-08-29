@@ -374,7 +374,7 @@ stan_esf <- function(formula,
     standata <- c(standata, esf_dl)
     ## PRIORS with RHS-ESF [END] -------------
     ## EMPTY PLACEHOLDERS
-    standata <- c(standata, empty_icar_data(n), empty_car_data())
+    standata <- c(standata, empty_icar_data(n), empty_car_data(), empty_sar_data(n))
     ## ME MODEL STUFF -------------  
     me.list <- make_me_data(ME, xraw)
     standata <- c(standata, me.list)

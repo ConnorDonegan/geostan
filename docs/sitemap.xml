@@ -4,6 +4,9 @@
     <loc>https://connordonegan.github.io/geostan/404.html</loc>
   </url>
   <url>
+    <loc>https://connordonegan.github.io/geostan/LICENSE-text.html</loc>
+  </url>
+  <url>
     <loc>https://connordonegan.github.io/geostan/articles/index.html</loc>
   </url>
   <url>
@@ -85,6 +88,9 @@
     <loc>https://connordonegan.github.io/geostan/reference/prep_me_data.html</loc>
   </url>
   <url>
+    <loc>https://connordonegan.github.io/geostan/reference/prep_sar_data.html</loc>
+  </url>
+  <url>
     <loc>https://connordonegan.github.io/geostan/reference/priors.html</loc>
   </url>
   <url>
@@ -116,6 +122,9 @@
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/stan_icar.html</loc>
+  </url>
+  <url>
+    <loc>https://connordonegan.github.io/geostan/reference/stan_sar.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/waic.html</loc>

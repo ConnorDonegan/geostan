@@ -123,6 +123,7 @@ print.geostan_fit <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), digit
   }
   cat("Spatial method (outcome): ", as.character(x$spatial$method), "\n")
   if (x$spatial$method == "CAR") pars <- c(pars, "car_rho", "car_scale")
+  if (x$spatial$method == "SAR") pars <- c(pars, "sar_rho", "sar_scale")  
   if (x$spatial$method == "BYM2") pars <- c(pars, "rho", "spatial_scale")
   if (x$spatial$method == "BYM") pars <- c(pars, "spatial_scale", "theta_scale")
   if (x$spatial$method == "ICAR") pars <- c(pars, "spatial_scale")  
@@ -247,28 +248,35 @@ spatial <- function(object, summary = TRUE, ...) {
 #' @rdname geostan_fit
 spatial.geostan_fit <- function(object, summary = TRUE, ...) {
   if (is.na(object$spatial$par)) stop("This model does not have a spatial trend component to extract.")
-  par <- as.character(object$spatial$par)
-  if (!object$spatial$method == "CAR") {
+  if (!object$spatial$method %in% c("CAR", "SAR")) {
+      par <- as.character(object$spatial$par)
       spatial.samples <- as.matrix(object, pars = par, ...)
   } else {
-      if (object$family$family == "auto_gaussian") {
-          C <- object$C              
-          R <- resid(object, summary = FALSE, detrend = FALSE)
-          rho <- as.matrix(object, pars = "car_rho")
-          spatial.samples <- t(sapply(1:nrow(rho), function(i) {
-              as.numeric( rho[i] * C %*% R[i,] )
-          }))         
-      } else {
-          log_lambda_mu <- as.matrix(object, pars = "log_lambda_mu")
-          log_lambda <- log( fitted(object, summary = FALSE, rates = TRUE) )
-          spatial.samples <- log_lambda - log_lambda_mu
-      }
-  } 
+      spatial.samples <- extract_autoGauss_trend(object)
+  }
   if (summary) {
     return ( post_summary(spatial.samples) )
   } else {
       return( spatial.samples )
   }
+}
+
+extract_autoGauss_trend <- function(object) {
+    if (object$spatial$method == "CAR") rho_name <- "car_rho"
+    if (object$spatial$method == "SAR") rho_name <- "sar_rho"
+    if (object$family$family == "auto_gaussian") {
+        C <- object$C              
+        R <- resid(object, summary = FALSE, detrend = FALSE)
+        rho <- as.matrix(object, pars = rho_name)
+        spatial.samples <- t(sapply(1:nrow(rho), function(i) {
+            as.numeric( rho[i] * C %*% R[i,] )
+        }))         
+      } else {
+          log_lambda_mu <- as.matrix(object, pars = "log_lambda_mu")
+          log_lambda <- log( fitted(object, summary = FALSE, rates = TRUE) )
+          spatial.samples <- log_lambda - log_lambda_mu
+      }
+    return (spatial.samples)
 }
 
 #' @export

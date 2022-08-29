@@ -12,10 +12,12 @@
   vector<lower=0>[dev] aux2_local;
   real<lower=0> caux[dev ? 1 : 0];
   vector[dev] z;
-  // CAR
-  vector[car && !is_auto_gaussian ? n : 0] log_lambda;
+  // CAR/SAR
+  vector[(car||sar) && !is_auto_gaussian ? n : 0] log_lambda;
   real<lower=0> car_scale[car ? 1 : 0];
   real<lower=car_rho_lims[1], upper=car_rho_lims[2]> car_rho[car ? 1 : 0];     
+  real<lower=0> sar_scale[sar ? 1 : 0];
+  real<lower=sar_rho_lims[1], upper=sar_rho_lims[2]> sar_rho[sar ? 1 : 0];     
   // GLM
 // parameters for the process model //
   real intercept;

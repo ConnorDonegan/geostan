@@ -309,7 +309,7 @@ stan_glm <- function(formula,
                                offset = offset)    
     standata <- append_priors(standata, priors_made)    
     ## EMPTY PLACEHOLDERS
-    standata <- c(standata, empty_icar_data(n), empty_esf_data(n), empty_car_data())
+    standata <- c(standata, empty_icar_data(n), empty_esf_data(n), empty_car_data(), empty_sar_data(n))
     ## ME MODEL -------------  
     me.list <- make_me_data(ME, xraw)
     standata <- c(standata, me.list)  

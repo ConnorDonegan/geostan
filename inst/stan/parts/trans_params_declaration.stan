@@ -6,7 +6,7 @@
   vector[type ? n : 0] phi;
   vector[type > 1 ? n : 0] theta;
   // CAR
-  vector[car ? n : 0] log_lambda_mu;  
+  vector[car||sar ? n : 0] log_lambda_mu;  
   // GLM
   matrix[n, dx_all] x_all;
   vector[n] fitted;
@@ -14,6 +14,5 @@
   if (dx_me) for (j in 1:dx_me) x_all[ ,x_me_idx[j]] = x_true[j];
   if (center_x) for (j in 1:dx_all) x_all[,j] = x_all[,j] - mean(x_all[,j]);
   if (!car) fitted = offset + intercept;  
-
 
 

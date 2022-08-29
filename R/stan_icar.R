@@ -416,7 +416,7 @@ stan_icar <- function(formula,
     standata$type <- match(type, c("icar", "bym", "bym2"))
     ## ICAR DATA [STOP] -------------    
     ## EMPTY PLACEHOLDERS
-    standata <- c(standata, empty_esf_data(n), empty_car_data())
+    standata <- c(standata, empty_esf_data(n), empty_car_data(), empty_sar_data(n))
     ## ME MODEL -------------  
     me.list <- make_me_data(ME, xraw)
     standata <- c(standata, me.list)  

@@ -28,7 +28,7 @@ The package is designed primarily to support public health research with spatial
 
 ### Disease mapping and spatial regression
 
-Model small-area incidence rates with mortality or disease data recorded across areal units like states, counties, or census tracts.
+Statistical models for data recorded across areal units like states, counties, or census tracts.  
 
 ### Observational uncertainty 
 

@@ -670,8 +670,9 @@ row_standardize <- function(C, warn = TRUE, msg = "Row standardizing connectivit
 
 #' Auto-Gaussian family for CAR models
 #'
+#' @param type Optional; either "CAR" for conditionally specified auto-model or "SAR" for the simultaneously specified auto-model. The type is added internally by `stan_car` or `stan_sar` when needed.
 #' @export
-#' @description create a family object for the auto-Gaussian CAR specification
+#' @description create a family object for the auto-Gaussian CAR or SAR specification
 #' @return An object of class \code{family}
 #' @seealso \code{\link[geostan]{stan_car}}
 #' @examples
@@ -680,10 +681,11 @@ row_standardize <- function(C, warn = TRUE, msg = "Row standardizing connectivit
 #'                 data = georgia,
 #'                 car_parts = cp,
 #'                 family = auto_gaussian(),
-#'                 chains = 2, iter = 800) # for speed only
+#'                 chains = 2, iter = 700) # for speed only
 #' print(fit)
-auto_gaussian <- function() {
+auto_gaussian <- function(type) {
     family <- list(family = "auto_gaussian", link = "identity")
+    if (!missing(type)) family$type <- type
     class(family) <- "family"
     return(family)
 }
@@ -1043,6 +1045,63 @@ prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), k = 1, gamma = 0
     }
     if (cmat) car.dl$C <- C
     return (car.dl)
+}
+
+
+#' Prepare data for a simultaneous autoregressive (SAR) model 
+#'
+#' @description Given a spatial weights matrix \eqn{W}, this function prepares data for the simultaneous autoregressive (SAR) model (a.k.a spatial error models (SEM)) in Stan. This is used internally by \code{\link[geostan]{stan_sar}}, and may also be used for building custom SAR models in Stan. 
+#' 
+#' @param W Spatial weights matrix, typically row-standardized.
+#' 
+#' @return list of data to add to a Stan data list:
+#' 
+#' \describe{
+#' \item{ImW_w}{Numeric vector containing the non-zero elements of matrix \eqn{(I - W)}.}
+#' \item{ImW_v}{An integer vector containing the column indices of the non-zero elements of \eqn{(I - W)}.}
+#' \item{ImW_u}{An integer vector indicating where in `ImW_w` a given row's non-zero values start.}
+#' \item{nImW_w}{Number of entries in `ImW_w`.}
+#' \item{Widx}{Integer vector containing the indices corresponding to values of `-W` in `ImW_w` (i.e. non-diagonal entries of \eqn{(I-W)}).}
+#' \item{nW}{Integer length of `Widx`.}
+#' \item{eigenvalues_w}{Eigenvalues of \eqn{W} matrix.}
+#' \item{n}{Number of rows in eqn{W}.}
+#' \item{W}{Sparse matrix representation of \eqn{W}}
+#' \item{rho_min}{Minimum permissible value of \eqn{\rho} (`1/min(eigenvalues_w)`).}
+#' \item{rho_max}{Maximum permissible value of \eqn{\rho} (`1/max(eigenvalues_w)`.}
+#' }
+#' The function will also print the range of permissible \eqn{\rho} values to the console.
+#'
+#' @details
+#'
+#' This is used internally to prepare data for \code{\link[geostan]{stan_sar}} models. It can also be helpful for fitting custom SAR models in Stan (outside of \code{geostan}). 
+#' 
+#' @seealso \code{\link[geostan]{shape2mat}}, \code{\link[geostan]{stan_sar}}, \code{\link[geostan]{prep_car_data}}, \code{\link[geostan]{prep_icar_data}}
+#'
+#' @examples
+#' data(georiga)
+#' W <- shape2mat(georgia, "W")
+#' sar_data_list <- prep_sar_data(W)
+#' 
+#' @export
+#' @importFrom Matrix rowSums
+#' @importFrom rstan extract_sparse_parts
+prep_sar_data <- function(W) {
+    stopifnot(inherits(W, "matrix") | inherits(W, "Matrix"))
+    ##stopifnot( all.equal(Matrix::rowSums(W), rep(1, nrow(W))) )
+    N <- nrow(W)
+    sar.dl <- rstan::extract_sparse_parts(Matrix::Diagonal(N) - W)
+    names(sar.dl) <- paste0("ImW_", names(sar.dl))
+    sar.dl$nImW_w <- length(sar.dl$ImW_w)
+    sar.dl$Widx <- which(sar.dl$ImW_w != 1)
+    sar.dl$nW <- length(sar.dl$Widx)
+    sar.dl$eigenvalues_w <- as.numeric( eigen(W)$values )
+    sar.dl$n <- N
+    sar.dl$W <- W
+    rho_lims <- 1/range(sar.dl$eigenvalues_w)
+    cat("Range of permissible rho values: ", rho_lims, "\n")
+    sar.dl$rho_min <- min(rho_lims)
+    sar.dl$rho_max <- max(rho_lims)    
+    return( sar.dl )
 }
 
 

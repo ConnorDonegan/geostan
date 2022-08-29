@@ -18,8 +18,9 @@ transformed parameters {
 #include parts/trans_params_declaration.stan
 #include parts/trans_params_expression_icar.stan
 #include parts/trans_params_expression_esf.stan
-#include parts/trans_params_expression_car.stan
-  if (!car) {
+//#include parts/trans_params_expression_car.stan
+#include parts/trans_params_expression_auto-model.stan
+  if (!car && !sar) {
     if (has_re) {
       for (i in 1:n) {
 	fitted[i] += alpha_re[id[i]];

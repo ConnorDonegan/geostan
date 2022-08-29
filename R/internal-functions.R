@@ -21,7 +21,10 @@ family_2_int <- function(family) {
     if (family$family == "student_t") return (2)
     if (family$family == "poisson") return (3)
     if (family$family == "binomial") return (4)
-    if (family$family == "auto_gaussian") return (5)
+    if (family$family == "auto_gaussian") {
+        if (family$type == "CAR") return (5)
+        if (family$type == "SAR") return (6)
+    }
 }
 
 
@@ -217,6 +220,10 @@ clean_results <- function(samples, pars, is_student, has_re, Wx, x, x_me_idx) {
         samples <- par_alias(samples, "^car_rho\\[1\\]", "car_rho")
         samples <- par_alias(samples, "^car_scale\\[1\\]", "car_scale")
     }
+    if ("sar_rho" %in% pars) {
+        samples <- par_alias(samples, "^sar_rho\\[1\\]", "sar_rho")
+        samples <- par_alias(samples, "^sar_scale\\[1\\]", "sar_scale")
+    }    
     if (is_student) samples <- par_alias(samples, "^nu\\[1\\]", "nu")
     if (has_re) samples <- par_alias(samples, "^alpha_tau\\[1\\]", "alpha_tau")
     main_pars <- pars[which(pars %in% c("nu", "intercept", "alpha_tau", "gamma", "beta", "sigma", "rho", "spatial_scale", "theta_scale", "car_scale", "car_rho"))]
@@ -289,9 +296,17 @@ print_priors <- function(user_priors, priors) {
               print(p)
           }
           if (nm == "car_rho") {
-              message("\n*Setting prior for CAR spatial autocorrelation parameter (rho)")
+              message("\n*Setting prior for CAR spatial autocorrelation parameter (sar_rho)")
               print(p)
           }
+          if (nm == "sar_scale") {
+              message("\n*Setting prior for SAR scale parameter (sar_scale)")
+              print(p)
+          }
+          if (nm == "sar_rho") {
+              message("\n*Setting prior for SAR spatial autocorrelation parameter (sar_rho)")
+              print(p)
+          }          
       }  
   } 
 }
@@ -355,5 +370,20 @@ empty_car_data <- function() {
     list(
         car = 0,
         car_rho_lims = c(-1, 1)
+    )
+}
+
+#' @noRd
+empty_sar_data <- function(n) {
+    list(
+        nImW_w = 1,
+        nW = 1,
+        ImW_w = a.zero(),
+        ImW_v = a.zero(),
+        ImW_u = rep(0, n+1),
+        eigenvalues_w = rep(0, n),
+        sar_rho_lims = c(-1, 1),
+        Widx = a.zero(),
+        sar = 0
     )
 }

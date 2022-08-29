@@ -1,5 +1,5 @@
 // likelihood function
-  int<lower=0,upper=5> family;
+  int<lower=0,upper=6> family;
 
 // number of observations
   int<lower=0> n; 
@@ -105,3 +105,15 @@
   // CAR
   real car_rho_lims[2];
   int<lower=0,upper=1> car;
+
+  // SAR
+  int nImW_w;
+  int nW;
+  vector[nImW_w] ImW_w;
+  int ImW_v[nImW_w];
+  int ImW_u[n + 1];
+  int Widx[nW];
+  vector[n] eigenvalues_w;
+  real sar_rho_lims[2];
+  int<lower=0,upper=1> sar;
+

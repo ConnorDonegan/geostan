@@ -33,6 +33,13 @@ check_car_parts <- function(car_parts) {
     stopifnot(inherits(car_parts$C, "Matrix") | inherits(car_parts$C, "matrix"))    
 }
 
+check_sar_parts <- function(sar_parts) {
+    if(!inherits(sar_parts, "list")) stop("sar_parts must be a list of data for the SAR model. See ?prep_sar_data.")
+    if(!all(c("ImW_w", "ImW_v", "ImW_u", "nImW_w", "Widx", "nW", "eigenvalues_w", "n", "W", "rho_min", "rho_max") %in% names(sar_parts))) stop("sar_parts is missing at least one required part. See ?prep_sar_data.")
+    stopifnot(inherits(sar_parts$W, "Matrix") | inherits(sar_parts$W, "matrix"))    
+}
+
+
 #' check data (x, w) dimensions and class for spatial autocorrelation measures
 #' @noRd
 check_sa_data <- function(x, w) {

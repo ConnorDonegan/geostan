@@ -1,10 +1,22 @@
-  if (is_auto_gaussian) {
+  if (is_auto_gaussian && car) {
     log_lik[1] = auto_normal_lpdf(y |
 				  fitted, car_scale[1], car_rho[1],
 				  Ax_w, Ax_v, Ax_u,
 				  Cidx,
 				  Delta_inv, log_det_Delta_inv,
 				  lambda, n, WCAR);    
+  }
+  if (is_auto_gaussian && sar) {
+    log_lik[1] = sar_normal_lpdf(y |
+				 fitted,
+				 sar_scale[1],
+				 sar_rho[1],
+				 ImW_w,
+				 ImW_v,
+				 ImW_u,
+				 Widx,
+				 eigenvalues_w,
+				 n);
   }
   for (i in 1:n) {
    if (is_student) {
