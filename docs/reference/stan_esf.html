@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.1</span>
       </span>
     </div>
 
@@ -224,27 +224,37 @@ alpha_tau ~ Student_t(d.f., location, scale).
     <div id="details">
     <h2>Details</h2>
     <p>Eigenvector spatial filtering (ESF) is a method for spatial regression analysis. ESF is extensively covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), which uses Piironen and Vehtari's (2017) regularized horseshoe prior.</p>
-<p>ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. ESF models take the spectral decomposition of a transformed spatial connectivity matrix, <code>C</code>. The resulting eigenvectors, <code>EV</code>, are mutually orthogonal and uncorrelated map patterns. The spatial filter is <code>EV * beta_ev</code>, where <code>beta_ev</code> is a vector of coefficients.</p>
-<p>ESF decomposes the data into a global mean, <code>alpha</code>, global patterns contributed by covariates, <code>X * beta</code>, spatial trends, <code>EV * beta_ev</code>, and residual variation. Thus, for <code>family=gaussian()</code>,</p><div class="sourceCode"><pre><code>Y ~ Gauss(alpha + X * beta + EV * beta_ev, sigma).
-</code></pre></div>
-
-<p>An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:</p><div class="sourceCode"><pre><code><span class="va">Y</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">Poisson</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">offset</span> <span class="op">+</span> <span class="va">Mu</span><span class="op">)</span><span class="op">)</span>
-<span class="va">Mu</span> <span class="op">=</span> <span class="va">alpha</span> <span class="op">+</span> <span class="va">EV</span> <span class="op">*</span> <span class="va">beta_ev</span> <span class="op">+</span> <span class="va">A</span>
-<span class="va">A</span> <span class="op">~</span> <span class="fu">Guass</span><span class="op">(</span><span class="fl">0</span>, <span class="va">tau</span><span class="op">)</span>
-<span class="va">tau</span> <span class="op">~</span> <span class="fu">student</span><span class="op">(</span><span class="fl">20</span>, <span class="fl">0</span>, <span class="fl">2</span><span class="op">)</span>
-<span class="va">beta_ev</span> <span class="op">~</span> <span class="fu">horseshoe</span><span class="op">(</span><span class="va">.</span><span class="op">)</span></code></pre></div>
-
-<p>The <code><a href="geostan_fit.html">spatial.geostan_fit</a></code> method will return <code>EV * beta</code>.</p>
+<p>ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \(C\). The resulting eigenvectors, \(E\), are mutually orthogonal and uncorrelated map patterns. The spatial filter equals \(E \beta_{E}\) where \(\beta_{E}\) is a vector of coefficients.</p>
+<p>ESF decomposes the data into a global mean, \(\alpha\), global patterns contributed by covariates \(X \beta\), spatial trends \(E \beta_{E}\), and residual variation. Thus, for <code>family=gaussian()</code>,
+$$
+y \sim Gauss(\alpha + X * \beta + E \beta_{E}, \sigma).
+$$</p>
+<p>An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:
+$$
+y \sim Poisson(e^{O + \mu}) \\
+\mu = \alpha + E \beta_{E} + A \\
+A \sim Guass(0, \tau) \\
+\tau \sim student(20, 0, 2) \\
+\beta_{E} \sim horseshoe(.)
+$$
+The form of this model is similar to the BYM model (see <code><a href="stan_icar.html">stan_icar</a></code>), in the sense that it contains a spatially structured trend term (\(E \beta_{E}\)) and an unstructured ('random effects') term (\(A\)).</p>
+<p>The <code><a href="geostan_fit.html">spatial.geostan_fit</a></code> method will return \(E \beta_{E}\).</p>
 <p>The model can also be extended to the space-time domain; see <a href="shape2mat.html">shape2mat</a> to specify a space-time connectivity matrix.</p>
-<p>The coefficients <code>beta_ev</code> are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the <code>threshold</code> argument). By default, <code>stan_esf</code> will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the <code>nsa</code> argument.</p><div class="section">
+<p>The coefficients \(\beta_{E}\) are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the <code>threshold</code> argument). By default, <code>stan_esf</code> will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the <code>nsa</code> argument.</p><div class="section">
 <h3 id="spatially-lagged-covariates-slx-">Spatially lagged covariates (SLX)<a class="anchor" aria-label="anchor" href="#spatially-lagged-covariates-slx-"></a></h3>
 
 
-<p>The <code>slx</code> argument is a convenience function for including SLX terms. For example,</p><div class="sourceCode"><pre><code><span class="fu"><a href="../reference/stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, slx <span class="op">=</span> <span class="op">~</span> <span class="va">x1</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+<p>The <code>slx</code> argument is a convenience function for including SLX terms. For example,
+$$
+ y = W X \gamma + X \beta + \epsilon
+$$
+where \(W\) is a row-standardized spatial weights matrix (see <code><a href="shape2mat.html">shape2mat</a></code>), \(WX\) is the mean neighboring value of \(X\), and \(\gamma\) is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the <code>slx</code> argument:</p><div class="sourceCode"><pre><code>stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
+</code></pre></div>
 
-<p>is a shortcut for</p><div class="sourceCode"><pre><code><span class="fu"><a href="../reference/stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="va">W</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">x1</span><span class="op">)</span> <span class="op">+</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+<p>which is a shortcut for</p><div class="sourceCode"><pre><code>stan_glm(y ~ I(W \%*\% x1) + I(W \%*\% x2) + x1 + x2, \...)
+</code></pre></div>
 
-<p>where <code>W</code> is a row-standardized spatial weights matrix (see <code><a href="shape2mat.html">shape2mat</a></code>). SLX terms will always be <em>prepended</em> to the design matrix, as above, which is important to know when setting prior distributions for regression coefficients.</p>
+<p>SLX terms will always be <em>prepended</em> to the design matrix, as above, which is important to know when setting prior distributions for regression coefficients.</p>
 <p>For measurement error (ME) models, the SLX argument is the only way to include spatially lagged covariates since the SLX term needs to be re-calculated on each iteration of the MCMC algorithm.</p>
 </div>
 
@@ -252,24 +262,36 @@ alpha_tau ~ Student_t(d.f., location, scale).
 <h3 id="measurement-error-me-models">Measurement error (ME) models<a class="anchor" aria-label="anchor" href="#measurement-error-me-models"></a></h3>
 
 
-<p>The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates (Donegan et al. 2021; Donegan 2021). With estimates, <code>x</code>, and their standard errors, <code>se</code>, the ME models have one of the the following two specifications, depending on the user input:</p><div class="sourceCode"><pre><code>x ~ Gauss(x_true, se)
-x_true ~ MVGauss(mu, Sigma)
-Sigma = (I - rho * C)^(-1) M * tau^2
-mu ~ Gauss(0, 100)
-tau ~ student_t(10, 0, 40)
-rho ~ uniform(lower_bound, upper_bound)
-</code></pre></div>
-
-<p>where the covariance matrix, <code>Sigma</code>, has the conditional autoregressive specification, and <code>tau</code> is the scale parameter. For non-spatial ME models, the following is used instead:</p><div class="sourceCode"><pre><code><span class="va">x</span> <span class="op">~</span> <span class="fu">Gauss</span><span class="op">(</span><span class="va">x_true</span>, <span class="va">se</span><span class="op">)</span>
-<span class="va">x_true</span> <span class="op">~</span> <span class="fu"><a href="../reference/priors.html">student_t</a></span><span class="op">(</span><span class="va">df</span>, <span class="va">mu</span>, <span class="va">sigma</span><span class="op">)</span>
-<span class="va">df</span> <span class="op">~</span> <span class="fu"><a href="../reference/priors.html">gamma</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0.2</span><span class="op">)</span>
-<span class="va">mu</span> <span class="op">~</span> <span class="fu">Gauss</span><span class="op">(</span><span class="fl">0</span>, <span class="fl">100</span><span class="op">)</span>
-<span class="va">sigma</span> <span class="op">~</span> <span class="fu"><a href="../reference/priors.html">student_t</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">0</span>, <span class="fl">40</span><span class="op">)</span></code></pre></div>
-
-<p>For strongly skewed variables, such census tract poverty rates, it can be advantageous to apply a logit transformation to <code>x_true</code> before applying the CAR or Student t prior model. When the <code>logit</code> argument is used, the model becomes:</p><div class="sourceCode"><pre><code><span class="va">x</span> <span class="op">~</span> <span class="fu">Gauss</span><span class="op">(</span><span class="va">x_true</span>, <span class="va">se</span><span class="op">)</span>
-<span class="fu">logit</span><span class="op">(</span><span class="va">x_true</span><span class="op">)</span> <span class="op">~</span> <span class="fu">MVGauss</span><span class="op">(</span><span class="va">mu</span>, <span class="va">Sigma</span><span class="op">)</span></code></pre></div>
-
-<p>and similar for the Student t model.</p>
+<p>The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. Given estimates \(x\), their standard errors \(s\), and the target quantity of interest (i.e., the unknown true value) \(z\), the ME models have one of the the following two specifications, depending on the user input. If a spatial CAR model is specified, then:
+$$
+ x \sim Gauss(z, s^2) \\
+ z \sim Gauss(\mu_z, \Sigma_z) \\
+\Sigma_z = (I - \rho C)^{-1} M \\
+ \mu_z \sim Gauss(0, 100) \\
+ \tau_z \sim Student(10, 0, 40), \tau &gt; 0 \\
+ \rho_z \sim uniform(l, u)
+ $$
+where \(\Sigma\) specifies a spatial conditional autoregressive model with scale parameter \(\tau\) (on the diagonal of \(M\)), and \(l\), \(u\) are the lower and upper bounds that \(\rho\) is permitted to take (which is determined by the extreme eigenvalues of the spatial connectivity matrix \(C\)).</p>
+<p>For non-spatial ME models, the following is used instead:
+$$
+x \sim Gauss(z, s^2) \\
+z \sim student(\nu_z, \mu_z, \sigma_z) \\
+\nu_z \sim gamma(3, 0.2) \\
+\mu_z \sim Gauss(0, 100) \\
+\sigma_z \sim student(10, 0, 40).
+$$</p>
+<p>For strongly skewed variables, such as census tract poverty rates, it can be advantageous to apply a logit transformation to \(z\) before applying the CAR or Student-t prior model. When the <code>logit</code> argument is used, the model becomes:
+$$
+x \sim Gauss(z, s^2) \\
+logit(z) \sim Gauss(\mu_z, \Sigma_z) 
+...
+$$
+and similarly for the Student t model:
+$$
+x \sim Gauss(z, s^2) \\
+logit(z) \sim student(\nu_z, \mu_z, \sigma_z) \\
+...
+$$</p>
 </div>
 
 <div class="section">
@@ -277,19 +299,23 @@ rho ~ uniform(lower_bound, upper_bound)
 
 
 <p>Vital statistics systems and disease surveillance programs typically suppress case counts when they are smaller than a specific threshold value. In such cases, the observation of a censored count is not the same as a missing value; instead, you are informed that the value is an integer somewhere between zero and the threshold value. For Poisson models (<code>family = poisson())</code>), you can use the <code>censor_point</code> argument to encode this information into your model.</p>
-<p>Internally, <code>geostan</code> will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:</p><div class="sourceCode"><pre><code>p(y_i | data, model) = Poisson(y_i | fitted_i), 
-</code></pre></div>
-
-<p>as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:</p><div class="sourceCode"><pre><code>p(y_j | data, model) = sum_{m=0}^censor_point Poisson( c_m | fitted_j),
-</code></pre></div>
-
+<p>Internally, <code>geostan</code> will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:
+$$
+p(y_i | \text{data}, \text{model}) = poisson(y_i | \mu_i), 
+$$
+as usual, where \(\mu_i\) may include whatever spatial terms are present in the model.</p>
+<p>For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:
+$$
+p(y_i | \text{data}, \text{model}) = \sum_{m=0}^{M} Poisson( m | \mu_i),
+$$
+where \(M\) is the censor point and \(\mu_i\) again is the fitted value for the \(i^{th}\) observation.</p>
 <p>For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide <code>censor_point = 9</code> and then the likelihood statement for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model parameters). See Donegan (2021) for additional discussion, references, and Stan code.</p>
 </div>
 
     </div>
     <div id="author">
     <h2>Author</h2>
-    <p>Connor Donegan, <a href="mailto:Connor.Donegan@UTDallas.edu">Connor.Donegan@UTDallas.edu</a></p>
+    <p>Connor Donegan, <a href="mailto:connor.donegan@gmail.com">connor.donegan@gmail.com</a></p>
     </div>
 
     <div id="ref-examples">

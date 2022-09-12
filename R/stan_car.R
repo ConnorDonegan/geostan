@@ -55,133 +55,163 @@
 #' 
 #' @details
 #'
-#' CAR models are discussed in Cressie and Wikle (2011, p. 184-88), Cressie (2015, Ch. 6-7), and Haining and Li (2020, p. 249-51). 
+#' CAR models are discussed in Cressie and Wikle (2011, p. 184-88), Cressie (2015, Ch. 6-7), and Haining and Li (2020, p. 249-51). It is often used for areal or lattice data.
 #'
-#' The Stan code for this implementation of the CAR model first introduced in Donegan et al. (2021, supplementary material) for models of small area survey data.
+#' Details for the Stan code for this implementation of the CAR model can be found in Donegan (2021).
+#'
+#' The general scheme for the CAR model is as follows:
+#' \deqn{
+#'  y \sim Gauss( \mu, ( I - \rho C)^{-1} M),
+#' }
+#' where \eqn{I} is the identity matrix, \eqn{\rho} is a spatial dependence parameter, \eqn{C} is a spatial connectivity matrix, and \eqn{M} is a diagonal matrix of variance terms. The diagonal of \eqn{M} contains a scale parameter \eqn{\tau} multiplied by a vector of weights (often set to be proportional to the inverse of the number of neighbors assigned to each site). The CAR model owes its name to the fact that this joint distribution corresponds to a set of conditional distributions that relate the expected value of each observation to a function of neighboring values, i.e., the Markov condition holds:
+#' \deqn{
+#' E(y_i | y_1, y_2, \dots y_{i-1}, y_{i+1}, y_n) = \mu_i + \rho \sum_{j=1}^n c_{i,j} (y_j - \mu_j),
+#' }
+#' where entries of \eqn{c_{i,j}} are non-zero only if \eqn{j \in N(i)}, and \eqn{N(i)} indexes the sites that are neighbors of the \eqn{i^{th}} site.
 #' 
-#' Details and results depend on the \code{family} argument, as well as on the particular CAR specification chosen (see \link[geostan]{prep_car_data}).
+#' With the Gaussian probability distribution,
+#' \deqn{
+#'  y_i | y_j: j \neq i \sim Gauss(\mu_i + \rho \sum_{j=1}^n c_{i,j} (y_j - \mu_j), \tau_i^2)
+#' }
+#' where \eqn{\tau_i} is a scale parameter and \eqn{\mu_i} may contain covariates or simply the intercept.
+#'
+#' The covariance matrix of the CAR model contains two parameters: \code{car_rho} (\eqn{\rho}), which controls the degree of spatial autocorrelation, and the scale parameter, \code{car_scale} (\eqn{\tau}). The range of permissible values for \eqn{\rho} depends on the specification of \eqn{\boldsymbol C} and \eqn{\boldsymbol M}; for specification options, see \code{\link[geostan]{prep_car_data}} and Cressie and Wikle (2011, pp. 184-188) or Donegan (2021).
 #' 
+#' Further details of the models and results depend on the \code{family} argument, as well as on the particular CAR specification chosen (see \link[geostan]{prep_car_data}).
+#'
 #' ###  Auto-Gaussian
 #'
-#' When \code{family = auto_gaussian()}, the CAR model is specified as follows:
-#' ```
-#' Y ~ MVGauss(Mu, Sigma)
-#' Sigma = (I - rho C)^-1 * M * tau^2
-#' ```
-#' where \code{Mu} is the mean vector (with intercept, covariates, etc.), \code{C} is a spatial connectivity matrix, and \code{M} is a known diagonal matrix with diagonal entries proportional to the conditional variances. `C` and `M` are provided by \code{\link[geostan]{prep_car_data}}.
+#' When \code{family = auto_gaussian()} (the default), the CAR model is applied directly to the data as follows:
+#' \deqn{
+#'  y \sim Gauss( \mu, (I - \rho C)^{-1} M),
+#' }
+#' where \eqn{\mu} is the mean vector (with intercept, covariates, etc.), \eqn{C} is a spatial connectivity matrix, and \eqn{M} is a known diagonal matrix containing the conditional variances \eqn{\tau_i^2}. `C` and `M` are provided by \code{\link[geostan]{prep_car_data}}.
 #'
-#' The covariance matrix of the CAR model, \code{Sigma}, contains two parameters: \code{car_rho} (rho), which controls the degree of spatial autocorrelation, and the scale parameter, \code{car_scale} (tau). The range of permissible values for \code{rho} depends on the specification of \code{C} and \code{M}; for options, see \code{\link[geostan]{prep_car_data}} and Cressie and Wikle (2011, pp. 184-188).
-#'
-#' The auto-Gaussian model contains an implicit spatial trend (i.e., autocorrelation) component which is calculated as follows (Cressie 2015, p. 564):
-#' ```
-#' trend = rho * C * (Y - Mu).
-#' ```
+#' The auto-Gaussian model contains an implicit spatial trend (i.e., autocorrelation) component \eqn{\phi} which can be calculated as follows (Cressie 2015, p. 564):
+#' \deqn{
+#'  \phi = \rho C (y - \mu).
+#' }
 #' This term can be extracted from a fitted auto-Gaussian model using the \code{\link[geostan]{spatial}} method.
 #'
-#' When applied to a fitted auto-Gaussian model, the \code{\link[geostan]{residuals.geostan_fit}} method returns `de-trended' residuals by default. That is,
-#' ```
-#' residual = Y - Mu - trend.
-#' ```
-#' To obtain "raw" residuals (`Y - Mu`), use `residuals(fit, detrend = FALSE)`.
+#' When applied to a fitted auto-Gaussian model, the \code{\link[geostan]{residuals.geostan_fit}} method returns 'de-trended' residuals \eqn{R} by default. That is,
+#' \deqn{
+#' R = y - \mu - \rho C (y - \mu).
+#' }
+#' To obtain "raw" residuals (\eqn{y - \mu}), use `residuals(fit, detrend = FALSE)`.
 #' 
 #' ### Poisson
 #'
 #' For \code{family = poisson()}, the model is specified as:
+#'\deqn{
+#' y \sim Poisson(e^{O + \lambda}) \\
+#' \lambda \sim Gauss(\mu, (I - \rho C)^{-1} \boldsymbol M).
+#' }
+#' If the raw outcome consists of a rate \eqn{\frac{y}{p}} with observed counts \eqn{y} and denominator {p} (often this will be the size of the population at risk), then \eqn{O=log(p)} is the log of the denominator (the offset term).
 #'
-#' ```
-#' Y ~ Poisson(exp(offset + lambda))
-#' lambda ~ MVGauss(Mu, Sigma)
-#' Sigma = (I - rho C)^-1 * M * tau^2
-#' ```
-#' These models are most often used to calculate small area incidence rates (mortality or disease incidence rates); the user provided offset should be, then, the natural logarithm of the denominator in the rates, e.g., log-population at risk.
+#' This is often written (equivalently) as:
+#' \deqn{
+#' y \sim Poisson(e^{O + \mu + \phi}) \\
+#' \phi \sim Gauss(0, (I - \rho C)^{-1} \boldsymbol M).
+#' }
+#' For Poisson models, the \code{\link[geostan]{spatial}} method returns the parameter vector \eqn{\phi}.
 #' 
-#' For Poisson models, the \code{\link[geostan]{spatial}} method returns the parameter vector \code{phi}, which is the log-risk minus the intercept and any covariates:
-#'  ```
-#' phi = lambda - Mu.
-#' ```
-#' This is the spatial autocorrelation component. This is equivalent to specifying the model as:
-#' ```
-#' Y ~ Poisson(exp(offset + Mu + phi))
-#' phi ~ MVGauss(0, Sigma)
-#' Sigma = (I - rho C)^-1 * M * tau^2.
-#' ```
-#' 
-#' In the Poisson CAR model, `phi` contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \code{phi}, you can do so by calculating (following Cressie 2015, p. 564):
-#' ```
-#' trend = rho * C * phi.
-#' ```
+#' In the Poisson CAR model, \eqn{\phi} contains a latent spatial trend as well as additional variation around it: \eqn{\phi_i = \rho \sum_{i=1}^n c_{ij} \phi_j + \epsilon_i}, \eqn{\epsilon_i \sim Gauss(0, \tau_i^2)}. If you would like to extract the latent/implicit spatial trend from \eqn{\phi}, you can do so by calculating (following Cressie 2015, p. 564):
+#' \deqn{
+#' \rho  C  \phi.
+#' }
 #' 
 #' ### Binomial
 #' 
 #' For `family = binomial()`, the model is specified as:
-#'``` 
-#' Y ~ Binomial(N, theta)
-#' logit(theta) ~ MVGauss(Mu, Sigma)
-#' Sigma = (I - rho C)^-1 * M * tau^2
-#'```
-#' where outcome data `Y` are counts, `N` is the number of trials, and `theta` is the 'success' rate. Note that the model formula should be structured as: `cbind(sucesses, failures) ~ x`, such that `trials = successes + failures`.
-#' 
-#' For fitted Binomial models, the \code{\link[geostan]{spatial}} method will return the parameter vector \code{phi}, equivalent to:
-#'```
-#' phi = logit(theta) - Mu.
-#'```
+#'\deqn{
+#' y \sim Binomial(N, \lambda)  \\
+#' logit(\lambda) \sim Gauss(\mu, (I - \rho C)^{-1} \boldsymbol M).
+#' }
+#' where outcome data `y` are counts, `N` is the number of trials, and `theta` is the 'success' rate. Note that the model formula should be structured as: `cbind(sucesses, failures) ~ x`, such that `trials = successes + failures`.
 #'
+#' This is often written (equivalently) as:
+#' \deqn{
+#' y \sim Binomial(N, (\mu + \phi))  \\
+#' logit(\phi) \sim Gauss(0, (I - \rho C)^{-1} \boldsymbol M).
+#' }
+#' For fitted Binomial models, the \code{\link[geostan]{spatial}} method will return the parameter vector \code{phi}.
+#' 
+#' As is also the case for the Poisson model, \eqn{\phi} contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \eqn{\phi}, you can do so by calculating:
+#' \deqn{
+#' \rho C \phi.
+#' }
+#' 
 #' ### Spatially lagged covariates (SLX)
 #' 
-#' The `slx` argument is a convenience function for including SLX terms. For example,
+#' The `slx` argument is a convenience function for including SLX terms. For example, 
+#' \deqn{
+#'  y = W X \gamma + X \beta + \epsilon
+#' }
+#' where \eqn{W} is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}), \eqn{WX} is the mean neighboring value of \eqn{X}, and \eqn{\gamma} is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the \code{slx} argument:
 #' ```
-#' stan_glm(y ~ x1 + x2, slx = ~ x1, \...)
+#' stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
 #' ```
-#' is a shortcut for
+#' which is a shortcut for
 #' ```
-#' stan_glm(y ~ I(W \%*\% x1) + x1 + x2, \...)
+#' stan_glm(y ~ I(W \%*\% x1) + I(W \%*\% x2) + x1 + x2, \...)
 #' ```
-#' where `W` is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}). SLX terms will always be *prepended* to the design matrix, as above, which is important to know when setting prior distributions for regression coefficients.
+#' SLX terms will always be *prepended* to the design matrix, as above, which is important to know when setting prior distributions for regression coefficients.
 #'
 #' For measurement error (ME) models, the SLX argument is the only way to include spatially lagged covariates since the SLX term needs to be re-calculated on each iteration of the MCMC algorithm.
 #' 
 #' ### Measurement error (ME) models
 #' 
-#' The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. With estimates, `x`, and their standard errors, `se`, the ME models have one of the the following two specifications, depending on the user input:
-#' ```
-#' x ~ Gauss(x_true, se)
-#' x_true ~ MVGauss(mu, Sigma)
-#' Sigma = (I - rho C)^(-1) M * tau^2
-#' mu ~ Gauss(0, 100)
-#' tau ~ student_t(10, 0, 40)
-#' rho ~ uniform(lower_bound, upper_bound)
-#' ```
-#' where the covariance matrix, `Sigma`, has the conditional autoregressive specification, and `tau` is the scale parameter. For non-spatial ME models, the following is used instead:
-#' ```
-#' x ~ Gauss(x_true, se)
-#' x_true ~ student_t(df, mu, sigma)
-#' df ~ gamma(3, 0.2)
-#' mu ~ Gauss(0, 100)
-#' sigma ~ student_t(10, 0, 40)
-#' ```
-#' For strongly skewed variables, such census tract poverty rates, it can be advantageous to apply a logit transformation to `x_true` before applying the CAR or Student t prior model. When the `logit` argument is used, the model becomes:
-#' ```
-#' x ~ Gauss(x_true, se)
-#' logit(x_true) ~ MVGauss(mu, Sigma)
-#' ```
-#' and similar for the Student t model.
+#' The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. Given estimates \eqn{x}, their standard errors \eqn{s}, and the target quantity of interest (i.e., the unknown true value) \eqn{z}, the ME models have one of the the following two specifications, depending on the user input. If a spatial CAR model is specified, then:
+#' \deqn{
+#'  x \sim Gauss(z, s^2) \\
+#'  z \sim Gauss(\mu_z, \Sigma_z) \\
+#' \Sigma_z = (I - \rho C)^{-1} M \\
+#'  \mu_z \sim Gauss(0, 100) \\
+#'  \tau_z \sim Student(10, 0, 40), \tau > 0 \\
+#'  \rho_z \sim uniform(l, u)
+#'  }
+#' where \eqn{\Sigma} specifies a spatial conditional autoregressive model with scale parameter \eqn{\tau} (on the diagonal of \eqn{M}), and \eqn{l}, \eqn{u} are the lower and upper bounds that \eqn{\rho} is permitted to take (which is determined by the extreme eigenvalues of the spatial connectivity matrix \eqn{C}).
+#' 
+#' For non-spatial ME models, the following is used instead:
+#' \deqn{
+#' x \sim Gauss(z, s^2) \\
+#' z \sim student(\nu_z, \mu_z, \sigma_z) \\
+#' \nu_z \sim gamma(3, 0.2) \\
+#' \mu_z \sim Gauss(0, 100) \\
+#' \sigma_z \sim student(10, 0, 40).
+#' }
+#' 
+#' For strongly skewed variables, such as census tract poverty rates, it can be advantageous to apply a logit transformation to \eqn{z} before applying the CAR or Student-t prior model. When the `logit` argument is used, the model becomes:
+#' \deqn{
+#' x \sim Gauss(z, s^2) \\
+#' logit(z) \sim Gauss(\mu_z, \Sigma_z) 
+#' ...
+#' }
+#' and similarly for the Student t model:
+#' \deqn{
+#' x \sim Gauss(z, s^2) \\
+#' logit(z) \sim student(\nu_z, \mu_z, \sigma_z) \\
+#' ...
+#' }
 #'
 #' ### Censored counts
 #'
 #' Vital statistics systems and disease surveillance programs typically suppress case counts when they are smaller than a specific threshold value. In such cases, the observation of a censored count is not the same as a missing value; instead, you are informed that the value is an integer somewhere between zero and the threshold value. For Poisson models (`family = poisson())`), you can use the `censor_point` argument to encode this information into your model. 
 #'
 #' Internally, `geostan` will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:
-#' ```
-#' p(y_i | data, model) = Poisson(y_i | fitted_i), 
-#' ```
-#' as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:
-#' ```
-#' p(y_j | data, model) = sum_{m=0}^censor_point Poisson( c_m | fitted_j),
-#' ```
+#' \deqn{
+#' p(y_i | \text{data}, \text{model}) = poisson(y_i | \mu_i), 
+#' }
+#' as usual, where \eqn{\mu_i} may include whatever spatial terms are present in the model.
+#'
+#' For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:
+#' \deqn{
+#' p(y_i | \text{data}, \text{model}) = \sum_{m=0}^{M} Poisson( m | \mu_i),
+#' }
+#' where \eqn{M} is the censor point and \eqn{\mu_i} again is the fitted value for the \eqn{i^{th}} observation.
 #' 
 #' For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide `censor_point = 9` and then the likelihood statement for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model parameters). See Donegan (2021) for additional discussion, references, and Stan code.
 #'
-#'        
 #'
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
@@ -203,17 +233,19 @@
 #' \item{C}{Spatial connectivity matrix (in sparse matrix format).}
 #' }
 #' 
-#' @author Connor Donegan, \email{Connor.Donegan@UTDallas.edu}
+#' @author Connor Donegan, \email{connor.donegan@gmail.com}
 #' 
 #' @source
 #'
+#' Besag, Julian (1974). Spatial interaction and the statistical analysis of lattice systems. *Journal of the Royal Statistical Society* B36.2: 192–225.
+#' 
 #' Cressie, Noel (2015 (1993)). *Statistics for Spatial Data*. Wiley Classics, Revised Edition.
 #' 
 #' Cressie, Noel and Wikle, Christopher (2011). *Statistics for Spatio-Temporal Data*. Wiley.
 #'
 #' Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. *Int. J. Env. Res. and Public Health* 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: \url{https://github.com/ConnorDonegan/survey-HBM}.
 #'
-#' Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. *OSF Preprints*. \doi{10.31219/osf.io/3ey65}.
+#' Donegan, Connor (2021). Building spatial conditional autoregressive (CAR) models in the Stan programming language. *OSF Preprints*. \doi{10.31219/osf.io/3ey65}.
 #' 
 #' Haining, Robert and Li, Guangquan (2020). *Modelling Spatial and Spatial-Temporal Data: A Bayesian Approach*. CRC Press.
 #' 

@@ -4,9 +4,9 @@
 \alias{stan_icar}
 \title{Intrinsic autoregressive models}
 \source{
-Besag, J. (1974). Spatial interaction and the statistical analysis of lattice systems. Journal of the Royal Statistical Society: Series B (Methodological), 36(2), 192-225.
+Besag, J. (1974). Spatial interaction and the statistical analysis of lattice systems. \emph{Journal of the Royal Statistical Society: Series B (Methodological)}, 36(2), 192-225.
 
-Besag, J., York, J., & Mollié, A. (1991). Bayesian image restoration, with two applications in spatial statistics. Annals of the institute of statistical mathematics, 43(1), 1-20.
+Besag, J., York, J., & Mollié, A. (1991). Bayesian image restoration, with two applications in spatial statistics. \emph{Annals of the Institute of Statistical Mathematics}, 43(1), 1-20.
 
 Donegan, Connor. 2021. Flexible functions for ICAR, BYM, and BYM2 models in Stan. Code repository. \url{https://github.com/ConnorDonegan/Stan-IAR}
 
@@ -14,11 +14,11 @@ Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). Modeling commu
 
 Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. \emph{OSF Preprints}. \doi{10.31219/osf.io/3ey65}.
 
-Freni-Sterrantino, Anna, Massimo Ventrucci, and Håvard Rue. 2018. A Note on Intrinsic Conditional Autoregressive Models for Disconnected Graphs. Spatial and Spatio-Temporal Epidemiology 26: 25–34.
+Freni-Sterrantino, Anna, Massimo Ventrucci, and Håvard Rue. 2018. A Note on Intrinsic Conditional Autoregressive Models for Disconnected Graphs. \emph{Spatial and Spatio-Temporal Epidemiology}, 26: 25–34.
 
-Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A., & DiMaggio, C. (2019). Bayesian hierarchical spatial models: Implementing the Besag York Mollié model in stan. Spatial and spatio-temporal epidemiology, 31, 100301.
+Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A., & DiMaggio, C. (2019). Bayesian hierarchical spatial models: Implementing the Besag York Mollié model in stan. \emph{Spatial and spatio-temporal epidemiology}, 31, 100301.
 
-Riebler, A., Sorbye, S. H., Simpson, D., & Rue, H. (2016). An intuitive Bayesian spatial model for disease mapping that accounts for scaling. Statistical Methods in Medical Research, 25(4), 1145-1165.
+Riebler, A., Sorbye, S. H., Simpson, D., & Rue, H. (2016). An intuitive Bayesian spatial model for disease mapping that accounts for scaling. \emph{Statistical Methods in Medical Research}, 25(4), 1145-1165.
 }
 \usage{
 stan_icar(
@@ -124,45 +124,50 @@ An object of class class \code{geostan_fit} (a list) containing:
 The intrinsic conditional auto-regressive (ICAR) model for spatial count data. Options include the BYM model, the BYM2 model, and a solo ICAR term.
 }
 \details{
-The Stan code for the ICAR component of the model and the BYM2 option is from Morris et al. (2019) with adjustments to enable non-binary weights and disconnected graph structures (see Freni-Sterrantino (2018) and Donegan (2021)).
+The intrinsic conditional autoregressive (ICAR) model for spatial data was introduced by Besag et al. (1991). The Stan code for the ICAR component of the model and the BYM2 option is from Morris et al. (2019) with adjustments to enable non-binary weights and disconnected graph structures (see Freni-Sterrantino (2018) and Donegan (2021)).
 
 The exact specification depends on the \code{type} argument.
 \subsection{'icar'}{
 
-For Poisson models for count data, y, the basic model specification (\code{type = "icar"}) is:\preformatted{y ~ Poisson(exp(offset + mu + phi))
-phi ~ ICAR(spatial_scale)
-spatial_scale ~ Gaussian(0, 1)
+For Poisson models for count data, y, the basic model specification (\code{type = "icar"}) is:
+\deqn{
+y ~ Poisson(e^{O + \mu + \phi}) \\
+\phi \sim ICAR(\tau_s) \\
+\tau_s \sim Gauss(0, 1)
 }
+where \eqn{\mu} contains an intercept and potentially covariates. The spatial trend \eqn{phi} has a mean of zero and a single scale parameter \eqn{\tau_s} (which user's will see printed as the parameter named \code{spatial_scale}).
 
-where \code{mu} contains an intercept and potentially covariates. The spatial trend, \code{phi}, has a mean of zero and a single scale parameter, \code{spatial_scale}.
-
-The ICAR prior model is a CAR model that has a spatial autocorrelation parameter \code{car_alpha} equal to 1 (see \link[geostan]{stan_car}). Thus the ICAR prior places high probability on a smooth spatially (or temporally) varying mean. This is rarely sufficient to model the amount of variation present in social and health data.
+The ICAR prior model is a CAR model that has a spatial autocorrelation parameter \eqn{\rho} equal to 1 (see \link[geostan]{stan_car}). Thus the ICAR prior places high probability on a very smooth spatially (or temporally) varying mean. This is rarely sufficient to model the amount of variation present in social and health data.
 }
 
 \subsection{'bym'}{
 
-Often, an observational-level random effect term, \code{theta}, is added to capture (heterogeneous or unstructured) deviations from \code{mu + phi}. The combined term is referred to as a convolution term:\preformatted{ convolution = phi + theta.
+Often, an observational-level random effect term, \code{theta}, is added to capture (heterogeneous or unstructured) deviations from \eqn{\mu + \phi}. The combined term is referred to as a convolution term:
+\eqn{
+ \text{convolution} = \phi + \theta.
 }
-
-This is known as the BYM model (Besag et al. 1991), and can be specified using \code{type = "bym"}:\preformatted{y ~ Poisson(exp(offset + mu + phi + theta))
-phi ~ ICAR(spatial_scale)
-theta ~ Gaussian(0, theta_scale)
-spatial_scale ~ Gaussian(0, 1)
-theta_scale ~ Gaussian(0, 1)
+This is known as the BYM model (Besag et al. 1991), and can be specified using \code{type = "bym"}:
+\eqn{
+y \sim Poisson(e^{O + \mu + \phi + \theta}) \\
+\phi \sim ICAR(\tau_s) \\
+\theta \sim Gaussian(0, \tau_{ns})
+\tau_s \sim Gaussian(0, 1)
+\tau_{ns} \sim Gaussian(0, 1)
 }
 }
 
 \subsection{'bym2'}{
 
-Riebler et al. (2016) introduce a variation on the BYM model (\code{type = "bym2"}). This specification combines \code{phi} and \code{theta} using a mixing parameter, \code{rho}, that controls the proportion of the variation that is attributable to the spatially autocorrelated term, \code{phi}, rather than the spatially unstructured term, \code{theta}. The terms share a single scale parameter:\preformatted{convolution = [sqrt(rho/scale_factor) * phi_tilde + sqrt(1 - rho) * theta_tilde] * spatial_scale.
-phi_tilde ~ Gaussian(0, 1)
-theta_tilde ~ Gaussian(0, 1)
-spatial_scale ~ Gaussian(0, 1)
+Riebler et al. (2016) introduce a variation on the BYM model (\code{type = "bym2"}). This specification combines \eqn{\phi} and \eqn{\theta} using a mixing parameter \eqn{\rho} that controls the proportion of the variation that is attributable to the spatially autocorrelated term \eqn{\phi} rather than the spatially unstructured term \eqn{\theta}. The terms share a single scale parameter:
+\deqn{
+\text{convolution} = [sqrt(\rho/\text{scale_factor}) * \tilde{\phi} + sqrt(1 - \rho)  \tilde{\theta}] * \tau_s \\
+\tilde{\phi} \sim Gaussian(0, 1) \\
+\tilde{\theta} \sim Gaussian(0, 1) \\
+\tau_s \sim Gaussian(0, 1)
 }
+The terms \eqn{\tilde{\phi}}, \eqn{\tilde{\theta}} are standard normal deviates, \eqn{\rho} is restricted to values between zero and one, and the 'scale_factor' is a constant term provided by the user. By default, the 'scale_factor' is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure of the connectivity matrix \eqn{C}. This implies that the same prior distribution assigned to \eqn{\tau_s} will differ in its implications if \eqn{C} is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to \eqn{\tau_s}.
 
-The two \verb{_tilde} terms are standard normal deviates, \code{rho} is restricted to values between zero and one, and \code{scale_factor} is a constant term provided by the user. By default, \code{scale_factor} is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure, \code{C}. This implies that the same prior distribution assigned to the \code{spatial_scale} will differ in its implications if \code{C} is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to \code{spatial_scale}.
-
-Borrowing \code{R} code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following \code{R} code can be used to create the \code{scale_factor} for the BYM2 model (note, this requires the INLA R package), given a spatial adjacency matrix, C:\preformatted{## create a list of data for stan_icar
+Borrowing \code{R} code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following \code{R} code can be used to create the 'scale_factor' for the BYM2 model (note, this requires the INLA R package), given a spatial adjacency matrix, \eqn{C}:\preformatted{## create a list of data for stan_icar
 icar.data <- geostan::prep_icar_data(C)
 ## calculate scale_factor for each of k connected group of nodes
 k <- icar.data$k
@@ -178,7 +183,7 @@ for (j in 1:k) \{
 \}
 }
 
-This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to \code{phi} automatically inside the Stan model. Therefore, the user never needs to make any adjustments for this term. (If you want to avoid complications from a disconnected graph structure, see \code{\link[geostan]{stan_car}}).
+This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to \eqn{\phi} automatically inside the Stan model. Therefore, the user never needs to make any adjustments for this term. (If you want to avoid complications from a disconnected graph structure, see \code{\link[geostan]{stan_car}}).
 
 Note, the code above requires the \code{scale_c} function; it has package dependencies that are not included in \code{geostan}. To use \code{scale_c}, you have to load the following \code{R} function:\preformatted{#' compute scaling factor for adjacency matrix, accounting for differences in spatial connectivity 
 #'
@@ -211,52 +216,74 @@ scale_c <- function(C) \{
 
 \subsection{Spatially lagged covariates (SLX)}{
 
-The \code{slx} argument is a convenience function for including SLX terms. For example,\preformatted{stan_glm(y ~ x1 + x2, slx = ~ x1, ...)
+The \code{slx} argument is a convenience function for including SLX terms. For example,
+\deqn{
+ y = W X \gamma + X \beta + \epsilon
+}
+where \eqn{W} is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}), \eqn{WX} is the mean neighboring value of \eqn{X}, and \eqn{\gamma} is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the \code{slx} argument:\preformatted{stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \\...),
 }
 
-is a shortcut for\preformatted{stan_glm(y ~ I(W \%*\% x1) + x1 + x2, ...)
+which is a shortcut for\preformatted{stan_glm(y ~ I(W \\\%*\\\% x1) + I(W \\\%*\\\% x2) + x1 + x2, \\...)
 }
 
-where \code{W} is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}). SLX terms will always be \emph{prepended} to the design matrix, as above, which is important to know when setting prior distributions for regression coefficients.
+SLX terms will always be \emph{prepended} to the design matrix, as above, which is important to know when setting prior distributions for regression coefficients.
 
 For measurement error (ME) models, the SLX argument is the only way to include spatially lagged covariates since the SLX term needs to be re-calculated on each iteration of the MCMC algorithm.
 }
 
 \subsection{Measurement error (ME) models}{
 
-The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates (Donegan et al. 2021; Donegan 2021). With estimates, \code{x}, and their standard errors, \code{se}, the ME models have one of the the following two specifications, depending on the user input:\preformatted{x ~ Gauss(x_true, se)
-x_true ~ MVGauss(mu, Sigma)
-Sigma = (I - rho * C)^(-1) M * tau^2
-mu ~ Gauss(0, 100)
-tau ~ student_t(10, 0, 40)
-rho ~ uniform(lower_bound, upper_bound)
+The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. Given estimates \eqn{x}, their standard errors \eqn{s}, and the target quantity of interest (i.e., the unknown true value) \eqn{z}, the ME models have one of the the following two specifications, depending on the user input. If a spatial CAR model is specified, then:
+\deqn{
+ x \sim Gauss(z, s^2) \\
+ z \sim Gauss(\mu_z, \Sigma_z) \\
+\Sigma_z = (I - \rho C)^{-1} M \\
+ \mu_z \sim Gauss(0, 100) \\
+ \tau_z \sim Student(10, 0, 40), \tau > 0 \\
+ \rho_z \sim uniform(l, u)
+ }
+where \eqn{\Sigma} specifies a spatial conditional autoregressive model with scale parameter \eqn{\tau} (on the diagonal of \eqn{M}), and \eqn{l}, \eqn{u} are the lower and upper bounds that \eqn{\rho} is permitted to take (which is determined by the extreme eigenvalues of the spatial connectivity matrix \eqn{C}).
+
+For non-spatial ME models, the following is used instead:
+\deqn{
+x \sim Gauss(z, s^2) \\
+z \sim student(\nu_z, \mu_z, \sigma_z) \\
+\nu_z \sim gamma(3, 0.2) \\
+\mu_z \sim Gauss(0, 100) \\
+\sigma_z \sim student(10, 0, 40).
 }
 
-where the covariance matrix, \code{Sigma}, has the conditional autoregressive specification, and \code{tau} is the scale parameter. For non-spatial ME models, the following is used instead:\preformatted{x ~ Gauss(x_true, se)
-x_true ~ student_t(df, mu, sigma)
-df ~ gamma(3, 0.2)
-mu ~ Gauss(0, 100)
-sigma ~ student_t(10, 0, 40)
+For strongly skewed variables, such as census tract poverty rates, it can be advantageous to apply a logit transformation to \eqn{z} before applying the CAR or Student-t prior model. When the \code{logit} argument is used, the model becomes:
+\deqn{
+x \sim Gauss(z, s^2) \\
+logit(z) \sim Gauss(\mu_z, \Sigma_z) 
+...
 }
-
-For strongly skewed variables, such census tract poverty rates, it can be advantageous to apply a logit transformation to \code{x_true} before applying the CAR or Student t prior model. When the \code{logit} argument is used, the model becomes:\preformatted{x ~ Gauss(x_true, se)
-logit(x_true) ~ MVGauss(mu, Sigma)
+and similarly for the Student t model:
+\deqn{
+x \sim Gauss(z, s^2) \\
+logit(z) \sim student(\nu_z, \mu_z, \sigma_z) \\
+...
 }
-
-and similar for the Student t model.
 }
 
 \subsection{Censored counts}{
 
 Vital statistics systems and disease surveillance programs typically suppress case counts when they are smaller than a specific threshold value. In such cases, the observation of a censored count is not the same as a missing value; instead, you are informed that the value is an integer somewhere between zero and the threshold value. For Poisson models (\verb{family = poisson())}), you can use the \code{censor_point} argument to encode this information into your model.
 
-Internally, \code{geostan} will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:\preformatted{p(y_i | data, model) = Poisson(y_i | fitted_i), 
+Internally, \code{geostan} will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:
+\deqn{
+p(y_i | \text{data}, \text{model}) = poisson(y_i | \mu_i), 
 }
+as usual, where \eqn{\mu_i} may include whatever spatial terms are present in the model.
 
-as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:\preformatted{p(y_j | data, model) = sum_\{m=0\}^censor_point Poisson( c_m | fitted_j),
+For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:
+\deqn{
+p(y_i | \text{data}, \text{model}) = \sum_{m=0}^{M} Poisson( m | \mu_i),
 }
+where \eqn{M} is the censor point and \eqn{\mu_i} again is the fitted value for the \eqn{i^{th}} observation.
 
-For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide \code{censor_point = 9} and then the likelihood statement for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model paramters). See Donegan (2021) for additional discussion, references, and Stan code.
+For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide \code{censor_point = 9} and then the likelihood statement for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model parameters). See Donegan (2021) for additional discussion, references, and Stan code.
 }
 }
 \examples{
@@ -310,5 +337,5 @@ ggplot( st_as_sf(sentencing) ) +
 \link[geostan]{shape2mat}, \link[geostan]{stan_car}, \link[geostan]{stan_esf}, \link[geostan]{stan_glm}, \link[geostan]{prep_icar_data}
 }
 \author{
-Connor Donegan, \email{Connor.Donegan@UTDallas.edu}
+Connor Donegan, \email{connor.donegan@gmail.com}
 }

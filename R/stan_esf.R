@@ -60,83 +60,100 @@
 #'
 #' Eigenvector spatial filtering (ESF) is a method for spatial regression analysis. ESF is extensively covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), which uses Piironen and Vehtari's (2017) regularized horseshoe prior.
 #'
-#' ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \code{C}. The resulting eigenvectors, `EV`, are mutually orthogonal and uncorrelated map patterns. The spatial filter is `EV * beta_ev`, where `beta_ev` is a vector of coefficients.
+#' ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \eqn{C}. The resulting eigenvectors, \eqn{E}, are mutually orthogonal and uncorrelated map patterns. The spatial filter equals \eqn{E \beta_{E}} where \eqn{\beta_{E}} is a vector of coefficients.
 #'
-#' ESF decomposes the data into a global mean, `alpha`, global patterns contributed by covariates, `X * beta`, spatial trends, `EV * beta_ev`, and residual variation. Thus, for `family=gaussian()`,
+#' ESF decomposes the data into a global mean, \eqn{\alpha}, global patterns contributed by covariates \eqn{X \beta}, spatial trends \eqn{E \beta_{E}}, and residual variation. Thus, for `family=gaussian()`,
+#' \deqn{
+#' y \sim Gauss(\alpha + X * \beta + E \beta_{E}, \sigma).
+#'}
 #' 
-#' ```
-#' Y ~ Gauss(alpha + X * beta + EV * beta_ev, sigma).
-#'```
 #' An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:
-#' ```
-#' Y ~ Poisson(exp(offset + Mu))
-#' Mu = alpha + EV * beta_ev + A
-#' A ~ Guass(0, tau)
-#' tau ~ student(20, 0, 2)
-#' beta_ev ~ horseshoe(.)
-#' ```
+#' \deqn{
+#' y \sim Poisson(e^{O + \mu}) \\
+#' \mu = \alpha + E \beta_{E} + A \\
+#' A \sim Guass(0, \tau) \\
+#' \tau \sim student(20, 0, 2) \\
+#' \beta_{E} \sim horseshoe(.)
+#' }
+#' The form of this model is similar to the BYM model (see \code{\link[geostan]{stan_icar}}), in the sense that it contains a spatially structured trend term (\eqn{E \beta_{E}}) and an unstructured ('random effects') term (\eqn{A}).
 #' 
-#' The \code{\link[geostan]{spatial.geostan_fit}} method will return `EV * beta`.
+#' The \code{\link[geostan]{spatial.geostan_fit}} method will return \eqn{E \beta_{E}}.
 #'
 #' The model can also be extended to the space-time domain; see \link[geostan]{shape2mat} to specify a space-time connectivity matrix. 
 #' 
-#' The coefficients \code{beta_ev} are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the \code{threshold} argument). By default, \code{stan_esf} will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the \code{nsa} argument.
+#' The coefficients \eqn{\beta_{E}} are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the \code{threshold} argument). By default, \code{stan_esf} will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the \code{nsa} argument.
 #'
 #' ### Spatially lagged covariates (SLX)
 #' 
-#' The `slx` argument is a convenience function for including SLX terms. For example,
+#' The `slx` argument is a convenience function for including SLX terms. For example, 
+#' \deqn{
+#'  y = W X \gamma + X \beta + \epsilon
+#' }
+#' where \eqn{W} is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}), \eqn{WX} is the mean neighboring value of \eqn{X}, and \eqn{\gamma} is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the \code{slx} argument:
 #' ```
-#' stan_glm(y ~ x1 + x2, slx = ~ x1, ...)
+#' stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
 #' ```
-#' is a shortcut for
+#' which is a shortcut for
 #' ```
-#' stan_glm(y ~ I(W %*% x1) + x1 + x2, ...)
+#' stan_glm(y ~ I(W \%*\% x1) + I(W \%*\% x2) + x1 + x2, \...)
 #' ```
-#' where `W` is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}). SLX terms will always be *prepended* to the design matrix, as above, which is important to know when setting prior distributions for regression coefficients.
+#' SLX terms will always be *prepended* to the design matrix, as above, which is important to know when setting prior distributions for regression coefficients.
 #'
 #' For measurement error (ME) models, the SLX argument is the only way to include spatially lagged covariates since the SLX term needs to be re-calculated on each iteration of the MCMC algorithm.
 #' 
 #' ### Measurement error (ME) models
 #' 
-#' The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates (Donegan et al. 2021; Donegan 2021). With estimates, `x`, and their standard errors, `se`, the ME models have one of the the following two specifications, depending on the user input:
-#' ```
-#' x ~ Gauss(x_true, se)
-#' x_true ~ MVGauss(mu, Sigma)
-#' Sigma = (I - rho * C)^(-1) M * tau^2
-#' mu ~ Gauss(0, 100)
-#' tau ~ student_t(10, 0, 40)
-#' rho ~ uniform(lower_bound, upper_bound)
-#' ```
-#' where the covariance matrix, `Sigma`, has the conditional autoregressive specification, and `tau` is the scale parameter. For non-spatial ME models, the following is used instead:
-#' ```
-#' x ~ Gauss(x_true, se)
-#' x_true ~ student_t(df, mu, sigma)
-#' df ~ gamma(3, 0.2)
-#' mu ~ Gauss(0, 100)
-#' sigma ~ student_t(10, 0, 40)
-#' ```
+#' The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. Given estimates \eqn{x}, their standard errors \eqn{s}, and the target quantity of interest (i.e., the unknown true value) \eqn{z}, the ME models have one of the the following two specifications, depending on the user input. If a spatial CAR model is specified, then:
+#' \deqn{
+#'  x \sim Gauss(z, s^2) \\
+#'  z \sim Gauss(\mu_z, \Sigma_z) \\
+#' \Sigma_z = (I - \rho C)^{-1} M \\
+#'  \mu_z \sim Gauss(0, 100) \\
+#'  \tau_z \sim Student(10, 0, 40), \tau > 0 \\
+#'  \rho_z \sim uniform(l, u)
+#'  }
+#' where \eqn{\Sigma} specifies a spatial conditional autoregressive model with scale parameter \eqn{\tau} (on the diagonal of \eqn{M}), and \eqn{l}, \eqn{u} are the lower and upper bounds that \eqn{\rho} is permitted to take (which is determined by the extreme eigenvalues of the spatial connectivity matrix \eqn{C}).
 #' 
-#' For strongly skewed variables, such census tract poverty rates, it can be advantageous to apply a logit transformation to `x_true` before applying the CAR or Student t prior model. When the `logit` argument is used, the model becomes:
-#' ```
-#' x ~ Gauss(x_true, se)
-#' logit(x_true) ~ MVGauss(mu, Sigma)
-#' ```
-#' and similar for the Student t model.
+#' For non-spatial ME models, the following is used instead:
+#' \deqn{
+#' x \sim Gauss(z, s^2) \\
+#' z \sim student(\nu_z, \mu_z, \sigma_z) \\
+#' \nu_z \sim gamma(3, 0.2) \\
+#' \mu_z \sim Gauss(0, 100) \\
+#' \sigma_z \sim student(10, 0, 40).
+#' }
+#' 
+#' For strongly skewed variables, such as census tract poverty rates, it can be advantageous to apply a logit transformation to \eqn{z} before applying the CAR or Student-t prior model. When the `logit` argument is used, the model becomes:
+#' \deqn{
+#' x \sim Gauss(z, s^2) \\
+#' logit(z) \sim Gauss(\mu_z, \Sigma_z) 
+#' ...
+#' }
+#' and similarly for the Student t model:
+#' \deqn{
+#' x \sim Gauss(z, s^2) \\
+#' logit(z) \sim student(\nu_z, \mu_z, \sigma_z) \\
+#' ...
+#' }
 #'
 #' ### Censored counts
 #'
 #' Vital statistics systems and disease surveillance programs typically suppress case counts when they are smaller than a specific threshold value. In such cases, the observation of a censored count is not the same as a missing value; instead, you are informed that the value is an integer somewhere between zero and the threshold value. For Poisson models (`family = poisson())`), you can use the `censor_point` argument to encode this information into your model. 
 #'
 #' Internally, `geostan` will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:
-#' ```
-#' p(y_i | data, model) = Poisson(y_i | fitted_i), 
-#' ```
-#' as usual. For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:
-#' ```
-#' p(y_j | data, model) = sum_{m=0}^censor_point Poisson( c_m | fitted_j),
-#' ```
+#' \deqn{
+#' p(y_i | \text{data}, \text{model}) = poisson(y_i | \mu_i), 
+#' }
+#' as usual, where \eqn{\mu_i} may include whatever spatial terms are present in the model.
+#'
+#' For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:
+#' \deqn{
+#' p(y_i | \text{data}, \text{model}) = \sum_{m=0}^{M} Poisson( m | \mu_i),
+#' }
+#' where \eqn{M} is the censor point and \eqn{\mu_i} again is the fitted value for the \eqn{i^{th}} observation.
 #' 
 #' For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide `censor_point = 9` and then the likelihood statement for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model parameters). See Donegan (2021) for additional discussion, references, and Stan code.
+#'
 #'
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
@@ -158,7 +175,7 @@
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' }
 #' 
-#' @author Connor Donegan, \email{Connor.Donegan@UTDallas.edu}
+#' @author Connor Donegan, \email{connor.donegan@gmail.com}
 #' 
 #' @source 
 #'
