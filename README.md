@@ -63,16 +63,6 @@ Install **geostan** from CRAN using:
 install.packages("geostan")
 ```
 
-Linux users may also install from source:
-
-``` r
-remotes::install_github("connordonegan/geostan")
-```
-
-Then run:
-
-    rstantools::rstan_config()
-
 ## Usage
 
 Load the package and the `georgia` county mortality data set (ages
@@ -80,6 +70,12 @@ Load the package and the `georgia` county mortality data set (ages
 
 ``` r
 library(geostan)
+#> This is geostan version 0.3.0
+#> 
+#> Attaching package: 'geostan'
+#> The following object is masked from 'package:base':
+#> 
+#>     gamma
 data(georgia)
 ```
 
@@ -104,6 +100,7 @@ for all counties:
 ``` r
 A <- shape2mat(georgia, style = "B")
 cars <- prep_car_data(A)
+#> as(<ngCMatrix>, "dgCMatrix") is deprecated since Matrix 1.5-0; do as(., "dMatrix") instead
 #> Range of permissible rho values:  -1.661134 1
 fit <- stan_car(deaths.female ~ offset(log(pop.at.risk.female)),
                 censor_point = 9,
@@ -123,7 +120,7 @@ fit <- stan_car(deaths.female ~ offset(log(pop.at.risk.female)),
 #>   df location scale
 #> 1 10        0     3
 #> 
-#> *Setting prior for CAR spatial autocorrelation parameter (sar_rho)
+#> *Setting prior for CAR spatial autocorrelation parameter (rho)
 #> Distribution: uniform
 #>   lower upper
 #> 1  -1.7     1
@@ -153,8 +150,8 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.00209675 
-#> WAIC:  1290.65 
+#> Residual Moran Coefficient:  0.0014105 
+#> WAIC:  1291.3 
 #> Observations:  159 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
@@ -162,11 +159,11 @@ print(fit)
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-#> intercept -4.677   0.002 0.087 -4.867 -4.717 -4.676 -4.633 -4.504  2275 1.003
-#> car_rho    0.924   0.001 0.057  0.782  0.895  0.937  0.967  0.995  3625 1.000
-#> car_scale  0.456   0.001 0.035  0.391  0.433  0.454  0.479  0.530  3578 1.000
+#> intercept -4.671   0.004 0.107 -4.855 -4.718 -4.672 -4.625 -4.478   845 1.004
+#> car_rho    0.926   0.001 0.057  0.780  0.897  0.939  0.968  0.996  3130 0.999
+#> car_scale  0.456   0.001 0.035  0.392  0.431  0.455  0.479  0.532  3233 1.001
 #> 
-#> Samples were drawn using NUTS(diag_e) at Mon Aug 29 17:51:29 2022.
+#> Samples were drawn using NUTS(diag_e) at Tue Sep 13 08:59:48 2022.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).

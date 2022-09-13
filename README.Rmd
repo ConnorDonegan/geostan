@@ -58,16 +58,6 @@ Install **geostan** from CRAN using:
 install.packages("geostan")
 ```
 
-Linux users may also install from source:
-
-``` r
-remotes::install_github("connordonegan/geostan")
-```
-Then run:
-```
-rstantools::rstan_config()
-```
-
 ## Usage
 
 Load the package and the `georgia` county mortality data set (ages 55-64, years 2014-2018):
