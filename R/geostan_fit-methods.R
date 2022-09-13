@@ -162,6 +162,7 @@ plot.geostan_fit <- function(x, pars, plotfun = "hist", fill = "steelblue4", ...
       if (inherits(x$slx, "formula")) pars <- c(pars, "gamma")      
       x.pars <- c("beta", "nu", "sigma", "alpha_tau")
       if (any(x.pars %in% names(x$priors))) pars <- c(pars, names(x$priors)[grep(paste0(x.pars, collapse="|"), names(x$priors))])
+      if (x$spatial$method == "SAR") pars <- c(pars, "sar_rho", "sar_scale")  
       if (x$spatial$method == "CAR") pars <- c(pars, "car_rho", "car_scale")
       if (x$spatial$method == "BYM2") pars <- c(pars, "rho", "spatial_scale")
       if (x$spatial$method == "BYM") pars <- c(pars, "spatial_scale", "theta_scale")
