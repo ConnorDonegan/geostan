@@ -28,10 +28,11 @@ test_that("SA indices produce the same results as spdep when expected", {
     m2 <- sum(scale(x, center=T, scale = T)^2)/length(x)
     expect_equal(geo_lisa/m2, spdep_lisa)
     ## APLE (estimate of SAR SA parameter)
-    x <- as.numeric(scale(x))
-    aple_spdep <- spdep::aple(x, lw.W)
-    aple_geostan <- geostan::aple(x, W, digits = d)
-    expect_equal(aple_spdep, aple_geostan)    
+    ## now in spatialreg---avoiding the extra dependency.
+  #  x <- as.numeric(scale(x))
+  #  aple_spdep <- spdep::aple(x, lw.W)
+  #  aple_geostan <- geostan::aple(x, W, digits = d)
+  #  expect_equal(aple_spdep, aple_geostan)    
     ## Geary Ratio
     GR_geostan <- gr(x, W, digits = d)
     GR_spdep <- spdep::geary.test(x, lw.W)
