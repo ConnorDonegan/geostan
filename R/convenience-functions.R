@@ -1050,7 +1050,7 @@ prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), k = 1, gamma = 0
 
 #' Prepare data for a simultaneous autoregressive (SAR) model 
 #'
-#' @description Given a spatial weights matrix \eqn{W}, this function prepares data for the simultaneous autoregressive (SAR) model (a.k.a spatial error models (SEM)) in Stan. This is used internally by \code{\link[geostan]{stan_sar}}, and may also be used for building custom SAR models in Stan. 
+#' @description Given a spatial weights matrix \eqn{W}, this function prepares data for the simultaneous autoregressive (SAR) model (a.k.a spatial error model (SEM)) in Stan. This is used internally by \code{\link[geostan]{stan_sar}}, and may also be used for building custom SAR models in Stan. 
 #' 
 #' @param W Spatial weights matrix, typically row-standardized.
 #' 
@@ -1078,16 +1078,15 @@ prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), k = 1, gamma = 0
 #' @seealso \code{\link[geostan]{shape2mat}}, \code{\link[geostan]{stan_sar}}, \code{\link[geostan]{prep_car_data}}, \code{\link[geostan]{prep_icar_data}}
 #'
 #' @examples
-#' data(georiga)
+#' data(georgia)
 #' W <- shape2mat(georgia, "W")
-#' sar_data_list <- prep_sar_data(W)
+#' sar_dl <- prep_sar_data(W)
 #' 
 #' @export
 #' @importFrom Matrix rowSums
 #' @importFrom rstan extract_sparse_parts
 prep_sar_data <- function(W) {
     stopifnot(inherits(W, "matrix") | inherits(W, "Matrix"))
-    ##stopifnot( all.equal(Matrix::rowSums(W), rep(1, nrow(W))) )
     N <- nrow(W)
     sar.dl <- rstan::extract_sparse_parts(Matrix::Diagonal(N) - W)
     names(sar.dl) <- paste0("ImW_", names(sar.dl))
