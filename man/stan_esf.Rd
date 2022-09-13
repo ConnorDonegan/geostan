@@ -213,13 +213,13 @@ Vital statistics systems and disease surveillance programs typically suppress ca
 
 Internally, \code{geostan} will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:
 \deqn{
-p(y_i | \text{data}, \text{model}) = poisson(y_i | \mu_i), 
+p(y_i | data, model) = poisson(y_i | \mu_i), 
 }
 as usual, where \eqn{\mu_i} may include whatever spatial terms are present in the model.
 
 For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:
 \deqn{
-p(y_i | \text{data}, \text{model}) = \sum_{m=0}^{M} Poisson( m | \mu_i),
+p(y_i | data, model) = \sum_{m=0}^{M} Poisson( m | \mu_i),
 }
 where \eqn{M} is the censor point and \eqn{\mu_i} again is the fitted value for the \eqn{i^{th}} observation.
 
