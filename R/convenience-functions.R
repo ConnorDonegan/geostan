@@ -984,7 +984,7 @@ prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), k = 1, gamma = 0
     if (style != "WCAR" & stan_fn == "wcar_normal_lpdf") stop("wcar_normal_lpdf only works with style = 'WCAR'.")
     stopifnot(inherits(A, "matrix") | inherits(A, "Matrix"))
     stopifnot(all(Matrix::rowSums(A) > 0))
-    A <- Matrix::Matrix(A, sparse = TRUE)
+    A <- as(A, "dMatrix")
     n <- nrow(A)
     if (style == "ACAR") {
         Ni <- Matrix::rowSums(A)
