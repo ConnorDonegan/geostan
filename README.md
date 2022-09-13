@@ -63,16 +63,6 @@ Install **geostan** from CRAN using:
 install.packages("geostan")
 ```
 
-Linux users may also install from source:
-
-``` r
-remotes::install_github("connordonegan/geostan")
-```
-
-Then run:
-
-    rstantools::rstan_config()
-
 ## Usage
 
 Load the package and the `georgia` county mortality data set (ages
@@ -80,7 +70,7 @@ Load the package and the `georgia` county mortality data set (ages
 
 ``` r
 library(geostan)
-#> This is geostan version 0.2.1
+#> This is geostan version 0.3.0
 #> 
 #> Attaching package: 'geostan'
 #> The following object is masked from 'package:base':
@@ -110,6 +100,7 @@ for all counties:
 ``` r
 A <- shape2mat(georgia, style = "B")
 cars <- prep_car_data(A)
+#> as(<ngCMatrix>, "dgCMatrix") is deprecated since Matrix 1.5-0; do as(., "dMatrix") instead
 #> Range of permissible rho values:  -1.661134 1
 fit <- stan_car(deaths.female ~ offset(log(pop.at.risk.female)),
                 censor_point = 9,
@@ -159,8 +150,8 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.000228 
-#> WAIC:  1292.1 
+#> Residual Moran Coefficient:  0.00225625 
+#> WAIC:  1292.04 
 #> Observations:  159 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
@@ -168,11 +159,11 @@ print(fit)
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-#> intercept -4.674   0.002 0.089 -4.846 -4.718 -4.674 -4.631 -4.496  1648 1.002
-#> car_rho    0.923   0.001 0.058  0.778  0.895  0.935  0.966  0.995  3618 1.000
-#> car_scale  0.457   0.001 0.035  0.393  0.432  0.455  0.480  0.531  3855 1.000
+#> intercept -4.673   0.003 0.107 -4.860 -4.716 -4.672 -4.627 -4.491   943 1.008
+#> car_rho    0.924   0.001 0.057  0.780  0.893  0.937  0.967  0.996  2872 1.001
+#> car_scale  0.457   0.001 0.036  0.391  0.432  0.455  0.480  0.533  3823 1.001
 #> 
-#> Samples were drawn using NUTS(diag_e) at Thu Jun 30 12:41:42 2022.
+#> Samples were drawn using NUTS(diag_e) at Tue Sep 13 08:50:07 2022.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
