@@ -152,7 +152,7 @@
 #' \deqn{
 #'  y = W X \gamma + X \beta + \epsilon
 #' }
-#' where \eqn{W} is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}), \eqn{WX} is the mean neighboring value of \eqn{X}, and \eqn{\gamma} is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the \code{slx} argument:
+#' where \eqn{W} is a row-standardized spatial weights matrix (see \link[geostan]{shape2mat}), \eqn{WX} is the mean neighboring value of \eqn{X}, and \eqn{\gamma} is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the \code{slx} argument:
 #' ```
 #' stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
 #' ```

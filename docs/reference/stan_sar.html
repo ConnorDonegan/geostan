@@ -220,7 +220,7 @@ $$
 $$
 which perhaps shows more intuitively the implicit spatial trend component, \(\rho W (y - \mu)\).</p>
 <p>Most often, this model is applied directly to observations (referred to below as the auto-Gaussian model). The SAR model can also be applied to a vector of parameters inside a hierarchical model. The latter enables spatial autocorrelation to be modeled when the observations are discrete counts (e.g., disease incidence data).</p>
-<p>A note on terminology: the spatial statistics literature conceptualizes the simultaneously-specified spatial autoregressive model (SAR) in relation to the conditionally-specified spatial autoregressive model (CAR) (see <code><a href="stan_car.html">stan_car</a></code>) (see Cliff and Ord 1981). The spatial econometrics literature, by contrast, refers to the simultaneously-specified spatial autoregressive (SAR) model as the spatial error model (SEM), and they contrast the SEM with the spatial lag model (which contains a spatially-lagged dependent variable on the right-hand-side of the regression equation) (see LeSage 2014).</p><div class="section">
+<p>A note on terminology: the spatial statistics literature conceptualizes the simultaneously-specified spatial autoregressive model (SAR) in relation to the conditionally-specified spatial autoregressive model (CAR) (see <a href="stan_car.html">stan_car</a>) (see Cliff and Ord 1981). The spatial econometrics literature, by contrast, refers to the simultaneously-specified spatial autoregressive (SAR) model as the spatial error model (SEM), and they contrast the SEM with the spatial lag model (which contains a spatially-lagged dependent variable on the right-hand-side of the regression equation) (see LeSage 2014).</p><div class="section">
 <h3 id="auto-gaussian">Auto-Gaussian<a class="anchor" aria-label="anchor" href="#auto-gaussian"></a></h3>
 
 
@@ -234,8 +234,8 @@ where \(\mu\) is the mean vector (with intercept, covariates, etc.), \(W\) is a 
 $$
 \phi = \rho W (y - \mu)
 $$</p>
-<p>This term can be extracted from a fitted auto-Gaussian model using the <code><a href="geostan_fit.html">spatial</a></code> method.</p>
-<p>When applied to a fitted auto-Gaussian model, the <code><a href="geostan_fit.html">residuals.geostan_fit</a></code> method returns 'de-trended' residuals \(R\) by default. That is,
+<p>This term can be extracted from a fitted auto-Gaussian model using the <a href="geostan_fit.html">spatial</a> method.</p>
+<p>When applied to a fitted auto-Gaussian model, the <a href="geostan_fit.html">residuals.geostan_fit</a> method returns 'de-trended' residuals \(R\) by default. That is,
 $$
 R = y - \mu - \rho W (y - \mu).
 $$
@@ -252,14 +252,14 @@ y \sim Poisson(e^{O + \lambda}) \\
 \lambda \sim Gauss(\mu, \Sigma)   \\
 \Sigma = \sigma^2 (I - \rho W)^{-1}(I - \rho W')^{-1}.
 $$
-If the raw outcome consists of a rate \(\frac{y}{p}\) with observed counts \(y\) and denominator p (often this will be the size of the population at risk), then \(O=log(p)\) is the log of the denominator (the offset term).</p>
+If the raw outcome consists of a rate \(\frac{y}{p}\) with observed counts \(y\) and denominator p (often this will be the size of the population at risk), then the offset term \(O=log(p)\) is the log of the denominator.</p>
 <p>This is often written (equivalently) as:
 $$
 y \sim Poisson(e^{O + \mu + \phi}) \\
 \phi \sim Gauss(0, \Sigma) \\
 \Sigma = \sigma^2 (I - \rho W)^{-1}(I - \rho W')^{-1}
 $$</p>
-<p>For Poisson models, the <code><a href="geostan_fit.html">spatial</a></code> method returns the parameter vector \(\phi\).</p>
+<p>For Poisson models, the <a href="geostan_fit.html">spatial</a> method returns the parameter vector \(\phi\).</p>
 <p>In the Poisson SAR model, \(\phi\) contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \(\phi\), you can do so by calculating:
 $$
  \rho W \phi.
@@ -276,7 +276,7 @@ y \sim Binomial(N, \lambda)  \\
 logit(\lambda) \sim Gauss(\mu, \Sigma)  \\
 \Sigma = \sigma^2 (I - \rho W)^{-1}(I - \rho W')^{-1}
 $$
-where outcome data <code>y</code> are counts, <code>N</code> is the number of trials, and \(\lambda\) is the rate of 'success'. Note that the model formula should be structured as: <code>cbind(sucesses, failures) ~ 1</code> (for an intercept-only model), such that <code>trials = successes + failures</code>.</p>
+where outcome data \(y\) are counts, \(N\) is the number of trials, and \(\lambda\) is the rate of 'success'. Note that the model formula should be structured as: <code>cbind(sucesses, failures) ~ 1</code> (for an intercept-only model), such that <code>trials = successes + failures</code>.</p>
 <p>For fitted Binomial models, the <code><a href="geostan_fit.html">spatial</a></code> method will return the parameter vector <code>phi</code>, equivalent to:
 $$
 \phi = logit(\lambda) - \mu.
@@ -295,7 +295,7 @@ $$</p>
 $$
  y = W X \gamma + X \beta + \epsilon
 $$
-where \(W\) is a row-standardized spatial weights matrix (see <code><a href="shape2mat.html">shape2mat</a></code>), \(WX\) is the mean neighboring value of \(X\), and \(\gamma\) is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the <code>slx</code> argument:</p><div class="sourceCode"><pre><code>stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
+where \(W\) is a row-standardized spatial weights matrix (see <a href="shape2mat.html">shape2mat</a>), \(WX\) is the mean neighboring value of \(X\), and \(\gamma\) is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the <code>slx</code> argument:</p><div class="sourceCode"><pre><code>stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
 </code></pre></div>
 
 <p>which is a shortcut for</p><div class="sourceCode"><pre><code>stan_glm(y ~ I(W \%*\% x1) + I(W \%*\% x2) + x1 + x2, \...)
@@ -348,7 +348,7 @@ $$</p>
 <p>Vital statistics systems and disease surveillance programs typically suppress case counts when they are smaller than a specific threshold value. In such cases, the observation of a censored count is not the same as a missing value; instead, you are informed that the value is an integer somewhere between zero and the threshold value. For Poisson models (<code>family = poisson())</code>), you can use the <code>censor_point</code> argument to encode this information into your model.</p>
 <p>Internally, <code>geostan</code> will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:
 $$
-p(y_i | \data, model) = poisson(y_i | \mu_i), 
+p(y_i | data, model) = poisson(y_i | \mu_i), 
 $$
 as usual, where \(\mu_i\) may include whatever spatial terms are present in the model.</p>
 <p>For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:

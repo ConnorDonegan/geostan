@@ -65,9 +65,9 @@
 #' }
 #' where \eqn{I} is the identity matrix, \eqn{\rho} is a spatial dependence parameter, \eqn{C} is a spatial connectivity matrix, and \eqn{M} is a diagonal matrix of variance terms. The diagonal of \eqn{M} contains a scale parameter \eqn{\tau} multiplied by a vector of weights (often set to be proportional to the inverse of the number of neighbors assigned to each site). The CAR model owes its name to the fact that this joint distribution corresponds to a set of conditional distributions that relate the expected value of each observation to a function of neighboring values, i.e., the Markov condition holds:
 #' \deqn{
-#' E(y_i | y_1, y_2, \dots y_{i-1}, y_{i+1}, y_n) = \mu_i + \rho \sum_{j=1}^n c_{i,j} (y_j - \mu_j),
+#' E(y_i | y_1, y_2, \dots, y_{i-1}, y_{i+1}, \dots, y_n) = \mu_i + \rho \sum_{j=1}^n c_{i,j} (y_j - \mu_j),
 #' }
-#' where entries of \eqn{c_{i,j}} are non-zero only if \eqn{j \in N(i)}, and \eqn{N(i)} indexes the sites that are neighbors of the \eqn{i^{th}} site.
+#' where entries of \eqn{c_{i,j}} are non-zero only if \eqn{j \in N(i)} and \eqn{N(i)} indexes the sites that are neighbors of the \eqn{i^{th}} site.
 #' 
 #' With the Gaussian probability distribution,
 #' \deqn{
@@ -75,9 +75,9 @@
 #' }
 #' where \eqn{\tau_i} is a scale parameter and \eqn{\mu_i} may contain covariates or simply the intercept.
 #'
-#' The covariance matrix of the CAR model contains two parameters: \code{car_rho} (\eqn{\rho}), which controls the degree of spatial autocorrelation, and the scale parameter, \code{car_scale} (\eqn{\tau}). The range of permissible values for \eqn{\rho} depends on the specification of \eqn{\boldsymbol C} and \eqn{\boldsymbol M}; for specification options, see \code{\link[geostan]{prep_car_data}} and Cressie and Wikle (2011, pp. 184-188) or Donegan (2021).
+#' The covariance matrix of the CAR model contains two parameters: \eqn{\rho} (\code{car_rho}) which controls the kind (positive or negative) and degree of spatial autocorrelation, and the scale parameter \eqn{\tau} (\code{car_scale}). The range of permissible values for \eqn{\rho} depends on the specification of \eqn{\boldsymbol C} and \eqn{\boldsymbol M}; for specification options, see \link[geostan]{prep_car_data} and Cressie and Wikle (2011, pp. 184-188) or Donegan (2021).
 #' 
-#' Further details of the models and results depend on the \code{family} argument, as well as on the particular CAR specification chosen (see \link[geostan]{prep_car_data}).
+#' Further details of the models and results depend on the \code{family} argument, as well as on the particular CAR specification chosen (from \link[geostan]{prep_car_data}).
 #'
 #' ###  Auto-Gaussian
 #'
@@ -85,15 +85,15 @@
 #' \deqn{
 #'  y \sim Gauss( \mu, (I - \rho C)^{-1} M),
 #' }
-#' where \eqn{\mu} is the mean vector (with intercept, covariates, etc.), \eqn{C} is a spatial connectivity matrix, and \eqn{M} is a known diagonal matrix containing the conditional variances \eqn{\tau_i^2}. `C` and `M` are provided by \code{\link[geostan]{prep_car_data}}.
+#' where \eqn{\mu} is the mean vector (with intercept, covariates, etc.), \eqn{C} is a spatial connectivity matrix, and \eqn{M} is a known diagonal matrix containing the conditional variances \eqn{\tau_i^2}. \eqn{C} and \eqn{M} are provided by \link[geostan]{prep_car_data}.
 #'
-#' The auto-Gaussian model contains an implicit spatial trend (i.e., autocorrelation) component \eqn{\phi} which can be calculated as follows (Cressie 2015, p. 564):
+#' The auto-Gaussian model contains an implicit spatial trend (i.e. autocorrelation) component \eqn{\phi} which can be calculated as follows (Cressie 2015, p. 564):
 #' \deqn{
 #'  \phi = \rho C (y - \mu).
 #' }
-#' This term can be extracted from a fitted auto-Gaussian model using the \code{\link[geostan]{spatial}} method.
+#' This term can be extracted from a fitted auto-Gaussian model using the \link[geostan]{spatial} method.
 #'
-#' When applied to a fitted auto-Gaussian model, the \code{\link[geostan]{residuals.geostan_fit}} method returns 'de-trended' residuals \eqn{R} by default. That is,
+#' When applied to a fitted auto-Gaussian model, the \link[geostan]{residuals.geostan_fit} method returns 'de-trended' residuals \eqn{R} by default. That is,
 #' \deqn{
 #' R = y - \mu - \rho C (y - \mu).
 #' }
@@ -106,14 +106,14 @@
 #' y \sim Poisson(e^{O + \lambda}) \\
 #' \lambda \sim Gauss(\mu, (I - \rho C)^{-1} \boldsymbol M).
 #' }
-#' If the raw outcome consists of a rate \eqn{\frac{y}{p}} with observed counts \eqn{y} and denominator {p} (often this will be the size of the population at risk), then \eqn{O=log(p)} is the log of the denominator (the offset term).
+#' If the raw outcome consists of a rate \eqn{\frac{y}{p}} with observed counts \eqn{y} and denominator {p} (often this will be the size of the population at risk), then the offset term \eqn{O=log(p)} is the log of the denominator.
 #'
 #' This is often written (equivalently) as:
 #' \deqn{
 #' y \sim Poisson(e^{O + \mu + \phi}) \\
 #' \phi \sim Gauss(0, (I - \rho C)^{-1} \boldsymbol M).
 #' }
-#' For Poisson models, the \code{\link[geostan]{spatial}} method returns the parameter vector \eqn{\phi}.
+#' For Poisson models, the \link[geostan]{spatial} method returns the parameter vector \eqn{\phi}.
 #' 
 #' In the Poisson CAR model, \eqn{\phi} contains a latent spatial trend as well as additional variation around it: \eqn{\phi_i = \rho \sum_{i=1}^n c_{ij} \phi_j + \epsilon_i}, \eqn{\epsilon_i \sim Gauss(0, \tau_i^2)}. If you would like to extract the latent/implicit spatial trend from \eqn{\phi}, you can do so by calculating (following Cressie 2015, p. 564):
 #' \deqn{
@@ -127,14 +127,14 @@
 #' y \sim Binomial(N, \lambda)  \\
 #' logit(\lambda) \sim Gauss(\mu, (I - \rho C)^{-1} \boldsymbol M).
 #' }
-#' where outcome data `y` are counts, `N` is the number of trials, and `theta` is the 'success' rate. Note that the model formula should be structured as: `cbind(sucesses, failures) ~ x`, such that `trials = successes + failures`.
+#' where outcome data \eqn{y} are counts, \eqn{N} is the number of trials, and \eqn{\lambda} is the 'success' rate. Note that the model formula should be structured as: `cbind(sucesses, failures) ~ x`, such that `trials = successes + failures`.
 #'
 #' This is often written (equivalently) as:
 #' \deqn{
 #' y \sim Binomial(N, (\mu + \phi))  \\
 #' logit(\phi) \sim Gauss(0, (I - \rho C)^{-1} \boldsymbol M).
 #' }
-#' For fitted Binomial models, the \code{\link[geostan]{spatial}} method will return the parameter vector \code{phi}.
+#' For fitted Binomial models, the \link[geostan]{spatial} method will return the parameter vector \code{phi}.
 #' 
 #' As is also the case for the Poisson model, \eqn{\phi} contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \eqn{\phi}, you can do so by calculating:
 #' \deqn{
@@ -147,7 +147,7 @@
 #' \deqn{
 #'  y = W X \gamma + X \beta + \epsilon
 #' }
-#' where \eqn{W} is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}), \eqn{WX} is the mean neighboring value of \eqn{X}, and \eqn{\gamma} is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the \code{slx} argument:
+#' where \eqn{W} is a row-standardized spatial weights matrix (see \link[geostan]{shape2mat}), \eqn{WX} is the mean neighboring value of \eqn{X}, and \eqn{\gamma} is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the \code{slx} argument:
 #' ```
 #' stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
 #' ```

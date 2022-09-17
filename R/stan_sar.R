@@ -73,7 +73,7 @@
 #' 
 #' Most often, this model is applied directly to observations (referred to below as the auto-Gaussian model). The SAR model can also be applied to a vector of parameters inside a hierarchical model. The latter enables spatial autocorrelation to be modeled when the observations are discrete counts (e.g., disease incidence data).
 #'
-#' A note on terminology: the spatial statistics literature conceptualizes the simultaneously-specified spatial autoregressive model (SAR) in relation to the conditionally-specified spatial autoregressive model (CAR) (see \code{\link[geostan]{stan_car}}) (see Cliff and Ord 1981). The spatial econometrics literature, by contrast, refers to the simultaneously-specified spatial autoregressive (SAR) model as the spatial error model (SEM), and they contrast the SEM with the spatial lag model (which contains a spatially-lagged dependent variable on the right-hand-side of the regression equation) (see LeSage 2014). 
+#' A note on terminology: the spatial statistics literature conceptualizes the simultaneously-specified spatial autoregressive model (SAR) in relation to the conditionally-specified spatial autoregressive model (CAR) (see \link[geostan]{stan_car}) (see Cliff and Ord 1981). The spatial econometrics literature, by contrast, refers to the simultaneously-specified spatial autoregressive (SAR) model as the spatial error model (SEM), and they contrast the SEM with the spatial lag model (which contains a spatially-lagged dependent variable on the right-hand-side of the regression equation) (see LeSage 2014). 
 #' 
 #' ###  Auto-Gaussian
 #'
@@ -89,9 +89,9 @@
 #' \phi = \rho W (y - \mu)
 #' }
 #' 
-#' This term can be extracted from a fitted auto-Gaussian model using the \code{\link[geostan]{spatial}} method.
+#' This term can be extracted from a fitted auto-Gaussian model using the \link[geostan]{spatial} method.
 #'
-#' When applied to a fitted auto-Gaussian model, the \code{\link[geostan]{residuals.geostan_fit}} method returns 'de-trended' residuals \eqn{R} by default. That is,
+#' When applied to a fitted auto-Gaussian model, the \link[geostan]{residuals.geostan_fit} method returns 'de-trended' residuals \eqn{R} by default. That is,
 #' \deqn{
 #' R = y - \mu - \rho W (y - \mu).
 #' }
@@ -106,7 +106,7 @@
 #' \lambda \sim Gauss(\mu, \Sigma)   \\
 #' \Sigma = \sigma^2 (I - \rho W)^{-1}(I - \rho W')^{-1}.
 #' }
-#' If the raw outcome consists of a rate \eqn{\frac{y}{p}} with observed counts \eqn{y} and denominator {p} (often this will be the size of the population at risk), then \eqn{O=log(p)} is the log of the denominator (the offset term).
+#' If the raw outcome consists of a rate \eqn{\frac{y}{p}} with observed counts \eqn{y} and denominator {p} (often this will be the size of the population at risk), then the offset term \eqn{O=log(p)} is the log of the denominator.
 #' 
 #' This is often written (equivalently) as:
 #' \deqn{
@@ -115,7 +115,7 @@
 #' \Sigma = \sigma^2 (I - \rho W)^{-1}(I - \rho W')^{-1}
 #' }
 #'
-#' For Poisson models, the \code{\link[geostan]{spatial}} method returns the parameter vector \eqn{\phi}.
+#' For Poisson models, the \link[geostan]{spatial} method returns the parameter vector \eqn{\phi}.
 #'
 #' In the Poisson SAR model, \eqn{\phi} contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \eqn{\phi}, you can do so by calculating:
 #' \deqn{
@@ -130,7 +130,7 @@
 #' logit(\lambda) \sim Gauss(\mu, \Sigma)  \\
 #' \Sigma = \sigma^2 (I - \rho W)^{-1}(I - \rho W')^{-1}
 #' }
-#' where outcome data `y` are counts, `N` is the number of trials, and \eqn{\lambda} is the rate of 'success'. Note that the model formula should be structured as: `cbind(sucesses, failures) ~ 1` (for an intercept-only model), such that `trials = successes + failures`.
+#' where outcome data \eqn{y} are counts, \eqn{N} is the number of trials, and \eqn{\lambda} is the rate of 'success'. Note that the model formula should be structured as: `cbind(sucesses, failures) ~ 1` (for an intercept-only model), such that `trials = successes + failures`.
 #' 
 #' For fitted Binomial models, the \code{\link[geostan]{spatial}} method will return the parameter vector \code{phi}, equivalent to:
 #' \deqn{
@@ -147,7 +147,7 @@
 #' \deqn{
 #'  y = W X \gamma + X \beta + \epsilon
 #' }
-#' where \eqn{W} is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}), \eqn{WX} is the mean neighboring value of \eqn{X}, and \eqn{\gamma} is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the \code{slx} argument:
+#' where \eqn{W} is a row-standardized spatial weights matrix (see \link[geostan]{shape2mat}), \eqn{WX} is the mean neighboring value of \eqn{X}, and \eqn{\gamma} is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the \code{slx} argument:
 #' ```
 #' stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
 #' ```
@@ -200,7 +200,7 @@
 #'
 #' Internally, `geostan` will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:
 #' \deqn{
-#' p(y_i | \data, model) = poisson(y_i | \mu_i), 
+#' p(y_i | data, model) = poisson(y_i | \mu_i), 
 #' }
 #' as usual, where \eqn{\mu_i} may include whatever spatial terms are present in the model.
 #'

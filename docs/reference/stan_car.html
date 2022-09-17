@@ -217,16 +217,16 @@ $$
 $$
 where \(I\) is the identity matrix, \(\rho\) is a spatial dependence parameter, \(C\) is a spatial connectivity matrix, and \(M\) is a diagonal matrix of variance terms. The diagonal of \(M\) contains a scale parameter \(\tau\) multiplied by a vector of weights (often set to be proportional to the inverse of the number of neighbors assigned to each site). The CAR model owes its name to the fact that this joint distribution corresponds to a set of conditional distributions that relate the expected value of each observation to a function of neighboring values, i.e., the Markov condition holds:
 $$
-E(y_i | y_1, y_2, \dots y_{i-1}, y_{i+1}, y_n) = \mu_i + \rho \sum_{j=1}^n c_{i,j} (y_j - \mu_j),
+E(y_i | y_1, y_2, \dots, y_{i-1}, y_{i+1}, \dots, y_n) = \mu_i + \rho \sum_{j=1}^n c_{i,j} (y_j - \mu_j),
 $$
-where entries of \(c_{i,j}\) are non-zero only if \(j \in N(i)\), and \(N(i)\) indexes the sites that are neighbors of the \(i^{th}\) site.</p>
+where entries of \(c_{i,j}\) are non-zero only if \(j \in N(i)\) and \(N(i)\) indexes the sites that are neighbors of the \(i^{th}\) site.</p>
 <p>With the Gaussian probability distribution,
 $$
  y_i | y_j: j \neq i \sim Gauss(\mu_i + \rho \sum_{j=1}^n c_{i,j} (y_j - \mu_j), \tau_i^2)
 $$
 where \(\tau_i\) is a scale parameter and \(\mu_i\) may contain covariates or simply the intercept.</p>
-<p>The covariance matrix of the CAR model contains two parameters: <code>car_rho</code> (\(\rho\)), which controls the degree of spatial autocorrelation, and the scale parameter, <code>car_scale</code> (\(\tau\)). The range of permissible values for \(\rho\) depends on the specification of \(\boldsymbol C\) and \(\boldsymbol M\); for specification options, see <code><a href="prep_car_data.html">prep_car_data</a></code> and Cressie and Wikle (2011, pp. 184-188) or Donegan (2021).</p>
-<p>Further details of the models and results depend on the <code>family</code> argument, as well as on the particular CAR specification chosen (see <a href="prep_car_data.html">prep_car_data</a>).</p><div class="section">
+<p>The covariance matrix of the CAR model contains two parameters: \(\rho\) (<code>car_rho</code>) which controls the kind (positive or negative) and degree of spatial autocorrelation, and the scale parameter \(\tau\) (<code>car_scale</code>). The range of permissible values for \(\rho\) depends on the specification of \(\boldsymbol C\) and \(\boldsymbol M\); for specification options, see <a href="prep_car_data.html">prep_car_data</a> and Cressie and Wikle (2011, pp. 184-188) or Donegan (2021).</p>
+<p>Further details of the models and results depend on the <code>family</code> argument, as well as on the particular CAR specification chosen (from <a href="prep_car_data.html">prep_car_data</a>).</p><div class="section">
 <h3 id="auto-gaussian">Auto-Gaussian<a class="anchor" aria-label="anchor" href="#auto-gaussian"></a></h3>
 
 
@@ -234,13 +234,13 @@ where \(\tau_i\) is a scale parameter and \(\mu_i\) may contain covariates or si
 $$
  y \sim Gauss( \mu, (I - \rho C)^{-1} M),
 $$
-where \(\mu\) is the mean vector (with intercept, covariates, etc.), \(C\) is a spatial connectivity matrix, and \(M\) is a known diagonal matrix containing the conditional variances \(\tau_i^2\). <code>C</code> and <code>M</code> are provided by <code><a href="prep_car_data.html">prep_car_data</a></code>.</p>
-<p>The auto-Gaussian model contains an implicit spatial trend (i.e., autocorrelation) component \(\phi\) which can be calculated as follows (Cressie 2015, p. 564):
+where \(\mu\) is the mean vector (with intercept, covariates, etc.), \(C\) is a spatial connectivity matrix, and \(M\) is a known diagonal matrix containing the conditional variances \(\tau_i^2\). \(C\) and \(M\) are provided by <a href="prep_car_data.html">prep_car_data</a>.</p>
+<p>The auto-Gaussian model contains an implicit spatial trend (i.e. autocorrelation) component \(\phi\) which can be calculated as follows (Cressie 2015, p. 564):
 $$
  \phi = \rho C (y - \mu).
 $$
-This term can be extracted from a fitted auto-Gaussian model using the <code><a href="geostan_fit.html">spatial</a></code> method.</p>
-<p>When applied to a fitted auto-Gaussian model, the <code><a href="geostan_fit.html">residuals.geostan_fit</a></code> method returns 'de-trended' residuals \(R\) by default. That is,
+This term can be extracted from a fitted auto-Gaussian model using the <a href="geostan_fit.html">spatial</a> method.</p>
+<p>When applied to a fitted auto-Gaussian model, the <a href="geostan_fit.html">residuals.geostan_fit</a> method returns 'de-trended' residuals \(R\) by default. That is,
 $$
 R = y - \mu - \rho C (y - \mu).
 $$
@@ -256,13 +256,13 @@ $$
 y \sim Poisson(e^{O + \lambda}) \\
 \lambda \sim Gauss(\mu, (I - \rho C)^{-1} \boldsymbol M).
 $$
-If the raw outcome consists of a rate \(\frac{y}{p}\) with observed counts \(y\) and denominator p (often this will be the size of the population at risk), then \(O=log(p)\) is the log of the denominator (the offset term).</p>
+If the raw outcome consists of a rate \(\frac{y}{p}\) with observed counts \(y\) and denominator p (often this will be the size of the population at risk), then the offset term \(O=log(p)\) is the log of the denominator.</p>
 <p>This is often written (equivalently) as:
 $$
 y \sim Poisson(e^{O + \mu + \phi}) \\
 \phi \sim Gauss(0, (I - \rho C)^{-1} \boldsymbol M).
 $$
-For Poisson models, the <code><a href="geostan_fit.html">spatial</a></code> method returns the parameter vector \(\phi\).</p>
+For Poisson models, the <a href="geostan_fit.html">spatial</a> method returns the parameter vector \(\phi\).</p>
 <p>In the Poisson CAR model, \(\phi\) contains a latent spatial trend as well as additional variation around it: \(\phi_i = \rho \sum_{i=1}^n c_{ij} \phi_j + \epsilon_i\), \(\epsilon_i \sim Gauss(0, \tau_i^2)\). If you would like to extract the latent/implicit spatial trend from \(\phi\), you can do so by calculating (following Cressie 2015, p. 564):
 $$
 \rho  C  \phi.
@@ -278,13 +278,13 @@ $$
 y \sim Binomial(N, \lambda)  \\
 logit(\lambda) \sim Gauss(\mu, (I - \rho C)^{-1} \boldsymbol M).
 $$
-where outcome data <code>y</code> are counts, <code>N</code> is the number of trials, and <code>theta</code> is the 'success' rate. Note that the model formula should be structured as: <code>cbind(sucesses, failures) ~ x</code>, such that <code>trials = successes + failures</code>.</p>
+where outcome data \(y\) are counts, \(N\) is the number of trials, and \(\lambda\) is the 'success' rate. Note that the model formula should be structured as: <code>cbind(sucesses, failures) ~ x</code>, such that <code>trials = successes + failures</code>.</p>
 <p>This is often written (equivalently) as:
 $$
 y \sim Binomial(N, (\mu + \phi))  \\
 logit(\phi) \sim Gauss(0, (I - \rho C)^{-1} \boldsymbol M).
 $$
-For fitted Binomial models, the <code><a href="geostan_fit.html">spatial</a></code> method will return the parameter vector <code>phi</code>.</p>
+For fitted Binomial models, the <a href="geostan_fit.html">spatial</a> method will return the parameter vector <code>phi</code>.</p>
 <p>As is also the case for the Poisson model, \(\phi\) contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \(\phi\), you can do so by calculating:
 $$
 \rho C \phi.
@@ -299,7 +299,7 @@ $$</p>
 $$
  y = W X \gamma + X \beta + \epsilon
 $$
-where \(W\) is a row-standardized spatial weights matrix (see <code><a href="shape2mat.html">shape2mat</a></code>), \(WX\) is the mean neighboring value of \(X\), and \(\gamma\) is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the <code>slx</code> argument:</p><div class="sourceCode"><pre><code>stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
+where \(W\) is a row-standardized spatial weights matrix (see <a href="shape2mat.html">shape2mat</a>), \(WX\) is the mean neighboring value of \(X\), and \(\gamma\) is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the <code>slx</code> argument:</p><div class="sourceCode"><pre><code>stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
 </code></pre></div>
 
 <p>which is a shortcut for</p><div class="sourceCode"><pre><code>stan_glm(y ~ I(W \%*\% x1) + I(W \%*\% x2) + x1 + x2, \...)
