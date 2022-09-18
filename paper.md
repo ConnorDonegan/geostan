@@ -5,7 +5,7 @@ tags:
 - spatial data
 - survey data
 - Bayesian inference
-date: "13 July, 2022"
+date: "17 September, 2022"
 output: pdf_document
 authors:
 - name: Connor Donegan
@@ -26,15 +26,15 @@ This paper introduces **geostan**, an `R` package for analyzing spatial data usi
 
 # Statement of need
 
-The distinguishing characteristic of spatial data is that maps of the data typically contain moderate to strong spatial patterns, or spatial autocorrelation, which reduces effective sample size (ESS), and renders many standard statistical tests inapplicable [@student_1914; @clifford_1989]. It is common for social variables to contain shared components of their spatial patterns, which inflates measures of association [@griffith_2019]. Spatial patterns are often of direct interest---disease mapping studies are concerned primarily with understanding how disease or mortality risk vary over social space.
+The distinguishing characteristic of spatial data is that maps of the data typically contain moderate to strong spatial patterns, or spatial autocorrelation, which reduces effective sample size (ESS) and renders many standard statistical methods inappropriate [@student_1914; @clifford_1989]. In addition, spatial patterns are often of direct interest---for example, disease mapping studies are concerned primarily with understanding how disease or mortality risk vary over space.
 
 A major challenge for spatial analysis is data quality, particularly for researchers using survey-based covariates. A single spatial analysis may use dozens, or even thousands, of error-laden survey estimates. Sampling error in ACS estimates is often substantial in magnitude and socially patterned [@folch_2016; @donegan_2021], which can have real consequences on communities and service providers [@bazuin_2013]. Spatial ME models are required to avoid ME biases and unwarranted levels of confidence in results.
 
-Existing R packages with spatial modeling functions include **spatialreg** [@bivand_2015], **INLA** [@rue_2009], **ngspatial** [@hughes_2020], **CARBayes** [@lee_2013], **nimble** [@valpine_2017]. Custom spatial models can be built using **rstan** [@stan_2022] or **nimble**, including spatial ME models, but this requires specialized programming and statistical skills. None of the other packages currently offer the spatial ME models that survey-based covariates require.
+Existing R packages with spatial modeling functions include **spatialreg** [@bivand_2015], **INLA** [@rue_2009], **ngspatial** [@hughes_2020], **CARBayes** [@lee_2013], **nimble** [@valpine_2017]. Custom spatial models can be built using **rstan** [@stan_2022] or **nimble**, including spatial ME models, but this requires specialized programming and statistical skills. **geostan** fills two gaps in this software landscape. First, **geostan** offers spatial ME models that are appropriate for survey-based covariates. Second, **geostan** provides spatial model diagnostic functions that make it easy for users to evaluate model results even if they are unfamiliar with Markov chain Monte Carlo (MCMC).
 
 # Functionality
 
-**geostan** provides convenient tools for a full spatial analysis workflow for spatial regression and disease mapping purposes. It provides tools for spatial data visualization, construction of spatial weights matrices (building upon `spdep` [@bivand_2013]), spatial ME models, models for censored count data, and multiple types of spatial statistical models for continuous and discrete data types. 
+**geostan** provides tools for spatial data visualization, construction of spatial weights matrices (building upon `spdep` [@bivand_2013]), spatial ME models, models for censored count data, and multiple types of spatial statistical models for continuous and discrete data types. 
 
 **geostan** uses Markov chain Monte Carlo (MCMC) for inference, which allows users to conduct formal inference on generated quantities of interest. The models are built using the `Stan` modeling language, a state-of-the-art platform for MCMC sampling [@stan_2022; @stan_2022b], but users only need to be familiar with the standard R formula interface. Because **geostan** returns `stanfit` objects from **rstan**, it is compatible with the **rstan** ecosystem of packages including **tidybayes** for working with MCMC samples [@kay_2022], **bridgesampling** for model comparison using Bayes factors [@gronau_2020], and **loo** for model comparison using approximate leave-one-out cross-validation [@yao_2017].
 
@@ -50,38 +50,38 @@ The package provides convenience functions for visualizing spatial patterns and 
 
 These tools are provided for exploratory analysis, not 'cluster detection'; p-values are not provided. 
 
-**geostan** provides a convenience function for obtaining a quick visual summary of a variable (see \autoref{fig:sp_diag}). When a fitted model is provided, the `sp_diag` function returns graphical diagnostics for model residuals. 
+**geostan** also provides a convenience function for obtaining a quick visual summary of a variable (see \autoref{fig:sp_diag}). When a fitted model is provided, the `sp_diag` function returns graphical diagnostics for model residuals. 
   
 ![Spatial diagnostic summary for percent college educated, Georgia counties.\label{fig:sp_diag}](sp-diag.png){ width=75% }
 
 ## Spatial models
 
-Currently implemented probability distributions for GLMs are:
+Table 1 lists the types of spatial models that are implemented in **geostan**. In addition to (non-spatial) generalized linear models (GLMs), options include spatial conditional autoregressive (CAR) models [@donegan_2022], intrinsic conditional autoregressive (ICAR) models including the BYM [@besag_1991] and BYM2 specifications [@riebler_2016; @morris_2019; @donegan_2021b], eigenvector spatial filtering (ESF) [@griffith_2019; @donegan_2020], and simultaneously-specified spatial autoregressive (SAR) models [@cliff_1981] (which is referred to as the spatial error model (SEM) in the econometrics literature [@lesage_2014]).
 
-  - normal 
-  - Student's $t$
-  - auto-normal (conditionally specified)
-  - binomial
-  - Poisson
+\begin{table}[h]
+  \centering
+    \caption{Spatial models currently implemented in \textbf{geostan}.}
+  \begin{tabular}{ccccc}
+  \hline
+   &  Gaussian & Student's $t$ & Poisson & Binomial \\
+ \hline
+ CAR & x &  & x & x  \\
+ ESF & x & x & x & x \\
+GLM & x & x & x & x \\ 
+ ICAR & & & x & x \\
+ SAR & x & & x & x \\
+ \hline
+  \end{tabular}
+  \label{tbl:models}
+  \end{table}
+
+All of the models allow for a set of exchangeable 'random effects' to be added, and spatially lagged covariates (SLX) can also be added to any of the models. While proper CAR models have been avoided in the past due to their computational burden, the CAR model is the most efficient spatial model in **geostan**. It is fast enough to work interactively on a laptop with $3,000+$ observations, such as U.S. county data. 
   
-All of the models allow for a set of exchangeable 'random effects' to be added, and spatially lagged covariates (SLX) can also be added to any of the models. The auto-normal model is the conditional autoregressive (CAR) model [@cressie_2015], with multiple specifications available (e.g., distance based) [@donegan_2022].
-
-The following options are available to model spatial autocorrelation, followed by the probability models currently implemented for each:
-
-  - CAR models, including multiple specification styles [@donegan_2022] 
-    - auto-normal, binomial, Poisson
-  - Intrinsic conditional autoregressive (ICAR) models, including BYM [@besag_1991] and BYM2 [@riebler_2016; @morris_2019; @donegan_2021b] 
-    - binomial and Poisson
-  - Eigenvector spatial filtering (ESF) [@griffith_2019; @donegan_2020] 
-    - normal, Student's $t$, binomial, Poisson
-  
-The CAR models are the most efficient spatial models in **geostan**. They are fast enough to work interactively on a laptop with $3,000+$ observations, such as U.S. county data [@donegan_2022]. 
+A set of functions for working with model results conveniently extract fitted values, marginal effects, residuals, spatial trends, and posterior (or prior) predictive distributions. Users are encouraged to always undertake a thoughtful spatial analysis of model residuals and other quantities to critique and improve their models through successive rounds of ESDA [cf. @gabry_2019].
 
 ## Spatial ME models
 
 ME models can be added to any **geostan** model. These are models for covariates measured with error, particularly small-area survey estimates with standard errors. The ME models treat the true covariate values as unknown parameters or latent variables, which are assigned a spatial CAR prior model. Users provide the scale of observational uncertainty or ME (e.g., survey standard errors) as data [@donegan_2021; cf. @bernardinelli_1997; @xia_1998; @kang_2009; @logan_2019]. All uncertain inferences from the ME models are automatically propagated throughout the regression or disease mapping model, and graphical diagnostics are provided for evaluating results of spatial ME models.
-
-A set of functions for working with model results conveniently extract fitted values, marginal effects, residuals, spatial trends, and posterior (or prior) predictive distributions. Users are encouraged to always undertake a thoughtful spatial analysis of model residuals and other quantities to critique and improve their models through successive rounds of ESDA [cf. @gabry_2019].
 
 # Acknowledgements
 
