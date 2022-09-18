@@ -305,7 +305,7 @@ The terms \(\tilde{\phi}\), \(\tilde{\theta}\) are standard normal deviates, \(\
 $$
  y = W X \gamma + X \beta + \epsilon
 $$
-where \(W\) is a row-standardized spatial weights matrix (see <code><a href="shape2mat.html">shape2mat</a></code>), \(WX\) is the mean neighboring value of \(X\), and \(\gamma\) is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the <code>slx</code> argument:</p><div class="sourceCode"><pre><code>stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
+where \(W\) is a row-standardized spatial weights matrix (see <a href="shape2mat.html">shape2mat</a>), \(WX\) is the mean neighboring value of \(X\), and \(\gamma\) is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the <code>slx</code> argument:</p><div class="sourceCode"><pre><code>stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
 </code></pre></div>
 
 <p>which is a shortcut for</p><div class="sourceCode"><pre><code>stan_glm(y ~ I(W \%*\% x1) + I(W \%*\% x2) + x1 + x2, \...)

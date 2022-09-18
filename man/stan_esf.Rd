@@ -147,9 +147,9 @@ A \sim Guass(0, \tau) \\
 \tau \sim student(20, 0, 2) \\
 \beta_{E} \sim horseshoe(.)
 }
-The form of this model is similar to the BYM model (see \code{\link[geostan]{stan_icar}}), in the sense that it contains a spatially structured trend term (\eqn{E \beta_{E}}) and an unstructured ('random effects') term (\eqn{A}).
+The form of this model is similar to the BYM model (see \link[geostan]{stan_icar}), in the sense that it contains a spatially structured trend term (\eqn{E \beta_{E}}) and an unstructured ('random effects') term (\eqn{A}).
 
-The \code{\link[geostan]{spatial.geostan_fit}} method will return \eqn{E \beta_{E}}.
+The \link[geostan]{spatial.geostan_fit} method will return \eqn{E \beta_{E}}.
 
 The model can also be extended to the space-time domain; see \link[geostan]{shape2mat} to specify a space-time connectivity matrix.
 
@@ -160,7 +160,7 @@ The \code{slx} argument is a convenience function for including SLX terms. For e
 \deqn{
  y = W X \gamma + X \beta + \epsilon
 }
-where \eqn{W} is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}), \eqn{WX} is the mean neighboring value of \eqn{X}, and \eqn{\gamma} is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the \code{slx} argument:\preformatted{stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \\...),
+where \eqn{W} is a row-standardized spatial weights matrix (see \link[geostan]{shape2mat}), \eqn{WX} is the mean neighboring value of \eqn{X}, and \eqn{\gamma} is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the \code{slx} argument:\preformatted{stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \\...),
 }
 
 which is a shortcut for\preformatted{stan_glm(y ~ I(W \\\%*\\\% x1) + I(W \\\%*\\\% x2) + x1 + x2, \\...)

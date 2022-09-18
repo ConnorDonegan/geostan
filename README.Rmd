@@ -69,13 +69,13 @@ data(georgia)
 The `sp_diag` function provides visual summaries of spatial data, including a histogram, Moran scatter plot, and map:
 
 ```{r fig.width = 8}
-sp_diag(georgia$rate.female, georgia)
+A <- shape2mat(georgia, style = "B")
+sp_diag(georgia$rate.female, georgia, w = A)
 ```
 
 There are three censored observations in the `georgia` female mortality data, which means there were 9 or fewer deaths in those counties. The following code fits a spatial conditional autoregressive (CAR) model to female county mortality data. By using the `censor_point` argument we include our information on the censored observations to obtain results for all counties:
 
 ```{r}
-A <- shape2mat(georgia, style = "B")
 cars <- prep_car_data(A)
 fit <- stan_car(deaths.female ~ offset(log(pop.at.risk.female)),
                 censor_point = 9,

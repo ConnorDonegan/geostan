@@ -237,8 +237,8 @@ A \sim Guass(0, \tau) \\
 \tau \sim student(20, 0, 2) \\
 \beta_{E} \sim horseshoe(.)
 $$
-The form of this model is similar to the BYM model (see <code><a href="stan_icar.html">stan_icar</a></code>), in the sense that it contains a spatially structured trend term (\(E \beta_{E}\)) and an unstructured ('random effects') term (\(A\)).</p>
-<p>The <code><a href="geostan_fit.html">spatial.geostan_fit</a></code> method will return \(E \beta_{E}\).</p>
+The form of this model is similar to the BYM model (see <a href="stan_icar.html">stan_icar</a>), in the sense that it contains a spatially structured trend term (\(E \beta_{E}\)) and an unstructured ('random effects') term (\(A\)).</p>
+<p>The <a href="geostan_fit.html">spatial.geostan_fit</a> method will return \(E \beta_{E}\).</p>
 <p>The model can also be extended to the space-time domain; see <a href="shape2mat.html">shape2mat</a> to specify a space-time connectivity matrix.</p>
 <p>The coefficients \(\beta_{E}\) are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the <code>threshold</code> argument). By default, <code>stan_esf</code> will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the <code>nsa</code> argument.</p><div class="section">
 <h3 id="spatially-lagged-covariates-slx-">Spatially lagged covariates (SLX)<a class="anchor" aria-label="anchor" href="#spatially-lagged-covariates-slx-"></a></h3>
@@ -248,7 +248,7 @@ The form of this model is similar to the BYM model (see <code><a href="stan_icar
 $$
  y = W X \gamma + X \beta + \epsilon
 $$
-where \(W\) is a row-standardized spatial weights matrix (see <code><a href="shape2mat.html">shape2mat</a></code>), \(WX\) is the mean neighboring value of \(X\), and \(\gamma\) is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the <code>slx</code> argument:</p><div class="sourceCode"><pre><code>stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
+where \(W\) is a row-standardized spatial weights matrix (see <a href="shape2mat.html">shape2mat</a>), \(WX\) is the mean neighboring value of \(X\), and \(\gamma\) is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the <code>slx</code> argument:</p><div class="sourceCode"><pre><code>stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
 </code></pre></div>
 
 <p>which is a shortcut for</p><div class="sourceCode"><pre><code>stan_glm(y ~ I(W \%*\% x1) + I(W \%*\% x2) + x1 + x2, \...)

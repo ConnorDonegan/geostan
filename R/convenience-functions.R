@@ -203,7 +203,7 @@ sp_diag.geostan_fit <- function(y,
                             w = shape2mat(shape, match.arg(style)),
                             binwidth = function(x) 0.5 * stats::sd(x, na.rm = TRUE),
                             rates = TRUE,
-                            size = 0.15,
+                            size = 0.05,
                             ...) {
     mc_style <- match.arg(mc_style, c("scatter", "hist"))
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
@@ -231,7 +231,7 @@ sp_diag.geostan_fit <- function(y,
     marginal_residual <- apply(residuals(y, summary = FALSE, ...), 2, mean, na.rm = TRUE)
     map.y <- ggplot(shape) +
         geom_sf(aes(fill = marginal_residual),
-                lwd = 0.05,
+                lwd =  .01,
                 col = "gray20") +
         scale_fill_gradient2(name = name,
                              label = signs::signs) +
@@ -979,7 +979,14 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' @md
 #' @importFrom rstan extract_sparse_parts
 #' @importFrom Matrix isSymmetric Matrix rowSums summary
-prep_car_data <- function(A, style = c("WCAR", "ACAR", "DCAR"), k = 1, gamma = 0, lambda = TRUE, cmat = TRUE, stan_fn = ifelse(style == "WCAR", "wcar_normal_lpdf", "car_normal_lpdf")) {
+prep_car_data <- function(A,
+                          style = c("WCAR", "ACAR", "DCAR"),
+                          k = 1,
+                          gamma = 0,
+                          lambda = TRUE,
+                          cmat = TRUE,
+                          stan_fn = ifelse(style == "WCAR", "wcar_normal_lpdf", "car_normal_lpdf")
+                          ) {
     style = match.arg(style)
     if (style != "WCAR" & stan_fn == "wcar_normal_lpdf") stop("wcar_normal_lpdf only works with style = 'WCAR'.")
     stopifnot(inherits(A, "matrix") | inherits(A, "Matrix"))

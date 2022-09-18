@@ -40,7 +40,7 @@ mc <- function(x, w, digits = 3, warn = TRUE, na.rm = FALSE) {
     check_sa_data(x, w) 
     na_idx <- which(is.na(x))   
     if (na.rm == TRUE && length(na_idx) > 0) {   
-        if (warn) message(length(na_idx), " NA values found in x. They will be removed from the data before calculating the Moran coefficient. If matrix w was row-standardized, it may not longer be. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.")
+        if (warn) message(length(na_idx), " NA values found in x; they will be removed from the data before calculating the Moran coefficient. If matrix w was row-standardized, it may not longer be. You may want to use a binary connectivity matrix by using style = 'B' in shape2mat.")
         x <- x[-na_idx]
         w <- w[-na_idx, -na_idx]
     }
@@ -101,7 +101,7 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
     na_idx <- which(is.na(x))
     if (length(na_idx) > 0) {
         if (na.rm == TRUE) {   
-            message(length(na_idx), " NA values found in x. They will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.")
+            message(length(na_idx), " NA values found in x; they will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. You may want to use a binary connectivity matrix using style = 'B' in shape2mat.")
             x <- x[-na_idx]
             w <- w[-na_idx, -na_idx]
         } else {

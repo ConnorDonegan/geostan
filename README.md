@@ -70,12 +70,6 @@ Load the package and the `georgia` county mortality data set (ages
 
 ``` r
 library(geostan)
-#> This is geostan version 0.3.0
-#> 
-#> Attaching package: 'geostan'
-#> The following object is masked from 'package:base':
-#> 
-#>     gamma
 data(georgia)
 ```
 
@@ -83,9 +77,10 @@ The `sp_diag` function provides visual summaries of spatial data,
 including a histogram, Moran scatter plot, and map:
 
 ``` r
-sp_diag(georgia$rate.female, georgia)
+A <- shape2mat(georgia, style = "B")
+sp_diag(georgia$rate.female, georgia, w = A)
 #> 3 NA values found in x. They will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.
-#> Warning: Removed 3 rows containing non-finite values (stat_bin).
+#> Warning: Removed 3 rows containing non-finite values (`stat_bin()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
@@ -98,9 +93,7 @@ include our information on the censored observations to obtain results
 for all counties:
 
 ``` r
-A <- shape2mat(georgia, style = "B")
 cars <- prep_car_data(A)
-#> as(<ngCMatrix>, "dgCMatrix") is deprecated since Matrix 1.5-0; do as(., "dMatrix") instead
 #> Range of permissible rho values:  -1.661134 1
 fit <- stan_car(deaths.female ~ offset(log(pop.at.risk.female)),
                 censor_point = 9,
@@ -132,7 +125,7 @@ diagnostics for spatial models:
 ``` r
 sp_diag(fit, georgia, w = A)
 #> 3 NA values found in x. They will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.
-#> Warning: Removed 3 rows containing missing values (geom_pointrange).
+#> Warning: Removed 3 rows containing missing values (`geom_pointrange()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
@@ -150,8 +143,8 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.0014105 
-#> WAIC:  1291.3 
+#> Residual Moran Coefficient:  0.00053825 
+#> WAIC:  1291.44 
 #> Observations:  159 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
@@ -159,11 +152,11 @@ print(fit)
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-#> intercept -4.671   0.004 0.107 -4.855 -4.718 -4.672 -4.625 -4.478   845 1.004
-#> car_rho    0.926   0.001 0.057  0.780  0.897  0.939  0.968  0.996  3130 0.999
-#> car_scale  0.456   0.001 0.035  0.392  0.431  0.455  0.479  0.532  3233 1.001
+#> intercept -4.674   0.002 0.083 -4.826 -4.717 -4.674 -4.633 -4.510  2199 1.002
+#> car_rho    0.921   0.001 0.057  0.781  0.891  0.932  0.963  0.994  3783 1.000
+#> car_scale  0.458   0.001 0.034  0.395  0.434  0.456  0.480  0.531  4130 1.000
 #> 
-#> Samples were drawn using NUTS(diag_e) at Tue Sep 13 08:59:48 2022.
+#> Samples were drawn using NUTS(diag_e) at Sat Sep 17 21:02:38 2022.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).

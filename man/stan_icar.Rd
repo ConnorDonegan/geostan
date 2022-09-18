@@ -220,7 +220,7 @@ The \code{slx} argument is a convenience function for including SLX terms. For e
 \deqn{
  y = W X \gamma + X \beta + \epsilon
 }
-where \eqn{W} is a row-standardized spatial weights matrix (see \code{\link[geostan]{shape2mat}}), \eqn{WX} is the mean neighboring value of \eqn{X}, and \eqn{\gamma} is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the \code{slx} argument:\preformatted{stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \\...),
+where \eqn{W} is a row-standardized spatial weights matrix (see \link[geostan]{shape2mat}), \eqn{WX} is the mean neighboring value of \eqn{X}, and \eqn{\gamma} is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the \code{slx} argument:\preformatted{stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \\...),
 }
 
 which is a shortcut for\preformatted{stan_glm(y ~ I(W \\\%*\\\% x1) + I(W \\\%*\\\% x2) + x1 + x2, \\...)
