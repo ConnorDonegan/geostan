@@ -64,6 +64,10 @@
 </div>
 <div class="section level3">
 <h3 id="minor-changes-0-4-0">Minor changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-4-0"></a></h3>
+<p>Previously, when getting fitted values from an auto-normal model (i.e., the CAR model with <code>family = auto_gaussian()</code>) the fitted values did not include the implicit spatial trend. Now, the <code>fitted.geostan_fit</code> method will return the fitted values with the implicit spatial trend; this is consistent with the behavior of <code>residuals.geostan_fit</code>, which has an option to <code>detrend</code> the residuals. This applies to the SAR and CAR auto-normal specifications. For details, see the documentation pages for <code>stan_car</code> and <code>stan_sar</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="minor-changes-0-4-0-1">Minor changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-4-0-1"></a></h3>
 <p>The documentation for the models (<code>stan_glm</code>, <code>stan_car</code>, <code>stan_esf</code>, <code>stan_icar</code>, <code>stan_sar</code>) now uses Latex to typeset the model equations.</p>
 </div>
 </div>
@@ -77,7 +81,7 @@
 </ul></div>
 <div class="section level3">
 <h3 id="minor-changes-0-3-0">Minor changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-3-0"></a></h3>
-<ul><li>geostan models can now be used with the bridgesampling package for model camparison with Bayes factors (e.g., use <code>bridge_sampler(geostan_fit$stanfit)</code>). By default, geostan only collects MCMC samples for parameters that are expected to be of some interest for users. To become compatible with bridgesampling, the <code>keep_all</code> argument was added to all of the model fitting functions. For important background and details see the bridgesampling package documentation and vignettes on <a href="https://CRAN.R-project.org/package=bridgesampling" class="external-link">CRAN</a>.</li>
+<ul><li>geostan models can now be used with the bridgesampling package for model comparison with Bayes factors (e.g., use <code>bridge_sampler(geostan_fit$stanfit)</code>). By default, geostan only collects MCMC samples for parameters that are expected to be of some interest for users. To become compatible with bridgesampling, the <code>keep_all</code> argument was added to all of the model fitting functions. For important background and details see the bridgesampling package documentation and vignettes on <a href="https://CRAN.R-project.org/package=bridgesampling" class="external-link">CRAN</a>.</li>
 <li>stan_car now has an option to provide the connectivity matrix C, which is used to calculate spatial-lag of X (SLX) terms and residual spatial autocorrelation. Previously, there was no option to provide this matrix, as it was taken from the car_parts argument. However, that choice is only appropriate when the WCAR specification is used. Now, if C is missing and the WCAR specification has not been used a warning will appear.</li>
 <li>Previously, the <code>lisa</code> function would automatically center and scale the variate before computing local Moran’s I. Now, the variate will be centered and scaled by default but the user has the option to turn the scaling off (so the variate will be centered, but not divided by its standard deviation). This function also row-standardized the spatial weights matrix automatically, but there was no reason why. That’s not done anymore.</li>
 </ul></div>

@@ -97,7 +97,7 @@
 #' \deqn{
 #' R = y - \mu - \rho C (y - \mu).
 #' }
-#' To obtain "raw" residuals (\eqn{y - \mu}), use `residuals(fit, detrend = FALSE)`.
+#' To obtain "raw" residuals (\eqn{y - \mu}), use `residuals(fit, detrend = FALSE)`. Similarly, the fitted values obtained from the \link[geostan]{fitted.geostan_fit} will include the spatial trend term by default.
 #' 
 #' ### Poisson
 #'

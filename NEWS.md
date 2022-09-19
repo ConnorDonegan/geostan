@@ -6,6 +6,10 @@ The simultaneously-specified spatial autoregressive (SAR) model---referred to as
 
 ## Minor changes
 
+Previously, when getting fitted values from an auto-normal model (i.e., the CAR model with `family = auto_gaussian()`) the fitted values did not include the implicit spatial trend. Now, the `fitted.geostan_fit` method will return the fitted values with the implicit spatial trend; this is consistent with the behavior of `residuals.geostan_fit`, which has an option to `detrend` the residuals. This applies to the SAR and CAR auto-normal specifications. For details, see the documentation pages for `stan_car`  and `stan_sar`.
+
+## Minor changes
+
 The documentation for the models (`stan_glm`, `stan_car`, `stan_esf`, `stan_icar`, `stan_sar`) now uses Latex to typeset the model equations.
 
 # geostan 0.3.0
@@ -18,7 +22,7 @@ The documentation for the models (`stan_glm`, `stan_car`, `stan_esf`, `stan_icar
 
 ## Minor changes
 
- - geostan models can now be used with the bridgesampling package for model camparison with Bayes factors (e.g., use `bridge_sampler(geostan_fit$stanfit)`). By default, geostan only collects MCMC samples for parameters that are expected to be of some interest for users. To become compatible with bridgesampling, the `keep_all` argument was added to all of the model fitting functions. For important background and details see the bridgesampling package documentation and vignettes on [CRAN](https://CRAN.R-project.org/package=bridgesampling).
+ - geostan models can now be used with the bridgesampling package for model comparison with Bayes factors (e.g., use `bridge_sampler(geostan_fit$stanfit)`). By default, geostan only collects MCMC samples for parameters that are expected to be of some interest for users. To become compatible with bridgesampling, the `keep_all` argument was added to all of the model fitting functions. For important background and details see the bridgesampling package documentation and vignettes on [CRAN](https://CRAN.R-project.org/package=bridgesampling).
  - stan_car now has an option to provide the connectivity matrix C, which is used to calculate spatial-lag of X (SLX) terms and residual spatial autocorrelation. Previously, there was no option to provide this matrix, as it was taken from the car_parts argument. However, that choice is only appropriate when the WCAR specification is used. Now, if C is missing and the WCAR specification has not been used a warning will appear.
  - Previously, the `lisa` function would automatically center and scale the variate before computing local Moran's I. Now, the variate will be centered and scaled by default but the user has the option to turn the scaling off (so the variate will be centered, but not divided by its standard deviation). This function also row-standardized the spatial weights matrix automatically, but there was no reason why. That's not done anymore.
 

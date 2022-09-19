@@ -239,7 +239,7 @@ $$</p>
 $$
 R = y - \mu - \rho W (y - \mu).
 $$
-To obtain "raw" residuals (\(y - \mu\)), use <code>residuals(fit, detrend = FALSE)</code>.</p>
+To obtain "raw" residuals (\(y - \mu\)), use <code>residuals(fit, detrend = FALSE)</code>. Similarly, the fitted values obtained from the <a href="geostan_fit.html">fitted.geostan_fit</a> will include the spatial trend term by default.</p>
 </div>
 
 <div class="section">
@@ -374,14 +374,27 @@ where \(M\) is the censor point and \(\mu_i\) again is the fitted value for the 
 <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">stan_sar</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,
                 C <span class="op">=</span> <span class="va">W</span>,
                 data <span class="op">=</span> <span class="va">georgia</span>,
-                chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">700</span> <span class="co"># for ex. speed only</span>
+                chains <span class="op">=</span> <span class="fl">1</span>, <span class="co"># for ex. speed only</span>
+                iter <span class="op">=</span> <span class="fl">700</span> 
                 <span class="op">)</span>
 
 <span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_rhat</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span>
 <span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_mcse</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
 <span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span>
 
+<span class="co"># \donttest{</span>
+ <span class="co"># a more appropriate model for count data:</span>
+<span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu">stan_sar</span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span>,
+                C <span class="op">=</span> <span class="va">W</span>,
+                data <span class="op">=</span> <span class="va">georgia</span>,
+                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,
+                chains <span class="op">=</span> <span class="fl">1</span>, <span class="co"># for ex. speed only</span>
+                iter <span class="op">=</span> <span class="fl">700</span> 
+                 <span class="op">)</span>
+<span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit2</span>, <span class="va">georgia</span><span class="op">)</span>
+<span class="co"># }</span>
 </code></pre></div>
     </div>
   </div>

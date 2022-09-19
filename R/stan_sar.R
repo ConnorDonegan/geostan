@@ -95,7 +95,7 @@
 #' \deqn{
 #' R = y - \mu - \rho W (y - \mu).
 #' }
-#' To obtain "raw" residuals (\eqn{y - \mu}), use `residuals(fit, detrend = FALSE)`.
+#' To obtain "raw" residuals (\eqn{y - \mu}), use `residuals(fit, detrend = FALSE)`. Similarly, the fitted values obtained from the \link[geostan]{fitted.geostan_fit} will include the spatial trend term by default.
 #'
 #' ### Poisson
 #'
@@ -255,14 +255,27 @@
 #' fit <- stan_sar(log(rate.male) ~ 1,
 #'                 C = W,
 #'                 data = georgia,
-#'                 chains = 2, iter = 700 # for ex. speed only
+#'                 chains = 1, # for ex. speed only
+#'                 iter = 700 
 #'                 )
 #' 
 #' rstan::stan_rhat(fit$stanfit)
 #' rstan::stan_mcse(fit$stanfit)
 #' print(fit)
+#' plot(fit)
 #' sp_diag(fit, georgia)
 #'
+#' \donttest{
+#'  # a more appropriate model for count data:
+#' fit2 <- stan_sar(deaths.male ~ offset(log(pop.at.risk.male)),
+#'                 C = W,
+#'                 data = georgia,
+#'                 family = poisson(),
+#'                 chains = 1, # for ex. speed only
+#'                 iter = 700 
+#'                  )
+#' sp_diag(fit2, georgia)
+#' }
 #' @export
 #' @md
 #' @importFrom rstan extract_sparse_parts

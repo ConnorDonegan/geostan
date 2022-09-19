@@ -75,7 +75,7 @@
 #' \deqn{
 #' y \sim Poisson(P * e^{\eta})
 #' }
-#' where \eqn{P} is still the population at risk and \eqn{e^{\eta}} is the incidence rate (risk). The various spatial models available in \code{geostan} expand upon this specifiction (and others) by incorporating spatial arrangement and spatial autocorrelation.
+#' where \eqn{P} is still the population at risk and \eqn{e^{\eta}} is the incidence rate (risk). The various spatial models available in \code{geostan} expand upon this specification (and others) by incorporating spatial arrangement and spatial autocorrelation.
 #'
 #' ### Spatially lagged covariates (SLX)
 #' 

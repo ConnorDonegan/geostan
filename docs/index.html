@@ -138,8 +138,8 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span>
 <span class="fu"><a href="reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">rate.female</span>, <span class="va">georgia</span>, w <span class="op">=</span> <span class="va">A</span><span class="op">)</span>
-<span class="co">#&gt; 3 NA values found in x. They will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.</span>
-<span class="co">#&gt; Warning: Removed 3 rows containing non-finite values (`stat_bin()`).</span></code></pre></div>
+<span class="co">#&gt; 3 NA values found in x; they will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. You may want to use a binary connectivity matrix using style = 'B' in shape2mat.</span>
+<span class="co">#&gt; Warning: Removed 3 rows containing non-finite values (stat_bin).</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-3-1.png" style="display: block; margin: auto;"></p>
 <p>There are three censored observations in the <code>georgia</code> female mortality data, which means there were 9 or fewer deaths in those counties. The following code fits a spatial conditional autoregressive (CAR) model to female county mortality data. By using the <code>censor_point</code> argument we include our information on the censored observations to obtain results for all counties:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -163,15 +163,15 @@
 <span class="co">#&gt;   df location scale</span>
 <span class="co">#&gt; 1 10        0     3</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; *Setting prior for CAR spatial autocorrelation parameter (rho)</span>
+<span class="co">#&gt; *Setting prior for CAR spatial autocorrelation parameter (sar_rho)</span>
 <span class="co">#&gt; Distribution: uniform</span>
 <span class="co">#&gt;   lower upper</span>
 <span class="co">#&gt; 1  -1.7     1</span></code></pre></div>
 <p>Passing a fitted model to the <code>sp_diag</code> function will return a set of diagnostics for spatial models:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span>, w <span class="op">=</span> <span class="va">A</span><span class="op">)</span>
-<span class="co">#&gt; 3 NA values found in x. They will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.</span>
-<span class="co">#&gt; Warning: Removed 3 rows containing missing values (`geom_pointrange()`).</span></code></pre></div>
+<span class="co">#&gt; 3 NA values found in x; they will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. You may want to use a binary connectivity matrix using style = 'B' in shape2mat.</span>
+<span class="co">#&gt; Warning: Removed 3 rows containing missing values (geom_pointrange).</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;"></p>
 <p>The <code>print</code> method returns a summary of the probability distributions for model parameters, as well as Markov chain Monte Carlo (MCMC) diagnostics from Stan (Monte Carlo standard errors of the mean <code>se_mean</code>, effective sample size <code>n_eff</code>, and the R-hat statistic <code>Rhat</code>):</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -181,8 +181,8 @@
 <span class="co">#&gt; Spatial method (outcome):  CAR </span>
 <span class="co">#&gt; Likelihood function:  poisson </span>
 <span class="co">#&gt; Link function:  log </span>
-<span class="co">#&gt; Residual Moran Coefficient:  0.00053825 </span>
-<span class="co">#&gt; WAIC:  1291.44 </span>
+<span class="co">#&gt; Residual Moran Coefficient:  0.0017505 </span>
+<span class="co">#&gt; WAIC:  1290.39 </span>
 <span class="co">#&gt; Observations:  159 </span>
 <span class="co">#&gt; Data models (ME): none</span>
 <span class="co">#&gt; Inference for Stan model: foundation.</span>
@@ -190,11 +190,11 @@
 <span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt;             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat</span>
-<span class="co">#&gt; intercept -4.674   0.002 0.083 -4.826 -4.717 -4.674 -4.633 -4.510  2199 1.002</span>
-<span class="co">#&gt; car_rho    0.921   0.001 0.057  0.781  0.891  0.932  0.963  0.994  3783 1.000</span>
-<span class="co">#&gt; car_scale  0.458   0.001 0.034  0.395  0.434  0.456  0.480  0.531  4130 1.000</span>
+<span class="co">#&gt; intercept -4.673   0.002 0.089 -4.851 -4.720 -4.675 -4.630 -4.488  2465 1.001</span>
+<span class="co">#&gt; car_rho    0.926   0.001 0.057  0.783  0.898  0.939  0.969  0.995  2896 1.001</span>
+<span class="co">#&gt; car_scale  0.456   0.001 0.036  0.391  0.432  0.454  0.479  0.532  3110 1.001</span>
 <span class="co">#&gt; </span>
-<span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Sat Sep 17 21:02:38 2022.</span>
+<span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Mon Sep 19 15:23:26 2022.</span>
 <span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span>
 <span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span>
 <span class="co">#&gt; convergence, Rhat=1).</span></code></pre></div>
@@ -217,7 +217,7 @@
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>
-<li><small>GPL (&gt;= 3)</small></li>
+<li><small>GPL (&gt;= 3) </small></li>
 </ul>
 </div>
 

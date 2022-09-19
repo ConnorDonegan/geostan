@@ -20,7 +20,10 @@
 #' @param probs Argument passed to \code{quantile}; which quantiles to calculate and print.
 #' @param fill fill color for histograms and density plots.
 #' @param rates For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to `TRUE`.
-#' @param detrend For CAR models with Gaussian likelihood only (auto-gaussian); if `detrend = TRUE`, the implicit spatial trend will be removed from the residuals. The implicit spatial trend is `Trend = rho * C %*% (Y - Mu)` (see \code{\link[geostan]{stan_car}}). I.e., `resid = Y - (Mu + Trend)`.
+#' 
+#' @param detrend For auto-normal models (CAR and SAR models with Gaussian likelihood only); if `detrend = TRUE`, the implicit spatial trend will be removed from the residuals. The implicit spatial trend is `Trend = rho * C %*% (Y - Mu)` (see \link[geostan]{stan_car} or \link[geostan]{stan_sar}). I.e., `resid = Y - (Mu + Trend)`.
+#' 
+#' @param trend For auto-normal models (CAR and SAR models with Gaussian likelihood only); if `trend = TRUE`, the fitted values will include the implicit spatial trend term. The implicit spatial trend is `Trend = rho * C %*% (Y - Mu)` (see \link[geostan]{stan_car} or \link[geostan]{stan_sar}). I.e., if `trend = TRUE`, `fitted = Mu + Trend`.
 #' @param ... additional arguments.
 #'
 #' @details
@@ -203,7 +206,7 @@ as.array.geostan_fit <- function(x, ...){
 #' @export
 residuals.geostan_fit <- function(object, summary = TRUE, rates = TRUE, detrend = TRUE, ...) {
     y <- object$data[,1]
-    fits <- fitted(object, summary = FALSE, rates = rates)
+    fits <- fitted(object, summary = FALSE, rates = rates, trend = detrend)
     if (rates && object$family$family == "binomial") { y <- y / (y + object$data[,2]) }
     if (rates && object$family$family == "poisson" && "offset" %in% c(colnames(object$data))) {
         log.at.risk <- object$data[, "offset"]
@@ -211,7 +214,6 @@ residuals.geostan_fit <- function(object, summary = TRUE, rates = TRUE, detrend 
         y <- y / at.risk     
     }
     R = sweep(fits, MARGIN = 2, STATS = as.array(y), FUN = .resid)
-    if (object$family$family == "auto_gaussian" && detrend) R <- R - spatial(object, summary = FALSE)
     colnames(R) <- gsub("fitted", "residual", colnames(R))
     if (summary) return( post_summary(R) )
     return (R)  
@@ -222,8 +224,12 @@ residuals.geostan_fit <- function(object, summary = TRUE, rates = TRUE, detrend 
 #' @import stats
 #' @method fitted geostan_fit
 #' @rdname geostan_fit
-fitted.geostan_fit <- function(object, summary = TRUE, rates = TRUE, ...) {
+fitted.geostan_fit <- function(object, summary = TRUE, rates = TRUE, trend = TRUE, ...) {
     fits <- as.matrix(object$stanfit, pars = "fitted")
+    if (object$family$family == "auto_gaussian" && trend == TRUE) {
+        spatial_samples <- spatial(object, summary = FALSE)
+        fits <- fits + spatial_samples
+    }
     if (!rates && object$family$family == "binomial") {        
         trials <- object$data[,1] + object$data[,2]
         fits <- sweep(fits, MARGIN = 2, STATS = as.array(trials), FUN = "*")
@@ -248,13 +254,13 @@ spatial <- function(object, summary = TRUE, ...) {
 #' @method spatial geostan_fit
 #' @rdname geostan_fit
 spatial.geostan_fit <- function(object, summary = TRUE, ...) {
-  if (is.na(object$spatial$par)) stop("This model does not have a spatial trend component to extract.")
-  if (!object$spatial$method %in% c("CAR", "SAR")) {
-      par <- as.character(object$spatial$par)
-      spatial.samples <- as.matrix(object, pars = par, ...)
-  } else {
-      spatial.samples <- extract_autoGauss_trend(object)
-  }
+    if (is.na(object$spatial$par)) stop("This model does not have a spatial trend component to extract.")
+    if (object$spatial$method %in% c("CAR", "SAR")) {
+        spatial.samples <- extract_autoGauss_trend(object)
+    } else {
+        par <- as.character(object$spatial$par)
+        spatial.samples <- as.matrix(object, pars = par, ...)
+    }
   if (summary) {
     return ( post_summary(spatial.samples) )
   } else {
@@ -266,9 +272,11 @@ extract_autoGauss_trend <- function(object) {
     if (object$spatial$method == "CAR") rho_name <- "car_rho"
     if (object$spatial$method == "SAR") rho_name <- "sar_rho"
     if (object$family$family == "auto_gaussian") {
-        C <- object$C              
-        R <- resid(object, summary = FALSE, detrend = FALSE)
+        C <- object$C
+        y <- object$data[,1]
         rho <- as.matrix(object, pars = rho_name)
+        fits <- as.matrix(object$stanfit, pars = "fitted")
+        R = sweep(fits, MARGIN = 2, STATS = as.array(y), FUN = .resid)
         spatial.samples <- t(sapply(1:nrow(rho), function(i) {
             as.numeric( rho[i] * C %*% R[i,] )
         }))         

@@ -87,7 +87,7 @@
 <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">residuals</a></span><span class="op">(</span><span class="va">object</span>, summary <span class="op">=</span> <span class="cn">TRUE</span>, rates <span class="op">=</span> <span class="cn">TRUE</span>, detrend <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span>
 
 <span class="co"># S3 method for geostan_fit</span>
-<span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">object</span>, summary <span class="op">=</span> <span class="cn">TRUE</span>, rates <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">object</span>, summary <span class="op">=</span> <span class="cn">TRUE</span>, rates <span class="op">=</span> <span class="cn">TRUE</span>, trend <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span>
 
 <span class="fu">spatial</span><span class="op">(</span><span class="va">object</span>, summary <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span>
 
@@ -129,7 +129,9 @@
 <dt>rates</dt>
 <dd><p>For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to <code>TRUE</code>.</p></dd>
 <dt>detrend</dt>
-<dd><p>For CAR models with Gaussian likelihood only (auto-gaussian); if <code>detrend = TRUE</code>, the implicit spatial trend will be removed from the residuals. The implicit spatial trend is <code>Trend = rho * C %*% (Y - Mu)</code> (see <code><a href="stan_car.html">stan_car</a></code>). I.e., <code>resid = Y - (Mu + Trend)</code>.</p></dd>
+<dd><p>For auto-normal models (CAR and SAR models with Gaussian likelihood only); if <code>detrend = TRUE</code>, the implicit spatial trend will be removed from the residuals. The implicit spatial trend is <code>Trend = rho * C %*% (Y - Mu)</code> (see <a href="stan_car.html">stan_car</a> or <a href="stan_sar.html">stan_sar</a>). I.e., <code>resid = Y - (Mu + Trend)</code>.</p></dd>
+<dt>trend</dt>
+<dd><p>For auto-normal models (CAR and SAR models with Gaussian likelihood only); if <code>trend = TRUE</code>, the fitted values will include the implicit spatial trend term. The implicit spatial trend is <code>Trend = rho * C %*% (Y - Mu)</code> (see <a href="stan_car.html">stan_car</a> or <a href="stan_sar.html">stan_sar</a>). I.e., if <code>trend = TRUE</code>, <code>fitted = Mu + Trend</code>.</p></dd>
 <dt>newdata</dt>
 <dd><p>A data frame in which to look for variables with which to predict, presumably for the purpose of viewing marginal effects. Note that if the model formula includes an offset term, <code>newdata</code> must contain a column with the appropriate name for the offset, even though the values will be ignored (you may set all values to 1); you must use the <code>alpha</code> argument to include any additional terms. Note also that any spatially-lagged covariate terms will be ignored if they were provided using the <code>slx</code> argument. If covariates in the model were centered using the <code>centerx</code> argument, the <code>predict.geostan_fit</code> method will automatically center the predictors in <code>newdata</code> internally using the values stored in <code>fit$x_center</code>. If <code>newdata</code> is missing, user arguments will be passed to the <code>fitted.geostan_fit</code> method to return the fitted values of the model.</p></dd>
 <dt>alpha</dt>

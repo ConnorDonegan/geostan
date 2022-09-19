@@ -79,8 +79,8 @@ including a histogram, Moran scatter plot, and map:
 ``` r
 A <- shape2mat(georgia, style = "B")
 sp_diag(georgia$rate.female, georgia, w = A)
-#> 3 NA values found in x. They will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.
-#> Warning: Removed 3 rows containing non-finite values (`stat_bin()`).
+#> 3 NA values found in x; they will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. You may want to use a binary connectivity matrix using style = 'B' in shape2mat.
+#> Warning: Removed 3 rows containing non-finite values (stat_bin).
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
@@ -113,7 +113,7 @@ fit <- stan_car(deaths.female ~ offset(log(pop.at.risk.female)),
 #>   df location scale
 #> 1 10        0     3
 #> 
-#> *Setting prior for CAR spatial autocorrelation parameter (rho)
+#> *Setting prior for CAR spatial autocorrelation parameter (sar_rho)
 #> Distribution: uniform
 #>   lower upper
 #> 1  -1.7     1
@@ -124,8 +124,8 @@ diagnostics for spatial models:
 
 ``` r
 sp_diag(fit, georgia, w = A)
-#> 3 NA values found in x. They will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. To address this, you can use a binary connectivity matrix, using style = 'B' in shape2mat.
-#> Warning: Removed 3 rows containing missing values (`geom_pointrange()`).
+#> 3 NA values found in x; they will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. You may want to use a binary connectivity matrix using style = 'B' in shape2mat.
+#> Warning: Removed 3 rows containing missing values (geom_pointrange).
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
@@ -143,8 +143,8 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.00053825 
-#> WAIC:  1291.44 
+#> Residual Moran Coefficient:  0.0017505 
+#> WAIC:  1290.39 
 #> Observations:  159 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
@@ -152,11 +152,11 @@ print(fit)
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-#> intercept -4.674   0.002 0.083 -4.826 -4.717 -4.674 -4.633 -4.510  2199 1.002
-#> car_rho    0.921   0.001 0.057  0.781  0.891  0.932  0.963  0.994  3783 1.000
-#> car_scale  0.458   0.001 0.034  0.395  0.434  0.456  0.480  0.531  4130 1.000
+#> intercept -4.673   0.002 0.089 -4.851 -4.720 -4.675 -4.630 -4.488  2465 1.001
+#> car_rho    0.926   0.001 0.057  0.783  0.898  0.939  0.969  0.995  2896 1.001
+#> car_scale  0.456   0.001 0.036  0.391  0.432  0.454  0.479  0.532  3110 1.001
 #> 
-#> Samples were drawn using NUTS(diag_e) at Sat Sep 17 21:02:38 2022.
+#> Samples were drawn using NUTS(diag_e) at Mon Sep 19 15:23:26 2022.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).

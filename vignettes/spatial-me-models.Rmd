@@ -178,7 +178,7 @@ fit <- stan_car(log(rate.male) ~ insurance,
                 )
 ```
 
-The CAR models in **geostan** can be highly efficient in terms of MCMC sampling, but the required number of iterations will depend on many characteristics of the model and data. Often the default `iter = 2000` is more than sufficient (with `cores = 4`). To speep up sampling with multi-core processing, use `cores = 4` (to sample 4 chains in parallel).
+The CAR models in **geostan** can be highly efficient in terms of MCMC sampling, but the required number of iterations will depend on many characteristics of the model and data. Often the default `iter = 2000` is more than sufficient (with `cores = 4`). To speed up sampling with multi-core processing, use `cores = 4` (to sample 4 chains in parallel).
 
 ## Visual diagnostics
 

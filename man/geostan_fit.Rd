@@ -31,7 +31,7 @@
 
 \method{residuals}{geostan_fit}(object, summary = TRUE, rates = TRUE, detrend = TRUE, ...)
 
-\method{fitted}{geostan_fit}(object, summary = TRUE, rates = TRUE, ...)
+\method{fitted}{geostan_fit}(object, summary = TRUE, rates = TRUE, trend = TRUE, ...)
 
 spatial(object, summary = TRUE, ...)
 
@@ -68,7 +68,9 @@ spatial(object, summary = TRUE, ...)
 
 \item{rates}{For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to \code{TRUE}.}
 
-\item{detrend}{For CAR models with Gaussian likelihood only (auto-gaussian); if \code{detrend = TRUE}, the implicit spatial trend will be removed from the residuals. The implicit spatial trend is \code{Trend = rho * C \%*\% (Y - Mu)} (see \code{\link[geostan]{stan_car}}). I.e., \code{resid = Y - (Mu + Trend)}.}
+\item{detrend}{For auto-normal models (CAR and SAR models with Gaussian likelihood only); if \code{detrend = TRUE}, the implicit spatial trend will be removed from the residuals. The implicit spatial trend is \code{Trend = rho * C \%*\% (Y - Mu)} (see \link[geostan]{stan_car} or \link[geostan]{stan_sar}). I.e., \code{resid = Y - (Mu + Trend)}.}
+
+\item{trend}{For auto-normal models (CAR and SAR models with Gaussian likelihood only); if \code{trend = TRUE}, the fitted values will include the implicit spatial trend term. The implicit spatial trend is \code{Trend = rho * C \%*\% (Y - Mu)} (see \link[geostan]{stan_car} or \link[geostan]{stan_sar}). I.e., if \code{trend = TRUE}, \code{fitted = Mu + Trend}.}
 
 \item{newdata}{A data frame in which to look for variables with which to predict, presumably for the purpose of viewing marginal effects. Note that if the model formula includes an offset term, \code{newdata} must contain a column with the appropriate name for the offset, even though the values will be ignored (you may set all values to 1); you must use the \code{alpha} argument to include any additional terms. Note also that any spatially-lagged covariate terms will be ignored if they were provided using the \code{slx} argument. If covariates in the model were centered using the \code{centerx} argument, the \code{predict.geostan_fit} method will automatically center the predictors in \code{newdata} internally using the values stored in \code{fit$x_center}. If \code{newdata} is missing, user arguments will be passed to the \code{fitted.geostan_fit} method to return the fitted values of the model.}
 

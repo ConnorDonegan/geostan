@@ -148,7 +148,9 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' 
 #' @return A grid of spatial diagnostic plots. When provided with a numeric vector, this function plots a histogram, Moran scatter plot, and map. When provided with a fitted `geostan` model, the function returns a point-interval plot of observed values against fitted values (mean and 95 percent credible interval), either a Moran scatter plot of residuals or a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals, and a map of the mean posterior residuals (means of the marginal distributions).
 #'
-#' If `plot = TRUE`, the `ggplots` are drawn using \code{\link[gridExtra]{grid.arrange}}; otherwise, they are returned in a list. For the `geostan_fit` method, the underlying data for the Moran coefficient will also be returned if `plot = FALSE`.
+#' If `plot = TRUE`, the `ggplots` are drawn using \link[gridExtra]{grid.arrange}; otherwise, they are returned in a list. For the `geostan_fit` method, the underlying data for the Moran coefficient will also be returned if `plot = FALSE`.
+#'
+#' When `y` is a fitted CAR or SAR model with `family = auto_gaussian()`, the fitted values will include implicit spatial trend term, i.e. the call to \link[geostan]{fitted.geostan_fit} will use the default `trend = TRUE` and the call to \link[geostan]{residuals.geostan_fit} will use the default `detrend = TRUE`. (See \link[geostan]{stan_car} or \link[geostan]{stan_sar} for additional details on their implicit spatial trend components.) 
 #'
 #' @seealso \code{\link[geostan]{me_diag}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{aple}}
 #' 
@@ -203,7 +205,7 @@ sp_diag.geostan_fit <- function(y,
                             w = shape2mat(shape, match.arg(style)),
                             binwidth = function(x) 0.5 * stats::sd(x, na.rm = TRUE),
                             rates = TRUE,
-                            size = 0.05,
+                            size = 0.1,
                             ...) {
     mc_style <- match.arg(mc_style, c("scatter", "hist"))
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
@@ -231,7 +233,7 @@ sp_diag.geostan_fit <- function(y,
     marginal_residual <- apply(residuals(y, summary = FALSE, ...), 2, mean, na.rm = TRUE)
     map.y <- ggplot(shape) +
         geom_sf(aes(fill = marginal_residual),
-                lwd =  .01,
+                lwd =  .05,
                 col = "gray20") +
         scale_fill_gradient2(name = name,
                              label = signs::signs) +
@@ -1071,7 +1073,7 @@ prep_car_data <- function(A,
 #' \item{Widx}{Integer vector containing the indices corresponding to values of `-W` in `ImW_w` (i.e. non-diagonal entries of \eqn{(I-W)}).}
 #' \item{nW}{Integer length of `Widx`.}
 #' \item{eigenvalues_w}{Eigenvalues of \eqn{W} matrix.}
-#' \item{n}{Number of rows in eqn{W}.}
+#' \item{n}{Number of rows in \eqn{W}.}
 #' \item{W}{Sparse matrix representation of \eqn{W}}
 #' \item{rho_min}{Minimum permissible value of \eqn{\rho} (`1/min(eigenvalues_w)`).}
 #' \item{rho_max}{Maximum permissible value of \eqn{\rho} (`1/max(eigenvalues_w)`.}
@@ -1082,7 +1084,7 @@ prep_car_data <- function(A,
 #'
 #' This is used internally to prepare data for \code{\link[geostan]{stan_sar}} models. It can also be helpful for fitting custom SAR models in Stan (outside of \code{geostan}). 
 #' 
-#' @seealso \code{\link[geostan]{shape2mat}}, \code{\link[geostan]{stan_sar}}, \code{\link[geostan]{prep_car_data}}, \code{\link[geostan]{prep_icar_data}}
+#' @seealso \link[geostan]{shape2mat}, \link[geostan]{stan_sar}, \link[geostan]{prep_car_data}, \link[geostan]{prep_icar_data}
 #'
 #' @examples
 #' data(georgia)
