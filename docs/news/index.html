@@ -60,16 +60,16 @@
 <h2 class="page-header" data-toc-text="0.4.0" id="geostan-040">geostan 0.4.0<a class="anchor" aria-label="anchor" href="#geostan-040"></a></h2>
 <div class="section level3">
 <h3 id="new-additions-0-4-0">New Additions<a class="anchor" aria-label="anchor" href="#new-additions-0-4-0"></a></h3>
+<div class="section level4">
+<h4 id="sar-models-0-4-0">SAR models<a class="anchor" aria-label="anchor" href="#sar-models-0-4-0"></a></h4>
 <p>The simultaneously-specified spatial autoregressive (SAR) model—referred to as the spatial error model (SEM) in the spatial econometrics literature—has been implemented. The SAR model can be applied directly to continuous data (as the likelihood function) or it can be used as prior model for spatially autocorrelated parameters. Details are provided on the documentation page for the <code>stan_sar</code> function.</p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="minor-changes-0-4-0">Minor changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-4-0"></a></h3>
-<p>Previously, when getting fitted values from an auto-normal model (i.e., the CAR model with <code>family = auto_gaussian()</code>) the fitted values did not include the implicit spatial trend. Now, the <code>fitted.geostan_fit</code> method will return the fitted values with the implicit spatial trend; this is consistent with the behavior of <code>residuals.geostan_fit</code>, which has an option to <code>detrend</code> the residuals. This applies to the SAR and CAR auto-normal specifications. For details, see the documentation pages for <code>stan_car</code> and <code>stan_sar</code>.</p>
-</div>
-<div class="section level3">
-<h3 id="minor-changes-0-4-0-1">Minor changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-4-0-1"></a></h3>
-<p>The documentation for the models (<code>stan_glm</code>, <code>stan_car</code>, <code>stan_esf</code>, <code>stan_icar</code>, <code>stan_sar</code>) now uses Latex to typeset the model equations.</p>
-</div>
+<ul><li><p>Previously, when getting fitted values from an auto-normal model (i.e., the CAR model with <code>family = auto_gaussian()</code>) the fitted values did not include the implicit spatial trend. Now, the <code>fitted.geostan_fit</code> method will return the fitted values with the implicit spatial trend; this is consistent with the behavior of <code>residuals.geostan_fit</code>, which has an option to <code>detrend</code> the residuals. This applies to the SAR and CAR auto-normal specifications. For details, see the documentation pages for <code>stan_car</code> and <code>stan_sar</code>.</p></li>
+<li><p>The documentation for the models (<code>stan_glm</code>, <code>stan_car</code>, <code>stan_esf</code>, <code>stan_icar</code>, <code>stan_sar</code>) now uses Latex to typeset the model equations.</p></li>
+</ul></div>
 </div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.3.0" id="geostan-030">geostan 0.3.0<small>2022-07-11</small><a class="anchor" aria-label="anchor" href="#geostan-030"></a></h2>
