@@ -56,7 +56,7 @@ These tools are provided for exploratory analysis, not 'cluster detection'; p-va
 
 ## Spatial models
 
-Table 1 lists the types of spatial models that are implemented in **geostan**. In addition to (non-spatial) generalized linear models (GLMs), options include spatial conditional autoregressive (CAR) models [@donegan_2022], intrinsic conditional autoregressive (ICAR) models including the BYM [@besag_1991] and BYM2 specifications [@riebler_2016; @morris_2019; @donegan_2021b], eigenvector spatial filtering (ESF) [@griffith_2019; @donegan_2020], and simultaneously-specified spatial autoregressive (SAR) models [@cliff_1981] (which is referred to as the spatial error model (SEM) in the econometrics literature [@lesage_2014]).
+Table 1 lists the types of spatial models that are implemented in **geostan**. In addition to (non-spatial) generalized linear models (GLMs), options include spatial conditional autoregressive (CAR) models [@donegan_2022], intrinsic conditional autoregressive (ICAR) models including the BYM [@besag_1991] and BYM2 specifications [@riebler_2016; @morris_2019; @donegan_2021b], and eigenvector spatial filtering (ESF) [@griffith_2019; @donegan_2020]. A forthcoming version of **geostan** (0.4.0) will include simultaneously-specified spatial autoregressive (SAR) models [@cliff_1981] (which is referred to as the spatial error model (SEM) in the econometrics literature [@lesage_2014]).
 
 \begin{table}[h]
   \centering
