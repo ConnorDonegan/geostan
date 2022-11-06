@@ -61,7 +61,7 @@ Table 1 lists the types of spatial models that are implemented in **geostan**. I
 \begin{table}[h]
   \centering
     \caption{Spatial models currently implemented in \textbf{geostan}.}
-  \begin{tabular}{ccccc}
+  \begin{tabular}{lcccc}
   \hline
    &  Gaussian & Student's $t$ & Poisson & Binomial \\
  \hline
@@ -75,7 +75,7 @@ GLM & x & x & x & x \\
   \label{tbl:models}
   \end{table}
 
-All of the models allow for a set of exchangeable 'random effects' to be added, and spatially lagged covariates (SLX) can also be added to any of the models. While proper CAR models have been avoided in the past due to their computational burden, the CAR model is the most efficient spatial model in **geostan**. It is fast enough to work interactively on a laptop with $3,000+$ observations, such as U.S. county data. 
+All of the models allow for a set of exchangeable 'random effects' to be added, and spatially lagged covariates (SLX) can also be added to any of the models. While proper CAR models have been avoided in the past due to their computational burden, the CAR model is the most efficient spatial model in **geostan**. It is fast enough to work interactively on a laptop with $3,000+$ observations, such as U.S. county data [@donegan_2022]. 
   
 A set of functions for working with model results conveniently extract fitted values, marginal effects, residuals, spatial trends, and posterior (or prior) predictive distributions. Users are encouraged to always undertake a thoughtful spatial analysis of model residuals and other quantities to critique and improve their models through successive rounds of ESDA [cf. @gabry_2019].
 
@@ -83,8 +83,12 @@ A set of functions for working with model results conveniently extract fitted va
 
 ME models can be added to any **geostan** model. These are models for covariates measured with error, particularly small-area survey estimates with standard errors. The ME models treat the true covariate values as unknown parameters or latent variables, which are assigned a spatial CAR prior model. Users provide the scale of observational uncertainty or ME (e.g., survey standard errors) as data [@donegan_2021; cf. @bernardinelli_1997; @xia_1998; @kang_2009; @logan_2019]. All uncertain inferences from the ME models are automatically propagated throughout the regression or disease mapping model, and graphical diagnostics are provided for evaluating results of spatial ME models.
 
+## User support and discussion
+
+In addition to consulting the package website and vignettes (<https://connordonegan.github.io/geostan>), users are encouraged to engage with **geostan** through the package github page (<https://github.com/connordonegan/geostan>). The "Discussions" tab is the best place for users to seek support and ask questions. Any issues with the software or suggestions for new features may also be proposed there or on the "Issues" tab. Contributions to the software can also be proposed by making a pull request to the github page.
+
 # Acknowledgements
 
-I am grateful for support this project received from Esri Inc. and the Geospatial Information Sciences program at The University of Texas at Dallas.
+I am grateful for support this project received from Esri Inc. and from the Geography and Geospatial Information Sciences program at The University of Texas at Dallas.
 
 # References
