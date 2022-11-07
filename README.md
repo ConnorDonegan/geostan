@@ -63,6 +63,20 @@ Install **geostan** from CRAN using:
 install.packages("geostan")
 ```
 
+## Support
+
+All functions and methods are documented (with examples) on the website
+[reference](https://connordonegan.github.io/geostan/reference/index.html)
+page. See the package
+[vignettes](https://connordonegan.github.io/geostan/articles/index.html)
+for more on exploratory spatial data analysis and spatial modeling.
+
+To ask questions, report a bug, or discuss ideas for improvements or new
+features please visit the
+[Issues](https://github.com/ConnorDonegan/geostan/issues) page, start a
+[discussion](https://github.com/ConnorDonegan/geostan/discussions), or
+submit a [pull request](https://github.com/ConnorDonegan/geostan/pulls).
+
 ## Usage
 
 Load the package and the `georgia` county mortality data set (ages
@@ -143,8 +157,8 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.0017505 
-#> WAIC:  1290.39 
+#> Residual Moran Coefficient:  0.0003565 
+#> WAIC:  1291.13 
 #> Observations:  159 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
@@ -152,11 +166,11 @@ print(fit)
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-#> intercept -4.673   0.002 0.089 -4.851 -4.720 -4.675 -4.630 -4.488  2465 1.001
-#> car_rho    0.926   0.001 0.057  0.783  0.898  0.939  0.969  0.995  2896 1.001
-#> car_scale  0.456   0.001 0.036  0.391  0.432  0.454  0.479  0.532  3110 1.001
+#> intercept -4.673   0.002 0.092 -4.829 -4.719 -4.675 -4.633 -4.493  1969 1.002
+#> car_rho    0.923   0.001 0.057  0.777  0.894  0.937  0.965  0.995  3727 1.000
+#> car_scale  0.456   0.001 0.035  0.390  0.431  0.455  0.479  0.529  3899 1.000
 #> 
-#> Samples were drawn using NUTS(diag_e) at Mon Sep 19 15:23:26 2022.
+#> Samples were drawn using NUTS(diag_e) at Mon Nov  7 11:41:26 2022.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).

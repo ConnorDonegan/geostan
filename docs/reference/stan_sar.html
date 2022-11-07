@@ -234,12 +234,12 @@ where \(\mu\) is the mean vector (with intercept, covariates, etc.), \(W\) is a 
 $$
 \phi = \rho W (y - \mu)
 $$</p>
-<p>This term can be extracted from a fitted auto-Gaussian model using the <a href="geostan_fit.html">spatial</a> method.</p>
-<p>When applied to a fitted auto-Gaussian model, the <a href="geostan_fit.html">residuals.geostan_fit</a> method returns 'de-trended' residuals \(R\) by default. That is,
+<p>This term can be extracted from a fitted auto-Gaussian model using the <a href="resid_geostan_fit.html">spatial</a> method.</p>
+<p>When applied to a fitted auto-Gaussian model, the <a href="resid_geostan_fit.html">residuals.geostan_fit</a> method returns 'de-trended' residuals \(R\) by default. That is,
 $$
 R = y - \mu - \rho W (y - \mu).
 $$
-To obtain "raw" residuals (\(y - \mu\)), use <code>residuals(fit, detrend = FALSE)</code>. Similarly, the fitted values obtained from the <a href="geostan_fit.html">fitted.geostan_fit</a> will include the spatial trend term by default.</p>
+To obtain "raw" residuals (\(y - \mu\)), use <code>residuals(fit, detrend = FALSE)</code>. Similarly, the fitted values obtained from the <a href="resid_geostan_fit.html">fitted.geostan_fit</a> will include the spatial trend term by default.</p>
 </div>
 
 <div class="section">
@@ -259,7 +259,7 @@ y \sim Poisson(e^{O + \mu + \phi}) \\
 \phi \sim Gauss(0, \Sigma) \\
 \Sigma = \sigma^2 (I - \rho W)^{-1}(I - \rho W')^{-1}
 $$</p>
-<p>For Poisson models, the <a href="geostan_fit.html">spatial</a> method returns the parameter vector \(\phi\).</p>
+<p>For Poisson models, the <a href="resid_geostan_fit.html">spatial</a> method returns the parameter vector \(\phi\).</p>
 <p>In the Poisson SAR model, \(\phi\) contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \(\phi\), you can do so by calculating:
 $$
  \rho W \phi.
@@ -277,7 +277,7 @@ logit(\lambda) \sim Gauss(\mu, \Sigma)  \\
 \Sigma = \sigma^2 (I - \rho W)^{-1}(I - \rho W')^{-1}
 $$
 where outcome data \(y\) are counts, \(N\) is the number of trials, and \(\lambda\) is the rate of 'success'. Note that the model formula should be structured as: <code>cbind(sucesses, failures) ~ 1</code> (for an intercept-only model), such that <code>trials = successes + failures</code>.</p>
-<p>For fitted Binomial models, the <code><a href="geostan_fit.html">spatial</a></code> method will return the parameter vector <code>phi</code>, equivalent to:
+<p>For fitted Binomial models, the <code><a href="resid_geostan_fit.html">spatial</a></code> method will return the parameter vector <code>phi</code>, equivalent to:
 $$
 \phi = logit(\lambda) - \mu.
 $$
@@ -381,7 +381,7 @@ where \(M\) is the censor point and \(\mu_i\) again is the fitted value for the 
 <span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_rhat</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span>
 <span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_mcse</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
+<span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
 <span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span>
 
 <span class="co"># \donttest{</span>

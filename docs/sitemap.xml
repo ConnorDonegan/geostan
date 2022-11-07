@@ -82,6 +82,9 @@
     <loc>https://connordonegan.github.io/geostan/reference/posterior_predict.html</loc>
   </url>
   <url>
+    <loc>https://connordonegan.github.io/geostan/reference/predict.geostan_fit.html</loc>
+  </url>
+  <url>
     <loc>https://connordonegan.github.io/geostan/reference/prep_car_data.html</loc>
   </url>
   <url>
@@ -94,10 +97,19 @@
     <loc>https://connordonegan.github.io/geostan/reference/prep_sar_data.html</loc>
   </url>
   <url>
+    <loc>https://connordonegan.github.io/geostan/reference/print_geostan_fit.html</loc>
+  </url>
+  <url>
     <loc>https://connordonegan.github.io/geostan/reference/priors.html</loc>
   </url>
   <url>
+    <loc>https://connordonegan.github.io/geostan/reference/resid_geostan_fit.html</loc>
+  </url>
+  <url>
     <loc>https://connordonegan.github.io/geostan/reference/row_standardize.html</loc>
+  </url>
+  <url>
+    <loc>https://connordonegan.github.io/geostan/reference/samples_geostan_fit.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/se_log.html</loc>

@@ -238,7 +238,7 @@ A \sim Guass(0, \tau) \\
 \beta_{E} \sim horseshoe(.)
 $$
 The form of this model is similar to the BYM model (see <a href="stan_icar.html">stan_icar</a>), in the sense that it contains a spatially structured trend term (\(E \beta_{E}\)) and an unstructured ('random effects') term (\(A\)).</p>
-<p>The <a href="geostan_fit.html">spatial.geostan_fit</a> method will return \(E \beta_{E}\).</p>
+<p>The <a href="resid_geostan_fit.html">spatial.geostan_fit</a> method will return \(E \beta_{E}\).</p>
 <p>The model can also be extended to the space-time domain; see <a href="shape2mat.html">shape2mat</a> to specify a space-time connectivity matrix.</p>
 <p>The coefficients \(\beta_{E}\) are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the <code>threshold</code> argument). By default, <code>stan_esf</code> will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the <code>nsa</code> argument.</p><div class="section">
 <h3 id="spatially-lagged-covariates-slx-">Spatially lagged covariates (SLX)<a class="anchor" aria-label="anchor" href="#spatially-lagged-covariates-slx-"></a></h3>

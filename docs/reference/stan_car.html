@@ -239,12 +239,12 @@ where \(\mu\) is the mean vector (with intercept, covariates, etc.), \(C\) is a 
 $$
  \phi = \rho C (y - \mu).
 $$
-This term can be extracted from a fitted auto-Gaussian model using the <a href="geostan_fit.html">spatial</a> method.</p>
-<p>When applied to a fitted auto-Gaussian model, the <a href="geostan_fit.html">residuals.geostan_fit</a> method returns 'de-trended' residuals \(R\) by default. That is,
+This term can be extracted from a fitted auto-Gaussian model using the <a href="resid_geostan_fit.html">spatial</a> method.</p>
+<p>When applied to a fitted auto-Gaussian model, the <a href="resid_geostan_fit.html">residuals.geostan_fit</a> method returns 'de-trended' residuals \(R\) by default. That is,
 $$
 R = y - \mu - \rho C (y - \mu).
 $$
-To obtain "raw" residuals (\(y - \mu\)), use <code>residuals(fit, detrend = FALSE)</code>. Similarly, the fitted values obtained from the <a href="geostan_fit.html">fitted.geostan_fit</a> will include the spatial trend term by default.</p>
+To obtain "raw" residuals (\(y - \mu\)), use <code>residuals(fit, detrend = FALSE)</code>. Similarly, the fitted values obtained from the <a href="resid_geostan_fit.html">fitted.geostan_fit</a> will include the spatial trend term by default.</p>
 </div>
 
 <div class="section">
@@ -262,7 +262,7 @@ $$
 y \sim Poisson(e^{O + \mu + \phi}) \\
 \phi \sim Gauss(0, (I - \rho C)^{-1} \boldsymbol M).
 $$
-For Poisson models, the <a href="geostan_fit.html">spatial</a> method returns the parameter vector \(\phi\).</p>
+For Poisson models, the <a href="resid_geostan_fit.html">spatial</a> method returns the parameter vector \(\phi\).</p>
 <p>In the Poisson CAR model, \(\phi\) contains a latent spatial trend as well as additional variation around it: \(\phi_i = \rho \sum_{i=1}^n c_{ij} \phi_j + \epsilon_i\), \(\epsilon_i \sim Gauss(0, \tau_i^2)\). If you would like to extract the latent/implicit spatial trend from \(\phi\), you can do so by calculating (following Cressie 2015, p. 564):
 $$
 \rho  C  \phi.
@@ -284,7 +284,7 @@ $$
 y \sim Binomial(N, (\mu + \phi))  \\
 logit(\phi) \sim Gauss(0, (I - \rho C)^{-1} \boldsymbol M).
 $$
-For fitted Binomial models, the <a href="geostan_fit.html">spatial</a> method will return the parameter vector <code>phi</code>.</p>
+For fitted Binomial models, the <a href="resid_geostan_fit.html">spatial</a> method will return the parameter vector <code>phi</code>.</p>
 <p>As is also the case for the Poisson model, \(\phi\) contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \(\phi\), you can do so by calculating:
 $$
 \rho C \phi.

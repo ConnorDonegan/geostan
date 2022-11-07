@@ -58,6 +58,12 @@ Install **geostan** from CRAN using:
 install.packages("geostan")
 ```
 
+## Support
+
+All functions and methods are documented (with examples) on the website [reference](https://connordonegan.github.io/geostan/reference/index.html) page. See the package [vignettes](https://connordonegan.github.io/geostan/articles/index.html) for more on exploratory spatial data analysis and spatial modeling.
+
+To ask questions, report a bug, or discuss ideas for improvements or new features please visit the [issues](https://github.com/ConnorDonegan/geostan/issues) page, start a [discussion](https://github.com/ConnorDonegan/geostan/discussions), or submit a [pull request](https://github.com/ConnorDonegan/geostan/pulls).
+
 ## Usage
 
 Load the package and the `georgia` county mortality data set (ages 55-64, years 2014-2018):

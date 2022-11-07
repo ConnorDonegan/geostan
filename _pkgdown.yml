@@ -34,6 +34,7 @@ reference:
 - contents:
   - starts_with("stan_")
   - matches("geostan_fit")
+  - spatial
   - posterior_predict
   - priors
 - title: "Convenience functions"

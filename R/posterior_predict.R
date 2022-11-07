@@ -1,7 +1,7 @@
 #' Draw samples from the posterior predictive distribution
 #'
 #' @description Draw samples from the posterior predictive distribution of a fitted \code{geostan} model. 
-#' @export
+#' 
 #' @param object A \code{geostan_fit} object.
 #' 
 #' @param S Optional; number of samples to take from the posterior distribution. The default, and maximum, is the total number of samples stored in the model.
@@ -28,6 +28,7 @@
 #'  plot(density(yrep[1,]))
 #'  for (i in 2:nrow(yrep)) lines(density(yrep[i,]), col = 'gray30')
 #'  lines(density(sentencing$sents), col = 'darkred', lwd = 2)
+#' @export
 posterior_predict <- function(object, 
                 S,
                 summary = FALSE,
