@@ -85,7 +85,7 @@ ME models can be added to any **geostan** model. These are models for covariates
 
 ## User support and discussion
 
-In addition to consulting the package website and vignettes (<https://connordonegan.github.io/geostan>), users are encouraged to engage with **geostan** through the package github page (<https://github.com/connordonegan/geostan>). The "Discussions" tab is the best place for users to seek support and ask questions. Any issues with the software or suggestions for new features may also be proposed there or on the "Issues" tab. Contributions to the software can also be proposed by making a pull request to the github page.
+In addition to consulting the package website and vignettes (<https://connordonegan.github.io/geostan>), users are encouraged to engage with **geostan** through the package github page (<https://github.com/connordonegan/geostan>). The github "Issues" and "Dissucssions" tabs are the best place for users to seek support, ask questions, report bugs, or suggest new features. Contributions to the software can also be proposed by making a pull request to the github page.
 
 # Acknowledgements
 
