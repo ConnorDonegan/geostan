@@ -73,7 +73,7 @@ for more on exploratory spatial data analysis and spatial modeling.
 
 To ask questions, report a bug, or discuss ideas for improvements or new
 features please visit the
-[Issues](https://github.com/ConnorDonegan/geostan/issues) page, start a
+[issues](https://github.com/ConnorDonegan/geostan/issues) page, start a
 [discussion](https://github.com/ConnorDonegan/geostan/discussions), or
 submit a [pull request](https://github.com/ConnorDonegan/geostan/pulls).
 
@@ -84,6 +84,12 @@ Load the package and the `georgia` county mortality data set (ages
 
 ``` r
 library(geostan)
+#> This is geostan version 0.4.0
+#> 
+#> Attaching package: 'geostan'
+#> The following object is masked from 'package:base':
+#> 
+#>     gamma
 data(georgia)
 ```
 
@@ -157,8 +163,8 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.0003565 
-#> WAIC:  1291.13 
+#> Residual Moran Coefficient:  -0.001525 
+#> WAIC:  1290.52 
 #> Observations:  159 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
@@ -166,11 +172,11 @@ print(fit)
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-#> intercept -4.673   0.002 0.092 -4.829 -4.719 -4.675 -4.633 -4.493  1969 1.002
-#> car_rho    0.923   0.001 0.057  0.777  0.894  0.937  0.965  0.995  3727 1.000
-#> car_scale  0.456   0.001 0.035  0.390  0.431  0.455  0.479  0.529  3899 1.000
+#> intercept -4.672   0.002 0.088 -4.835 -4.714 -4.674 -4.631 -4.503  1946 1.000
+#> car_rho    0.922   0.001 0.058  0.776  0.892  0.934  0.966  0.994  3234 1.001
+#> car_scale  0.457   0.001 0.036  0.390  0.433  0.455  0.479  0.533  3900 1.000
 #> 
-#> Samples were drawn using NUTS(diag_e) at Mon Nov  7 11:41:26 2022.
+#> Samples were drawn using NUTS(diag_e) at Wed Nov  9 10:59:09 2022.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
