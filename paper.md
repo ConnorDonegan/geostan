@@ -22,7 +22,7 @@ affiliations:
 
 Analyses of data collected across areal units, such as census tracts and states, are now ubiquitous in the social and health sciences. Data sources include surveys (especially large government-back surveys like the US Census Bureau's American Community Survey (ACS)), vital statistics systems, and disease registries (particularly cancer registries). These data sources can provide crucial information about population health and socio-economic outcomes, but many standard (non-spatial) statistical methods and workflows are either not applicable to spatial data or they require adjustment [@cressie_2015; @haining_2020].
 
-This paper introduces **geostan**, an R [@rstats] package for analyzing spatial data using Bayesian inference. **geostan**'s spatial models were built using Stan, a platform for Markov Chain Monte Carlo (MCMC) sampling [@gabry_2020; @stan_2022; @stan_2022b]. The primary focus of the package is areal data for socio-economic and health research. The package provides tools for a complete workflow for spatial regression and disease mapping, and has unique spatial measurement error (ME) models suitable for researchers using ACS estimates as covariates [@donegan_2021]. 
+This paper introduces **geostan**, an R [@rstats] package for analyzing spatial data using Bayesian inference. **geostan**'s spatial models were built using Stan, a platform for Markov chain Monte Carlo (MCMC) sampling [@gabry_2020; @stan_2022; @stan_2022b]. The primary focus of the package is areal data for socio-economic and health research. The package provides tools for a complete workflow for spatial regression and disease mapping, and has unique spatial measurement error (ME) models suitable for researchers using ACS estimates as covariates [@donegan_2021]. 
 
 # Statement of need
 
@@ -48,7 +48,7 @@ The package provides convenience functions for visualizing spatial patterns and 
   - The Approximate Profile Likelihood (APLE) estimator for measuring spatial autocorrelation [@li_2007]
   - Effective sample size (ESS) calculation [@griffith_2005]
 
-These tools are provided for exploratory analysis, but not for detection of clusters so p-values are not provided. Graphics are created with **ggplot2** [@wickham_2016].
+These tools are provided for exploratory analysis, but not for detection of clusters. For this and other reasons, p-values are not provided. Graphics are created with **ggplot2** [@wickham_2016].
 
 **geostan** also provides a convenience function for obtaining a quick visual summary of a variable (see \autoref{fig:sp_diag}). When a fitted model is provided, the `sp_diag` function returns graphical diagnostics for model residuals. 
   
