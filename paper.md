@@ -13,14 +13,14 @@ authors:
   affiliation: 1, 2
 bibliography: paper.bib
 affiliations:
-- name: Geospatial Information Sciences, The University of Texas at Dallas
+- name: Geography and Geospatial Information Sciences, The University of Texas at Dallas
   index: 1
-- name: Population and Data Sciences, University of Texas Southwestern Medical Center
+- name: Peter O'Donnell Jr. School of Public Health, University of Texas Southwestern Medical Center
   index: 2
 ---
 # Summary
 
-Analyses of data collected across areal units, such as census tracts and states, are now ubiquitous in the social and health sciences. Data sources include surveys (especially large government-back surveys like the US Census Bureau's American Community Survey (ACS)), vital statistics systems, and disease registries (particularly cancer registries). These data sources can provide crucial information about population health and socio-economic outcomes, but many standard (non-spatial) statistical methods and workflows are either not applicable to spatial data or they require adjustment [@cressie_2015; @haining_2020].
+Analyses of data collected across areal units, such as census tracts and states, are now ubiquitous in the social and health sciences. Data sources include surveys (especially large government-backed surveys like the US Census Bureau's American Community Survey (ACS)), vital statistics systems, and disease registries (particularly cancer registries). These data sources can provide crucial information about population health and socio-economic outcomes, but many standard (non-spatial) statistical methods and workflows are either not applicable to spatial data or they require adjustment [@cressie_2015; @haining_2020].
 
 This paper introduces **geostan**, an R [@rstats] package for analyzing spatial data using Bayesian inference. **geostan**'s spatial models were built using Stan, a platform for Markov chain Monte Carlo (MCMC) sampling [@gabry_2020; @stan_2022; @stan_2022b]. The primary focus of the package is areal data for socio-economic and health research. The package provides tools for a complete workflow for spatial regression and disease mapping, and has unique spatial measurement error (ME) models suitable for researchers using ACS estimates as covariates [@donegan_2021]. 
 
@@ -30,7 +30,9 @@ The distinguishing characteristic of spatial data is that maps of the data typic
 
 A major challenge for spatial analysis is data quality, particularly for researchers using survey-based covariates. A single spatial analysis may use dozens, or even thousands, of error-laden survey estimates. Sampling error in ACS estimates is often substantial in magnitude and socially patterned [@folch_2016; @donegan_2021], which can have real consequences on communities and service providers [@bazuin_2013]. Spatial ME models are required to avoid ME biases and unwarranted levels of confidence in results.
 
-Existing R packages with spatial modeling functions include **spatialreg** [@bivand_2015], **INLA** [@rue_2009], **ngspatial** [@hughes_2020], **BayesX** [@belitz_2022; @umlauf_2015], **CARBayes** [@lee_2013], and **nimble** [@valpine_2017]. Custom spatial models can be built using **rstan** [@stan_2022], **INLA**, and **nimble**, including spatial ME models, but this requires specialized programming and statistical skills. **geostan** fills two gaps in this software landscape. First, **geostan** offers spatial ME models that are appropriate for survey-based covariates. Second, **geostan** provides spatial model diagnostic functions that make it easy for users to evaluate model results even if they are unfamiliar with MCMC analysis.
+Existing R packages with spatial modeling functions include **spatialreg** [@bivand_2015], **INLA** [@rue_2009], **ngspatial** [@hughes_2020], **BayesX** [@belitz_2022; @umlauf_2015], **CARBayes** [@lee_2013], and **nimble** [@valpine_2017]. Custom spatial models can be built using **rstan** [@stan_2022], **INLA**, and **nimble**, including spatial ME models, but this requires specialized programming and statistical skills. 
+
+**geostan** fills two gaps in this software landscape. First, **geostan** offers spatial ME models that are appropriate for survey-based covariates. Second, **geostan** provides spatial model diagnostic functions that make it easy for users to evaluate model results even if they are unfamiliar with MCMC analysis.
 
 # Functionality
 
@@ -56,7 +58,7 @@ These tools are provided for exploratory analysis, but not for detection of clus
 
 ## Spatial models
 
-Table 1 lists the types of spatial models that are implemented in **geostan**. In addition to (non-spatial) generalized linear models (GLMs), options include spatial conditional autoregressive (CAR) models [@donegan_2022], intrinsic conditional autoregressive (ICAR) models including the BYM [@besag_1991], and BYM2 specifications [@riebler_2016; @morris_2019; @donegan_2021b], simultaneously-specified spatial autoregressive (SAR) models [@cliff_1981] (which are referred to as the spatial error model (SEM) in the econometrics literature [@lesage_2014]), and eigenvector spatial filtering (ESF) [@griffith_2019; @donegan_2020]. 
+Table 1 lists the types of spatial models that are implemented in **geostan**. In addition to (non-spatial) generalized linear models (GLMs), options include spatial conditional autoregressive (CAR) models [@donegan_2022], intrinsic conditional autoregressive (ICAR) models including the BYM [@besag_1991] and BYM2 specifications [@riebler_2016; @morris_2019; @donegan_2021b], simultaneously-specified spatial autoregressive (SAR) models [@cliff_1981] (which are referred to as the spatial error model (SEM) in the econometrics literature [@lesage_2014]), and eigenvector spatial filtering (ESF) [@griffith_2019; @donegan_2020]. 
 
 \begin{table}[h]
   \centering
