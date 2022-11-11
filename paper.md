@@ -63,6 +63,7 @@ Table 1 lists the types of spatial models that are implemented in **geostan**. I
 \begin{table}[h]
   \centering
     \caption{Spatial models currently implemented in \textbf{geostan}.}
+      \label{tbl:models}
   \begin{tabular}{lcccc}
   \hline
    &  Gaussian & Student's $t$ & Poisson & Binomial \\
@@ -74,7 +75,6 @@ GLM & x & x & x & x \\
  SAR & x & & x & x \\
  \hline
   \end{tabular}
-  \label{tbl:models}
   \end{table}
 
 All of the models allow for a set of exchangeable 'random effects' to be added, and spatially lagged covariates (SLX) can also be added to any of the models. While proper CAR models have been avoided in the past due to their computational burden, the CAR model is the most efficient spatial model in **geostan**. It is fast enough to work interactively on a laptop with more than $3000$ observations, such as U.S. county data [@donegan_2022]. 
