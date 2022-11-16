@@ -1,16 +1,22 @@
 
+
 bibentry(
-  bibtype = "Manual",
-  title= "geostan: {B}ayesian spatial analysis (R package)",
-  author= "Connor Donegan",
-  url = "https://cran.r-project.org/package=geostan",
-  year = 2022,
-  note = "The Comprehensive R Archive Network",
+  bibtype    = "Article",
+  title    = "{geostan}: An {R} package for {B}ayesian spatial analysis",
+  author   = "Connor Donegan",
+  journal  = "The Journal of Open Source Software",
+  year     = "2022",
+  volume   = "7",
+  number   = "79",
+  pages    = "4716",
+  doi      = "10.21105/joss.04716",
   textVersion = paste(
-        "Donegan, Connor (2022). geostan: Bayesian spatial analysis (R package). The Comprehensive R Archive Network",
-         "https://cran.r-project.org/package=geostan"
+           "Donegan, Connor (2022)",
+           "geostan: An R package for Bayesian spatial analysis",
+           "The Journal of Open Source Software. 7, no. 79: 4716. DOI: 10.21105/joss.04716"
 )
 )
+
 
 bibentry(
   bibtype    = "Article",

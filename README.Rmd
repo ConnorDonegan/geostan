@@ -26,6 +26,8 @@ The package is designed primarily to support public health research with spatial
 
 **geostan** is an interface to [**Stan**](https://mc-stan.org), a state-of-the-art platform for Bayesian inference. 
 
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.04716/status.svg)](https://doi.org/10.21105/joss.04716)
+
 ### Disease mapping and spatial regression
 
 Statistical models for data recorded across areal units like states, counties, or census tracts.  
