@@ -1,3 +1,11 @@
+# geostan 0.4.1
+
+## Minor changes
+
+ - The recommended citation for the software has been updated since the software has gone through peer-review in *The Journal of Open Source Software*. Many thanks to the two peer reviewers of the project, Chris Jochem and Virgilio Gómez Rubio. The following changes were introduced following Chris J.'s recommendations.
+ - The spatial diagonstic function (`sp_diag`) will now take a spatial connecitivity matrix from the fitted model object provided by the user. This way the matrix will be the same one that was used to fit the model. (All of the model fitting functions have been updated to support this functionality.) 
+ - The documentation of the methods for fitted models (`residuals`, `fitted`, `spatial`, etc.) were previously packed into one page. Now, the documentation is spread over a few pages and the methods are grouped together in a more reasonable fashion. 
+
 # geostan 0.4.0
 
 ## New Additions

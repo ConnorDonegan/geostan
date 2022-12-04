@@ -225,6 +225,7 @@
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' \item{data}{a data frame containing the model data}
 #' \item{edges}{The edge list representing all unique sets of neighbors and the weight attached to each pair (i.e., their corresponding element in the connectivity matrix  C}
+#' \item{C}{Spatial connectivity matrix}
 #' \item{family}{the user-provided or default \code{family} argument used to fit the model}
 #' \item{formula}{The model formula provided by the user (not including ICAR component)}
 #' \item{slx}{The \code{slx} formula}
@@ -477,8 +478,9 @@ stan_icar <- function(formula,
     out <- clean_results(samples, pars, is_student, has_re, Wx, xraw, me.list$x_me_idx)
     out$data <- data.frame(as.matrix(ModData))
     out$family <- family
-    out$formula <- formula
+    out$formula <- formula    
     out$slx <- slx
+    out$C <- as(C, "dMatrix")    
     out$re <- re_list
     out$priors <- priors_made_slim
     out$x_center <- get_x_center(standata, samples)

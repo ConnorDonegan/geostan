@@ -492,7 +492,7 @@ stan_car <- function(formula,
     } else {
         out$spatial <- data.frame(par = "phi", method = "CAR")
     }
-    out$C <- Matrix::Matrix(C)    
+    out$C <- as(C, "dMatrix") # Matrix::Matrix(C)    
     R <- resid(out, summary = FALSE)
     out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )    
     return (out)

@@ -437,7 +437,7 @@ stan_esf <- function(formula,
     out$family <- family
     out$formula <- formula
     out$slx <- slx
-    out$C <- C
+    out$C <- as(C, "dMatrix")
     out$EV <- EV  
     out$re <- re_list
     out$priors <- priors_made_slim

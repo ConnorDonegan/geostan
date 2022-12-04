@@ -111,6 +111,7 @@ An object of class class \code{geostan_fit} (a list) containing:
 \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 \item{data}{a data frame containing the model data}
 \item{edges}{The edge list representing all unique sets of neighbors and the weight attached to each pair (i.e., their corresponding element in the connectivity matrix  C}
+\item{C}{Spatial connectivity matrix}
 \item{family}{the user-provided or default \code{family} argument used to fit the model}
 \item{formula}{The model formula provided by the user (not including ICAR component)}
 \item{slx}{The \code{slx} formula}

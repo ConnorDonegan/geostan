@@ -62,17 +62,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">sp_diag</span><span class="op">(</span>
-  <span class="va">y</span>,
-  <span class="va">shape</span>,
-  name <span class="op">=</span> <span class="st">"y"</span>,
-  plot <span class="op">=</span> <span class="cn">TRUE</span>,
-  mc_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"scatter"</span>, <span class="st">"hist"</span><span class="op">)</span>,
-  style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"W"</span>, <span class="st">"B"</span><span class="op">)</span>,
-  w <span class="op">=</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">shape</span>, <span class="fu"><a href="https://rdrr.io/r/base/match.arg.html" class="external-link">match.arg</a></span><span class="op">(</span><span class="va">style</span><span class="op">)</span><span class="op">)</span>,
-  binwidth <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,
-  <span class="va">...</span>
-<span class="op">)</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">sp_diag</span><span class="op">(</span><span class="va">y</span>, <span class="va">shape</span>, <span class="va">...</span><span class="op">)</span>
 
 <span class="co"># S3 method for geostan_fit</span>
 <span class="fu">sp_diag</span><span class="op">(</span>
@@ -82,9 +72,9 @@
   plot <span class="op">=</span> <span class="cn">TRUE</span>,
   mc_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"scatter"</span>, <span class="st">"hist"</span><span class="op">)</span>,
   style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"W"</span>, <span class="st">"B"</span><span class="op">)</span>,
-  w <span class="op">=</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">shape</span>, <span class="fu"><a href="https://rdrr.io/r/base/match.arg.html" class="external-link">match.arg</a></span><span class="op">(</span><span class="va">style</span><span class="op">)</span><span class="op">)</span>,
-  binwidth <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,
+  <span class="va">w</span>,
   rates <span class="op">=</span> <span class="cn">TRUE</span>,
+  binwidth <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,
   size <span class="op">=</span> <span class="fl">0.1</span>,
   <span class="va">...</span>
 <span class="op">)</span>
@@ -109,6 +99,8 @@
 <dd><p>A numeric vector, or a fitted <code>geostan</code> model (class <code>geostan_fit</code>).</p></dd>
 <dt>shape</dt>
 <dd><p>An object of class <code>sf</code> or another spatial object coercible to <code>sf</code> with <code><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">sf::st_as_sf</a></code> such as <code>SpatialPolygonsDataFrame</code>.</p></dd>
+<dt>...</dt>
+<dd><p>Additional arguments passed to <code><a href="resid_geostan_fit.html">residuals.geostan_fit</a></code>. For binomial and Poisson models, this includes the option to view the outcome variable as a rate (the default) rather than a count; for <code><a href="stan_car.html">stan_car</a></code> models with auto-Gaussian likelihood (<code>fit$family$family = "auto_gaussian"), the residuals will be detrended by default, but this can be changed using </code>detrend = FALSE`.</p></dd>
 <dt>name</dt>
 <dd><p>The name to use on the plot labels; default to "y" or, if <code>y</code> is a <code>geostan_fit</code> object, to "Residuals".</p></dd>
 <dt>plot</dt>
@@ -118,21 +110,23 @@
 <dt>style</dt>
 <dd><p>Style of connectivity matrix; if <code>w</code> is not provided, <code>style</code> is passed to <code><a href="shape2mat.html">shape2mat</a></code> and defaults to "W" for row-standardized.</p></dd>
 <dt>w</dt>
-<dd><p>An optional spatial connectivity matrix; if not provided, one will be created using <code><a href="shape2mat.html">shape2mat</a></code>.</p></dd>
+<dd><p>An optional spatial connectivity matrix; if not provided and <code>y</code> is a numeric vector, one will be created using <code><a href="shape2mat.html">shape2mat</a></code>. If <code>w</code> is not provided and <code>y</code> is a fitted <code>geostan</code> model, then the spatial connectivity matrix that is stored with the fitted model (<code>y$C</code>) will be used.</p></dd>
+<dt>rates</dt>
+<dd><p>For Poisson and binomial models, convert the outcome variable to a rate before plotting fitted values and residuals. Defaults to <code>rates = TRUE</code>.</p></dd>
 <dt>binwidth</dt>
 <dd><p>A function with a single argument that will be passed to the <code>binwidth</code> argument in <code><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></code>. The default is to set the width of bins to <code>0.5 * sd(x)</code>.</p></dd>
-<dt>...</dt>
-<dd><p>Additional arguments passed to <code><a href="resid_geostan_fit.html">residuals.geostan_fit</a></code>. For binomial and Poisson models, this includes the option to view the outcome variable as a rate (the default) rather than a count; for <code><a href="stan_car.html">stan_car</a></code> models with auto-Gaussian likelihood (<code>fit$family$family = "auto_gaussian"), the residuals will be detrended by default, but this can be changed using </code>detrend = FALSE`.</p></dd>
-<dt>rates</dt>
-<dd><p>For Poisson and binomial models, convert the outcome variable to a rate before calculating residuals. Defaults to <code>rates = TRUE</code>.</p></dd>
 <dt>size</dt>
 <dd><p>Point size and linewidth for point-interval plot of observed vs. fitted values (passed to <code><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">geom_pointrange</a></code>).</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A grid of spatial diagnostic plots. When provided with a numeric vector, this function plots a histogram, Moran scatter plot, and map. When provided with a fitted <code>geostan</code> model, the function returns a point-interval plot of observed values against fitted values (mean and 95 percent credible interval), either a Moran scatter plot of residuals or a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals, and a map of the mean posterior residuals (means of the marginal distributions).
-If <code>plot = TRUE</code>, the <code>ggplots</code> are drawn using <a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a>; otherwise, they are returned in a list. For the <code>geostan_fit</code> method, the underlying data for the Moran coefficient will also be returned if <code>plot = FALSE</code>.
-When <code>y</code> is a fitted CAR or SAR model with <code>family = auto_gaussian()</code>, the fitted values will include implicit spatial trend term, i.e. the call to <a href="resid_geostan_fit.html">fitted.geostan_fit</a> will use the default <code>trend = TRUE</code> and the call to <a href="resid_geostan_fit.html">residuals.geostan_fit</a> will use the default <code>detrend = TRUE</code>. (See <a href="stan_car.html">stan_car</a> or <a href="stan_sar.html">stan_sar</a> for additional details on their implicit spatial trend components.)</p>
+    <p>A grid of spatial diagnostic plots. If <code>plot = TRUE</code>, the <code>ggplots</code> are drawn using <a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a>; otherwise, they are returned in a list. For the <code>geostan_fit</code> method, the underlying data for the Moran coefficient (as required for <code>mc_style = "hist"</code>) will also be returned if <code>plot = FALSE</code>.</p>
+    </div>
+    <div id="details">
+    <h2>Details</h2>
+    <p>When provided with a numeric vector, this function plots a histogram, Moran scatter plot, and map.</p>
+<p>When provided with a fitted <code>geostan</code> model, the function returns a point-interval plot of observed values against fitted values (mean and 95 percent credible interval), either a Moran scatter plot of residuals or a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals, and a map of the mean posterior residuals (means of the marginal distributions).</p>
+<p>When <code>y</code> is a fitted CAR or SAR model with <code>family = auto_gaussian()</code>, the fitted values will include implicit spatial trend term, i.e. the call to <a href="resid_geostan_fit.html">fitted.geostan_fit</a> will use the default <code>trend = TRUE</code> and the call to <a href="resid_geostan_fit.html">residuals.geostan_fit</a> will use the default <code>detrend = TRUE</code>. (See <a href="stan_car.html">stan_car</a> or <a href="stan_sar.html">stan_sar</a> for additional details on their implicit spatial trend components.)</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>

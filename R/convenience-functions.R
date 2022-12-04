@@ -133,22 +133,20 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' @description Visual diagnostics for areal data and model residuals
 #' 
 #' @param y A numeric vector, or a fitted `geostan` model (class `geostan_fit`).
+#' 
 #' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
-#' @param name The name to use on the plot labels; default to "y" or, if \code{y} is a \code{geostan_fit} object, to "Residuals".
-#' @param plot If \code{FALSE}, return a list of \code{gg} plots.
-#'
-#' @param mc_style Character string indicating how to plot the residual Moran coefficient (only used if `y` is a fitted model): if `mc = "scatter"`, then \code{\link[geostan]{moran_plot}} will be used with the marginal residuals; if `mc = "hist"`, then a histogram of Moran coefficient values will be returned, where each plotted value represents the degree of residual autocorrelation in a draw from the join posterior distribution of model parameters.
-#' 
-#' @param style Style of connectivity matrix; if `w` is not provided, `style` is passed to \code{\link[geostan]{shape2mat}} and defaults to "W" for row-standardized.
-#' @param w An optional spatial connectivity matrix; if not provided, one will be created using \code{\link[geostan]{shape2mat}}.
-#' 
-#' @param binwidth A function with a single argument that will be passed to the `binwidth` argument in \code{\link[ggplot2]{geom_histogram}}. The default is to set the width of bins to `0.5 * sd(x)`.
 #'
 #' @param ... Additional arguments passed to \code{\link[geostan]{residuals.geostan_fit}}. For binomial and Poisson models, this includes the option to view the outcome variable as a rate (the default) rather than a count; for \code{\link[geostan]{stan_car}} models with auto-Gaussian likelihood (`fit$family$family = "auto_gaussian"), the residuals will be detrended by default, but this can be changed using `detrend = FALSE`.
 #' 
-#' @return A grid of spatial diagnostic plots. When provided with a numeric vector, this function plots a histogram, Moran scatter plot, and map. When provided with a fitted `geostan` model, the function returns a point-interval plot of observed values against fitted values (mean and 95 percent credible interval), either a Moran scatter plot of residuals or a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals, and a map of the mean posterior residuals (means of the marginal distributions).
+#' @return
 #'
-#' If `plot = TRUE`, the `ggplots` are drawn using \link[gridExtra]{grid.arrange}; otherwise, they are returned in a list. For the `geostan_fit` method, the underlying data for the Moran coefficient will also be returned if `plot = FALSE`.
+#' A grid of spatial diagnostic plots. If `plot = TRUE`, the `ggplots` are drawn using \link[gridExtra]{grid.arrange}; otherwise, they are returned in a list. For the `geostan_fit` method, the underlying data for the Moran coefficient (as required for `mc_style = "hist"`) will also be returned if `plot = FALSE`.
+#'
+#' @details
+#' 
+#' When provided with a numeric vector, this function plots a histogram, Moran scatter plot, and map.
+#'
+#' When provided with a fitted `geostan` model, the function returns a point-interval plot of observed values against fitted values (mean and 95 percent credible interval), either a Moran scatter plot of residuals or a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals, and a map of the mean posterior residuals (means of the marginal distributions). 
 #'
 #' When `y` is a fitted CAR or SAR model with `family = auto_gaussian()`, the fitted values will include implicit spatial trend term, i.e. the call to \link[geostan]{fitted.geostan_fit} will use the default `trend = TRUE` and the call to \link[geostan]{residuals.geostan_fit} will use the default `detrend = TRUE`. (See \link[geostan]{stan_car} or \link[geostan]{stan_sar} for additional details on their implicit spatial trend components.) 
 #'
@@ -173,12 +171,12 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' @md
 sp_diag <- function(y,
                    shape,
-                   name = "y",
-                   plot = TRUE,
-                   mc_style = c("scatter", "hist"),
-                   style = c("W", "B"),
-                   w = shape2mat(shape, match.arg(style)),
-                   binwidth = function(x) 0.5 * sd(x, na.rm = TRUE),
+                 #  name = "y",
+                 #  plot = TRUE,
+                 #  mc_style = c("scatter", "hist"),
+                 #  style = c("W", "B"),
+                 #  w,
+                 #  binwidth = function(x) 0.5 * sd(x, na.rm = TRUE),
                    ...
                    ) {
     if (inherits(y, "integer")) y <- as.numeric(y)
@@ -187,8 +185,23 @@ sp_diag <- function(y,
 
 #' @export
 #' @md
-#' @param rates For Poisson and binomial models, convert the outcome variable to a rate before calculating residuals. Defaults to `rates = TRUE`.
+#'
+#' @param name The name to use on the plot labels; default to "y" or, if \code{y} is a \code{geostan_fit} object, to "Residuals".
+#' 
+#' @param plot If \code{FALSE}, return a list of \code{gg} plots.
+#'
+#' @param mc_style Character string indicating how to plot the residual Moran coefficient (only used if `y` is a fitted model): if `mc = "scatter"`, then \code{\link[geostan]{moran_plot}} will be used with the marginal residuals; if `mc = "hist"`, then a histogram of Moran coefficient values will be returned, where each plotted value represents the degree of residual autocorrelation in a draw from the join posterior distribution of model parameters.
+#' 
+#' @param style Style of connectivity matrix; if `w` is not provided, `style` is passed to \code{\link[geostan]{shape2mat}} and defaults to "W" for row-standardized.
+#' 
+#' @param w An optional spatial connectivity matrix; if not provided and `y` is a numeric vector, one will be created using \code{\link[geostan]{shape2mat}}. If `w` is not provided and `y` is a fitted `geostan` model, then the spatial connectivity matrix that is stored with the fitted model (`y$C`) will be used.
+#'
+#' @param rates For Poisson and binomial models, convert the outcome variable to a rate before plotting fitted values and residuals. Defaults to `rates = TRUE`.
+#' 
+#' @param binwidth A function with a single argument that will be passed to the `binwidth` argument in \code{\link[ggplot2]{geom_histogram}}. The default is to set the width of bins to `0.5 * sd(x)`.
+#' 
 #' @param size Point size and linewidth for point-interval plot of observed vs. fitted values (passed to \code{\link[ggplot2]{geom_pointrange}}).
+#' 
 #' @method sp_diag geostan_fit
 #' @rdname sp_diag
 #' @importFrom sf st_as_sf
@@ -202,17 +215,28 @@ sp_diag.geostan_fit <- function(y,
                             plot = TRUE,
                             mc_style = c("scatter", "hist"),                            
                             style = c("W", "B"),
-                            w = shape2mat(shape, match.arg(style)),
+                            w,
+                            rates = TRUE,                            
                             binwidth = function(x) 0.5 * stats::sd(x, na.rm = TRUE),
-                            rates = TRUE,
                             size = 0.1,
                             ...) {
+    if (missing(w)) {
+        if (inherits(y$C, "Matrix") | inherits(y$C, "matrix")) {
+            w <- y$C
+        } else {
+            w <- shape2mat(shape, style = match.arg(style))
+        }
+    }
     mc_style <- match.arg(mc_style, c("scatter", "hist"))
     if (!inherits(shape, "sf")) shape <- sf::st_as_sf(shape)
     outcome <- y$data[,1] 
     fits <- fitted(y, summary = TRUE, rates = rates)
-    if (rates && y$family$family == "binomial") { outcome <- outcome / (outcome + y$data[,2]) }
+    if (rates && y$family$family == "binomial") {
+        message("Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.")
+        outcome <- outcome / (outcome + y$data[,2])
+    }
     if (rates && y$family$family == "poisson" && "offset" %in% c(colnames(y$data))) {
+        message("Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.")
         log.at.risk <- y$data[, "offset"]
         at.risk <- exp( log.at.risk )
         outcome <- outcome / at.risk     
@@ -230,7 +254,7 @@ sp_diag.geostan_fit <- function(y,
              y = "Fitted") +
         theme_classic()
     # map of marginal residuals
-    marginal_residual <- apply(residuals(y, summary = FALSE, ...), 2, mean, na.rm = TRUE)
+    marginal_residual <- apply(residuals(y, summary = FALSE, rates = rates, ...), 2, mean, na.rm = TRUE)
     map.y <- ggplot(shape) +
         geom_sf(aes(fill = marginal_residual),
                 lwd =  .05,
@@ -239,7 +263,7 @@ sp_diag.geostan_fit <- function(y,
                              label = signs::signs) +
         theme_void()
     # residual autocorrelation
-    R <- residuals(y, summary = FALSE, ...)    
+    R <- residuals(y, summary = FALSE, rates = rates, ...)    
     R.mc <- apply(R, 1, mc, w = w, warn = FALSE, na.rm = TRUE)
     if (mc_style == "scatter") {
         g.mc <- moran_plot(marginal_residual, w, xlab = name, na.rm = TRUE)
