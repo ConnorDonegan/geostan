@@ -226,7 +226,7 @@ clean_results <- function(samples, pars, is_student, has_re, Wx, x, x_me_idx) {
     }    
     if (is_student) samples <- par_alias(samples, "^nu\\[1\\]", "nu")
     if (has_re) samples <- par_alias(samples, "^alpha_tau\\[1\\]", "alpha_tau")
-    main_pars <- pars[which(pars %in% c("nu", "intercept", "alpha_tau", "gamma", "beta", "sigma", "rho", "spatial_scale", "theta_scale", "car_scale", "car_rho"))]
+    main_pars <- pars[which(pars %in% c("nu", "intercept", "alpha_tau", "gamma", "beta", "sigma", "rho", "spatial_scale", "theta_scale", "car_scale", "car_rho", "sar_rho", "sar_scale"))]
     S <- as.matrix(samples, pars = main_pars)
     summary <- post_summary(S)
     Residual_MC <- NA
