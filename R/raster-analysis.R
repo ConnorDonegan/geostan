@@ -95,12 +95,12 @@ prep_car_data2 <- function(row = 100, col = 100, style = "WCAR", stan_fn = "wcar
     car.dl$WCAR <- 1
 
     # Number of neighbors per row
-    tmp <- aggregate(C_elements$x, by = list(I = C_elements$I), FUN = unique)
+    tmp <- aggregate(C_elements$x, by = list(I = C_elements$I), FUN = length)
     tmp <- tmp[sort(tmp$I), ]
-    Ni <- 1 / tmp$x
+    Ni <- tmp$x
 
     car.dl$Delta_inv <- Ni
-    car.dl$log_det_Delta_inv <- log(prod(Ni))
+    car.dl$log_det_Delta_inv <- sum(log(Ni))
     car.dl$n <- N
 
     # eigenvalues of the WCAR connectivity matrix
@@ -179,7 +179,7 @@ prep_sar_data2 <- function(row = 100, col = 100) {
     sar.dl$nW <- length(sar.dl$Widx)
     sar.dl$eigenvalues_w <- DAGW(row = row, col = col)
     sar.dl$n <- N
-    rho_lims <- c(-1, 1) # 1/range(sar.dl$eigenvalues_w)
+    rho_lims <- 1/range(sar.dl$eigenvalues_w)
     cat("Range of permissible rho values: ", rho_lims, "\n")
     sar.dl$rho_min <- min(rho_lims)
     sar.dl$rho_max <- max(rho_lims)
@@ -217,7 +217,7 @@ eigen_1DW <- function(P = 5) {
 }
 
 
-#' given row and column dimensions, returns elements of row-standardized W matrix for regular square tessellation with Rook adjacency
+#' given row and column dimensions, returns elements of row-standardized W matrix for regular (rectangular) tessellation with Rook adjacency
 #'
 #' This is required by prep_car_data2 and prep_sar_data2
 #' 

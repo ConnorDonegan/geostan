@@ -931,7 +931,7 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 }
 
 
-#' Prepare data for a Stan CAR model
+#' Prepare data for the CAR model
 #'
 #' 
 #' @param A Binary adjacency matrix; for `style = DCAR`, provide a symmetric matrix of distances instead. The distance matrix should be sparse, meaning that most distances should be zero (usually obtained by setting some threshold distance beyond which all are zero).
@@ -1072,7 +1072,7 @@ prep_car_data <- function(A,
     if (lambda) {
         MCM <- Matrix::Diagonal(x = 1 / sqrt(M_diag)) %*% C %*% Matrix::Diagonal(x = sqrt(M_diag))
         stopifnot(Matrix::isSymmetric(MCM, check.attributes = FALSE))
-        lambda <- eigen(MCM)$values
+        lambda <- sort(eigen(MCM)$values)
         cat ("Range of permissible rho values: ", 1 / range(lambda), "\n")
         car.dl$lambda <- lambda
     }
@@ -1126,7 +1126,7 @@ prep_sar_data <- function(W) {
     sar.dl$nImW_w <- length(sar.dl$ImW_w)
     sar.dl$Widx <- which(sar.dl$ImW_w != 1)
     sar.dl$nW <- length(sar.dl$Widx)
-    sar.dl$eigenvalues_w <- as.numeric( eigen(W)$values )
+    sar.dl$eigenvalues_w <- sort(as.numeric( eigen(W)$values ))
     sar.dl$n <- N
     sar.dl$W <- W
     rho_lims <- 1/range(sar.dl$eigenvalues_w)
