@@ -24,7 +24,7 @@
 #' print(e)
 #'
 #' @export
-#' @md
+#' @noRd
 DAGW <- function(row = 5, col = 5) {
     P1 <- matrix(1, nrow = row)
     Q1 <- matrix(1, nrow = col)
@@ -44,33 +44,25 @@ DAGW <- function(row = 5, col = 5) {
 #' @param row Number of rows in the raster 
 #' @param col Number of columns in the raster
 #'
-#' @param style "WCAR" is the only available option
-#' @param stan_fn "wcar_normal_lpdf" is the only available option
-#'
 #' @details
 #'
-#' Prepare data for the CAR model when your raw dataset consists of observations on a regular tessellation, such as a raster layer or remotely sensed imagery. This requires a rectangular grid. The rook criteria is used to determine adjacency. 
+#' Prepare input data for the CAR model when your dataset consists of observations on a regular (rectangular) tessellation, such as a raster layer or remotely sensed imagery. The rook criteria is used to determine adjacency. This function uses Equation 5 from Griffith (2000) to generate approximate eigenvalues for a row-standardized spatial weights matrix from a P-by-Q dimension regular tessellation.
 #'
-#' This function can accomodate very large numbers of observations for use with \code{\link[geostan]{stan_car}}.
+#' This function can accomodate very large numbers of observations for use with \code{\link[geostan]{stan_car}}. 
 #' 
 #' @source
-#'
-#' Cressie N, Wikle CK (2011). Statistics for Spatio-Temporal Data. John Wiley & Sons.
-#' 
-#' Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. *OSF Preprints*. \doi{10.31219/osf.io/3ey65}.
 #'
 #' Griffith, Daniel A. (2000). Eigenfunction properties and approximations of selected incidence matrices employed in spatial analyses. *Linear Algebra and its Applications* 321 (1-3): 95-112. \doi{10.1016/S0024-3795(00)00031-8}. 
 #'
 #' @examples
 #'
-#' # accommodates massive row X col sizes.
-#' row = 10
-#' col = 10
-#' car_dl <- prep_car_data(row = row, col = col)
+#' row = 100
+#' col = 120
+#' car_dl <- prep_car_data2(row = row, col = col)
 #'
 #' @export
 #' @md
-prep_car_data2 <- function(row = 100, col = 100, style = "WCAR", stan_fn = "wcar_normal_lpdf") {
+prep_car_data2 <- function(row = 100, col = 100) {
     stopifnot(row > 2 & col > 2)
     N <- row * col
     Idx <- 1:N
@@ -106,7 +98,7 @@ prep_car_data2 <- function(row = 100, col = 100, style = "WCAR", stan_fn = "wcar
     # eigenvalues of the WCAR connectivity matrix
     car.dl$lambda <- DAGW(row = row, col = col)
     cat ("Range of permissible rho values: ", 1 / range(car.dl$lambda), "\n")
-    car.dl$style <- style
+    car.dl$style <- "WCAR"
     car.dl$C <- C
     return (car.dl)
 }
@@ -120,25 +112,21 @@ prep_car_data2 <- function(row = 100, col = 100, style = "WCAR", stan_fn = "wcar
 #'
 #' @details
 #'
-#' Prepare data for the SAR model when your raw dataset consists of observations on a regular tessellation, such as a raster layer or remotely sensed imagery. This requires a rectangular grid. The rook criteria is used to determine adjacency. 
+#' Prepare data for the SAR model when your raw dataset consists of observations on a regular tessellation, such as a raster layer or remotely sensed imagery. The rook criteria is used to determine adjacency. This function uses Equation 5 from Griffith (2000) to calculate the eigenvalues for a row-standardized spatial weights matrix of a P-by-Q dimension regular tessellation.
 #'
 #' This function can accomodate very large numbers of observations for use with \code{\link[geostan]{stan_sar}}. 
 #' 
 #' @source
 #'
-#' Cressie N, Wikle CK (2011). Statistics for Spatio-Temporal Data. John Wiley & Sons.
-#' 
-#' Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. *OSF Preprints*. \doi{10.31219/osf.io/3ey65}.
-#'
 #' Griffith, Daniel A. (2000). Eigenfunction properties and approximations of selected incidence matrices employed in spatial analyses. *Linear Algebra and its Applications* 321 (1-3): 95-112. \doi{10.1016/S0024-3795(00)00031-8}.
 #'
 #' @examples
 #'
-#' # can accommodate massive row X col dimensions
-#' row = 10
-#' col = 12
+#' row = 100
+#' col = 120
 #' sar_dl <- prep_sar_data2(row = row, col = col)
-#' 
+#'
+#' @export 
 prep_sar_data2 <- function(row = 100, col = 100) {
     stopifnot(row > 2 & col > 2)
     N <- row * col
@@ -220,7 +208,7 @@ eigen_1DW <- function(P = 5) {
 #' given row and column dimensions, returns elements of row-standardized W matrix for regular (rectangular) tessellation with Rook adjacency
 #'
 #' This is required by prep_car_data2 and prep_sar_data2
-#' 
+#' @noRd
 dims_to_W_elements <- function(row = 100, col = 100) {
     stopifnot(row > 2 & col > 2)
     N <- row * col

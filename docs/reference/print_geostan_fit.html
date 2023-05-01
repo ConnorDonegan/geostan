@@ -95,19 +95,89 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
-<span class="va">georgia</span><span class="op">$</span><span class="va">income</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">income</span><span class="op">/</span><span class="fl">1e3</span>
-
-<span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span><span class="op">)</span>,
-                centerx <span class="op">=</span> <span class="cn">TRUE</span>,
-                data <span class="op">=</span> <span class="va">georgia</span>,
-                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,
-                chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span>
-
-
-<span class="co"># print and plot results</span>
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-<span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">georgia</span><span class="op">$</span><span class="va">income</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">income</span><span class="op">/</span><span class="fl">1e3</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span><span class="op">)</span>,</span>
+<span class="r-in">                centerx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span class="r-in">                data <span class="op">=</span> <span class="va">georgia</span>,</span>
+<span class="r-in">                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span class="r-in">                chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior parameters for intercept</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: normal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   location scale</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     -4.2     5</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior parameters for beta</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: normal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   location scale</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        0     5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Gradient evaluation took 7e-05 seconds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.7 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Adjust your expectations accordingly!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration:   1 / 600 [  0%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 301 / 600 [ 50%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 600 / 600 [100%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:  Elapsed Time: 0.098 seconds (Warm-up)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.079 seconds (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.177 seconds (Total)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'foundation' NOW (CHAIN 2).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Gradient evaluation took 5.9e-05 seconds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.59 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Adjust your expectations accordingly!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration:   1 / 600 [  0%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 301 / 600 [ 50%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 600 / 600 [100%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:  Elapsed Time: 0.103 seconds (Warm-up)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                0.068 seconds (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                0.171 seconds (Total)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
+<span class="r-in"></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># print and plot results</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Spatial Model Results </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Formula: deaths.male ~ offset(log(pop.at.risk.male)) + log(income)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55d5e00e39c8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Spatial method (outcome):  none </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Likelihood function:  poisson </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Link function:  log </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Residual Moran Coefficient:  NA </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> WAIC:  2037.16 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Observations:  159 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Data models (ME): none</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Inference for Stan model: foundation.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 chains, each with iter=600; warmup=300; thin=1; </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> post-warmup draws per chain=300, total post-warmup draws=600.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> intercept   -4.152   0.000 0.007 -4.165 -4.156 -4.152 -4.147 -4.139   359 1.000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> log(income) -1.015   0.001 0.019 -1.053 -1.028 -1.015 -1.001 -0.978   242 1.001</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples were drawn using NUTS(diag_e) at Wed Apr 26 19:40:56 2023.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> For each parameter, n_eff is a crude measure of effective sample size,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> and Rhat is the potential scale reduction factor on split chains (at </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> convergence, Rhat=1).</span>
+<span class="r-in"><span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The dot-dot notation (`..density..`) was deprecated in ggplot2 3.4.0.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Please use `after_stat(density)` instead.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> The deprecated feature was likely used in the <span style="color: #0000BB;">rstan</span> package.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   Please report the issue at <span style="color: #0000BB; font-style: italic;">&lt;https://github.com/stan-dev/rstan/issues/&gt;</span>.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
+<span class="r-plt img"><img src="print_geostan_fit-1.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>
   </div>

@@ -1,4 +1,4 @@
-iter=10
+iter=15
 refresh = 0
 source("helpers.R")
 
@@ -44,4 +44,21 @@ test_that("SAR accepts covariate ME with logit transform", {
     expect_geostan(fit)
 })
 
-
+test_that("Slim SAR works", {
+    row = 20
+    col = 26
+    N <- row * col
+    sdl <- prep_sar_data2(row = row, col = col)
+    x <- rnorm(n = N)
+    y <- .75 *x + rnorm(n = N, sd = .5)
+    df <- data.frame(y=y, x=x)
+    fit <- stan_sar(y ~ x,
+                    slx = ~ x,
+                    data = df,
+                    sar_parts = sdl,
+                    chains = 1,
+                    iter = iter,
+                    refresh = refresh,
+                    slim = TRUE)
+    expect_geostan(fit)
+})

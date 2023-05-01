@@ -218,7 +218,7 @@
 <span class="co">## 1 10        0     3</span>
 <span class="co">##   lower upper</span>
 <span class="co">## 1  -1.7     1</span></code></pre>
-<pre><code><span class="co">## Warning: There were 2 divergent transitions after warmup. See</span>
+<pre><code><span class="co">## Warning: There were 1 divergent transitions after warmup. See</span>
 <span class="co">## https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span>
 <span class="co">## to find out why this is a problem and how to eliminate them.</span></code></pre>
 <pre><code><span class="co">## Warning: Examine the pairs() plot to diagnose sampling problems</span></code></pre>
@@ -252,15 +252,15 @@
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mu.x</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">##           parameters</span>
 <span class="co">## iterations mu_x_true[1]</span>
-<span class="co">##       [1,]     1.833599</span>
-<span class="co">##       [2,]     1.801663</span>
-<span class="co">##       [3,]     1.725810</span>
-<span class="co">##       [4,]     1.832561</span>
-<span class="co">##       [5,]     1.758380</span>
-<span class="co">##       [6,]     1.850970</span></code></pre>
+<span class="co">##       [1,]     1.764625</span>
+<span class="co">##       [2,]     1.849182</span>
+<span class="co">##       [3,]     1.693895</span>
+<span class="co">##       [4,]     1.669224</span>
+<span class="co">##       [5,]     1.709312</span>
+<span class="co">##       [6,]     1.787614</span></code></pre>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">mu.x</span><span class="op">)</span></code></pre></div>
-<pre><code><span class="co">## [1] 1.792695</span></code></pre>
+<pre><code><span class="co">## [1] 1.783051</span></code></pre>
 <p>We can visualize these using <code>plot</code> or print a summary:</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span>, pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mu_x_true"</span>, <span class="st">"car_rho_x_true"</span>, <span class="st">"sigma_x_true"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
@@ -269,11 +269,11 @@
 <span class="co">## post-warmup draws per chain=325, total post-warmup draws=1300.</span>
 <span class="co">## </span>
 <span class="co">##                   mean se_mean   sd 2.5%  25%  50%  75% 97.5% n_eff Rhat</span>
-<span class="co">## mu_x_true[1]      1.79       0 0.08 1.63 1.75 1.79 1.83  1.98   478 1.01</span>
-<span class="co">## car_rho_x_true[1] 0.91       0 0.07 0.76 0.87 0.92 0.96  0.99   858 1.00</span>
-<span class="co">## sigma_x_true[1]   0.48       0 0.04 0.42 0.46 0.48 0.51  0.56  1197 1.00</span>
+<span class="co">## mu_x_true[1]      1.78       0 0.08 1.63 1.74 1.78 1.82  1.93   354 1.01</span>
+<span class="co">## car_rho_x_true[1] 0.91       0 0.07 0.75 0.87 0.92 0.96  0.99   823 1.00</span>
+<span class="co">## sigma_x_true[1]   0.48       0 0.04 0.42 0.46 0.48 0.51  0.56   788 1.00</span>
 <span class="co">## </span>
-<span class="co">## Samples were drawn using NUTS(diag_e) at Thu Nov 10 12:34:43 2022.</span>
+<span class="co">## Samples were drawn using NUTS(diag_e) at Wed Apr 26 19:03:27 2023.</span>
 <span class="co">## For each parameter, n_eff is a crude measure of effective sample size,</span>
 <span class="co">## and Rhat is the potential scale reduction factor on split chains (at </span>
 <span class="co">## convergence, Rhat=1).</span></code></pre>
@@ -287,9 +287,9 @@
 <code class="sourceCode R"><span class="va">x.mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2</span>, <span class="va">mean</span><span class="op">)</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">x.mu</span><span class="op">)</span></code></pre></div>
 <pre><code><span class="co">## x_insurance[1] x_insurance[2] x_insurance[3] x_insurance[4] x_insurance[5] </span>
-<span class="co">##      0.8367415      0.8002252      0.8517852      0.8520672      0.9178406 </span>
+<span class="co">##      0.8370400      0.7999664      0.8517378      0.8520754      0.9178529 </span>
 <span class="co">## x_insurance[6] </span>
-<span class="co">##      0.8703192</span></code></pre>
+<span class="co">##      0.8702021</span></code></pre>
 <p>The vector <code>x.mu</code> contains estimates (posterior means) for <span class="math inline">\(x_i\)</span>. We might want to use these to plot the residuals or fitted values against the predictor:</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">rs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">$</span><span class="va">mean</span>

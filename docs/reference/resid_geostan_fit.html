@@ -104,33 +104,105 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="co"># \donttest{</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
-<span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span>
-
-<span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_esf.html">stan_esf</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span>,
-                C <span class="op">=</span> <span class="va">A</span>,
-                data <span class="op">=</span> <span class="va">georgia</span>,
-                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,
-                chains <span class="op">=</span> <span class="fl">1</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span>
-
-
-<span class="co"># Residuals</span>
-<span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-<span class="fu"><a href="moran_plot.html">moran_plot</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">mean</span>, <span class="va">A</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span>
-
-<span class="co"># Fitted values</span>
-<span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-
-<span class="co"># Fitted values, unstandardized</span>
-<span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span>, rates <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span>
-
-<span class="co"># Spatial trend</span>
-<span class="va">esf</span> <span class="op">&lt;-</span> <span class="fu">spatial</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">esf</span><span class="op">)</span>
-<span class="co"># }</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># \donttest{</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_esf.html">stan_esf</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span>,</span>
+<span class="r-in">                C <span class="op">=</span> <span class="va">A</span>,</span>
+<span class="r-in">                data <span class="op">=</span> <span class="va">georgia</span>,</span>
+<span class="r-in">                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span class="r-in">                chains <span class="op">=</span> <span class="fl">1</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior parameters for intercept</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: normal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   location scale</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     -4.2     5</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior for eigenvector coefficients</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: hs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   global_scale slab_df slab_scale</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1            1      15        1.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Gradient evaluation took 0.000112 seconds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.12 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Adjust your expectations accordingly!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration:   1 / 600 [  0%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 301 / 600 [ 50%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 600 / 600 [100%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:  Elapsed Time: 7.873 seconds (Warm-up)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                3.226 seconds (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                11.099 seconds (Total)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> Running the chains for more iterations may help. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#bulk-ess</span>
+<span class="r-in"></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># Residuals</span></span>
+<span class="r-in"><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="moran_plot.html">moran_plot</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">mean</span>, <span class="va">A</span><span class="op">)</span></span>
+<span class="r-plt img"><img src="resid_geostan_fit-1.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                      mean           sd          2.5%           20%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> residual[1]  0.0004228774 0.0007568898 -0.0010399674 -0.0002305931</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> residual[2]  0.0067648468 0.0008204100  0.0051641535  0.0060854032</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> residual[3]  0.0036931791 0.0002603768  0.0031874184  0.0034968055</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> residual[4] -0.0001261844 0.0001795765 -0.0004708012 -0.0002660678</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> residual[5] -0.0051860844 0.0003839722 -0.0058835815 -0.0055187370</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> residual[6] -0.0021648283 0.0001577689 -0.0024603932 -0.0022993095</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                       50%           80%         97.5%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> residual[1]  0.0004725685  1.060680e-03  0.0018042667</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> residual[2]  0.0068186946  7.424076e-03  0.0082735010</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> residual[3]  0.0036844451  3.904423e-03  0.0042543586</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> residual[4] -0.0001242065  3.062659e-05  0.0002187939</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> residual[5] -0.0052005200 -4.836316e-03 -0.0044717752</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> residual[6] -0.0021644352 -2.027720e-03 -0.0018473525</span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># Fitted values</span></span>
+<span class="r-in"><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># Fitted values, unstandardized</span></span>
+<span class="r-in"><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span>, rates <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                mean        sd       2.5%        20%        50%        80%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> fitted[1]  105.9075  5.535135   95.80540  101.24325  105.54411  110.68633</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> fitted[2]   55.1945  2.887023   49.88555   52.87468   55.00501   57.58547</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> fitted[3]  217.7359  5.376780  206.14749  213.37366  217.91621  221.79097</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> fitted[4] 2098.4351 34.774274 2031.63143 2068.06928 2098.05209 2125.52297</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> fitted[5]  538.9150 16.208236  508.76257  524.15057  539.52435  552.95693</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> fitted[6] 2157.6033 33.203570 2090.78827 2128.74780 2157.52053 2185.90577</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                97.5%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> fitted[1]  116.60528</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> fitted[2]   60.82734</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> fitted[3]  228.17981</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> fitted[4] 2165.16878</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> fitted[5]  568.35774</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> fitted[6] 2219.80698</span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># Spatial trend</span></span>
+<span class="r-in"><span class="va">esf</span> <span class="op">&lt;-</span> <span class="fu">spatial</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">esf</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               mean         sd        2.5%         20%         50%          80%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> esf[1] -0.05004214 0.05132417 -0.14683329 -0.09449396 -0.05302229 -0.004475991</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> esf[2]  0.02972777 0.05089428 -0.06828551 -0.01142740  0.02771313  0.072899446</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> esf[3] -0.36633652 0.02508781 -0.42200171 -0.38507757 -0.36565743 -0.345076291</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> esf[4] -0.33882060 0.01695998 -0.37119490 -0.35296258 -0.33924505 -0.325110764</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> esf[5] -0.17519720 0.02994772 -0.23297883 -0.20105418 -0.17271400 -0.151051674</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> esf[6] -0.39424578 0.01547543 -0.42439002 -0.40799961 -0.39386979 -0.381810749</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              97.5%</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> esf[1]  0.04731729</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> esf[2]  0.13003804</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> esf[3] -0.31806491</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> esf[4] -0.30351409</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> esf[5] -0.11838437</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> esf[6] -0.36289224</span>
+<span class="r-in"><span class="co"># }</span></span>
 </code></pre></div>
     </div>
   </div>

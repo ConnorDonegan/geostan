@@ -79,6 +79,7 @@
   iter <span class="op">=</span> <span class="fl">2000</span>,
   refresh <span class="op">=</span> <span class="fl">500</span>,
   keep_all <span class="op">=</span> <span class="cn">FALSE</span>,
+  slim <span class="op">=</span> <span class="cn">FALSE</span>,
   pars <span class="op">=</span> <span class="cn">NULL</span>,
   control <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">...</span>
@@ -154,6 +155,8 @@ alpha_tau ~ Student_t(d.f., location, scale).
 <dd><p>Stan will print the progress of the sampler every <code>refresh</code> number of samples. Set <code>refresh=0</code> to silence this.</p></dd>
 <dt>keep_all</dt>
 <dd><p>If <code>keep_all = TRUE</code> then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors and the <code>bridgesampling</code> package.</p></dd>
+<dt>slim</dt>
+<dd><p>If <code>slim = TRUE</code>, then the Stan model will not collect the most memory-intensive parameters (n-length vectors of fitted values and log-likelihoods). This will disable many convenience functions that are otherwise available for fitted <code>geostan</code> models, such as the extraction of residuals, fitted values, and spatial trends, WAIC, and spatial diagnostics. The "slim" option is designed for data-intensive routines, such as simulation studies and regression with raster data.</p></dd>
 <dt>pars</dt>
 <dd><p>Optional; specify any additional parameters you'd like stored from the Stan model.</p></dd>
 <dt>control</dt>
@@ -371,40 +374,171 @@ where \(M\) is the censor point and \(\mu_i\) again is the fitted value for the 
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code>
-<span class="co"># model mortality risk</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
-<span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span>
-<span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span>
-
-<span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">stan_car</span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span>,
-                car_parts <span class="op">=</span> <span class="va">cp</span>,
-                data <span class="op">=</span> <span class="va">georgia</span>,
-                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,
-                iter <span class="op">=</span> <span class="fl">800</span>, chains <span class="op">=</span> <span class="fl">1</span> <span class="co"># for example speed only</span>
-                 <span class="op">)</span>
-<span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_rhat</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span>
-<span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_mcse</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-<span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span>
-
-<span class="co"># \donttest{</span>
-<span class="co">## DCAR specification (inverse-distance based)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span>
-<span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span>
-<span class="va">D</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_measures.html" class="external-link">st_distance</a></span><span class="op">(</span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_unary.html" class="external-link">st_centroid</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span><span class="op">)</span>
-<span class="va">A</span> <span class="op">&lt;-</span> <span class="va">D</span> <span class="op">*</span> <span class="va">A</span>
-<span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span>, <span class="st">"DCAR"</span>, k <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>
-
-<span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">stan_car</span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span>,
-               data <span class="op">=</span> <span class="va">georgia</span>,
-               car <span class="op">=</span> <span class="va">cp</span>,
-               family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,
-               iter <span class="op">=</span> <span class="fl">800</span>, chains <span class="op">=</span> <span class="fl">1</span> <span class="co"># for example speed only </span>
-<span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-<span class="co"># }</span>
-
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"></span>
+<span class="r-in"><span class="co"># model mortality risk</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Range of permissible rho values:  -1.661134 1 </span>
+<span class="r-in"></span>
+<span class="r-in"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">stan_car</span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span>,</span>
+<span class="r-in">                car_parts <span class="op">=</span> <span class="va">cp</span>,</span>
+<span class="r-in">                data <span class="op">=</span> <span class="va">georgia</span>,</span>
+<span class="r-in">                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span class="r-in">                iter <span class="op">=</span> <span class="fl">800</span>, chains <span class="op">=</span> <span class="fl">1</span> <span class="co"># for example speed only</span></span>
+<span class="r-in">                 <span class="op">)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior parameters for intercept</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: normal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   location scale</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     -4.2     5</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior for CAR scale parameter (car_scale)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: student_t</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   df location scale</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 10        0     3</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior for CAR spatial autocorrelation parameter (sar_rho)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: uniform</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   lower upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  -1.7     1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Gradient evaluation took 0.000181 seconds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.81 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Adjust your expectations accordingly!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration:   1 / 800 [  0%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 401 / 800 [ 50%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 800 / 800 [100%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:  Elapsed Time: 0.754 seconds (Warm-up)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.539 seconds (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                1.293 seconds (Total)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> Running the chains for more iterations may help. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#bulk-ess</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> Running the chains for more iterations may help. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#tail-ess</span>
+<span class="r-in"><span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_rhat</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
+<span class="r-plt img"><img src="stan_car-1.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_mcse</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
+<span class="r-plt img"><img src="stan_car-2.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Spatial Model Results </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Formula: deaths.male ~ offset(log(pop.at.risk.male))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55d5e83b24c8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Spatial method (outcome):  CAR </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Likelihood function:  poisson </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Link function:  log </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Residual Moran Coefficient:  -0.00845 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> WAIC:  1317.95 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Observations:  159 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Data models (ME): none</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Inference for Stan model: foundation.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 chains, each with iter=800; warmup=400; thin=1; </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> post-warmup draws per chain=400, total post-warmup draws=400.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> intercept -4.170   0.004 0.063 -4.301 -4.206 -4.170 -4.128 -4.065   252 1.001</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> car_rho    0.899   0.003 0.061  0.763  0.865  0.908  0.944  0.989   387 1.003</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> car_scale  0.471   0.001 0.033  0.413  0.446  0.471  0.490  0.543   491 0.998</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples were drawn using NUTS(diag_e) at Wed Apr 26 19:41:53 2023.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> For each parameter, n_eff is a crude measure of effective sample size,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> and Rhat is the potential scale reduction factor on split chains (at </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> convergence, Rhat=1).</span>
+<span class="r-in"><span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.</span>
+<span class="r-plt img"><img src="stan_car-3.png" alt="" width="700" height="433"></span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co"># \donttest{</span></span>
+<span class="r-in"><span class="co">## DCAR specification (inverse-distance based)</span></span>
+<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
+<span class="r-in"><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">D</span> <span class="op">&lt;-</span> <span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_measures.html" class="external-link">st_distance</a></span><span class="op">(</span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_unary.html" class="external-link">st_centroid</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span><span class="op">)</span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>st_centroid assumes attributes are constant over geometries of x</span>
+<span class="r-in"><span class="va">A</span> <span class="op">&lt;-</span> <span class="va">D</span> <span class="op">*</span> <span class="va">A</span></span>
+<span class="r-in"><span class="va">cp</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span>, <span class="st">"DCAR"</span>, k <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> &lt;sparse&gt;[ &lt;logic&gt; ]: .M.sub.i.logical() maybe inefficient</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Range of permissible rho values:  -0.6761887 0.3471584 </span>
+<span class="r-in"></span>
+<span class="r-in"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">stan_car</span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span>,</span>
+<span class="r-in">               data <span class="op">=</span> <span class="va">georgia</span>,</span>
+<span class="r-in">               car <span class="op">=</span> <span class="va">cp</span>,</span>
+<span class="r-in">               family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span class="r-in">               iter <span class="op">=</span> <span class="fl">800</span>, chains <span class="op">=</span> <span class="fl">1</span> <span class="co"># for example speed only </span></span>
+<span class="r-in"><span class="op">)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Consider providing the matrix C explicitly using the C argument. The matrix C is used for calculating spatial-lag of X (SLX) terms and residual spatial autocorrelation. Since you did not provide C, the matrix is being taken from car_parts$C. Since you are not using the WCAR model, the C matrix may or may not be be suitable for these purposes.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior parameters for intercept</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: normal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   location scale</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     -4.2     5</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior for CAR scale parameter (car_scale)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: student_t</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   df location scale</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 10        0     3</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior for CAR spatial autocorrelation parameter (sar_rho)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: uniform</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   lower upper</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 -0.68  0.35</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Gradient evaluation took 0.000222 seconds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 2.22 seconds.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Adjust your expectations accordingly!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration:   1 / 800 [  0%]  (Warmup)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 401 / 800 [ 50%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 800 / 800 [100%]  (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:  Elapsed Time: 0.866 seconds (Warm-up)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                0.733 seconds (Sampling)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                1.599 seconds (Total)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> Running the chains for more iterations may help. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#bulk-ess</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> Running the chains for more iterations may help. See</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#tail-ess</span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Spatial Model Results </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Formula: deaths.male ~ offset(log(pop.at.risk.male))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: 0x55d5e83b24c8&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Spatial method (outcome):  CAR </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Likelihood function:  poisson </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Link function:  log </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Residual Moran Coefficient:  -0.0060375 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> WAIC:  1323.74 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Observations:  159 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Data models (ME): none</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Inference for Stan model: foundation.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 chains, each with iter=800; warmup=400; thin=1; </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> post-warmup draws per chain=400, total post-warmup draws=400.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> intercept -4.118   0.001 0.043 -4.201 -4.146 -4.118 -4.089 -4.037  1041 0.998</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> car_rho    0.328   0.001 0.015  0.286  0.322  0.333  0.340  0.346   460 0.999</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> car_scale  0.470   0.002 0.034  0.412  0.445  0.467  0.495  0.535   260 1.003</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Samples were drawn using NUTS(diag_e) at Wed Apr 26 19:41:58 2023.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> For each parameter, n_eff is a crude measure of effective sample size,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> and Rhat is the potential scale reduction factor on split chains (at </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> convergence, Rhat=1).</span>
+<span class="r-in"><span class="co"># }</span></span>
+<span class="r-in"></span>
 </code></pre></div>
     </div>
   </div>

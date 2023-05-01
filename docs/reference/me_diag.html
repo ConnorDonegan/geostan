@@ -117,32 +117,55 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="co"># \donttest{</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
-<span class="co">## binary adjacency matrix</span>
-<span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span>
-<span class="co">## prepare data for the CAR model, using WCAR specification</span>
-<span class="va">cars</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span>, style <span class="op">=</span> <span class="st">"WCAR"</span><span class="op">)</span>
-<span class="co">## provide list of data for the measurement error model</span>
-<span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_me_data.html">prep_me_data</a></span><span class="op">(</span>se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>ICE <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">ICE.se</span><span class="op">)</span>,
-                   car_parts <span class="op">=</span> <span class="va">cars</span><span class="op">)</span>
-<span class="co">## sample from the prior probability model only, including the ME model</span>
-<span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="va">ICE</span>,
-                ME <span class="op">=</span> <span class="va">ME</span>,
-                data <span class="op">=</span> <span class="va">georgia</span>, 
-                prior_only <span class="op">=</span> <span class="cn">TRUE</span>,
-                iter <span class="op">=</span> <span class="fl">800</span>, <span class="co"># for speed only</span>
-                chains <span class="op">=</span> <span class="fl">2</span>, <span class="co"># for speed only</span>
-                refresh <span class="op">=</span> <span class="fl">0</span> <span class="co"># silence some printing</span>
-                <span class="op">)</span>
-
-<span class="co">## see ME diagnostics</span>
-<span class="fu">me_diag</span><span class="op">(</span><span class="va">fit</span>, <span class="st">"ICE"</span>, <span class="va">georgia</span><span class="op">)</span>
-<span class="co">## see index values for the largest (absolute) delta values</span>
- <span class="co">## (differences between raw estimate and the posterior mean)</span>
-<span class="fu">me_diag</span><span class="op">(</span><span class="va">fit</span>, <span class="st">"ICE"</span>, <span class="va">georgia</span>, index <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>
-<span class="co"># }</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># \donttest{</span></span>
+<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
+<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span class="r-in"><span class="co">## binary adjacency matrix</span></span>
+<span class="r-in"><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span></span>
+<span class="r-in"><span class="co">## prepare data for the CAR model, using WCAR specification</span></span>
+<span class="r-in"><span class="va">cars</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span>, style <span class="op">=</span> <span class="st">"WCAR"</span><span class="op">)</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Range of permissible rho values:  -1.661134 1 </span>
+<span class="r-in"><span class="co">## provide list of data for the measurement error model</span></span>
+<span class="r-in"><span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_me_data.html">prep_me_data</a></span><span class="op">(</span>se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>ICE <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">ICE.se</span><span class="op">)</span>,</span>
+<span class="r-in">                   car_parts <span class="op">=</span> <span class="va">cars</span><span class="op">)</span></span>
+<span class="r-in"><span class="co">## sample from the prior probability model only, including the ME model</span></span>
+<span class="r-in"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="va">ICE</span>,</span>
+<span class="r-in">                ME <span class="op">=</span> <span class="va">ME</span>,</span>
+<span class="r-in">                data <span class="op">=</span> <span class="va">georgia</span>, </span>
+<span class="r-in">                prior_only <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span class="r-in">                iter <span class="op">=</span> <span class="fl">800</span>, <span class="co"># for speed only</span></span>
+<span class="r-in">                chains <span class="op">=</span> <span class="fl">2</span>, <span class="co"># for speed only</span></span>
+<span class="r-in">                refresh <span class="op">=</span> <span class="fl">0</span> <span class="co"># silence some printing</span></span>
+<span class="r-in">                <span class="op">)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior parameters for intercept</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: normal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   location scale</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     -4.2     5</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior parameters for beta</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: normal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   location scale</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1        0     5</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior parameters for sigma</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: student_t</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   df location scale</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 10        0     3</span>
+<span class="r-in"></span>
+<span class="r-in"><span class="co">## see ME diagnostics</span></span>
+<span class="r-in"><span class="fu">me_diag</span><span class="op">(</span><span class="va">fit</span>, <span class="st">"ICE"</span>, <span class="va">georgia</span><span class="op">)</span></span>
+<span class="r-plt img"><img src="me_diag-1.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span class="co">## see index values for the largest (absolute) delta values</span></span>
+<span class="r-in"> <span class="co">## (differences between raw estimate and the posterior mean)</span></span>
+<span class="r-in"><span class="fu">me_diag</span><span class="op">(</span><span class="va">fit</span>, <span class="st">"ICE"</span>, <span class="va">georgia</span>, index <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Identifying the top 3 observations as ordered by their Delta values (Delta = posterior mean of x - raw x value):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 x.raw       x.mu      x.lwr      x.upr       Delta</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> x_ICE[105] -0.3412494 -0.3067732 -0.3784863 -0.2352960 -0.03447619</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> x_ICE[91]  -0.4016787 -0.3672903 -0.4482106 -0.2872964 -0.03438833</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> x_ICE[90]  -0.2798395 -0.2554606 -0.3244992 -0.1848049 -0.02437891</span>
+<span class="r-plt img"><img src="me_diag-2.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span class="co"># }</span></span>
 </code></pre></div>
     </div>
   </div>

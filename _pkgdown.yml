@@ -45,9 +45,11 @@ reference:
   - get_shp
   - make_EV
   - prep_car_data
+  - prep_car_data2
   - prep_icar_data
   - prep_me_data
   - prep_sar_data
+  - prep_sar_data2
   - se_log
   - shape2mat
   - sim_sar

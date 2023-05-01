@@ -16,10 +16,14 @@
 #' 
 #' @examples
 #' \donttest{
+#' # std. normal priors to k=2 covariates
 #' data(georgia)
 #' prior <- list()
-#' prior$beta <- normal(c(0, 0), c(1, 1))
+#' k <- 2
+#' prior$beta <- normal(location = rep(0, times = k),
+#'                      scale = rep(1, times = k))
 #' prior$intercept <- normal(-5, 3)
+#' print(prior)
 #' fit <- stan_glm(deaths.male ~ offset(log(pop.at.risk.male)) + ICE + college,
 #'                 re = ~ GEOID,
 #'                 data = georgia,
@@ -34,6 +38,7 @@
 #' prior$df <- gamma(3, 0.2)
 #' prior$location <- normal(50, 50)
 #' prior$scale <- student_t(12, 10, 20)
+#' print(prior)
 #' ME <- prep_me_data(se = se, prior = prior)
 #' fit <- stan_glm(log(rate.male) ~ insurance, 
 #'                 data = georgia,

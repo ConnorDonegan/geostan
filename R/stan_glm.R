@@ -51,6 +51,7 @@
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples; set \code{refresh=0} to silence this.
 #' @param pars Specify any additional parameters you'd like stored from the Stan model.
 #' @param keep_all  If `keep_all = TRUE` then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors and the `bridgesampling` package.
+#' @param slim If `slim = TRUE`, then the Stan model will not collect the most memory-intensive parameters (n-length vectors of fitted values, log-likelihoods, and ME-modeled covariate values). This will disable many convenience functions that are otherwise available for fitted \code{geostan} models, such as the extraction of residuals, fitted values, and spatial trends, WAIC, and spatial diagnostics, and ME diagnostics. The "slim" option is designed for data-intensive routines, such as simulation studies and regression with raster data.
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. 
 #' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
 #' 
@@ -220,6 +221,7 @@ stan_glm <- function(formula,
                      iter = 2e3, 
                      refresh = 1e3,
                      keep_all = FALSE,
+                     slim = FALSE,
                      pars = NULL,
                      control = NULL,
                      ...) {
@@ -272,8 +274,19 @@ stan_glm <- function(formula,
           x_full <- xraw          
       } else {
           stopifnot(inherits(slx, "formula"))
-          W <- row_standardize(C, msg =  "Row standardizing connectivity matrix to calculate spatially lagged covaraite(s)")
-          W.list <- rstan::extract_sparse_parts(W)
+          W <- C
+          if (!inherits(W, "sparseMatrix")) W <- as(W, "CsparseMatrix")
+          xrs <- Matrix::rowSums(W)
+          if (!all(xrs == 1)) W <- row_standardize(W, msg =  "Row standardizing connectivity matrix to calculate spatially lagged covaraite(s)")
+          # efficient transform to CRS representation for W.list (via transpose)
+          Wij <- as(W, "TsparseMatrix")
+          Tw <- Matrix::sparseMatrix(i = Wij@j + 1,
+                                     j = Wij@i + 1,
+                                     x = Wij@x,
+                                     dims = dim(Wij))
+          W.list <- list(w = Tw@x,
+                         v = Tw@i + 1,
+                         u = Tw@p + 1)          
           Wx <- SLX(f = slx, DF = mod_frame, x = xraw, W = W)
           dwx <- ncol(Wx)
           wx_idx <- as.array( which(paste0("w.", colnames(xraw)) %in% colnames(Wx)), dim = dwx )
@@ -335,14 +348,16 @@ stan_glm <- function(formula,
         standata$trials <- y[,1] + y[,2]
     }
     ## PARAMETERS TO KEEP -------------               
-    pars <- c(pars, 'intercept', 'log_lik', 'fitted')
+    pars <- c(pars, 'intercept')
+    if (slim == FALSE) pars <- c(pars, 'log_lik', 'fitted')
     if (!intercept_only) pars <- c(pars, 'beta')
     if (dwx) pars <- c(pars, 'gamma')
     if (family$family %in% c("gaussian", "student_t")) pars <- c(pars, 'sigma')
     if (is_student) pars <- c(pars, "nu")
     if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
     if (me.list$has_me) {
-        pars <- c(pars, "x_true", "mu_x_true", "sigma_x_true")
+        pars <- c(pars, "mu_x_true", "sigma_x_true")
+        if (slim == FALSE) pars <- c(pars, "x_true")
         if (me.list$spatial_me) {
             pars <- c(pars, "car_rho_x_true")
         } else {
@@ -367,7 +382,7 @@ stan_glm <- function(formula,
     samples <- rstan::sampling(stanmodels$foundation, data = standata, iter = iter, chains = chains, refresh = refresh, pars = xparsx, control = control, init = inits, ...) 
     ## OUTPUT -------------    
     out <- clean_results(samples, pars, is_student, has_re, Wx, xraw, me.list$x_me_idx)
-    out$data <- data.frame(as.matrix(ModData))
+    out$data <- ModData
     out$family <- family
     out$formula <- formula
     out$slx <- slx
@@ -381,9 +396,9 @@ stan_glm <- function(formula,
     } else {
         out$spatial <- data.frame(par = "none", method = "none")
     }
-    if (!missing(C) && (inherits(C, "matrix") | inherits(C, "Matrix"))) {
+    if (!missing(C) && slim == FALSE) {
+        out$C <- as(C, "sparseMatrix")        
         R <- resid(out, summary = FALSE)
-        out$C <- as(C, "dMatrix")
         out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )
     }        
     return(out)

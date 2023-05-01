@@ -112,3 +112,21 @@ test_that("CAR with censored y", {
     expect_geostan(fit)
 })
 
+test_that("Slim SAR works", {
+    row = 20
+    col = 26
+    N <- row * col
+    cdl <- prep_car_data2(row = row, col = col)
+    x <- rnorm(n = N)
+    y <- .75 *x + rnorm(n = N, sd = .5)
+    df <- data.frame(y=y, x=x)
+    fit <- stan_car(y ~ x,
+                    slx = ~ x,
+                    data = df,
+                    car_parts = cdl,
+                    chains = 1,
+                    iter = iter,
+                    refresh = refresh,
+                    slim = TRUE)
+    expect_geostan(fit)
+})
