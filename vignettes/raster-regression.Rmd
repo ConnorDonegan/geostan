@@ -15,12 +15,12 @@ bibliography: raster.bib
 link-citations: yes
 ---
 
-This vignette provides a tutorial for fitting spatial regression models to raster data using **geostan**. The term "raster" is used here to refer to any regularly spaced set of observations such that the data can be represented spatially by a rectangular grid of observations, such as remotely sensed imagery. While **geostan** can be used for spatial regression with large raster data layers, the functionality of these models will often be limited to the estimation of regression coefficients and spatial autocorrelation parameters. Thus far, no attempt has been made to test the limits of these models. Limited experience finds that spatial autoregressive models can be fit to raster layers with over a million observations using only a laptop computer and a few dozen minutes. 
+This vignette provides a tutorial for fitting spatial regression models to raster data using **geostan**. The term "raster" is used here to refer to any regularly spaced set of observations such that the data can be represented spatially by a rectangular grid of observations, such as remotely sensed imagery. While **geostan** can be used for spatial regression with large raster data layers, the functionality of these models will often be limited to the estimation of regression coefficients and spatial autocorrelation parameters. Thus far, no attempt has been made to test the limits of these models. Limited experience finds that spatial autoregressive models can be fit to raster layers with over a million observations using only a laptop computer and a few dozen minutes.
 
 Start by loading some necessary R packages.
 
 ```{r setup, message = FALSE, warning = FALSE}
-library(geostan)
+devtools::load_all("~/dev/geostan")
 library(sf)
 ```
 
@@ -46,7 +46,8 @@ The following R code would fit a spatial autoregressive model to these data:
 ```{r eval = FALSE}
 fit <- stan_sar(y ~ z, data = grid, C = W)
 ```
-or for the conditional autoregressive (CAR) model:
+
+For the conditional autoregressive (CAR) model:
 
 ```{r eval = FALSE}
 C <- shape2mat(grid, style = "B", queen = FALSE)
@@ -73,14 +74,15 @@ fit <- stan_sar(
 		)
 print(fit)		
 ```
+
 There are few things to note about these results and the model call.
 
- 1. **slim = TRUE**: A typical **geostan** model will return Markov chain Monte Carlo (MCMC) samples from all model parameters as well as the fitted values and pointwise log-likelihoods (for calculating the Widely Applicable Information Criteria, WAIC). Collecting these vectors of parameters becomes computationally demanding for large data sets. The `slim = TRUE` argument prevents collection of the fitted values and log-likelihoods, speeding up the models considerably, but also limiting the uses to which they may be put.
+1.  **slim = TRUE**: A typical **geostan** model will return Markov chain Monte Carlo (MCMC) samples from all model parameters as well as the fitted values and pointwise log-likelihoods (for calculating the Widely Applicable Information Criteria, WAIC). Collecting these vectors of parameters becomes computationally demanding for large data sets. The `slim = TRUE` argument prevents collection of the fitted values and log-likelihoods, speeding up the models considerably, but also limiting the uses to which they may be put.
 
- 2. **iter = 400, chains = 4**: Small numbers of MCMC samples can be sufficient to obtain reasonable MCMC samples. In this case, the effective sample sizes `n_eff` are sufficiently large for most purposes and the standard errors of the estimates `se_mean` are sufficiently small. More importantly, there are no signs that the four MCMC chains failed to converge on a single distribution---despite collecting only 200 warmup samples per chain. For large data sets, one can expect to require a modestly larger number of MCMC samples than were required for this example.
+2.  **iter = 400, chains = 4**: Small numbers of MCMC samples can be sufficient to obtain reasonable MCMC samples. In this case, the effective sample sizes `n_eff` are sufficiently large for most purposes and the standard errors of the estimates `se_mean` are sufficiently small. More importantly, there are no signs that the four MCMC chains failed to converge on a single distribution---despite collecting only 200 warmup samples per chain. For large data sets, one can expect to require a modestly larger number of MCMC samples than were required for this example.
 
- 3. **centering and scaling**: the synthetic data `grid$z` is nearly standard normal, and this contributes to the quick sampling speed. Stan models sample most quickly with standard normal variates. For large data sets, it can be extremely helpful to scale each variable using the `base::scale` function before passing the data to a model fitting function like `stan_car`.
+3.  **centering and scaling**: the synthetic data `grid$z` is nearly standard normal, and this contributes to the quick sampling speed. Stan models sample most quickly with standard normal variates. For large data sets, it can be extremely helpful to scale each variable using the `base::scale` function before passing the data to a model fitting function like `stan_car`.
 
- 4. **SAR vs. CAR**: So far, neither seems to outpace the other in terms of computational efficiency with raster layers.
+4.  **SAR vs. CAR**: So far, neither seems to outpace the other in terms of computational efficiency with raster layers.
 
 ## References
