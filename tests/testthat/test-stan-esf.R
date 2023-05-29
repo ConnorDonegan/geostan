@@ -111,3 +111,38 @@ test_that("ESF with censored y", {
     )
     expect_geostan(fit)
 })
+
+test_that("slim ESF works", {
+    data(georgia)
+    C <- shape2mat(georgia)
+    SW(
+        fit <- stan_esf(deaths.female ~ offset(log(pop.at.risk.female)) + insurance,
+                        re = ~ GEOID,
+                        censor_point = 9,
+                        data = georgia,
+                        chains = 1,
+                        family = poisson(),
+                        slim = TRUE,
+                        C = C,
+                        iter = iter,
+                        refresh = refresh
+                        )
+    )
+    expect_geostan(fit)
+    SW(
+        fit <- stan_esf(deaths.female ~ offset(log(pop.at.risk.female)) + insurance,
+                        re = ~ GEOID,
+                        censor_point = 9,
+                        data = georgia,
+                        chains = 1,
+                        family = poisson(),
+                        drop = c('fitted', 'esf'),
+                        C = C,
+                        iter = iter,
+                        refresh = refresh
+                        )
+    )
+    expect_geostan(fit)    
+})
+
+

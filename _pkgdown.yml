@@ -11,6 +11,7 @@ articles:
   contents:
   - measuring-sa
   - spatial-me-models
+  - raster-regression
 reference:
 - title: "Package overview"
 - contents:
@@ -42,6 +43,7 @@ reference:
 - contents:
   - auto_gaussian
   - edges
+  - eigen_grid
   - get_shp
   - make_EV
   - prep_car_data

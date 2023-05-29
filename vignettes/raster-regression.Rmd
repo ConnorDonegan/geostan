@@ -15,18 +15,22 @@ bibliography: raster.bib
 link-citations: yes
 ---
 
-This vignette provides a tutorial for fitting spatial regression models to raster data using **geostan**. The term "raster" is used here to refer to any regularly spaced set of observations such that the data can be represented spatially by a rectangular grid of observations, such as remotely sensed imagery. While **geostan** can be used for spatial regression with large raster data layers, the functionality of these models will often be limited to the estimation of regression coefficients and spatial autocorrelation parameters. Thus far, no attempt has been made to test the limits of these models. Limited experience finds that spatial autoregressive models can be fit to raster layers with over a million observations using only a laptop computer and a few dozen minutes.
+This vignette provides a tutorial for fitting spatial regression models to raster data using **geostan**. The term "raster" is used here to refer to any regularly spaced set of observations such that the data can be represented spatially by a rectangular grid. Remotely sensed imagery is a common form of raster data.
+
+**geostan** can be used for spatial regression with fairly large raster data layers, although the functionality of these models will often be limited to the estimation of regression coefficients and spatial autocorrelation parameters. Limited experience thus far finds that **geostan**'s spatial autoregressive models can be fit to raster layers with two hundred thousand observations using a laptop computer and fewer than ten minutes of sampling time.
+
+## Demonstration
 
 Start by loading some necessary R packages.
 
-```{r setup, message = FALSE, warning = FALSE}
-devtools::load_all("~/dev/geostan")
+```{r setup, message = FALSE, warning = FALSE, eval = TRUE}
+library(geostan)
 library(sf)
 ```
 
-We will start by creating a small raster data layer for the purpose of illustration.
+We will create a small raster data layer for the purpose of illustration. 
 
-```{r}
+```{r eval = TRUE}
 row <- 40
 col <- 30
 c(N <- row * col)
@@ -36,18 +40,20 @@ grid <- st_as_sf(grid)
 W <- shape2mat(grid, style = "W", queen = FALSE)
 grid$z <- sim_sar(w = W, rho = 0.9)
 grid$y <- -0.5 * grid$z + sim_sar(w = W, rho = .9, sigma = .3)
-plot(grid[,'z'])
-moran_plot(grid$z, W)
-moran_plot(grid$y, W)
 ```
 
-The following R code would fit a spatial autoregressive model to these data:
+```{r fig.width = 3.25, fig.height = 3, fig.align = 'center'}
+plot(grid[,'z'])
+```
+
+The following R code will fit a spatial autoregressive model to these data:
 
 ```{r eval = FALSE}
 fit <- stan_sar(y ~ z, data = grid, C = W)
 ```
+The `stan_sar` function will take the spatial weights matrix `W` and pass it through a function called `prep_sar_data` which will calculate the eigenvalues of the spatial weights matrix using `base::eigen`, as required for computational reasons. This step is prohibitive for large data sets (e.g., $N = 100,000$).
 
-For the conditional autoregressive (CAR) model:
+The following code would normally be used to fit a conditional autoregressive (CAR) model:
 
 ```{r eval = FALSE}
 C <- shape2mat(grid, style = "B", queen = FALSE)
@@ -55,34 +61,32 @@ car_list <- prep_car_data(C, "WCAR")
 fit <- stan_car(y ~ z, data = grid, car_parts = car_list)
 ```
 
-The `stan_sar` function will take the spatial weights matrix `W` and pass it through a function called `prep_sar_data`. For the CAR model, the user is required to use the `prep_car_data` function explicitly in order to select a model specification. The `prep_*_data` functions calculate the eigenvalues of the spatial weights matrix, and these are required for computational reasons [@donegan_2022]. The standard computations used to obtain the eigenvalues are prohibitively expensive in terms of computation time.
+Here, the `prep_car_data` function calculates the eigenvalues of the spatial weights matrix using `base::eigen`, which is not feasible for large N.
 
-The `prep_sar_data2` and `prep_car_data2` functions are designed for raster layers. The eigenvalues are produced very quickly using Equation 5 from @griffith_2000. The methods have certain restrictions. First, this is only applicable to raster layers---regularly spaced, rectangular grids of observations. Second, to define which observations are adjacent to one another, the "rook" criteria is used (spatially, only observations that share an edge are neighbors to one another). Third, the spatial adjacency matrix will be row-standardized. This is standard (required) for SAR models, and corresponds to the "WCAR" specification of the CAR model [see @donegan_2022].
+The `prep_sar_data2` and `prep_car_data2` functions are designed for raster layers. As input, they require the dimensions of the grid (number of rows and number of columns). The eigenvalues are produced very quickly using Equation 5 from @griffith_2000. The methods have certain restrictions. First, this is only applicable to raster layers---regularly spaced, rectangular grids of observations. Second, to define which observations are adjacent to one another, the "rook" criteria is used (spatially, only observations that share an edge are defined as neighbors to one another). Third, the spatial adjacency matrix will be row-standardized. This is standard (and required) for SAR models, and it corresponds to the "WCAR" specification of the CAR model [see @donegan_2022].
 
-The following code will fit a SAR model to our `grid` data, and can also handle much larger raster layers:
+The following code will fit a SAR model to our `grid` data, and is suitable for much larger raster layers:
 
-```{r}
+```{r eval = TRUE}
 sar_list <- prep_sar_data2(row = row, col = col)
 fit <- stan_sar(
                 y ~ z, 
                 data = grid,
+		centerx = TRUE,
 		sar_parts = sar_list,
-		iter = 400,
+		iter = 500,
 		chains = 4,
 		slim = TRUE #,
-		# cores = 4, # for mulit-core processing
+		# cores = 4, # for multi-core processing
 		)
 print(fit)		
 ```
+The user first creates the data list using `prep_sar_data2` and then passes it to `stan_sar` using the `sar_parts` argument. Also, `slim = TRUE` is invoked to prevent the model from collecting N-length parameter vectors and quantities of interest (such as fitted values and log-likelihoods).
 
-There are few things to note about these results and the model call.
+For large data sets and complex models, `slim = TRUE` can bring about computational improvements at the cost of losing some functionality (including the loss of convenience functions like `sp_diag`, `me_diag`, `spatial`, `resid`, and `fitted`). Many quantities of interest, such as fitted values and spatial trend terms, can still be calculated manually using the data and parameter estimates (intercept, coefficients, and spatial autocorrelation parameters).
 
-1.  **slim = TRUE**: A typical **geostan** model will return Markov chain Monte Carlo (MCMC) samples from all model parameters as well as the fitted values and pointwise log-likelihoods (for calculating the Widely Applicable Information Criteria, WAIC). Collecting these vectors of parameters becomes computationally demanding for large data sets. The `slim = TRUE` argument prevents collection of the fitted values and log-likelihoods, speeding up the models considerably, but also limiting the uses to which they may be put.
+The favorable MCMC diagnostics for this model (sufficiently large effective sample sizes `n_eff`, and `Rhat` values very near to 1), based on just 250 post-warmup iterations per chain with four MCMC chains, provides some indication as to how computationally efficient these spatial autoregressive models can be.
 
-2.  **iter = 400, chains = 4**: Small numbers of MCMC samples can be sufficient to obtain reasonable MCMC samples. In this case, the effective sample sizes `n_eff` are sufficiently large for most purposes and the standard errors of the estimates `se_mean` are sufficiently small. More importantly, there are no signs that the four MCMC chains failed to converge on a single distribution---despite collecting only 200 warmup samples per chain. For large data sets, one can expect to require a modestly larger number of MCMC samples than were required for this example.
-
-3.  **centering and scaling**: the synthetic data `grid$z` is nearly standard normal, and this contributes to the quick sampling speed. Stan models sample most quickly with standard normal variates. For large data sets, it can be extremely helpful to scale each variable using the `base::scale` function before passing the data to a model fitting function like `stan_car`.
-
-4.  **SAR vs. CAR**: So far, neither seems to outpace the other in terms of computational efficiency with raster layers.
+Also, note that Stan usually samples more efficiently when variables have been mean-centered. Using the `centerx = TRUE` argument in `stan_sar` (or any other model-fitting function in **geostan**) can be very helpful in this respect. Also note that the SAR models in **geostan** are (generally) no less computationally-efficient than the CAR models, and may even be slightly more efficient.
 
 ## References

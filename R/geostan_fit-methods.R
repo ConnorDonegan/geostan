@@ -414,6 +414,7 @@ predict.geostan_fit <- function(object,
     X <- as.matrix(model.matrix(f, newdata)[,-1])    
     X <- scale(X, center = center, scale = FALSE)
     O <- model.offset( model.frame(f, newdata) )
+    O <- ifelse(is.null(O), 0, O)
     B <- as.matrix(object, pars = "beta") 
     M <- nrow(B)
     N <- nrow(X)

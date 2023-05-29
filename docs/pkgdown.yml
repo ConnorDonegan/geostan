@@ -3,8 +3,9 @@ pkgdown: 2.0.1
 pkgdown_sha: ~
 articles:
   measuring-sa: measuring-sa.html
+  raster-regression: raster-regression.html
   spatial-me-models: spatial-me-models.html
-last_built: 2023-04-27T17:31Z
+last_built: 2023-05-29T14:19Z
 urls:
   reference: https://connordonegan.github.io/geostan/reference
   article: https://connordonegan.github.io/geostan/articles

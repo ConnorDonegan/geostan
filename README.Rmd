@@ -20,9 +20,9 @@ knitr::opts_chunk$set(
 
 ## geostan: Bayesian spatial analysis
 
-The [**geostan**](https://connordonegan.github.io/geostan/) R package supports a complete spatial analysis workflow with Bayesian models for areal data, including a suite of functions for visualizing spatial data and model results. For demonstrations and discussion, see the package [help pages](https://connordonegan.github.io/geostan/reference/index.html) and [vignettes](https://connordonegan.github.io/geostan/articles/index.html) on spatial autocorrelation and spatial measurement error models.
+The [**geostan**](https://connordonegan.github.io/geostan/) R package supports a complete spatial analysis workflow with Bayesian models for areal data, including a suite of functions for visualizing spatial data and model results. For demonstrations and discussion, see the package [help pages](https://connordonegan.github.io/geostan/reference/index.html) and [vignettes](https://connordonegan.github.io/geostan/articles/index.html) on spatial autocorrelation, spatial measurement error models, and spatial regression with raster layers.
 
-The package is designed primarily to support public health research with spatial data; see the [**surveil**](https://connordonegan.github.io/surveil/) R package for time series analysis of public health surveillance data.
+The package is particularly suitable for public health research with spatial data, and complements the [**surveil**](https://connordonegan.github.io/surveil/) R package for time series analysis of public health surveillance data.
 
 **geostan** is an interface to [**Stan**](https://mc-stan.org), a state-of-the-art platform for Bayesian inference. 
 
@@ -62,7 +62,7 @@ install.packages("geostan")
 
 ## Support
 
-All functions and methods are documented (with examples) on the website [reference](https://connordonegan.github.io/geostan/reference/index.html) page. See the package [vignettes](https://connordonegan.github.io/geostan/articles/index.html) for more on exploratory spatial data analysis and spatial modeling.
+All functions and methods are documented (with examples) on the website [reference](https://connordonegan.github.io/geostan/reference/index.html) page. See the package [vignettes](https://connordonegan.github.io/geostan/articles/index.html) for more on exploratory spatial data analysis, spatial measurement error models, and spatial regression with large raster layers.
 
 To ask questions, report a bug, or discuss ideas for improvements or new features please visit the [issues](https://github.com/ConnorDonegan/geostan/issues) page, start a [discussion](https://github.com/ConnorDonegan/geostan/discussions), or submit a [pull request](https://github.com/ConnorDonegan/geostan/pulls).
 

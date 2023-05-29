@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -56,6 +56,22 @@
       <small>Source: <a href="https://github.com/ConnorDonegan/geostan/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.5.0" id="geostan-050">geostan 0.5.0<a class="anchor" aria-label="anchor" href="#geostan-050"></a></h2>
+<div class="section level3">
+<h3 id="new-additions-0-5-0">New additions<a class="anchor" aria-label="anchor" href="#new-additions-0-5-0"></a></h3>
+<p>The package now provides some support for spatial regression with raster data, including for layers with hundreds of thousands of observations (possibly more, depending on one’s computational resources). Two new additions make this possible.</p>
+<ol style="list-style-type: decimal"><li>
+<code>slim = TRUE</code> The model fitting functions (<code>stan_glm</code>, <code>stan_car</code>, <code>stan_sar</code>, <code>stan_esf</code>, <code>stan_icar</code>) now provide the option to trim down the parameters for which MCMC samples are collected. For large N and/or many N-length vectors of parameters, this option can speed up sampling considerably and reduce memory usage. The new <code>drop</code> argument provides users control over which parameter vectors will be ignored. This functionality may be helpful for any number of purposes, including modeling large data sets, measurement error models, and Monte Carlo studies.</li>
+<li>
+<code>prep_sar_data2</code> and <code>prep_car_data2</code> These two functions can quickly prepare required data for SAR and CAR models when using raster layers (observations on a regularly spaced grid). The standard and more generally applicable functions <code>prep_car_data</code> and <code>prep_sar_data</code> are limited in terms of the size of spatial weights matrices they can handle.</li>
+</ol><p>These new functions are dicussed in a new vignette titled “Raster regression.”</p>
+</div>
+<div class="section level3">
+<h3 id="minor-changes-0-5-0">Minor changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-5-0"></a></h3>
+<p>The PDF documentation has been improved—previously, multi-line equations were not rendered properly. Now they render correctly, and a mistake in the description of Binomial CAR models has been corrected.</p>
+</div>
+</div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.4.1" id="geostan-041">geostan 0.4.1<small>2022-12-04</small><a class="anchor" aria-label="anchor" href="#geostan-041"></a></h2>
 <div class="section level3">

@@ -296,7 +296,7 @@ print_priors <- function(user_priors, priors) {
               print(p)
           }
           if (nm == "car_rho") {
-              message("\n*Setting prior for CAR spatial autocorrelation parameter (sar_rho)")
+              message("\n*Setting prior for CAR spatial autocorrelation parameter (car_rho)")
               print(p)
           }
           if (nm == "sar_scale") {
@@ -386,4 +386,15 @@ empty_sar_data <- function(n) {
         Widx = a.zero(),
         sar = 0
     )
+}
+
+
+#' @noRd
+drop_params <- function(pars, drop_list) {
+    if (!is.null(drop_list)) {
+        drop <- paste0(drop_list, collapse = "|")
+        keep_idx <- !grepl(drop, pars)
+        pars <- pars[keep_idx]
+    }        
+    return( pars )
 }

@@ -9,10 +9,10 @@
 #'
 #' Uses Equation 5 from Griffith (2000) to calculate the eigenvalues for a row-standardized spatial weights matrix; this is valid for a regular tessellation (rectangular grid or raster). The rook criteria is used to define adjacency.
 #'
-#' The purpose is to calculate eigenvalues of the spatial weights matrix for the CAR and SAR models, enabling spatial regression with large raster data sets. This function is used internally by \code{\link[geostan]{prep_sar_data2}} and \code{\link[geostan]{prep_car_data2}}.
+#' The purpose is to calculate eigenvalues of the spatial weights matrix for the CAR and SAR models, enabling spatial regression with large raster data sets. This function is used internally by \code{\link[geostan]{prep_sar_data2}} and \code{\link[geostan]{prep_car_data2}}. For more details, see: \code{vignette("raster-regression", package = "geostan")}.
 #'
 #' @seealso
-#' \code{\link[geostan]{prep_sar_data2}}, \code{\link[geostan]{prep_car_data2}}.
+#' \code{\link[geostan]{prep_sar_data2}}, \code{\link[geostan]{prep_car_data2}}
 #' 
 #' @source
 #'
@@ -20,12 +20,11 @@
 #'
 #' @examples
 #'
-#' e <- DAGW(row = 10, col = 15)
-#' print(e)
+#' e <- eigen_grid(row = 50, col = 95)
+#' print(head(e, 25))
 #'
 #' @export
-#' @noRd
-DAGW <- function(row = 5, col = 5) {
+eigen_grid <- function(row = 5, col = 5) {
     P1 <- matrix(1, nrow = row)
     Q1 <- matrix(1, nrow = col)
     Pl <- eigen_1DW(P = row)
@@ -35,11 +34,9 @@ DAGW <- function(row = 5, col = 5) {
     return (lambda)
 }
 
-
-
 #' Prepare data for the CAR model: raster analysis
 #'
-#' @description Prepares a list of data required for using the CAR model; this is for working with large raster data files. For non-raster analysis, see \link[geostan]{prep_car_data}.
+#' @description Prepare a list of data required for the CAR model; this is for working with (large) raster data files only. For non-raster analysis, see \link[geostan]{prep_car_data}.
 #'
 #' @param row Number of rows in the raster 
 #' @param col Number of columns in the raster
@@ -48,12 +45,15 @@ DAGW <- function(row = 5, col = 5) {
 #'
 #' Prepare input data for the CAR model when your dataset consists of observations on a regular (rectangular) tessellation, such as a raster layer or remotely sensed imagery. The rook criteria is used to determine adjacency. This function uses Equation 5 from Griffith (2000) to generate approximate eigenvalues for a row-standardized spatial weights matrix from a P-by-Q dimension regular tessellation.
 #'
-#' This function can accomodate very large numbers of observations for use with \code{\link[geostan]{stan_car}}. 
+#' This function can accomodate very large numbers of observations for use with \code{\link[geostan]{stan_car}}; for large N data, it is also recommended to use `slim = TRUE` or the `drop` argument. For more details, see: \code{vignette("raster-regression", package = "geostan")}.
 #' 
 #' @source
 #'
 #' Griffith, Daniel A. (2000). Eigenfunction properties and approximations of selected incidence matrices employed in spatial analyses. *Linear Algebra and its Applications* 321 (1-3): 95-112. \doi{10.1016/S0024-3795(00)00031-8}. 
 #'
+#' @seealso
+#' \code{\link[geostan]{prep_sar_data2}}, \code{\link[geostan]{prep_car_data}}, \code{\link[geostan]{stan_car}}.
+#' 
 #' @examples
 #'
 #' row = 100
@@ -96,7 +96,7 @@ prep_car_data2 <- function(row = 100, col = 100) {
     car.dl$n <- N
 
     # eigenvalues of the WCAR connectivity matrix
-    car.dl$lambda <- DAGW(row = row, col = col)
+    car.dl$lambda <- eigen_grid(row = row, col = col)
     cat ("Range of permissible rho values: ", 1 / range(car.dl$lambda), "\n")
     car.dl$style <- "WCAR"
     car.dl$C <- C
@@ -105,7 +105,7 @@ prep_car_data2 <- function(row = 100, col = 100) {
 
 #' Prepare data for SAR model: raster analysis
 #'
-#' @description Prepares a list of data required for using the SAR model; this is for working with large raster data files. For non-raster analysis, see \link[geostan]{prep_sar_data}.
+#' @description Prepares a list of data required for using the SAR model; this is for working with (large) raster data files. For non-raster analysis, see \link[geostan]{prep_sar_data}.
 #'
 #' @param row Number of rows in the raster
 #' @param col Number of columns in the raster
@@ -114,7 +114,10 @@ prep_car_data2 <- function(row = 100, col = 100) {
 #'
 #' Prepare data for the SAR model when your raw dataset consists of observations on a regular tessellation, such as a raster layer or remotely sensed imagery. The rook criteria is used to determine adjacency. This function uses Equation 5 from Griffith (2000) to calculate the eigenvalues for a row-standardized spatial weights matrix of a P-by-Q dimension regular tessellation.
 #'
-#' This function can accomodate very large numbers of observations for use with \code{\link[geostan]{stan_sar}}. 
+#' This function can accomodate very large numbers of observations for use with \code{\link[geostan]{stan_sar}}; for large N data, it is also recommended to use `slim = TRUE` or the `drop` argument. For details, see: \code{vignette("raster-regression", package = "geostan")}.
+#'
+#' @seealso
+#' \code{\link[geostan]{prep_car_data2}}, \code{\link[geostan]{prep_sar_data}}, \code{\link[geostan]{stan_sar}}.
 #' 
 #' @source
 #'
@@ -127,7 +130,7 @@ prep_car_data2 <- function(row = 100, col = 100) {
 #' sar_dl <- prep_sar_data2(row = row, col = col)
 #'
 #' @export 
-prep_sar_data2 <- function(row = 100, col = 100) {
+prep_sar_data2 <- function(row, col) {
     stopifnot(row > 2 & col > 2)
     N <- row * col
     Idx <- 1:N
@@ -165,7 +168,7 @@ prep_sar_data2 <- function(row = 100, col = 100) {
     sar.dl$nImW_w <- length(sar.dl$ImW_w)
     sar.dl$Widx <- which(sar.dl$ImW_w != 1)
     sar.dl$nW <- length(sar.dl$Widx)
-    sar.dl$eigenvalues_w <- DAGW(row = row, col = col)
+    sar.dl$eigenvalues_w <- eigen_grid(row = row, col = col)
     sar.dl$n <- N
     rho_lims <- 1/range(sar.dl$eigenvalues_w)
     cat("Range of permissible rho values: ", rho_lims, "\n")
@@ -178,7 +181,7 @@ prep_sar_data2 <- function(row = 100, col = 100) {
 
 #' Eigenvalues for W matrix for 1-dimensional connectivity, as in time series modeling.
 #' 
-#' The DAGW function (and thus prep_sar_data2, prep_car_data2) requires this function.
+#' The eigen_grid function (and thus prep_sar_data2, prep_car_data2) requires this function.
 #' 
 #' This implements Griffith 2000, Equation 4.
 #'

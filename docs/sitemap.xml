@@ -16,6 +16,9 @@
     <loc>https://connordonegan.github.io/geostan/articles/measuring-sa.html</loc>
   </url>
   <url>
+    <loc>https://connordonegan.github.io/geostan/articles/raster-regression.html</loc>
+  </url>
+  <url>
     <loc>https://connordonegan.github.io/geostan/articles/spatial-me-models.html</loc>
   </url>
   <url>
@@ -41,6 +44,9 @@
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/edges.html</loc>
+  </url>
+  <url>
+    <loc>https://connordonegan.github.io/geostan/reference/eigen_grid.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/expected_mc.html</loc>

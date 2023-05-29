@@ -61,4 +61,13 @@ test_that("Slim SAR works", {
                     refresh = refresh,
                     slim = TRUE)
     expect_geostan(fit)
+    fit <- stan_sar(y ~ x,
+                    slx = ~ x,
+                    data = df,
+                    sar_parts = sdl,
+                    chains = 1,
+                    iter = iter,
+                    refresh = refresh,
+                    drop = c('fitted'))
+    expect_geostan(fit)    
 })

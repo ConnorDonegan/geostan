@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.2</span>
       </span>
     </div>
 
@@ -81,6 +81,8 @@
   iter <span class="op">=</span> <span class="fl">2000</span>,
   refresh <span class="op">=</span> <span class="fl">500</span>,
   keep_all <span class="op">=</span> <span class="cn">FALSE</span>,
+  slim <span class="op">=</span> <span class="cn">FALSE</span>,
+  drop <span class="op">=</span> <span class="cn">NULL</span>,
   pars <span class="op">=</span> <span class="cn">NULL</span>,
   control <span class="op">=</span> <span class="cn">NULL</span>,
   <span class="va">...</span>
@@ -95,8 +97,7 @@
 <p>Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian estimation of spatial filters with Moran’s Eigenvectors and hierarchical shrinkage priors. <em>Spatial Statistics</em>. <a href="https://doi.org/10.1016/j.spasta.2020.100450" class="external-link">doi:10.1016/j.spasta.2020.100450</a>
  (open access: <a href="https://doi.org/10.31219/osf.io/fah3z" class="external-link">doi:10.31219/osf.io/fah3z</a>
 ).</p>
-<p>Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. <em>Int. J. Env. Res. and Public Health</em> 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: <a href="https://github.com/ConnorDonegan/survey-HBM" class="external-link">https://github.com/ConnorDonegan/survey-HBM</a>.</p>
-<p>Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. <em>OSF Preprints</em>. <a href="https://doi.org/10.31219/osf.io/3ey65" class="external-link">doi:10.31219/osf.io/3ey65</a>
+<p>Donegan, Connor (2021). Building spatial conditional autoregressive (CAR) models in the Stan programming language. <em>OSF Preprints</em>. <a href="https://doi.org/10.31219/osf.io/3ey65" class="external-link">doi:10.31219/osf.io/3ey65</a>
 .</p>
 <p>Griffith, Daniel A., and P. R. Peres-Neto (2006). Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses. <em>Ecology</em> 87(10), 2603-2613.</p>
 <p>Griffith, D., and Y. Chun (2014). Spatial autocorrelation and spatial filtering, Handbook of Regional Science. Fischer, MM and Nijkamp, P. eds.</p>
@@ -167,6 +168,29 @@ alpha_tau ~ Student_t(d.f., location, scale).
 <dd><p>Stan will print the progress of the sampler every <code>refresh</code> number of samples. Defaults to <code>500</code>; set <code>refresh=0</code> to silence this.</p></dd>
 <dt>keep_all</dt>
 <dd><p>If <code>keep_all = TRUE</code> then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors and the <code>bridgesampling</code> package.</p></dd>
+<dt>slim</dt>
+<dd><p>If <code>slim = TRUE</code>, then the Stan model will not collect the most memory-intensive parameters (including n-length vectors of fitted values, log-likelihoods, and ME-modeled covariate values). This will disable many convenience functions that are otherwise available for fitted <code>geostan</code> models, such as the extraction of residuals, fitted values, and spatial trends, WAIC, and spatial diagnostics, and ME diagnostics; many quantities of interest, such as fitted values and spatial trends, can still be calculated manually using given parameter estimates. The "slim" option is useful for data-intensive routines, such as regression with raster data, Monte Carlo studies, and measurement error models. For more control over which parameters are kept or dropped, use the <code>drop</code> argument instead of <code>slim</code>.</p></dd>
+<dt>drop</dt>
+<dd><p>Provide a vector of character strings to specify the names of any parameters that you do not want MCMC samples for. Dropping parameters in this way can improve sampling speed and reduce memory usage. The following parameter vectors can potentially be dropped from ESF models:</p><dl><dt>fitted</dt>
+<dd><p>The N-length vector of fitted values</p></dd>
+
+<dt>log_lik</dt>
+<dd><p>The N-length vector of pointwise log-likelihoods, which is used to calculate WAIC.</p></dd>
+
+<dt>alpha_re</dt>
+<dd><p>Vector of 'random effects'/varying intercepts.</p></dd>
+
+<dt>x_true</dt>
+<dd><p>N-length vector of 'latent'/modeled covariate values created for measurement error (ME) models.</p></dd>
+
+<dt>esf</dt>
+<dd><p>The N-length eigenvector spatial filter.</p></dd>
+
+<dt>beta_ev</dt>
+<dd><p>The vector of coefficients for the eigenvectors.</p></dd>
+
+
+</dl><p>Using <code>drop = c('fitted', 'log_lik', 'alpha_re', 'x_true', 'esf', 'beta_ev')</code> is equivalent to <code>slim = TRUE</code>. Note that if <code>slim = TRUE</code>, then <code>drop</code> will be ignored---so only use one or the other.</p></dd>
 <dt>pars</dt>
 <dd><p>Optional; specify any additional parameters you'd like stored from the Stan model.</p></dd>
 <dt>control</dt>
@@ -224,92 +248,25 @@ alpha_tau ~ Student_t(d.f., location, scale).
     <div id="details">
     <h2>Details</h2>
     <p>Eigenvector spatial filtering (ESF) is a method for spatial regression analysis. ESF is extensively covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), which uses Piironen and Vehtari's (2017) regularized horseshoe prior.</p>
-<p>ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \(C\). The resulting eigenvectors, \(E\), are mutually orthogonal and uncorrelated map patterns. The spatial filter equals \(E \beta_{E}\) where \(\beta_{E}\) is a vector of coefficients.</p>
-<p>ESF decomposes the data into a global mean, \(\alpha\), global patterns contributed by covariates \(X \beta\), spatial trends \(E \beta_{E}\), and residual variation. Thus, for <code>family=gaussian()</code>,
-$$
+<p>ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, these spatial autocorrelation patterns are shifted from the residuals to the spatial filter. ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \(C\). The resulting eigenvectors, \(E\), are mutually orthogonal and uncorrelated map patterns. The spatial filter equals \(E \beta_{E}\) where \(\beta_{E}\) is a vector of coefficients.</p>
+<p>ESF decomposes the data into a global mean, \(\alpha\), global patterns contributed by covariates \(X \beta\), spatial trends \(E \beta_{E}\), and residual variation. Thus, for <code>family=gaussian()</code>,</p>
+<p>$$
 y \sim Gauss(\alpha + X * \beta + E \beta_{E}, \sigma).
 $$</p>
-<p>An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:
-$$
-y \sim Poisson(e^{O + \mu}) \\
-\mu = \alpha + E \beta_{E} + A \\
-A \sim Guass(0, \tau) \\
-\tau \sim student(20, 0, 2) \\
-\beta_{E} \sim horseshoe(.)
-$$
-The form of this model is similar to the BYM model (see <a href="stan_icar.html">stan_icar</a>), in the sense that it contains a spatially structured trend term (\(E \beta_{E}\)) and an unstructured ('random effects') term (\(A\)).</p>
+<p>An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:</p>
+<p>$$y \sim Poisson(e^{O + \mu})$$
+$$\mu = \alpha + E \beta_{E} + A $$
+$$ A \sim Guass(0, \tau) $$
+$$ \tau \sim student(20, 0, 2) $$
+$$ \beta_{E} \sim horseshoe(.) $$</p>
+<p>The form of this model is similar to the BYM model (see <a href="stan_icar.html">stan_icar</a>), in the sense that it contains a spatially structured trend term (\(E \beta_{E}\)) and an unstructured ('random effects') term (\(A\)).</p>
 <p>The <a href="resid_geostan_fit.html">spatial.geostan_fit</a> method will return \(E \beta_{E}\).</p>
 <p>The model can also be extended to the space-time domain; see <a href="shape2mat.html">shape2mat</a> to specify a space-time connectivity matrix.</p>
 <p>The coefficients \(\beta_{E}\) are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the <code>threshold</code> argument). By default, <code>stan_esf</code> will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the <code>nsa</code> argument.</p><div class="section">
-<h3 id="spatially-lagged-covariates-slx-">Spatially lagged covariates (SLX)<a class="anchor" aria-label="anchor" href="#spatially-lagged-covariates-slx-"></a></h3>
+<h3 id="additional-functionality">Additional functionality<a class="anchor" aria-label="anchor" href="#additional-functionality"></a></h3>
 
 
-<p>The <code>slx</code> argument is a convenience function for including SLX terms. For example,
-$$
- y = W X \gamma + X \beta + \epsilon
-$$
-where \(W\) is a row-standardized spatial weights matrix (see <a href="shape2mat.html">shape2mat</a>), \(WX\) is the mean neighboring value of \(X\), and \(\gamma\) is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the <code>slx</code> argument:</p><div class="sourceCode"><pre><code>stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
-</code></pre></div>
-
-<p>which is a shortcut for</p><div class="sourceCode"><pre><code>stan_glm(y ~ I(W \%*\% x1) + I(W \%*\% x2) + x1 + x2, \...)
-</code></pre></div>
-
-<p>SLX terms will always be <em>prepended</em> to the design matrix, as above, which is important to know when setting prior distributions for regression coefficients.</p>
-<p>For measurement error (ME) models, the SLX argument is the only way to include spatially lagged covariates since the SLX term needs to be re-calculated on each iteration of the MCMC algorithm.</p>
-</div>
-
-<div class="section">
-<h3 id="measurement-error-me-models">Measurement error (ME) models<a class="anchor" aria-label="anchor" href="#measurement-error-me-models"></a></h3>
-
-
-<p>The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. Given estimates \(x\), their standard errors \(s\), and the target quantity of interest (i.e., the unknown true value) \(z\), the ME models have one of the the following two specifications, depending on the user input. If a spatial CAR model is specified, then:
-$$
- x \sim Gauss(z, s^2) \\
- z \sim Gauss(\mu_z, \Sigma_z) \\
-\Sigma_z = (I - \rho C)^{-1} M \\
- \mu_z \sim Gauss(0, 100) \\
- \tau_z \sim Student(10, 0, 40), \tau &gt; 0 \\
- \rho_z \sim uniform(l, u)
- $$
-where \(\Sigma\) specifies a spatial conditional autoregressive model with scale parameter \(\tau\) (on the diagonal of \(M\)), and \(l\), \(u\) are the lower and upper bounds that \(\rho\) is permitted to take (which is determined by the extreme eigenvalues of the spatial connectivity matrix \(C\)).</p>
-<p>For non-spatial ME models, the following is used instead:
-$$
-x \sim Gauss(z, s^2) \\
-z \sim student(\nu_z, \mu_z, \sigma_z) \\
-\nu_z \sim gamma(3, 0.2) \\
-\mu_z \sim Gauss(0, 100) \\
-\sigma_z \sim student(10, 0, 40).
-$$</p>
-<p>For strongly skewed variables, such as census tract poverty rates, it can be advantageous to apply a logit transformation to \(z\) before applying the CAR or Student-t prior model. When the <code>logit</code> argument is used, the model becomes:
-$$
-x \sim Gauss(z, s^2) \\
-logit(z) \sim Gauss(\mu_z, \Sigma_z) 
-...
-$$
-and similarly for the Student t model:
-$$
-x \sim Gauss(z, s^2) \\
-logit(z) \sim student(\nu_z, \mu_z, \sigma_z) \\
-...
-$$</p>
-</div>
-
-<div class="section">
-<h3 id="censored-counts">Censored counts<a class="anchor" aria-label="anchor" href="#censored-counts"></a></h3>
-
-
-<p>Vital statistics systems and disease surveillance programs typically suppress case counts when they are smaller than a specific threshold value. In such cases, the observation of a censored count is not the same as a missing value; instead, you are informed that the value is an integer somewhere between zero and the threshold value. For Poisson models (<code>family = poisson())</code>), you can use the <code>censor_point</code> argument to encode this information into your model.</p>
-<p>Internally, <code>geostan</code> will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:
-$$
-p(y_i | data, model) = poisson(y_i | \mu_i), 
-$$
-as usual, where \(\mu_i\) may include whatever spatial terms are present in the model.</p>
-<p>For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:
-$$
-p(y_i | data, model) = \sum_{m=0}^{M} Poisson( m | \mu_i),
-$$
-where \(M\) is the censor point and \(\mu_i\) again is the fitted value for the \(i^{th}\) observation.</p>
-<p>For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide <code>censor_point = 9</code> and then the likelihood statement for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model parameters). See Donegan (2021) for additional discussion, references, and Stan code.</p>
+<p>The CAR models can also incorporate spatially-lagged covariates, measurement/sampling error in covariates (particularly when using small area survey estimates as covariates), and censored outcomes (such as arise when a disease surveillance system suppresses data for privacy reasons). For details on these options, please see the Details section in the documentation for <a href="stan_glm.html">stan_glm</a>.</p>
 </div>
 
     </div>
@@ -320,123 +277,54 @@ where \(M\) is the censor point and \(\mu_i\) again is the fitted value for the 
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="co"># \donttest{</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">)</span></span>
-<span class="r-in"><span class="co"># spatial weights matrix with binary coding scheme</span></span>
-<span class="r-in"><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">sentencing</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># log-expected number of sentences</span></span>
-<span class="r-in"><span class="co">## expected counts are based on county racial composition and mean sentencing rates</span></span>
-<span class="r-in"><span class="va">log_e</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">$</span><span class="va">expected_sents</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># fit spatial Poisson model with ESF + unstructured 'random effects'</span></span>
-<span class="r-in"><span class="va">fit.esf</span> <span class="op">&lt;-</span> <span class="fu">stan_esf</span><span class="op">(</span><span class="va">sents</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="va">log_e</span><span class="op">)</span>,</span>
-<span class="r-in">                   re <span class="op">=</span> <span class="op">~</span> <span class="va">name</span>,</span>
-<span class="r-in">                   family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span class="r-in">                   data <span class="op">=</span> <span class="va">sentencing</span>,</span>
-<span class="r-in">                   C <span class="op">=</span> <span class="va">C</span>,</span>
-<span class="r-in">                   chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">800</span><span class="op">)</span> <span class="co"># for speed only</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior parameters for intercept</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: normal</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   location scale</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1     0.11     5</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior parameters for alpha_tau</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: student_t</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   df location scale</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 10        0     3</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> *Setting prior for eigenvector coefficients</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Distribution: hs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   global_scale slab_df slab_scale</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1            1      15          2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Gradient evaluation took 5.5e-05 seconds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.55 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Adjust your expectations accordingly!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration:   1 / 800 [  0%]  (Warmup)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 401 / 800 [ 50%]  (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: Iteration: 800 / 800 [100%]  (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:  Elapsed Time: 2.037 seconds (Warm-up)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                1.233 seconds (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1:                3.27 seconds (Total)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 1: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> SAMPLING FOR MODEL 'foundation' NOW (CHAIN 2).</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Gradient evaluation took 4.3e-05 seconds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.43 seconds.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Adjust your expectations accordingly!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration:   1 / 800 [  0%]  (Warmup)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 401 / 800 [ 50%]  (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: Iteration: 800 / 800 [100%]  (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:  Elapsed Time: 2.092 seconds (Warm-up)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                1.075 seconds (Sampling)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2:                3.167 seconds (Total)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Chain 2: </span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There were 12 divergent transitions after warmup. See</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> to find out why this is a problem and how to eliminate them.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Examine the pairs() plot to diagnose sampling problems</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The largest R-hat is 1.06, indicating chains have not mixed.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> Running the chains for more iterations may help. See</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#r-hat</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> Running the chains for more iterations may help. See</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#bulk-ess</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> Running the chains for more iterations may help. See</span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> https://mc-stan.org/misc/warnings.html#tail-ess</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># spatial diagnostics </span></span>
-<span class="r-in"><span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit.esf</span>, <span class="va">sentencing</span><span class="op">)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.</span>
-<span class="r-plt img"><img src="stan_esf-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit.esf</span><span class="op">)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
-<span class="r-plt img"><img src="stan_esf-2.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># plot marginal posterior distributions of beta_ev (eigenvector coefficients)</span></span>
-<span class="r-in"><span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit.esf</span>, pars <span class="op">=</span> <span class="st">"beta_ev"</span><span class="op">)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
-<span class="r-plt img"><img src="stan_esf-3.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># plot the marginal posterior distributions of the spatial filter </span></span>
-<span class="r-in"><span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit.esf</span>, pars <span class="op">=</span> <span class="st">"esf"</span><span class="op">)</span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</span>
-<span class="r-plt img"><img src="stan_esf-4.png" alt="" width="700" height="433"></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># calculate log-standardized incidence ratios </span></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
-<span class="r-in"><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit.esf</span>, rates <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">$</span><span class="va">mean</span></span>
-<span class="r-in"><span class="va">SSR</span> <span class="op">&lt;-</span>  <span class="va">f</span> <span class="op">/</span> <span class="va">sentencing</span><span class="op">$</span><span class="va">expected_sents</span></span>
-<span class="r-in"><span class="va">log.SSR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span> <span class="va">SSR</span>, base <span class="op">=</span> <span class="fl">2</span> <span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># map the log-SSRs</span></span>
-<span class="r-in"><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span class="r-in"> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span class="r-in"> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">log.SSR</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span class="r-in"> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient2</a></span><span class="op">(</span></span>
-<span class="r-in">   midpoint <span class="op">=</span> <span class="fl">0</span>,</span>
-<span class="r-in">   name <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span class="r-in">   breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">3</span>, <span class="fl">3</span>, by <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
-<span class="r-in"> <span class="op">)</span> <span class="op">+</span></span>
-<span class="r-in"> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Log-Standardized Sentencing Ratios"</span>,</span>
-<span class="r-in">      subtitle <span class="op">=</span> <span class="st">"log( Fitted/Expected ), base 2"</span></span>
-<span class="r-in"> <span class="op">)</span> <span class="op">+</span></span>
-<span class="r-in"> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_void</a></span><span class="op">(</span><span class="op">)</span></span>
-<span class="r-plt img"><img src="stan_esf-5.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span class="co"># }</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="co"># \donttest{</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">)</span>
+<span class="co"># spatial weights matrix with binary coding scheme</span>
+<span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">sentencing</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span>
+
+<span class="co"># log-expected number of sentences</span>
+<span class="co">## expected counts are based on county racial composition and mean sentencing rates</span>
+<span class="va">log_e</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">$</span><span class="va">expected_sents</span><span class="op">)</span>
+
+<span class="co"># fit spatial Poisson model with ESF + unstructured 'random effects'</span>
+<span class="va">fit.esf</span> <span class="op">&lt;-</span> <span class="fu">stan_esf</span><span class="op">(</span><span class="va">sents</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="va">log_e</span><span class="op">)</span>,
+                   re <span class="op">=</span> <span class="op">~</span> <span class="va">name</span>,
+                   family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,
+                   data <span class="op">=</span> <span class="va">sentencing</span>,
+                   C <span class="op">=</span> <span class="va">C</span>,
+                   chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">800</span><span class="op">)</span> <span class="co"># for speed only</span>
+
+<span class="co"># spatial diagnostics </span>
+<span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit.esf</span>, <span class="va">sentencing</span><span class="op">)</span>
+<span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit.esf</span><span class="op">)</span>
+
+<span class="co"># plot marginal posterior distributions of beta_ev (eigenvector coefficients)</span>
+<span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit.esf</span>, pars <span class="op">=</span> <span class="st">"beta_ev"</span><span class="op">)</span>
+
+<span class="co"># plot the marginal posterior distributions of the spatial filter </span>
+<span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit.esf</span>, pars <span class="op">=</span> <span class="st">"esf"</span><span class="op">)</span>
+
+<span class="co"># calculate log-standardized incidence ratios </span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span>
+<span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit.esf</span>, rates <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">$</span><span class="va">mean</span>
+<span class="va">SSR</span> <span class="op">&lt;-</span>  <span class="va">f</span> <span class="op">/</span> <span class="va">sentencing</span><span class="op">$</span><span class="va">expected_sents</span>
+<span class="va">log.SSR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span> <span class="va">SSR</span>, base <span class="op">=</span> <span class="fl">2</span> <span class="op">)</span>
+
+<span class="co"># map the log-SSRs</span>
+<span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span>
+ <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
+ <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">log.SSR</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
+ <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient2</a></span><span class="op">(</span>
+   midpoint <span class="op">=</span> <span class="fl">0</span>,
+   name <span class="op">=</span> <span class="cn">NULL</span>,
+   breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">3</span>, <span class="fl">3</span>, by <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>
+ <span class="op">)</span> <span class="op">+</span>
+ <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Log-Standardized Sentencing Ratios"</span>,
+      subtitle <span class="op">=</span> <span class="st">"log( Fitted/Expected ), base 2"</span>
+ <span class="op">)</span> <span class="op">+</span>
+ <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_void</a></span><span class="op">(</span><span class="op">)</span>
+<span class="co"># }</span>
 </code></pre></div>
     </div>
   </div>

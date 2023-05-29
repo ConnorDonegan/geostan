@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.2</span>
       </span>
     </div>
 
@@ -95,17 +95,14 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"W"</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">sim_sar</span><span class="op">(</span>w <span class="op">=</span> <span class="va">w</span>, rho <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="aple.html">aple</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.476</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">sim_sar</span><span class="op">(</span>w <span class="op">=</span> <span class="va">w</span>, rho <span class="op">=</span> <span class="fl">0.7</span>, m <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1]  10 159</span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">1</span>, <span class="va">aple</span>, w <span class="op">=</span> <span class="va">w</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 0.701 0.675 0.666 0.691 0.658 0.747 0.777 0.715 0.749 0.706</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
+<span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"W"</span><span class="op">)</span>
+<span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">sim_sar</span><span class="op">(</span>w <span class="op">=</span> <span class="va">w</span>, rho <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>
+<span class="fu"><a href="aple.html">aple</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span><span class="op">)</span>
+
+<span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">sim_sar</span><span class="op">(</span>w <span class="op">=</span> <span class="va">w</span>, rho <span class="op">=</span> <span class="fl">0.7</span>, m <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">1</span>, <span class="va">aple</span>, w <span class="op">=</span> <span class="va">w</span><span class="op">)</span>
 </code></pre></div>
     </div>
   </div>

@@ -52,6 +52,17 @@
 #' @param iter Number of samples per chain. Default \code{iter = 2000}.
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Defaults to \code{500}; set \code{refresh=0} to silence this.
 #' @param keep_all  If `keep_all = TRUE` then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors and the `bridgesampling` package.
+#' @param slim If `slim = TRUE`, then the Stan model will not collect the most memory-intensive parameters (including n-length vectors of fitted values, log-likelihoods, and ME-modeled covariate values). This will disable many convenience functions that are otherwise available for fitted \code{geostan} models, such as the extraction of residuals, fitted values, and spatial trends, WAIC, and spatial diagnostics, and ME diagnostics; many quantities of interest, such as fitted values and spatial trends, can still be calculated manually using given parameter estimates. The "slim" option is useful for data-intensive routines, such as regression with raster data, Monte Carlo studies, and measurement error models. For more control over which parameters are kept or dropped, use the `drop` argument instead of `slim`.
+#' @param drop Provide a vector of character strings to specify the names of any parameters that you do not want MCMC samples for. Dropping parameters in this way can improve sampling speed and reduce memory usage. The following parameter vectors can potentially be dropped from ESF models:
+#' \describe{
+#' \item{fitted}{The N-length vector of fitted values}
+#' \item{log_lik}{The N-length vector of pointwise log-likelihoods, which is used to calculate WAIC.}
+#' \item{alpha_re}{Vector of 'random effects'/varying intercepts.}
+#' \item{x_true}{N-length vector of 'latent'/modeled covariate values created for measurement error (ME) models.}
+#' \item{esf}{The N-length eigenvector spatial filter.}
+#' \item{beta_ev}{The vector of coefficients for the eigenvectors.}
+#' }
+#' Using `drop = c('fitted', 'log_lik', 'alpha_re', 'x_true', 'esf', 'beta_ev')` is equivalent to `slim = TRUE`. Note that if `slim = TRUE`, then `drop` will be ignored---so only use one or the other.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. 
 #' 
@@ -60,21 +71,22 @@
 #'
 #' Eigenvector spatial filtering (ESF) is a method for spatial regression analysis. ESF is extensively covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), which uses Piironen and Vehtari's (2017) regularized horseshoe prior.
 #'
-#' ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, any spatial autocorrelation is shifted from the residuals to the spatial filter. ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \eqn{C}. The resulting eigenvectors, \eqn{E}, are mutually orthogonal and uncorrelated map patterns. The spatial filter equals \eqn{E \beta_{E}} where \eqn{\beta_{E}} is a vector of coefficients.
+#' ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, these spatial autocorrelation patterns are shifted from the residuals to the spatial filter. ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \eqn{C}. The resulting eigenvectors, \eqn{E}, are mutually orthogonal and uncorrelated map patterns. The spatial filter equals \eqn{E \beta_{E}} where \eqn{\beta_{E}} is a vector of coefficients.
 #'
 #' ESF decomposes the data into a global mean, \eqn{\alpha}, global patterns contributed by covariates \eqn{X \beta}, spatial trends \eqn{E \beta_{E}}, and residual variation. Thus, for `family=gaussian()`,
+#' 
 #' \deqn{
 #' y \sim Gauss(\alpha + X * \beta + E \beta_{E}, \sigma).
 #'}
 #' 
 #' An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:
-#' \deqn{
-#' y \sim Poisson(e^{O + \mu}) \\
-#' \mu = \alpha + E \beta_{E} + A \\
-#' A \sim Guass(0, \tau) \\
-#' \tau \sim student(20, 0, 2) \\
-#' \beta_{E} \sim horseshoe(.)
-#' }
+#' 
+#' \deqn{y \sim Poisson(e^{O + \mu})}
+#' \deqn{\mu = \alpha + E \beta_{E} + A }
+#' \deqn{ A \sim Guass(0, \tau) }
+#' \deqn{ \tau \sim student(20, 0, 2) }
+#' \deqn{ \beta_{E} \sim horseshoe(.) }
+#' 
 #' The form of this model is similar to the BYM model (see \link[geostan]{stan_icar}), in the sense that it contains a spatially structured trend term (\eqn{E \beta_{E}}) and an unstructured ('random effects') term (\eqn{A}).
 #' 
 #' The \link[geostan]{spatial.geostan_fit} method will return \eqn{E \beta_{E}}.
@@ -83,78 +95,9 @@
 #' 
 #' The coefficients \eqn{\beta_{E}} are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the \code{threshold} argument). By default, \code{stan_esf} will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the \code{nsa} argument.
 #'
-#' ### Spatially lagged covariates (SLX)
-#' 
-#' The `slx` argument is a convenience function for including SLX terms. For example, 
-#' \deqn{
-#'  y = W X \gamma + X \beta + \epsilon
-#' }
-#' where \eqn{W} is a row-standardized spatial weights matrix (see \link[geostan]{shape2mat}), \eqn{WX} is the mean neighboring value of \eqn{X}, and \eqn{\gamma} is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the \code{slx} argument:
-#' ```
-#' stan_glm(y ~ x1 + x2, slx = ~ x1 + x2, \...),
-#' ```
-#' which is a shortcut for
-#' ```
-#' stan_glm(y ~ I(W \%*\% x1) + I(W \%*\% x2) + x1 + x2, \...)
-#' ```
-#' SLX terms will always be *prepended* to the design matrix, as above, which is important to know when setting prior distributions for regression coefficients.
+#' ## Additional functionality
 #'
-#' For measurement error (ME) models, the SLX argument is the only way to include spatially lagged covariates since the SLX term needs to be re-calculated on each iteration of the MCMC algorithm.
-#' 
-#' ### Measurement error (ME) models
-#' 
-#' The ME models are designed for surveys with spatial sampling designs, such as the American Community Survey (ACS) estimates. Given estimates \eqn{x}, their standard errors \eqn{s}, and the target quantity of interest (i.e., the unknown true value) \eqn{z}, the ME models have one of the the following two specifications, depending on the user input. If a spatial CAR model is specified, then:
-#' \deqn{
-#'  x \sim Gauss(z, s^2) \\
-#'  z \sim Gauss(\mu_z, \Sigma_z) \\
-#' \Sigma_z = (I - \rho C)^{-1} M \\
-#'  \mu_z \sim Gauss(0, 100) \\
-#'  \tau_z \sim Student(10, 0, 40), \tau > 0 \\
-#'  \rho_z \sim uniform(l, u)
-#'  }
-#' where \eqn{\Sigma} specifies a spatial conditional autoregressive model with scale parameter \eqn{\tau} (on the diagonal of \eqn{M}), and \eqn{l}, \eqn{u} are the lower and upper bounds that \eqn{\rho} is permitted to take (which is determined by the extreme eigenvalues of the spatial connectivity matrix \eqn{C}).
-#' 
-#' For non-spatial ME models, the following is used instead:
-#' \deqn{
-#' x \sim Gauss(z, s^2) \\
-#' z \sim student(\nu_z, \mu_z, \sigma_z) \\
-#' \nu_z \sim gamma(3, 0.2) \\
-#' \mu_z \sim Gauss(0, 100) \\
-#' \sigma_z \sim student(10, 0, 40).
-#' }
-#' 
-#' For strongly skewed variables, such as census tract poverty rates, it can be advantageous to apply a logit transformation to \eqn{z} before applying the CAR or Student-t prior model. When the `logit` argument is used, the model becomes:
-#' \deqn{
-#' x \sim Gauss(z, s^2) \\
-#' logit(z) \sim Gauss(\mu_z, \Sigma_z) 
-#' ...
-#' }
-#' and similarly for the Student t model:
-#' \deqn{
-#' x \sim Gauss(z, s^2) \\
-#' logit(z) \sim student(\nu_z, \mu_z, \sigma_z) \\
-#' ...
-#' }
-#'
-#' ### Censored counts
-#'
-#' Vital statistics systems and disease surveillance programs typically suppress case counts when they are smaller than a specific threshold value. In such cases, the observation of a censored count is not the same as a missing value; instead, you are informed that the value is an integer somewhere between zero and the threshold value. For Poisson models (`family = poisson())`), you can use the `censor_point` argument to encode this information into your model. 
-#'
-#' Internally, `geostan` will keep the index values of each censored observation, and the index value of each of the fully observed outcome values. For all observed counts, the likelihood statement will be:
-#' \deqn{
-#' p(y_i | data, model) = poisson(y_i | \mu_i), 
-#' }
-#' as usual, where \eqn{\mu_i} may include whatever spatial terms are present in the model.
-#'
-#' For each censored count, the likelihood statement will equal the cumulative Poisson distribution function for values zero through the censor point:
-#' \deqn{
-#' p(y_i | data, model) = \sum_{m=0}^{M} Poisson( m | \mu_i),
-#' }
-#' where \eqn{M} is the censor point and \eqn{\mu_i} again is the fitted value for the \eqn{i^{th}} observation.
-#' 
-#' For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide `censor_point = 9` and then the likelihood statement for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model parameters). See Donegan (2021) for additional discussion, references, and Stan code.
-#'
-#'
+#' The CAR models can also incorporate spatially-lagged covariates, measurement/sampling error in covariates (particularly when using small area survey estimates as covariates), and censored outcomes (such as arise when a disease surveillance system suppresses data for privacy reasons). For details on these options, please see the Details section in the documentation for \link[geostan]{stan_glm}.
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
@@ -185,9 +128,7 @@
 #' 
 #' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian estimation of spatial filters with Moran’s Eigenvectors and hierarchical shrinkage priors. *Spatial Statistics*. \doi{10.1016/j.spasta.2020.100450} (open access: \doi{10.31219/osf.io/fah3z}).
 #'
-#' Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. *Int. J. Env. Res. and Public Health* 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: \url{https://github.com/ConnorDonegan/survey-HBM}.
-#'
-#' Donegan, Connor (2021). Spatial conditional autoregressive models in Stan. *OSF Preprints*. \doi{10.31219/osf.io/3ey65}.
+#' Donegan, Connor (2021). Building spatial conditional autoregressive (CAR) models in the Stan programming language. *OSF Preprints*. \doi{10.31219/osf.io/3ey65}.
 #'
 #' Griffith, Daniel A., and P. R. Peres-Neto (2006). Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses. *Ecology* 87(10), 2603-2613.
 #' 
@@ -267,6 +208,8 @@ stan_esf <- function(formula,
                      prior_only = FALSE,
                      chains = 4, iter = 2e3, refresh = 500,
                      keep_all = FALSE,
+                     slim = FALSE,
+                     drop = NULL,
                      pars = NULL,
                      control = NULL,
                      ...) {
@@ -414,7 +357,9 @@ stan_esf <- function(formula,
         } else {
             pars <- c(pars, "nu_x_true")
         }
-     }
+    }
+    if (slim == TRUE) drop <- c('fitted', 'log_lik', 'alpha_re', 'x_true', 'esf', 'beta_ev')
+    pars <- drop_params(pars = pars, drop_list = drop)
     priors_made_slim <- priors_made[which(names(priors_made) %in% c(pars, "beta_ev"))]
     if (me.list$has_me) priors_made_slim$ME_model <- ME$prior
     print_priors(prior, priors_made_slim)
@@ -445,8 +390,10 @@ stan_esf <- function(formula,
     out$ME <- list(has_me = me.list$has_me, spatial_me = me.list$spatial_me)
     if (out$ME$has_me) out$ME <- c(out$ME, ME)
     out$spatial <- data.frame(par = "esf", method = "ESF")
-    R <- resid(out, summary = FALSE)
-    out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )    
+    if (!missing(C) && any(pars == 'fitted')) {    
+        R <- resid(out, summary = FALSE)
+        out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )
+    }
   return (out)
 }
 

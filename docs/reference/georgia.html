@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.2</span>
       </span>
     </div>
 
@@ -157,52 +157,11 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Simple feature collection with 6 features and 25 fields</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Geometry type: MULTIPOLYGON</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Dimension:     XY</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Bounding box:  xmin: -84.73964 ymin: 31.80358 xmax: -81.91867 ymax: 34.12749</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Geodetic CRS:  NAD83</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   GEOID     NAME     ALAND   AWATER population    white    black      hisp</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 13081    Crisp 706189044 21457002      22846 50.22323 43.65753  3.278473</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 13043  Candler 629520691 15018337      10827 60.69087 23.51529 11.563683</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 13013   Barrow 417082282  4909657      76887 72.23718 11.29580 10.420487</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 13089   DeKalb 693405943  8955544     743187 29.09375 53.39894  8.576038</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 13073 Columbia 751293212 45394052     147295 69.47758 16.47985  6.436743</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 13067     Cobb 879964563 12464091     745057 52.49102 26.57407 12.833783</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          ai deaths.male pop.at.risk.male pop.at.risk.male.se deaths.female</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.0000000         109             7313            69.02898            86</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.6372956          79             3519            99.59920            56</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.1625762         294            20650           352.74282           220</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.1831302        2074           193646           200.36529          1422</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 0.1541125         320            42212           352.87037           241</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 0.1382445        1702           210457           194.55076          1258</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   pop.at.risk.female pop.at.risk.female.se         ICE      ICE.se income</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1               8420             105.85958 -0.24576780 0.029197505  35096</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2               3595              57.03069 -0.27540984 0.028503813  32937</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3              22351              93.80832 -0.01856313 0.007995064  57348</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4             238485             232.15297  0.05059098 0.003944325  59280</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5              46830             370.79644  0.14701110 0.010582645  76938</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6             233746             243.19488  0.16649112 0.004265087  75153</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   income.se college college.se insurance insurance.se   rate.male rate.female</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1861.3982    13.7  1.2158055      83.2    1.2765957 0.014904964 0.010213777</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 3074.7720    14.1  1.8237082      79.0    1.7021277 0.022449560 0.015577191</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 1260.1824    17.6  0.6686930      85.1    0.6686930 0.014237288 0.009842960</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  559.2705    43.4  0.3647416      85.2    0.3039514 0.010710265 0.005962639</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 1380.5471    35.1  0.7294833      92.0    0.5471125 0.007580783 0.005146274</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  568.9970    46.5  0.4255319      87.0    0.2431611 0.008087163 0.005381910</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                         geometry</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 MULTIPOLYGON (((-83.96128 3...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 MULTIPOLYGON (((-82.25453 3...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 MULTIPOLYGON (((-83.81768 3...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 MULTIPOLYGON (((-84.34809 3...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5 MULTIPOLYGON (((-82.42533 3...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6 MULTIPOLYGON (((-84.73784 3...</span>
-<span class="r-in"></span>
-<span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
-<span class="r-in"><span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">[</span>,<span class="st">'rate.female'</span><span class="op">]</span><span class="op">)</span></span>
-<span class="r-plt img"><img src="georgia-1.png" alt="" width="700" height="433"></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
+
+<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span>
+<span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">[</span>,<span class="st">'rate.female'</span><span class="op">]</span><span class="op">)</span>
 </code></pre></div>
     </div>
   </div>

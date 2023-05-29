@@ -130,3 +130,38 @@ test_that("BYM with censored y", {
     )
     expect_geostan(fit)
 })
+
+test_that("Slim ICAR works", {
+    data(georgia)
+    C <- shape2mat(georgia)
+    SW(
+        fit <- stan_icar(deaths.female ~ offset(log(pop.at.risk.female)),
+                         re = ~ GEOID,
+                         type = "bym",
+                         slim = TRUE,
+                        censor_point = 9,
+                        data = georgia,
+                        chains = 1,
+                        family = poisson(),
+                        C = C,
+                        iter = iter,
+                        refresh = refresh
+                        )
+    )
+    expect_geostan(fit)
+    SW(
+        fit <- stan_icar(deaths.female ~ offset(log(pop.at.risk.female)),
+                         re = ~ GEOID,
+                         type = "bym",
+                         drop = c('theta'),
+                        censor_point = 9,
+                        data = georgia,
+                        chains = 1,
+                        family = poisson(),
+                        C = C,
+                        iter = iter,
+                        refresh = refresh
+                        )
+    )
+    expect_geostan(fit)    
+})
