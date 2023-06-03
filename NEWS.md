@@ -1,4 +1,10 @@
 
+# geostan 0.5.1
+
+### Minor fixes
+
+This release fixes some issues that were introduced with the `slim` and `drop` arguments (in v0.5.0).
+
 # geostan 0.5.0
 
 ## New additions

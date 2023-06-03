@@ -182,7 +182,7 @@ print(fit)
 
 The CAR models in **geostan** can be highly efficient in terms of MCMC sampling, but the required number of iterations will depend on many characteristics of the model and data. Often the default `iter = 2000` is more than sufficient (with `cores = 4`). To speed up sampling with multi-core processing, use `cores = 4` (to sample 4 chains in parallel).
 
-In the following section, methods for examining MCMC samples of the modeled covariate values $\boldsymbol x$ will be illustrated. Note that the process of collecting/storing MCMC samples for $\boldsymbol x$ can be computationally burdensome. This can be avoided by using the `slim` argument, as in:
+In the following section, methods for examining MCMC samples of the modeled covariate values $\boldsymbol x$ will be illustrated. Note that the process of storing MCMC samples for $\boldsymbol x$ can become computationally burdensome if you have multiple covariates and moderately large N. If you do not need the samples of $\boldsymbol x$ you can use the `slim` argument, as in:
 
 ```{r eval = FALSE}
 fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)) + insurance,
@@ -195,7 +195,7 @@ fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)) + insurance,
                 )
 ```
 
-Using `slim = TRUE` may be faster (particularly for larger data sets), but will prevent the collection of MCMC samples for quantities of interest such as fitted values, pointwise log-likelihood values (required for WAIC), and modeled covariates $\boldsymbol x$. This option may be useful for preliminary examination of the models (e.g., to compare results to a standard model), or it may be appropriate to use this specification if the ME models have been evaluated in a previous run using `me_diag`, as discussed below. The `drop` argument to the model fitting functions (e.g., `stan_car`) provides more control over which parameters are saved.
+Using `slim = TRUE` may be faster (particularly for larger data sets), but will prevent the collection of MCMC samples for quantities of interest such as fitted values, pointwise log-likelihood values (required for WAIC), and modeled covariates $\boldsymbol x$. The `drop` argument to the model fitting functions (e.g., `stan_car`) provides more control over which parameters are saved.
 
 ## Visual diagnostics
 

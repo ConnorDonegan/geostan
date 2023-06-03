@@ -205,7 +205,7 @@ clean_results <- function(samples, pars, is_student, has_re, Wx, x, x_me_idx) {
         b_names = dimnames(x)[[2]] 
         samples <- par_alias(samples, "^beta\\[", b_names)
     }
-    if (sum(x_me_idx)) {
+    if ('x_true' %in% pars) {
         x_names <- dimnames(x)[[2]]        
         for (i in seq_along(x_me_idx)) {
             x.id <- paste0("x_", rep(x_names[x_me_idx[i]], times = n), paste0("[", 1:n, "]"))
@@ -392,7 +392,7 @@ empty_sar_data <- function(n) {
 #' @noRd
 drop_params <- function(pars, drop_list) {
     if (!is.null(drop_list)) {
-        drop <- paste0(drop_list, collapse = "|")
+        drop <- paste0("^", drop_list, "$", collapse = "|")
         keep_idx <- !grepl(drop, pars)
         pars <- pars[keep_idx]
     }        

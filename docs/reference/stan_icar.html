@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -341,8 +341,6 @@ $$ \tau \sim Gaussian(0, 1) $$</p>
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="co"># \donttest{</span>
-<span class="co"># for parallel processing of models:</span>
-<span class="co">#options(mc.cores = parallel::detectCores())</span>
 <span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">)</span>
 <span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">sentencing</span>, <span class="st">"B"</span><span class="op">)</span>
 <span class="va">log_e</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">$</span><span class="va">expected_sents</span><span class="op">)</span>

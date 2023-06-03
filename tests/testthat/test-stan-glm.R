@@ -52,6 +52,16 @@ test_that("GLM works with covariate ME", {
                     refresh = refresh)
     )
     expect_geostan(fit)
+    SW(
+        fit <- stan_glm(log(rate.male) ~ ICE,
+                    ME = ME,                        
+                    data = georgia,
+                    chains = 1,
+                    slim = TRUE,
+                    iter = iter,
+                    refresh = refresh)
+    )
+    expect_geostan(fit)    
 })
 
 test_that("GLM works with covariate ME: spatial data model", {
@@ -70,6 +80,16 @@ test_that("GLM works with covariate ME: spatial data model", {
                     refresh = refresh)
     )
     expect_geostan(fit)
+    SW(
+        fit <- stan_glm(log(rate.male) ~ ICE,
+                    ME = ME,                        
+                    data = georgia,
+                    slim = TRUE,
+                    chains = 1,
+                    iter = iter,
+                    refresh = refresh)
+    )
+    expect_geostan(fit)    
 })
 
 test_that("GLM accepts covariate ME, multiple proportions", {

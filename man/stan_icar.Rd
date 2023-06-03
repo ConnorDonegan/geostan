@@ -241,8 +241,6 @@ The CAR models can also incorporate spatially-lagged covariates, measurement/sam
 }
 \examples{
 \donttest{
-# for parallel processing of models:
-#options(mc.cores = parallel::detectCores())
 data(sentencing)
 C <- shape2mat(sentencing, "B")
 log_e <- log(sentencing$expected_sents)
