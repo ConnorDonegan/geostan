@@ -1,5 +1,5 @@
 // parameter models
-  vector[n] x_true_transform[dx_me];
+  array[dx_me] vector[n] x_true_transform;
   x_true_transform = x_true;
   target += normal_lpdf(intercept | prior_alpha[1], prior_alpha[2]);
   if (dx_all) target += normal_lpdf(append_row(gamma, beta) | prior_beta_location, prior_beta_scale);

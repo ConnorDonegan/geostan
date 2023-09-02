@@ -9,42 +9,42 @@
 // censored counts
   int<lower=0> n_mis;
   int<lower=0> n_obs;
-  int y_mis_idx[n_mis];
-  int y_obs_idx[n_obs];
+  array[n_mis] int y_mis_idx;
+  array[n_obs] int y_obs_idx;
   int censor_point;
 
 // outcome 
   vector[n] y;
-  int<lower=0> y_int[n];
-  int<lower=0> trials[n];
+  array[n] int<lower=0> y_int;
+  array[n] int<lower=0> trials;
   int<lower=0,upper=1> prior_only;
 
 // offset
-  vector[n] offset; 
+  vector[n] input_offset; 
   
 // connectivity matrix: row-standardized for spatial lag of X 
   int<lower=0> dwx;
-  int wx_idx[dwx ? dwx : 1];
+  array[dwx ? dwx : 1] int wx_idx;
   int<lower=0> dw_nonzero;
   vector[dw_nonzero] W_w;
-  int W_v[dw_nonzero];
-  int W_u[dwx ? n + 1 : 1];
+  array[dw_nonzero] int W_v;
+  array[dwx ? n + 1 : 1] int W_u;
   
 // covariates and observational error information
     // lower, upper bounds for bounded data models
-  real bounds[2];
+  array[2] real bounds;
     // no. columns
   int<lower=0> dx_obs;
   int<lower=0> dx_me;
-  int<lower=0,upper=1> use_logit[dx_me];
+  array[dx_me] int<lower=0,upper=1> use_logit;
     // indices matching columns of observed and ME data matrices to columns of raw data matrix x (and parameter x_all)
-  int<lower=0> x_obs_idx[dx_obs ? dx_obs : 1]; 
-  int<lower=0> x_me_idx[dx_me ? dx_me : 1];  
+  array[dx_obs ? dx_obs : 1] int<lower=0> x_obs_idx; 
+  array[dx_me ? dx_me : 1] int<lower=0> x_me_idx;  
     // covariates observed with practical certainty 
   matrix[n, dx_obs ? dx_obs : 0] x_obs;
     // covariates observed with uncertainty, and standard errors
-  vector[n] x_me[dx_me];
-  vector<lower=0>[n] sigma_me[dx_me];
+  array[dx_me] vector[n] x_me;
+  array[dx_me] vector<lower=0>[n] sigma_me;
   //  priors for x_true
   vector[dx_me] prior_nux_true_alpha;
   vector[dx_me] prior_nux_true_beta;
@@ -60,9 +60,9 @@
   int nAx_w;
   int nC;
   vector[nAx_w] Ax_w;
-  int Ax_v[nAx_w];
-  int Ax_u[n + 1];
-  int Cidx[nC];
+  array[nAx_w] int Ax_v;
+  array[n + 1] int Ax_u;
+  array[nC] int Cidx;
   vector[n] Delta_inv;
   real log_det_Delta_inv;
   vector[n] lambda;
@@ -70,7 +70,7 @@
 // non-spatial partial pooling 
   int<lower=0,upper=1> has_re; // has varying intercept?
   int<lower=0> n_ids; // number of units
-  int<lower=0,upper=n_ids> id[n]; // identifier for the observational units associated with the varying intercepts
+  array[n] int<lower=0,upper=n_ids> id; // identifier for the observational units associated with the varying intercepts
 // priors
   vector[2] prior_alpha; // prior on the intercept
   int<lower=0> dbeta_prior;
@@ -84,15 +84,15 @@
   // ICAR 
   int<lower=0,upper=3> type; // 0=glm, 1=icar, 2=bym, 3=bym2
   int<lower=1> k; // no. of groups
-  int group_size[k]; // observational units per group
-  int group_idx[n]; // index of observations, ordered by group
+  array[k] int group_size; // observational units per group
+  array[n] int group_idx; // index of observations, ordered by group
   int<lower=0> m; // no of components requiring additional intercepts
   matrix[n, m] A; // dummy variables for any extra graph component intercepts  
   int<lower=1> n_edges; 
-  int<lower=1, upper=n> node1[n_edges];
-  int<lower=1, upper=n> node2[n_edges];
+  array[n_edges] int<lower=1, upper=n> node1;
+  array[n_edges] int<lower=1, upper=n> node2;
   vector[n_edges] weight;
-  int<lower=1, upper=k> comp_id[n]; 
+  array[n] int<lower=1, upper=k> comp_id; 
   vector[k] inv_sqrt_scale_factor; // can be a vector of ones, as a placeholder
 
   // ESF 
@@ -103,17 +103,17 @@
   real<lower=0> slab_df;
 
   // CAR
-  real car_rho_lims[2];
+  array[2] real car_rho_lims;
   int<lower=0,upper=1> car;
 
   // SAR
   int nImW_w;
   int nW;
   vector[nImW_w] ImW_w;
-  int ImW_v[nImW_w];
-  int ImW_u[n + 1];
-  int Widx[nW];
+  array[nImW_w] int ImW_v;
+  array[n + 1] int ImW_u;
+  array[nW] int Widx;
   vector[n] eigenvalues_w;
-  real sar_rho_lims[2];
+  array[2] real sar_rho_lims;
   int<lower=0,upper=1> sar;
 

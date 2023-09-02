@@ -17,7 +17,7 @@
   is_binomial = family == 4;
   is_auto_gaussian = family == 5 || family == 6;  
   has_sigma  =  family < 3;
-  has_offset = sum(offset) != 0;
+  has_offset = sum(input_offset) != 0;
   dx_all = dx_obs + dx_me;
   has_me = dx_me > 0;
 

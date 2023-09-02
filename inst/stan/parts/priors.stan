@@ -42,9 +42,9 @@
 		      real sigma,
 		      real rho,
 		      vector ImW,
-		      int[] ImW_v,
-		      int[] ImW_u,
-		      int[] Widx,
+		      array[] int ImW_v,
+		      array[] int ImW_u,
+		      array[] int Widx,
 		      vector lambda,
 		      int n) {
   vector[n] z = y - mu;
@@ -80,7 +80,7 @@
 */
 real car_normal_lpdf(vector y, vector mu,
 		     real tau, real rho,
-		     vector ImC, int[] ImC_v, int[] ImC_u, int[] Cidx,
+		     vector ImC, array[] int ImC_v, array[] int ImC_u, array[] int Cidx,
 		     vector D_inv, real log_det_D_inv, vector lambda,
 		     int n) {
   vector[n] z = y - mu;
@@ -119,7 +119,7 @@ real car_normal_lpdf(vector y, vector mu,
  */
 real wcar_normal_lpdf(vector y, vector mu,
 		      real tau, real rho,
-		      vector A_w, int[] A_v, int[] A_u,
+		      vector A_w, array[] int A_v, array[] int A_u,
 		      vector D_inv, real log_det_D_inv,
 		      vector lambda,
 		      int n) {
@@ -143,8 +143,8 @@ real wcar_normal_lpdf(vector y, vector mu,
  */
 real auto_normal_lpdf(vector y, vector mu,
 		      real tau, real rho,
-		      vector Ax_w, int[] Ax_v, int[] Ax_u,
-		      int[] Cidx,
+		      vector Ax_w, array[] int Ax_v, array[] int Ax_u,
+		      array[] int Cidx,
 		      vector D_inv, real log_det_D_inv,
 		      vector lambda,
 		      int n, int WCAR) {
@@ -171,8 +171,8 @@ real auto_normal_lpdf(vector y, vector mu,
  * @return Log probability density of ICAR prior up to additive constant
  **/
 real icar_normal_lpdf(vector phi, real spatial_scale,
-              int[] node1, int[] node2, 
-              int k, int[] group_size, int[] group_idx,
+              array[] int node1, array[] int node2, 
+              int k, array[] int group_size, array[] int group_idx,
               int has_theta) {
   real lp;
   int pos=1;
@@ -218,7 +218,7 @@ vector make_phi(vector phi_tilde, real phi_scale,
 		real rho,
 		vector inv_sqrt_scale_factor,
 		int n, int k,
-		int[] group_size, int[] group_idx
+		array[] int group_size, array[] int group_idx
               ) {
   vector[n] phi;
   int pos=1;
@@ -244,7 +244,7 @@ vector make_phi(vector phi_tilde, real phi_scale,
  */
 vector convolve_bym(vector phi, vector theta,
               int n, int k,
-              int[] group_size, int[] group_idx
+              array[] int group_size, array[] int group_idx
               ) {
   vector[n] convolution;
   int pos=1;
@@ -279,7 +279,7 @@ vector convolve_bym(vector phi, vector theta,
 vector convolve_bym2(vector phi_tilde, vector theta_tilde,
           real spatial_scale,
 		      int n, int k,
-		      int[] group_size, int[] group_idx,
+		      array[] int group_size, array[] int group_idx,
 		      real rho, vector inv_sqrt_scale_factor
 		      ) {
   vector[n] convolution;
