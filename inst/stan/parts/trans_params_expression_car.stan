@@ -10,8 +10,8 @@
       }
     if (dx_all) log_lambda_mu += x_all * beta;
     if (is_auto_gaussian) {
-      fitted = offset + log_lambda_mu;
+      fitted = input_offset + log_lambda_mu;
     } else {
-      fitted = offset + log_lambda;
+      fitted = input_offset + log_lambda;
     }
   }
