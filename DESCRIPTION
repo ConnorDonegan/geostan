@@ -17,10 +17,10 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Biarch: true
 Depends: 
-    R (>= 3.4.0)
+    R (>= 4.0)
 Imports: 
     spdep (>= 1.1-8),
-    sf,
+    sf (>= 1.0-10),
     ggplot2 (>= 3.0.0),
     methods,
     graphics,

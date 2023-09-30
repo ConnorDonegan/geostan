@@ -232,7 +232,7 @@
 #' SSR <- f / sentencing$expected_sents
 #' log.SSR <- log( SSR, base = 2)
 #'
-#' ggplot( st_as_sf(sentencing) ) +
+#' ggplot(sentencing) +
 #'   geom_sf(aes(fill = log.SSR)) +
 #'   scale_fill_gradient2(
 #'    low = "navy",
