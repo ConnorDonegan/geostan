@@ -52,9 +52,11 @@ stan_esf(
 
 \item{slx}{Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally). When setting priors for \code{beta}, remember to include priors for any SLX terms.}
 
-\item{re}{To include a varying intercept (or "random effects") term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re} is a vector of parameters added to the linear predictor of the model, and:\preformatted{alpha_re ~ N(0, alpha_tau)
+\item{re}{To include a varying intercept (or "random effects") term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re} is a vector of parameters added to the linear predictor of the model, and:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{alpha_re ~ N(0, alpha_tau)
 alpha_tau ~ Student_t(d.f., location, scale).
-}}
+}\if{html}{\out{</div>}}}
 
 \item{data}{A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.}
 
@@ -209,18 +211,17 @@ SSR <-  f / sentencing$expected_sents
 log.SSR <- log( SSR, base = 2 )
 
 # map the log-SSRs
-st_as_sf(sentencing) \%>\%
- ggplot() +
- geom_sf(aes(fill = log.SSR)) +
- scale_fill_gradient2(
-   midpoint = 0,
-   name = NULL,
-   breaks = seq(-3, 3, by = 0.5)
+ ggplot(sentencing) +
+   geom_sf(aes(fill = log.SSR)) +
+   scale_fill_gradient2(
+    midpoint = 0,
+    name = NULL,
+    breaks = seq(-3, 3, by = 0.5)
+  ) +
+   labs(title = "Log-Standardized Sentencing Ratios",
+    subtitle = "log( Fitted/Expected ), base 2"
  ) +
- labs(title = "Log-Standardized Sentencing Ratios",
-      subtitle = "log( Fitted/Expected ), base 2"
- ) +
- theme_void()
+   theme_void()
 }
 }
 \author{

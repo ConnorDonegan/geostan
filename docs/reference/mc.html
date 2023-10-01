@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.2</span>
       </span>
     </div>
 
@@ -62,7 +62,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">mc</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span>, digits <span class="op">=</span> <span class="fl">3</span>, warn <span class="op">=</span> <span class="cn">TRUE</span>, na.rm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">mc</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span>, digits <span class="op">=</span> <span class="fl">3</span>, warn <span class="op">=</span> <span class="cn">TRUE</span>, na.rm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="source">
@@ -74,18 +74,29 @@
     <h2>Arguments</h2>
     <dl><dt>x</dt>
 <dd><p>Numeric vector of input values, length n.</p></dd>
+
+
 <dt>w</dt>
 <dd><p>An n x n spatial connectivity matrix. See <code><a href="shape2mat.html">shape2mat</a></code>.</p></dd>
+
+
 <dt>digits</dt>
 <dd><p>Number of digits to round results to.</p></dd>
+
+
 <dt>warn</dt>
 <dd><p>If <code>FALSE</code>, no warning will be printed to inform you when observations with zero neighbors or <code>NA</code> values have been dropped.</p></dd>
+
+
 <dt>na.rm</dt>
 <dd><p>If <code>na.rm = TRUE</code>, observations with <code>NA</code> values will be dropped from both <code>x</code> and <code>w</code>.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>The Moran coefficient, a numeric value.</p>
+    
+
+<p>The Moran coefficient, a numeric value.</p>
     </div>
     <div id="details">
     <h2>Details</h2>
@@ -101,12 +112,11 @@ where \(n\) is the number of observations and \(K\) is the sum of all values in 
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
-<span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"W"</span><span class="op">)</span>
-<span class="va">x</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">ICE</span>
-<span class="fu">mc</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span><span class="op">)</span>
-</code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span><span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"W"</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">ICE</span></span>
+<span><span class="fu">mc</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span><span class="op">)</span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -120,7 +130,7 @@ where \(n\) is the number of observations and \(K\) is the sum of all values in 
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

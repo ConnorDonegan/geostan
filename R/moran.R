@@ -100,8 +100,14 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
     check_sa_data(x, w)
     na_idx <- which(is.na(x))
     if (length(na_idx) > 0) {
-        if (na.rm == TRUE) {   
-            message(length(na_idx), " NA values found in x; they will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. You may want to use a binary connectivity matrix using style = 'B' in shape2mat.")
+        if (na.rm == TRUE) {
+            msg <- paste(length(na_idx),
+                         "NA values found in x will be dropped from data x and matrix w"
+                         )
+            if (!inherits(w, "ngCMatrix")) msg <- paste(msg,
+                                                        "\n If you are using a row-standardized matrix: dropping the NA values means that some rows in matrix w do not sum to 1; you may want to remove missing observations manually and then make row-standardized w, or use a binary matrix (see ?shape2mat)."
+                                                        )                        
+            message(msg)
             x <- x[-na_idx]
             w <- w[-na_idx, -na_idx]
         } else {

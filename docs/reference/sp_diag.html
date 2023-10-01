@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.2</span>
       </span>
     </div>
 
@@ -62,65 +62,88 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">sp_diag</span><span class="op">(</span><span class="va">y</span>, <span class="va">shape</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for geostan_fit</span>
-<span class="fu">sp_diag</span><span class="op">(</span>
-  <span class="va">y</span>,
-  <span class="va">shape</span>,
-  name <span class="op">=</span> <span class="st">"Residual"</span>,
-  plot <span class="op">=</span> <span class="cn">TRUE</span>,
-  mc_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"scatter"</span>, <span class="st">"hist"</span><span class="op">)</span>,
-  style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"W"</span>, <span class="st">"B"</span><span class="op">)</span>,
-  <span class="va">w</span>,
-  rates <span class="op">=</span> <span class="cn">TRUE</span>,
-  binwidth <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,
-  size <span class="op">=</span> <span class="fl">0.1</span>,
-  <span class="va">...</span>
-<span class="op">)</span>
-
-<span class="co"># S3 method for numeric</span>
-<span class="fu">sp_diag</span><span class="op">(</span>
-  <span class="va">y</span>,
-  <span class="va">shape</span>,
-  name <span class="op">=</span> <span class="st">"y"</span>,
-  plot <span class="op">=</span> <span class="cn">TRUE</span>,
-  mc_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"scatter"</span>, <span class="st">"hist"</span><span class="op">)</span>,
-  style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"W"</span>, <span class="st">"B"</span><span class="op">)</span>,
-  w <span class="op">=</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">shape</span>, <span class="fu"><a href="https://rdrr.io/r/base/match.arg.html" class="external-link">match.arg</a></span><span class="op">(</span><span class="va">style</span><span class="op">)</span><span class="op">)</span>,
-  binwidth <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,
-  <span class="va">...</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">sp_diag</span><span class="op">(</span><span class="va">y</span>, <span class="va">shape</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for geostan_fit</span></span>
+<span><span class="fu">sp_diag</span><span class="op">(</span></span>
+<span>  <span class="va">y</span>,</span>
+<span>  <span class="va">shape</span>,</span>
+<span>  name <span class="op">=</span> <span class="st">"Residual"</span>,</span>
+<span>  plot <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  mc_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"scatter"</span>, <span class="st">"hist"</span><span class="op">)</span>,</span>
+<span>  style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"W"</span>, <span class="st">"B"</span><span class="op">)</span>,</span>
+<span>  <span class="va">w</span>,</span>
+<span>  rates <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  binwidth <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  size <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for numeric</span></span>
+<span><span class="fu">sp_diag</span><span class="op">(</span></span>
+<span>  <span class="va">y</span>,</span>
+<span>  <span class="va">shape</span>,</span>
+<span>  name <span class="op">=</span> <span class="st">"y"</span>,</span>
+<span>  plot <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  mc_style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"scatter"</span>, <span class="st">"hist"</span><span class="op">)</span>,</span>
+<span>  style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"W"</span>, <span class="st">"B"</span><span class="op">)</span>,</span>
+<span>  w <span class="op">=</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">shape</span>, <span class="fu"><a href="https://rdrr.io/r/base/match.arg.html" class="external-link">match.arg</a></span><span class="op">(</span><span class="va">style</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  binwidth <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>y</dt>
 <dd><p>A numeric vector, or a fitted <code>geostan</code> model (class <code>geostan_fit</code>).</p></dd>
+
+
 <dt>shape</dt>
 <dd><p>An object of class <code>sf</code> or another spatial object coercible to <code>sf</code> with <code><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">sf::st_as_sf</a></code> such as <code>SpatialPolygonsDataFrame</code>.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Additional arguments passed to <code><a href="resid_geostan_fit.html">residuals.geostan_fit</a></code>. For binomial and Poisson models, this includes the option to view the outcome variable as a rate (the default) rather than a count; for <code><a href="stan_car.html">stan_car</a></code> models with auto-Gaussian likelihood (<code>fit$family$family = "auto_gaussian"), the residuals will be detrended by default, but this can be changed using </code>detrend = FALSE`.</p></dd>
+
+
 <dt>name</dt>
 <dd><p>The name to use on the plot labels; default to "y" or, if <code>y</code> is a <code>geostan_fit</code> object, to "Residuals".</p></dd>
+
+
 <dt>plot</dt>
 <dd><p>If <code>FALSE</code>, return a list of <code>gg</code> plots.</p></dd>
+
+
 <dt>mc_style</dt>
 <dd><p>Character string indicating how to plot the residual Moran coefficient (only used if <code>y</code> is a fitted model): if <code>mc = "scatter"</code>, then <code><a href="moran_plot.html">moran_plot</a></code> will be used with the marginal residuals; if <code>mc = "hist"</code>, then a histogram of Moran coefficient values will be returned, where each plotted value represents the degree of residual autocorrelation in a draw from the join posterior distribution of model parameters.</p></dd>
+
+
 <dt>style</dt>
 <dd><p>Style of connectivity matrix; if <code>w</code> is not provided, <code>style</code> is passed to <code><a href="shape2mat.html">shape2mat</a></code> and defaults to "W" for row-standardized.</p></dd>
+
+
 <dt>w</dt>
 <dd><p>An optional spatial connectivity matrix; if not provided and <code>y</code> is a numeric vector, one will be created using <code><a href="shape2mat.html">shape2mat</a></code>. If <code>w</code> is not provided and <code>y</code> is a fitted <code>geostan</code> model, then the spatial connectivity matrix that is stored with the fitted model (<code>y$C</code>) will be used.</p></dd>
+
+
 <dt>rates</dt>
 <dd><p>For Poisson and binomial models, convert the outcome variable to a rate before plotting fitted values and residuals. Defaults to <code>rates = TRUE</code>.</p></dd>
+
+
 <dt>binwidth</dt>
 <dd><p>A function with a single argument that will be passed to the <code>binwidth</code> argument in <code><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">geom_histogram</a></code>. The default is to set the width of bins to <code>0.5 * sd(x)</code>.</p></dd>
+
+
 <dt>size</dt>
 <dd><p>Point size and linewidth for point-interval plot of observed vs. fitted values (passed to <code><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">geom_pointrange</a></code>).</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A grid of spatial diagnostic plots. If <code>plot = TRUE</code>, the <code>ggplots</code> are drawn using <a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a>; otherwise, they are returned in a list. For the <code>geostan_fit</code> method, the underlying data for the Moran coefficient (as required for <code>mc_style = "hist"</code>) will also be returned if <code>plot = FALSE</code>.</p>
+    
+
+<p>A grid of spatial diagnostic plots. If <code>plot = TRUE</code>, the <code>ggplots</code> are drawn using <a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html" class="external-link">grid.arrange</a>; otherwise, they are returned in a list. For the <code>geostan_fit</code> method, the underlying data for the Moran coefficient (as required for <code>mc_style = "hist"</code>) will also be returned if <code>plot = FALSE</code>.</p>
     </div>
     <div id="details">
     <h2>Details</h2>
@@ -135,19 +158,18 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="co"># \donttest{</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
-<span class="fu">sp_diag</span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="va">georgia</span><span class="op">)</span>
-
-<span class="va">bin_fn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/stats/mad.html" class="external-link">mad</a></span><span class="op">(</span><span class="va">y</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>
-<span class="fu">sp_diag</span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="va">georgia</span>, binwidth <span class="op">=</span> <span class="va">bin_fn</span><span class="op">)</span>
-
-<span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span><span class="op">)</span>,
-                data <span class="op">=</span> <span class="va">georgia</span>,
-                chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">800</span><span class="op">)</span> <span class="co"># for speed only</span>
-<span class="fu">sp_diag</span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span>
-<span class="co"># }</span>
-</code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># \donttest{</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span><span class="fu">sp_diag</span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="va">georgia</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">bin_fn</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/stats/mad.html" class="external-link">mad</a></span><span class="op">(</span><span class="va">y</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu">sp_diag</span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="va">georgia</span>, binwidth <span class="op">=</span> <span class="va">bin_fn</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span><span class="op">)</span>,</span>
+<span>                data <span class="op">=</span> <span class="va">georgia</span>,</span>
+<span>                chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">800</span><span class="op">)</span> <span class="co"># for speed only</span></span>
+<span><span class="fu">sp_diag</span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span></span>
+<span><span class="co"># }</span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -161,7 +183,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

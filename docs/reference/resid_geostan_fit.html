@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.2</span>
       </span>
     </div>
 
@@ -62,76 +62,86 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="co"># S3 method for geostan_fit</span>
-<span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">residuals</a></span><span class="op">(</span><span class="va">object</span>, summary <span class="op">=</span> <span class="cn">TRUE</span>, rates <span class="op">=</span> <span class="cn">TRUE</span>, detrend <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for geostan_fit</span>
-<span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">object</span>, summary <span class="op">=</span> <span class="cn">TRUE</span>, rates <span class="op">=</span> <span class="cn">TRUE</span>, trend <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="fu">spatial</span><span class="op">(</span><span class="va">object</span>, summary <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span>
-
-<span class="co"># S3 method for geostan_fit</span>
-<span class="fu">spatial</span><span class="op">(</span><span class="va">object</span>, summary <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for geostan_fit</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">residuals</a></span><span class="op">(</span><span class="va">object</span>, summary <span class="op">=</span> <span class="cn">TRUE</span>, rates <span class="op">=</span> <span class="cn">TRUE</span>, detrend <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for geostan_fit</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">object</span>, summary <span class="op">=</span> <span class="cn">TRUE</span>, rates <span class="op">=</span> <span class="cn">TRUE</span>, trend <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">spatial</span><span class="op">(</span><span class="va">object</span>, summary <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for geostan_fit</span></span>
+<span><span class="fu">spatial</span><span class="op">(</span><span class="va">object</span>, summary <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>object</dt>
 <dd><p>A fitted model object of class <code>geostan_fit</code>.</p></dd>
+
+
 <dt>summary</dt>
 <dd><p>Logical; should the values be summarized by their mean, standard deviation, and quantiles (<code>probs = c(.025, .2, .5, .8, .975)</code>) for each observation? Otherwise, a matrix containing samples from the posterior distributions is returned.</p></dd>
+
+
 <dt>rates</dt>
 <dd><p>For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to <code>TRUE</code>; see the <code>Details</code> section for more information.</p></dd>
+
+
 <dt>detrend</dt>
 <dd><p>For auto-normal models (CAR and SAR models with Gaussian likelihood only); if <code>detrend = TRUE</code>, the implicit spatial trend will be removed from the residuals. The implicit spatial trend is <code>Trend = rho * C %*% (Y - Mu)</code> (see <a href="stan_car.html">stan_car</a> or <a href="stan_sar.html">stan_sar</a>). I.e., <code>resid = Y - (Mu + Trend)</code>.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Not used</p></dd>
+
+
 <dt>trend</dt>
 <dd><p>For auto-normal models (CAR and SAR models with Gaussian likelihood only); if <code>trend = TRUE</code>, the fitted values will include the implicit spatial trend term. The implicit spatial trend is <code>Trend = rho * C %*% (Y - Mu)</code> (see <a href="stan_car.html">stan_car</a> or <a href="stan_sar.html">stan_sar</a>). I.e., if <code>trend = TRUE</code>, <code>fitted = Mu + Trend</code>.</p></dd>
+
 </dl></div>
     <div id="details">
     <h2>Details</h2>
-    <p>When <code>rates = FALSE</code> and the model is Poisson or Binomial, the fitted values returned by the <code>fitted</code> method are the expected value of the response variable. The <code>rates</code> argument is used to translate count outcomes to rates by dividing by the appropriate denominator. The behavior of the <code>rates</code> argument depends on the model specification. Consider a Poisson model of disease incidence, such as the following intercept-only case:</p><div class="sourceCode"><pre><code><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">E</span><span class="op">)</span><span class="op">)</span>,
-               data <span class="op">=</span> <span class="va">data</span>,
-               family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-
+    <p>When <code>rates = FALSE</code> and the model is Poisson or Binomial, the fitted values returned by the <code>fitted</code> method are the expected value of the response variable. The <code>rates</code> argument is used to translate count outcomes to rates by dividing by the appropriate denominator. The behavior of the <code>rates</code> argument depends on the model specification. Consider a Poisson model of disease incidence, such as the following intercept-only case:</p>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>fit &lt;-<span class="st"> </span><span class="kw">stan_glm</span>(y <span class="op">~</span><span class="st"> </span><span class="kw">offset</span>(<span class="kw">log</span>(E)),</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>               <span class="dt">data =</span> data,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>               <span class="dt">family =</span> <span class="kw">poisson</span>())</span></code></pre><p></p></div>
 <p>If the fitted values are extracted using <code>rates = FALSE</code>, then <code>fitted(fit)</code> will return the expectation of \(y\). If <code>rates = TRUE</code> (the default), then <code>fitted(fit)</code> will return the expected value of the rate \(\frac{y}{E}\).</p>
-<p>If a binomial model is used instead of the Poisson, then using <code>rates = TRUE</code> will return the expectation of \(\frac{y}{N}\) where \(N\) is the sum of the number of 'successes' and 'failures', as in:</p><div class="sourceCode"><pre><code><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">successes</span>, <span class="va">failures</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,
-               data <span class="op">=</span> <span class="va">data</span>,
-               family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-
+<p>If a binomial model is used instead of the Poisson, then using <code>rates = TRUE</code> will return the expectation of \(\frac{y}{N}\) where \(N\) is the sum of the number of 'successes' and 'failures', as in:</p>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>fit &lt;-<span class="st"> </span><span class="kw">stan_glm</span>(<span class="kw">cbind</span>(successes, failures) <span class="op">~</span><span class="st"> </span><span class="dv">1</span>,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>               <span class="dt">data =</span> data,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>               <span class="dt">family =</span> <span class="kw">binomial</span>())</span></code></pre><p></p></div>
     </div>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="co"># \donttest{</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
-<span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span>
-
-<span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_esf.html">stan_esf</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span>,
-                C <span class="op">=</span> <span class="va">A</span>,
-                data <span class="op">=</span> <span class="va">georgia</span>,
-                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,
-                chains <span class="op">=</span> <span class="fl">1</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span>
-
-
-<span class="co"># Residuals</span>
-<span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-<span class="fu"><a href="moran_plot.html">moran_plot</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">mean</span>, <span class="va">A</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span>
-
-<span class="co"># Fitted values</span>
-<span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-
-<span class="co"># Fitted values, unstandardized</span>
-<span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span>, rates <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span>
-
-<span class="co"># Spatial trend</span>
-<span class="va">esf</span> <span class="op">&lt;-</span> <span class="fu">spatial</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">esf</span><span class="op">)</span>
-<span class="co"># }</span>
-</code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># \donttest{</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_esf.html">stan_esf</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                C <span class="op">=</span> <span class="va">A</span>,</span>
+<span>                data <span class="op">=</span> <span class="va">georgia</span>,</span>
+<span>                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                chains <span class="op">=</span> <span class="fl">1</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span></span>
+<span></span>
+<span></span>
+<span><span class="co"># Residuals</span></span>
+<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="moran_plot.html">moran_plot</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">mean</span>, <span class="va">A</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Fitted values</span></span>
+<span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Fitted values, unstandardized</span></span>
+<span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span>, rates <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Spatial trend</span></span>
+<span><span class="va">esf</span> <span class="op">&lt;-</span> <span class="fu">spatial</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">esf</span><span class="op">)</span></span>
+<span><span class="co"># }</span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -145,7 +155,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

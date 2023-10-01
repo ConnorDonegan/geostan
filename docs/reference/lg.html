@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.2</span>
       </span>
     </div>
 
@@ -62,7 +62,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">lg</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span>, digits <span class="op">=</span> <span class="fl">3</span>, scale <span class="op">=</span> <span class="cn">TRUE</span>, na.rm <span class="op">=</span> <span class="cn">FALSE</span>, warn <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">lg</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span>, digits <span class="op">=</span> <span class="fl">3</span>, scale <span class="op">=</span> <span class="cn">TRUE</span>, na.rm <span class="op">=</span> <span class="cn">FALSE</span>, warn <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="source">
@@ -74,20 +74,33 @@
     <h2>Arguments</h2>
     <dl><dt>x</dt>
 <dd><p>Numeric vector of length <code>n</code>. By default, this will be standardized using the <code>scale</code> function.</p></dd>
+
+
 <dt>w</dt>
 <dd><p>An <code>n x n</code> spatial connectivity matrix. See <a href="shape2mat.html">shape2mat</a>.</p></dd>
+
+
 <dt>digits</dt>
 <dd><p>Number of digits to round results to.</p></dd>
+
+
 <dt>scale</dt>
 <dd><p>If <code>TRUE</code>, then <code>x</code> will automatically be standardized using <code>scale(x, center = TRUE, scale = TRUE)</code>.</p></dd>
+
+
 <dt>na.rm</dt>
 <dd><p>If <code>na.rm = TRUE</code>, observations with <code>NA</code> values will be dropped from both <code>x</code> and <code>w</code>.</p></dd>
+
+
 <dt>warn</dt>
 <dd><p>If <code>FALSE</code>, no warning will be printed to inform you when observations with <code>NA</code> values have been dropped, or if any observations without neighbors have been found.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>The function returns a vector of numeric values, each value being a local indicator of spatial association (or dissimilarity), ordered as <code>x</code>.</p>
+    
+
+<p>The function returns a vector of numeric values, each value being a local indicator of spatial association (or dissimilarity), ordered as <code>x</code>.</p>
     </div>
     <div id="details">
     <h2>Details</h2>
@@ -98,19 +111,18 @@ Hence, local Geary values will be largest for those observations that are most u
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
-<span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span><span class="op">)</span>
-<span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"W"</span><span class="op">)</span>
-<span class="va">lisd</span> <span class="op">&lt;-</span> <span class="fu">lg</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">lisd</span><span class="op">)</span>
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">lisd</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient</a></span><span class="op">(</span>high <span class="op">=</span> <span class="st">"navy"</span>,  
-                   low <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span> 
- <span class="co">## or try: scale_fill_viridis() </span>
-
-</code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span><span class="op">)</span></span>
+<span><span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"W"</span><span class="op">)</span></span>
+<span><span class="va">lisd</span> <span class="op">&lt;-</span> <span class="fu">lg</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">lisd</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">lisd</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient</a></span><span class="op">(</span>high <span class="op">=</span> <span class="st">"navy"</span>,  </span>
+<span>                   low <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span> </span>
+<span> <span class="co">## or try: scale_fill_viridis() </span></span>
+<span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -124,7 +136,7 @@ Hence, local Geary values will be largest for those observations that are most u
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

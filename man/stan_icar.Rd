@@ -51,9 +51,11 @@ stan_icar(
 
 \item{slx}{Formula to specify any spatially-lagged covariates. As in, \code{~ x1 + x2} (the intercept term will be removed internally). When setting priors for \code{beta}, remember to include priors for any SLX terms.}
 
-\item{re}{To include a varying intercept (or "random effects") term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re} is a vector of parameters added to the linear predictor of the model, and:\preformatted{alpha_re ~ N(0, alpha_tau)
+\item{re}{To include a varying intercept (or "random effects") term, \code{alpha_re}, specify the grouping variable here using formula syntax, as in \code{~ ID}. Then, \code{alpha_re} is a vector of parameters added to the linear predictor of the model, and:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{alpha_re ~ N(0, alpha_tau)
 alpha_tau ~ Student_t(d.f., location, scale).
-}
+}\if{html}{\out{</div>}}
 
 Before using this term, read the \code{Details} section and the \code{type} argument. Specifically, if you use \code{type = bym}, then an observational-level \code{re} term is already included in the model. (Similar for \code{type = bym2}.)}
 
@@ -187,7 +189,9 @@ Riebler et al. (2016) introduce a variation on the BYM model (\code{type = "bym2
 
 The terms \eqn{\tilde{\phi}}, \eqn{\tilde{\theta}} are standard normal deviates, \eqn{\rho} is restricted to values between zero and one, and \eqn{S} is the 'scale_factor' (a constant term provided by the user). By default, the 'scale_factor' is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure of the connectivity matrix \eqn{C}. This implies that the same prior distribution assigned to \eqn{\tau_s} will differ in its implications if \eqn{C} is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to \eqn{\tau_s}.
 
-Borrowing \code{R} code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following \code{R} code can be used to create the 'scale_factor' \eqn{S} for the BYM2 model (note, this requires the INLA R package), given a spatial adjacency matrix, \eqn{C}:\preformatted{## create a list of data for stan_icar
+Borrowing \code{R} code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following \code{R} code can be used to create the 'scale_factor' \eqn{S} for the BYM2 model (note, this requires the INLA R package), given a spatial adjacency matrix, \eqn{C}:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{## create a list of data for stan_icar
 icar.data <- geostan::prep_icar_data(C)
 ## calculate scale_factor for each of k connected group of nodes
 k <- icar.data$k
@@ -201,11 +205,13 @@ for (j in 1:k) \{
   Cg <- C[g.idx, g.idx] 
   scale_factor[j] <- scale_c(Cg) 
 \}
-}
+}\if{html}{\out{</div>}}
 
 This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan and Morris 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to \eqn{\phi} automatically inside the Stan model. Therefore, the user never needs to make any adjustments for this term. (To avoid complications from using a disconnected graph structure, you can apply a proper CAR model instead of the ICAR: \code{\link[geostan]{stan_car}}).
 
-Note, the code above requires the \code{scale_c} function; it has package dependencies that are not included in \code{geostan}. To use \code{scale_c}, you have to load the following \code{R} function:\preformatted{#' compute scaling factor for adjacency matrix, accounting for differences in spatial connectivity 
+Note, the code above requires the \code{scale_c} function; it has package dependencies that are not included in \code{geostan}. To use \code{scale_c}, you have to load the following \code{R} function:
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{#' compute scaling factor for adjacency matrix, accounting for differences in spatial connectivity 
 #'
 #' @param C connectivity matrix
 #'
@@ -231,7 +237,7 @@ scale_c <- function(C) \{
  scaling_factor <- geometric_mean(Matrix::diag(Q_inv)) 
  return(scaling_factor) 
 \}
-}
+}\if{html}{\out{</div>}}
 }
 
 \subsection{Additional functionality}{
@@ -268,7 +274,7 @@ f <- fitted(fit.bym, rates = FALSE)$mean
 SSR <- f / sentencing$expected_sents
 log.SSR <- log( SSR, base = 2)
 
-ggplot( st_as_sf(sentencing) ) +
+ggplot(sentencing) +
   geom_sf(aes(fill = log.SSR)) +
   scale_fill_gradient2(
    low = "navy",

@@ -5,7 +5,7 @@
 \alias{sentencing}
 \title{Florida state prison sentencing counts by county, 1905-1910}
 \format{
-A spatial polygons data frame with the following attributes:
+Simple features (\code{sf})/\code{data.frame} with the following attributes:
 \describe{
 \item{name}{County name}
 \item{wpop}{White population total for years 1905-1910}
@@ -27,11 +27,11 @@ Journal of Open Source Software 3, no. 23 (2018): 314, \doi{10.21105/joss.00314}
 sentencing
 }
 \description{
-A spatial polygons data frame of historical 1910 county boundaries of Florida with aggregated state prison sentencing counts and census data.
+Simple features (\code{sf}) with historic (1910) county boundaries of Florida with aggregated state prison sentencing counts and census data.
 Sentencing and population counts are aggregates over the period 1905-1910, where populations were interpolated linearly between decennial censuses of 1900 and 1910.
 }
 \examples{
 data(sentencing)
-head(sentencing@data)
+print(sentencing)
 }
 \keyword{datasets}

@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.2</span>
       </span>
     </div>
 
@@ -62,29 +62,29 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">stan_sar</span><span class="op">(</span>
-  <span class="va">formula</span>,
-  <span class="va">slx</span>,
-  <span class="va">re</span>,
-  <span class="va">data</span>,
-  <span class="va">C</span>,
-  sar_parts <span class="op">=</span> <span class="fu"><a href="prep_sar_data.html">prep_sar_data</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span>,
-  family <span class="op">=</span> <span class="fu"><a href="auto_gaussian.html">auto_gaussian</a></span><span class="op">(</span><span class="op">)</span>,
-  prior <span class="op">=</span> <span class="cn">NULL</span>,
-  ME <span class="op">=</span> <span class="cn">NULL</span>,
-  centerx <span class="op">=</span> <span class="cn">FALSE</span>,
-  prior_only <span class="op">=</span> <span class="cn">FALSE</span>,
-  <span class="va">censor_point</span>,
-  chains <span class="op">=</span> <span class="fl">4</span>,
-  iter <span class="op">=</span> <span class="fl">2000</span>,
-  refresh <span class="op">=</span> <span class="fl">500</span>,
-  keep_all <span class="op">=</span> <span class="cn">FALSE</span>,
-  pars <span class="op">=</span> <span class="cn">NULL</span>,
-  slim <span class="op">=</span> <span class="cn">FALSE</span>,
-  drop <span class="op">=</span> <span class="cn">NULL</span>,
-  control <span class="op">=</span> <span class="cn">NULL</span>,
-  <span class="va">...</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">stan_sar</span><span class="op">(</span></span>
+<span>  <span class="va">formula</span>,</span>
+<span>  <span class="va">slx</span>,</span>
+<span>  <span class="va">re</span>,</span>
+<span>  <span class="va">data</span>,</span>
+<span>  <span class="va">C</span>,</span>
+<span>  sar_parts <span class="op">=</span> <span class="fu"><a href="prep_sar_data.html">prep_sar_data</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span>,</span>
+<span>  family <span class="op">=</span> <span class="fu"><a href="auto_gaussian.html">auto_gaussian</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  prior <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ME <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  centerx <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  prior_only <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  <span class="va">censor_point</span>,</span>
+<span>  chains <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  iter <span class="op">=</span> <span class="fl">2000</span>,</span>
+<span>  refresh <span class="op">=</span> <span class="fl">500</span>,</span>
+<span>  keep_all <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  pars <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  slim <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  drop <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  control <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="source">
@@ -101,22 +101,35 @@
     <h2>Arguments</h2>
     <dl><dt>formula</dt>
 <dd><p>A model formula, following the R <code><a href="https://rdrr.io/r/stats/formula.html" class="external-link">formula</a></code> syntax. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in <code>cbind(successes, failures) ~ x</code>.</p></dd>
+
+
 <dt>slx</dt>
 <dd><p>Formula to specify any spatially-lagged covariates. As in, <code>~ x1 + x2</code> (the intercept term will be removed internally). When setting priors for <code>beta</code>, remember to include priors for any SLX terms.</p></dd>
-<dt>re</dt>
-<dd><p>To include a varying intercept (or "random effects") term, <code>alpha_re</code>, specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re</code> is a vector of parameters added to the linear predictor of the model, and:</p><div class="sourceCode"><pre><code>alpha_re ~ N(0, alpha_tau)
-alpha_tau ~ Student_t(d.f., location, scale).
-</code></pre></div>
 
+
+<dt>re</dt>
+<dd><p>To include a varying intercept (or "random effects") term, <code>alpha_re</code>, specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re</code> is a vector of parameters added to the linear predictor of the model, and:</p>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>alpha_re <span class="op">~</span><span class="st"> </span><span class="kw">N</span>(<span class="dv">0</span>, alpha_tau)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>alpha_tau <span class="op">~</span><span class="st"> </span><span class="kw">Student_t</span>(d.f., location, scale).</span></code></pre><p></p></div>
 <p>With the SAR model, any <code>alpha_re</code> term should be at a <em>different</em> level or scale than the observations; that is, at a different scale than the autocorrelation structure of the SAR model itself.</p></dd>
+
+
 <dt>data</dt>
 <dd><p>A <code>data.frame</code> or an object coercible to a data frame by <code>as.data.frame</code> containing the model data.</p></dd>
+
+
 <dt>C</dt>
 <dd><p>Spatial weights matrix (conventionally referred to as \(W\) in the SAR model). Typically, this will be created using <code>geostan::shape2mat(shape, style = "W")</code>. This will be passed internally to <code><a href="prep_sar_data.html">prep_sar_data</a></code>, and will also be used to calculate residual spatial autocorrelation as well as any user specified <code>slx</code> terms; it will automatically be row-standardized before calculating <code>slx</code> terms. See <code><a href="shape2mat.html">shape2mat</a></code>.</p></dd>
+
+
 <dt>sar_parts</dt>
 <dd><p>Optional. If not provided, then <code><a href="prep_sar_data.html">prep_sar_data</a></code> will be used automatically to create <code>sar_parts</code> using the user-provided spatial weights matrix.</p></dd>
+
+
 <dt>family</dt>
 <dd><p>The likelihood function for the outcome variable. Current options are <code><a href="auto_gaussian.html">auto_gaussian()</a></code>, <code>binomial(link = "logit")</code>, and <code>poisson(link = "log")</code>; if <code>family = gaussian()</code> is provided, it will automatically be converted to <code><a href="auto_gaussian.html">auto_gaussian()</a></code>.</p></dd>
+
+
 <dt>prior</dt>
 <dd><p>A named list of parameters for prior distributions (see <code><a href="priors.html">priors</a></code>):</p><dl><dt>intercept</dt>
 <dd><p>The intercept is assigned a Gaussian prior distribution (see <code><a href="priors.html">normal</a></code></p></dd>
@@ -140,26 +153,48 @@ alpha_tau ~ Student_t(d.f., location, scale).
 
 
 </dl></dd>
+
+
 <dt>ME</dt>
 <dd><p>To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a list of data as constructed by the <code><a href="prep_me_data.html">prep_me_data</a></code> function.</p></dd>
+
+
 <dt>centerx</dt>
 <dd><p>To center predictors on their mean values, use <code>centerx = TRUE</code>. If the ME argument is used, the modeled covariate (i.e., latent variable), rather than the raw observations, will be centered. When using the ME argument, this is the recommended method for centering the covariates.</p></dd>
+
+
 <dt>prior_only</dt>
 <dd><p>Logical value; if <code>TRUE</code>, draw samples only from the prior distributions of parameters.</p></dd>
+
+
 <dt>censor_point</dt>
 <dd><p>Integer value indicating the maximum censored value; this argument is for modeling censored (suppressed) outcome data, typically disease case counts or deaths.</p></dd>
+
+
 <dt>chains</dt>
 <dd><p>Number of MCMC chains to use.</p></dd>
+
+
 <dt>iter</dt>
 <dd><p>Number of samples per chain.</p></dd>
+
+
 <dt>refresh</dt>
 <dd><p>Stan will print the progress of the sampler every <code>refresh</code> number of samples. Set <code>refresh=0</code> to silence this.</p></dd>
+
+
 <dt>keep_all</dt>
 <dd><p>If <code>keep_all = TRUE</code> then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors and the <code>bridgesampling</code> package.</p></dd>
+
+
 <dt>pars</dt>
 <dd><p>Optional; specify any additional parameters you'd like stored from the Stan model.</p></dd>
+
+
 <dt>slim</dt>
 <dd><p>If <code>slim = TRUE</code>, then the Stan model will not collect the most memory-intensive parameters (including n-length vectors of fitted values, log-likelihoods, and ME-modeled covariate values). This will disable many convenience functions that are otherwise available for fitted <code>geostan</code> models, such as the extraction of residuals, fitted values, and spatial trends, WAIC, and spatial diagnostics, and ME diagnostics; many quantities of interest, such as fitted values and spatial trends, can still be calculated manually using given parameter estimates. The "slim" option is designed for data-intensive routines, such as regression with raster data, Monte Carlo studies, and measurement error models. For more control over which parameters are kept or dropped, use the <code>drop</code> argument instead of <code>slim</code>.</p></dd>
+
+
 <dt>drop</dt>
 <dd><p>Provide a vector of character strings to specify the names of any parameters that you do not want MCMC samples for. Dropping parameters in this way can improve sampling speed and reduce memory usage. The following parameter vectors can potentially be dropped from SAR models:</p><dl><dt>fitted</dt>
 <dd><p>The N-length vector of fitted values</p></dd>
@@ -175,14 +210,21 @@ alpha_tau ~ Student_t(d.f., location, scale).
 
 
 </dl><p>Using <code>drop = c('fitted', 'log_lik', 'alpha_re', 'x_true')</code> is equivalent to <code>slim = TRUE</code>. Note that if <code>slim = TRUE</code>, then <code>drop</code> will be ignored---so only use one or the other.</p></dd>
+
+
 <dt>control</dt>
 <dd><p>A named list of parameters to control the sampler's behavior. See <code><a href="https://mc-stan.org/rstan/reference/stan.html" class="external-link">stan</a></code> for details.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Other arguments passed to <code><a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html" class="external-link">sampling</a></code>. For multi-core processing, you can use <code>cores = parallel::detectCores()</code>, or run <code>options(mc.cores = parallel::detectCores())</code> first.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl><dt>summary</dt>
+    
+
+<p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl><dt>summary</dt>
 <dd><p>Summaries of the main parameters of interest; a data frame.</p></dd>
 
 <dt>diagnostic</dt>
@@ -309,35 +351,34 @@ $$</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="co"># model mortality risk</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
-<span class="va">W</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"W"</span><span class="op">)</span>
-
-<span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">stan_sar</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,
-                C <span class="op">=</span> <span class="va">W</span>,
-                data <span class="op">=</span> <span class="va">georgia</span>,
-                chains <span class="op">=</span> <span class="fl">1</span>, <span class="co"># for ex. speed only</span>
-                iter <span class="op">=</span> <span class="fl">700</span> 
-                <span class="op">)</span>
-
-<span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_rhat</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span>
-<span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_mcse</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-<span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-<span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span>
-
-<span class="co"># \donttest{</span>
- <span class="co"># a more appropriate model for count data:</span>
-<span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu">stan_sar</span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span>,
-                C <span class="op">=</span> <span class="va">W</span>,
-                data <span class="op">=</span> <span class="va">georgia</span>,
-                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,
-                chains <span class="op">=</span> <span class="fl">1</span>, <span class="co"># for ex. speed only</span>
-                iter <span class="op">=</span> <span class="fl">700</span> 
-                 <span class="op">)</span>
-<span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit2</span>, <span class="va">georgia</span><span class="op">)</span>
-<span class="co"># }</span>
-</code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># model mortality risk</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span><span class="va">W</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"W"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">stan_sar</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>,</span>
+<span>                C <span class="op">=</span> <span class="va">W</span>,</span>
+<span>                data <span class="op">=</span> <span class="va">georgia</span>,</span>
+<span>                chains <span class="op">=</span> <span class="fl">1</span>, <span class="co"># for ex. speed only</span></span>
+<span>                iter <span class="op">=</span> <span class="fl">700</span> </span>
+<span>                <span class="op">)</span></span>
+<span></span>
+<span><span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_rhat</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span></span>
+<span><span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_mcse</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># \donttest{</span></span>
+<span> <span class="co"># a more appropriate model for count data:</span></span>
+<span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu">stan_sar</span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                C <span class="op">=</span> <span class="va">W</span>,</span>
+<span>                data <span class="op">=</span> <span class="va">georgia</span>,</span>
+<span>                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                chains <span class="op">=</span> <span class="fl">1</span>, <span class="co"># for ex. speed only</span></span>
+<span>                iter <span class="op">=</span> <span class="fl">700</span> </span>
+<span>                 <span class="op">)</span></span>
+<span><span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit2</span>, <span class="va">georgia</span><span class="op">)</span></span>
+<span><span class="co"># }</span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -351,7 +392,7 @@ $$</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

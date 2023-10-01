@@ -26,6 +26,7 @@ Start by loading some necessary R packages.
 ```{r setup, message = FALSE, warning = FALSE, eval = TRUE}
 library(geostan)
 library(sf)
+set.seed(1127)
 ```
 
 We will create a small raster data layer for the purpose of illustration. 
@@ -69,15 +70,14 @@ The following code will fit a SAR model to our `grid` data, and is suitable for 
 
 ```{r eval = TRUE}
 sar_list <- prep_sar_data2(row = row, col = col)
-fit <- stan_sar(
-                y ~ z, 
-                data = grid,
-		centerx = TRUE,
-		sar_parts = sar_list,
-		iter = 500,
-		chains = 4,
-		slim = TRUE #,
-		# cores = 4, # for multi-core processing
+fit <- stan_sar(y ~ z, 
+      data = grid,
+		  centerx = TRUE,
+		  sar_parts = sar_list,
+		  iter = 500,
+		  chains = 4,
+		  slim = TRUE #,
+		  # cores = 4, # for multi-core processing
 		)
 print(fit)		
 ```

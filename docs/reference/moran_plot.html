@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.2</span>
       </span>
     </div>
 
@@ -62,18 +62,18 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">moran_plot</span><span class="op">(</span>
-  <span class="va">x</span>,
-  <span class="va">w</span>,
-  xlab <span class="op">=</span> <span class="st">"x (centered)"</span>,
-  ylab <span class="op">=</span> <span class="st">"Spatial Lag"</span>,
-  pch <span class="op">=</span> <span class="fl">20</span>,
-  col <span class="op">=</span> <span class="st">"darkred"</span>,
-  size <span class="op">=</span> <span class="fl">2</span>,
-  alpha <span class="op">=</span> <span class="fl">1</span>,
-  lwd <span class="op">=</span> <span class="fl">0.5</span>,
-  na.rm <span class="op">=</span> <span class="cn">FALSE</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">moran_plot</span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  <span class="va">w</span>,</span>
+<span>  xlab <span class="op">=</span> <span class="st">"x (centered)"</span>,</span>
+<span>  ylab <span class="op">=</span> <span class="st">"Spatial Lag"</span>,</span>
+<span>  pch <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  col <span class="op">=</span> <span class="st">"darkred"</span>,</span>
+<span>  size <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  lwd <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>  na.rm <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="source">
@@ -84,28 +84,49 @@
     <h2>Arguments</h2>
     <dl><dt>x</dt>
 <dd><p>A numeric vector of length n.</p></dd>
+
+
 <dt>w</dt>
 <dd><p>An n x n spatial connectivity matrix.</p></dd>
+
+
 <dt>xlab</dt>
 <dd><p>Label for the x-axis.</p></dd>
+
+
 <dt>ylab</dt>
 <dd><p>Label for the y-axis.</p></dd>
+
+
 <dt>pch</dt>
 <dd><p>Symbol type.</p></dd>
+
+
 <dt>col</dt>
 <dd><p>Symbol color.</p></dd>
+
+
 <dt>size</dt>
 <dd><p>Symbol size.</p></dd>
+
+
 <dt>alpha</dt>
 <dd><p>Symbol transparency.</p></dd>
+
+
 <dt>lwd</dt>
 <dd><p>Width of the regression line.</p></dd>
+
+
 <dt>na.rm</dt>
 <dd><p>If <code>na.rm = TRUE</code>, any observations of <code>x</code> with <code>NA</code> values will be dropped from <code>x</code> and from <code>w</code>.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>Returns a <code>gg</code> plot, a scatter plot with <code>x</code> on the horizontal and its spatially lagged values on the vertical axis (i.e. a Moran scatter plot).</p>
+    
+
+<p>Returns a <code>gg</code> plot, a scatter plot with <code>x</code> on the horizontal and its spatially lagged values on the vertical axis (i.e. a Moran scatter plot).</p>
     </div>
     <div id="details">
     <h2>Details</h2>
@@ -119,11 +140,10 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
-<span class="va">x</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">income</span>
-<span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"W"</span><span class="op">)</span>
-<span class="fu">moran_plot</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span><span class="op">)</span>
-</code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">income</span></span>
+<span><span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"W"</span><span class="op">)</span></span>
+<span><span class="fu">moran_plot</span><span class="op">(</span><span class="va">x</span>, <span class="va">w</span><span class="op">)</span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -137,7 +157,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

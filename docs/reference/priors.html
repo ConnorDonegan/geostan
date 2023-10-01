@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.2</span>
       </span>
     </div>
 
@@ -62,15 +62,15 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">uniform</span><span class="op">(</span><span class="va">lower</span>, <span class="va">upper</span>, variable <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
-
-<span class="fu">normal</span><span class="op">(</span>location <span class="op">=</span> <span class="fl">0</span>, <span class="va">scale</span>, variable <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
-
-<span class="fu">student_t</span><span class="op">(</span>df <span class="op">=</span> <span class="fl">10</span>, location <span class="op">=</span> <span class="fl">0</span>, <span class="va">scale</span>, variable <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
-
-<span class="fu">gamma</span><span class="op">(</span><span class="va">alpha</span>, <span class="va">beta</span>, variable <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>
-
-<span class="fu">hs</span><span class="op">(</span>global_scale <span class="op">=</span> <span class="fl">1</span>, slab_df <span class="op">=</span> <span class="fl">10</span>, <span class="va">slab_scale</span>, variable <span class="op">=</span> <span class="st">"beta_ev"</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">uniform</span><span class="op">(</span><span class="va">lower</span>, <span class="va">upper</span>, variable <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">normal</span><span class="op">(</span>location <span class="op">=</span> <span class="fl">0</span>, <span class="va">scale</span>, variable <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">student_t</span><span class="op">(</span>df <span class="op">=</span> <span class="fl">10</span>, location <span class="op">=</span> <span class="fl">0</span>, <span class="va">scale</span>, variable <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">gamma</span><span class="op">(</span><span class="va">alpha</span>, <span class="va">beta</span>, variable <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">hs</span><span class="op">(</span>global_scale <span class="op">=</span> <span class="fl">1</span>, slab_df <span class="op">=</span> <span class="fl">10</span>, <span class="va">slab_scale</span>, variable <span class="op">=</span> <span class="st">"beta_ev"</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="source">
@@ -85,33 +85,59 @@
     <h2>Arguments</h2>
     <dl><dt>lower, upper</dt>
 <dd><p>lower and upper bounds of the distribution</p></dd>
+
+
 <dt>variable</dt>
 <dd><p>A reserved slot for the variable name; if provided by the user, this may be ignored by <strong>geostan</strong>.</p></dd>
+
+
 <dt>location</dt>
 <dd><p>Location parameter(s), numeric value(s)</p></dd>
+
+
 <dt>scale</dt>
 <dd><p>Scale parameter(s), positive numeric value(s)</p></dd>
+
+
 <dt>df</dt>
 <dd><p>Degrees of freedom, positive numeric value(s)</p></dd>
+
+
 <dt>alpha</dt>
 <dd><p>shape parameter, positive numeric value(s)</p></dd>
+
+
 <dt>beta</dt>
 <dd><p>inverse scale parameter, positive numeric value(s)</p></dd>
+
+
 <dt>global_scale</dt>
 <dd><p>Control the (prior) degree of sparsity in the horseshoe model (0 &lt; global_scale &lt; 1).</p></dd>
+
+
 <dt>slab_df</dt>
 <dd><p>Degrees of freedom for the Student's t model for large coefficients in the horseshoe model (slab_df &gt; 0).</p></dd>
+
+
 <dt>slab_scale</dt>
 <dd><p>Scale parameter for the Student's t model for large coefficients in the horseshoe model (slab_scale &gt; 0).</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>An object of class <code>prior</code> which will be used internally by <strong>geostan</strong> to set parameters of prior distributions.</p><div class="section">
+    
+
+<p>An object of class <code>prior</code> which will be used internally by <strong>geostan</strong> to set parameters of prior distributions.</p>
+
+
+<div class="section">
 <h3 id="student-s-t">Student's t<a class="anchor" aria-label="anchor" href="#student-s-t"></a></h3>
 
 
 <p>Return value for <code>student_t</code> depends on the input; if no arguments are provided (specifically, if the scale parameter is missing), this will return an object of class 'family'; if at least the scale parameter is provided, <code>student_t</code> will return an object of class <code>prior</code> containing parameter values for the Student's t distribution.</p>
 </div>
+
+
     </div>
     <div id="details">
     <h2>Details</h2>
@@ -128,16 +154,16 @@
 <h3 id="the-horseshoe-prior">The horseshoe prior<a class="anchor" aria-label="anchor" href="#the-horseshoe-prior"></a></h3>
 
 
-<p>The horseshoe prior is used by <code><a href="stan_esf.html">stan_esf</a></code> as a prior for the eigenvector coefficients. The horseshoe model encodes a prior state of knowledge that effectively states, 'I believe a small number of these variables may be important, but I don't know which of them is important.' The horseshoe is a normal distribution with unknown scale (Polson and Scott 2010):</p><div class="sourceCode"><pre><code><span class="va">beta_j</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">Normal</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">tau</span><span class="op">^</span><span class="fl">2</span> <span class="op">*</span> <span class="va">lambda_j</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span></code></pre></div>
-
+<p>The horseshoe prior is used by <code><a href="stan_esf.html">stan_esf</a></code> as a prior for the eigenvector coefficients. The horseshoe model encodes a prior state of knowledge that effectively states, 'I believe a small number of these variables may be important, but I don't know which of them is important.' The horseshoe is a normal distribution with unknown scale (Polson and Scott 2010):</p>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>       beta_j <span class="op">~</span><span class="st"> </span><span class="kw">Normal</span>(<span class="dv">0</span>, tau<span class="op">^</span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span>lambda_j<span class="op">^</span><span class="dv">2</span>)</span></code></pre><p></p></div>
 <p>The scale parameter for this prior is the product of two terms: <code>lambda_j^2</code> is specific to the variable <code>beta_j</code>, and <code>tau^2</code> is known as the global shrinkage parameter.</p>
-<p>The global shrinkage parameter is assigned a half-Cauchy prior:</p><div class="sourceCode"><pre><code><span class="va">tau</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/Cauchy.html" class="external-link">Cauchy</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">global_scale</span> <span class="op">*</span> <span class="va">sigma</span><span class="op">)</span></code></pre></div>
-
+<p>The global shrinkage parameter is assigned a half-Cauchy prior:</p>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>       tau <span class="op">~</span><span class="st"> </span><span class="kw">Cauchy</span>(<span class="dv">0</span>, global_scale <span class="op">*</span><span class="st"> </span>sigma)</span></code></pre><p></p></div>
 <p>where <code>global_scale</code> is provided by the user and <code>sigma</code> is the scale parameter for the outcome variable; for Poisson and binomial models, sigma is fixed at one. Use <code>global_scale</code> to control the overall sparsity of the model.</p>
-<p>The second part of the model is a Student's t prior for <code>lambda_j</code>. Most <code>lambda_j</code> will be small, since the model is half-Cauchy:</p><div class="sourceCode"><pre><code><span class="va">lambda_j</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/Cauchy.html" class="external-link">Cauchy</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></code></pre></div>
-
-<p>This model results in most <code>lambda_j</code> being small, but due to the long tails of the Cauchy distribution, strong evidence in the data can force any particular <code>lambda_j</code> to be large. Piironen and Vehtari (2017) adjust the model so that those large <code>lambda_j</code> are effectively assigned a Student's t model:</p><div class="sourceCode"><pre><code><span class="va">Big_lambda_j</span> <span class="op">~</span> <span class="fu">Student_t</span><span class="op">(</span><span class="va">slab_df</span>, <span class="fl">0</span>, <span class="va">slab_scale</span><span class="op">)</span></code></pre></div>
-
+<p>The second part of the model is a Student's t prior for <code>lambda_j</code>. Most <code>lambda_j</code> will be small, since the model is half-Cauchy:</p>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>       lambda_j <span class="op">~</span><span class="st"> </span><span class="kw">Cauchy</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span></code></pre><p></p></div>
+<p>This model results in most <code>lambda_j</code> being small, but due to the long tails of the Cauchy distribution, strong evidence in the data can force any particular <code>lambda_j</code> to be large. Piironen and Vehtari (2017) adjust the model so that those large <code>lambda_j</code> are effectively assigned a Student's t model:</p>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>       Big_lambda_j <span class="op">~</span><span class="st"> </span><span class="kw">Student_t</span>(slab_df, <span class="dv">0</span>, slab_scale)</span></code></pre><p></p></div>
 <p>This is a schematic representation of the model; see Piironen and Vehtari (2017) or Donegan et al. (2020) for details.</p>
 </div>
 
@@ -145,38 +171,37 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="co"># \donttest{</span>
-<span class="co"># std. normal priors to k=2 covariates</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
-<span class="va">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>
-<span class="va">k</span> <span class="op">&lt;-</span> <span class="fl">2</span>
-<span class="va">prior</span><span class="op">$</span><span class="va">beta</span> <span class="op">&lt;-</span> <span class="fu">normal</span><span class="op">(</span>location <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, times <span class="op">=</span> <span class="va">k</span><span class="op">)</span>,
-                     scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, times <span class="op">=</span> <span class="va">k</span><span class="op">)</span><span class="op">)</span>
-<span class="va">prior</span><span class="op">$</span><span class="va">intercept</span> <span class="op">&lt;-</span> <span class="fu">normal</span><span class="op">(</span><span class="op">-</span><span class="fl">5</span>, <span class="fl">3</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">prior</span><span class="op">)</span>
-<span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="va">ICE</span> <span class="op">+</span> <span class="va">college</span>,
-                re <span class="op">=</span> <span class="op">~</span> <span class="va">GEOID</span>,
-                data <span class="op">=</span> <span class="va">georgia</span>,
-                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,
-                prior <span class="op">=</span> <span class="va">prior</span>,
-                prior_only <span class="op">=</span> <span class="cn">TRUE</span>,
-                chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span>
-<span class="fu"><a href="https://r-spatial.github.io/sf/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-
-<span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>insurance <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">insurance.se</span><span class="op">)</span>
-<span class="va">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>
-<span class="va">prior</span><span class="op">$</span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">gamma</span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0.2</span><span class="op">)</span>
-<span class="va">prior</span><span class="op">$</span><span class="va">location</span> <span class="op">&lt;-</span> <span class="fu">normal</span><span class="op">(</span><span class="fl">50</span>, <span class="fl">50</span><span class="op">)</span>
-<span class="va">prior</span><span class="op">$</span><span class="va">scale</span> <span class="op">&lt;-</span> <span class="fu">student_t</span><span class="op">(</span><span class="fl">12</span>, <span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">prior</span><span class="op">)</span>
-<span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_me_data.html">prep_me_data</a></span><span class="op">(</span>se <span class="op">=</span> <span class="va">se</span>, prior <span class="op">=</span> <span class="va">prior</span><span class="op">)</span>
-<span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="va">insurance</span>, 
-                data <span class="op">=</span> <span class="va">georgia</span>,
-                ME <span class="op">=</span> <span class="va">ME</span>,
-                prior_only <span class="op">=</span> <span class="cn">TRUE</span>,
-               chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span>
-<span class="co"># }</span>
-</code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># \donttest{</span></span>
+<span><span class="co"># std. normal priors to k=2 covariates</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span><span class="va">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">k</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span><span class="va">prior</span><span class="op">$</span><span class="va">beta</span> <span class="op">&lt;-</span> <span class="fu">normal</span><span class="op">(</span>location <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, times <span class="op">=</span> <span class="va">k</span><span class="op">)</span>,</span>
+<span>                     scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, times <span class="op">=</span> <span class="va">k</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">prior</span><span class="op">$</span><span class="va">intercept</span> <span class="op">&lt;-</span> <span class="fu">normal</span><span class="op">(</span><span class="op">-</span><span class="fl">5</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">prior</span><span class="op">)</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="va">ICE</span> <span class="op">+</span> <span class="va">college</span>,</span>
+<span>                re <span class="op">=</span> <span class="op">~</span> <span class="va">GEOID</span>,</span>
+<span>                data <span class="op">=</span> <span class="va">georgia</span>,</span>
+<span>                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                prior <span class="op">=</span> <span class="va">prior</span>,</span>
+<span>                prior_only <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>insurance <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">insurance.se</span><span class="op">)</span></span>
+<span><span class="va">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">prior</span><span class="op">$</span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">gamma</span><span class="op">(</span><span class="fl">3</span>, <span class="fl">0.2</span><span class="op">)</span></span>
+<span><span class="va">prior</span><span class="op">$</span><span class="va">location</span> <span class="op">&lt;-</span> <span class="fu">normal</span><span class="op">(</span><span class="fl">50</span>, <span class="fl">50</span><span class="op">)</span></span>
+<span><span class="va">prior</span><span class="op">$</span><span class="va">scale</span> <span class="op">&lt;-</span> <span class="fu">student_t</span><span class="op">(</span><span class="fl">12</span>, <span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">prior</span><span class="op">)</span></span>
+<span><span class="va">ME</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_me_data.html">prep_me_data</a></span><span class="op">(</span>se <span class="op">=</span> <span class="va">se</span>, prior <span class="op">=</span> <span class="va">prior</span><span class="op">)</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="va">insurance</span>, </span>
+<span>                data <span class="op">=</span> <span class="va">georgia</span>,</span>
+<span>                ME <span class="op">=</span> <span class="va">ME</span>,</span>
+<span>                prior_only <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>               chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span></span>
+<span><span class="co"># }</span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -190,7 +215,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

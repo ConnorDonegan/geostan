@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.2</span>
       </span>
     </div>
 
@@ -62,30 +62,30 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">stan_icar</span><span class="op">(</span>
-  <span class="va">formula</span>,
-  <span class="va">slx</span>,
-  <span class="va">re</span>,
-  <span class="va">data</span>,
-  <span class="va">C</span>,
-  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,
-  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"icar"</span>, <span class="st">"bym"</span>, <span class="st">"bym2"</span><span class="op">)</span>,
-  scale_factor <span class="op">=</span> <span class="cn">NULL</span>,
-  prior <span class="op">=</span> <span class="cn">NULL</span>,
-  ME <span class="op">=</span> <span class="cn">NULL</span>,
-  centerx <span class="op">=</span> <span class="cn">FALSE</span>,
-  <span class="va">censor_point</span>,
-  prior_only <span class="op">=</span> <span class="cn">FALSE</span>,
-  chains <span class="op">=</span> <span class="fl">4</span>,
-  iter <span class="op">=</span> <span class="fl">2000</span>,
-  refresh <span class="op">=</span> <span class="fl">500</span>,
-  keep_all <span class="op">=</span> <span class="cn">FALSE</span>,
-  slim <span class="op">=</span> <span class="cn">FALSE</span>,
-  drop <span class="op">=</span> <span class="cn">NULL</span>,
-  pars <span class="op">=</span> <span class="cn">NULL</span>,
-  control <span class="op">=</span> <span class="cn">NULL</span>,
-  <span class="va">...</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">stan_icar</span><span class="op">(</span></span>
+<span>  <span class="va">formula</span>,</span>
+<span>  <span class="va">slx</span>,</span>
+<span>  <span class="va">re</span>,</span>
+<span>  <span class="va">data</span>,</span>
+<span>  <span class="va">C</span>,</span>
+<span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"icar"</span>, <span class="st">"bym"</span>, <span class="st">"bym2"</span><span class="op">)</span>,</span>
+<span>  scale_factor <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  prior <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ME <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  centerx <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  <span class="va">censor_point</span>,</span>
+<span>  prior_only <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  chains <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  iter <span class="op">=</span> <span class="fl">2000</span>,</span>
+<span>  refresh <span class="op">=</span> <span class="fl">500</span>,</span>
+<span>  keep_all <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  slim <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  drop <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  pars <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  control <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="source">
@@ -104,24 +104,39 @@
     <h2>Arguments</h2>
     <dl><dt>formula</dt>
 <dd><p>A model formula, following the R <a href="https://rdrr.io/r/stats/formula.html" class="external-link">formula</a> syntax. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in <code>cbind(successes, failures) ~ x</code>.</p></dd>
+
+
 <dt>slx</dt>
 <dd><p>Formula to specify any spatially-lagged covariates. As in, <code>~ x1 + x2</code> (the intercept term will be removed internally). When setting priors for <code>beta</code>, remember to include priors for any SLX terms.</p></dd>
-<dt>re</dt>
-<dd><p>To include a varying intercept (or "random effects") term, <code>alpha_re</code>, specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re</code> is a vector of parameters added to the linear predictor of the model, and:</p><div class="sourceCode"><pre><code>alpha_re ~ N(0, alpha_tau)
-alpha_tau ~ Student_t(d.f., location, scale).
-</code></pre></div>
 
+
+<dt>re</dt>
+<dd><p>To include a varying intercept (or "random effects") term, <code>alpha_re</code>, specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re</code> is a vector of parameters added to the linear predictor of the model, and:</p>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>alpha_re <span class="op">~</span><span class="st"> </span><span class="kw">N</span>(<span class="dv">0</span>, alpha_tau)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>alpha_tau <span class="op">~</span><span class="st"> </span><span class="kw">Student_t</span>(d.f., location, scale).</span></code></pre><p></p></div>
 <p>Before using this term, read the <code>Details</code> section and the <code>type</code> argument. Specifically, if you use <code>type = bym</code>, then an observational-level <code>re</code> term is already included in the model. (Similar for <code>type = bym2</code>.)</p></dd>
+
+
 <dt>data</dt>
 <dd><p>A <code>data.frame</code> or an object coercible to a data frame by <code>as.data.frame</code> containing the model data.</p></dd>
+
+
 <dt>C</dt>
 <dd><p>Spatial connectivity matrix which will be used to construct an edge list for the ICAR model, and to calculate residual spatial autocorrelation as well as any user specified <code>slx</code> terms. It will automatically be row-standardized before calculating <code>slx</code> terms. <code>C</code> must be a binary symmetric <code>n x n</code> matrix.</p></dd>
+
+
 <dt>family</dt>
 <dd><p>The likelihood function for the outcome variable. Current options are <code>binomial(link = "logit")</code> and <code>poisson(link = "log")</code>.</p></dd>
+
+
 <dt>type</dt>
 <dd><p>Defaults to "icar" (partial pooling of neighboring observations through parameter <code>phi</code>); specify "bym" to add a second parameter vector <code>theta</code> to perform partial pooling across all observations; specify "bym2" for the innovation introduced by Riebler et al. (2016). See <code>Details</code> for more information.</p></dd>
+
+
 <dt>scale_factor</dt>
 <dd><p>For the BYM2 model, optional. If missing, this will be set to a vector of ones. See <code>Details</code>.</p></dd>
+
+
 <dt>prior</dt>
 <dd><p>A named list of parameters for prior distributions (see <code><a href="priors.html">priors</a></code>):</p><dl><dt>intercept</dt>
 <dd><p>The intercept is assigned a Gaussian prior distribution (see <code><a href="priors.html">normal</a></code></p></dd>
@@ -144,24 +159,44 @@ alpha_tau ~ Student_t(d.f., location, scale).
 
 
 </dl></dd>
+
+
 <dt>ME</dt>
 <dd><p>To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a list of data as constructed by the <code><a href="prep_me_data.html">prep_me_data</a></code> function.</p></dd>
+
+
 <dt>centerx</dt>
 <dd><p>To center predictors on their mean values, use <code>centerx = TRUE</code>. If the ME argument is used, the modeled covariate (i.e., latent variable), rather than the raw observations, will be centered. When using the ME argument, this is the recommended method for centering the covariates.</p></dd>
+
+
 <dt>censor_point</dt>
 <dd><p>Integer value indicating the maximum censored value; this argument is for modeling censored (suppressed) outcome data, typically disease case counts or deaths. For example, the US Centers for Disease Control and Prevention censors (does not report) death counts that are nine or fewer, so if you're using CDC WONDER mortality data you could provide <code>censor_point = 9</code>.</p></dd>
+
+
 <dt>prior_only</dt>
 <dd><p>Draw samples from the prior distributions of parameters only.</p></dd>
+
+
 <dt>chains</dt>
 <dd><p>Number of MCMC chains to estimate.</p></dd>
+
+
 <dt>iter</dt>
 <dd><p>Number of samples per chain. .</p></dd>
+
+
 <dt>refresh</dt>
 <dd><p>Stan will print the progress of the sampler every <code>refresh</code> number of samples; set <code>refresh=0</code> to silence this.</p></dd>
+
+
 <dt>keep_all</dt>
 <dd><p>If <code>keep_all = TRUE</code> then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors and the <code>bridgesampling</code> package.</p></dd>
+
+
 <dt>slim</dt>
 <dd><p>If <code>slim = TRUE</code>, then the Stan model will not collect the most memory-intensive parameters (including n-length vectors of fitted values, log-likelihoods, and ME-modeled covariate values). This will disable many convenience functions that are otherwise available for fitted <code>geostan</code> models, such as the extraction of residuals, fitted values, and spatial trends, WAIC, and spatial diagnostics, and ME diagnostics; many quantities of interest, such as fitted values and spatial trends, can still be calculated manually using given parameter estimates. The "slim" option is designed for data-intensive routines, such as regression with raster data, Monte Carlo studies, and measurement error models. For more control over which parameters are kept or dropped, use the <code>drop</code> argument instead of <code>slim</code>.</p></dd>
+
+
 <dt>drop</dt>
 <dd><p>Provide a vector of character strings to specify the names of any parameters that you do not want MCMC samples for. Dropping parameters in this way can improve sampling speed and reduce memory usage. The following parameter vectors can potentially be dropped from GLM models:</p><dl><dt>fitted</dt>
 <dd><p>The N-length vector of fitted values</p></dd>
@@ -183,16 +218,25 @@ alpha_tau ~ Student_t(d.f., location, scale).
 
 
 </dl><p>Using <code>drop = c('fitted', 'log_lik', 'alpha_re', 'x_true')</code> is equivalent to <code>slim = TRUE</code>. Note that if <code>slim = TRUE</code>, then <code>drop</code> will be ignored---so only use one or the other.</p></dd>
+
+
 <dt>pars</dt>
 <dd><p>Optional; specify any additional parameters you'd like stored from the Stan model.</p></dd>
+
+
 <dt>control</dt>
 <dd><p>A named list of parameters to control the sampler's behavior. See <code><a href="https://mc-stan.org/rstan/reference/stan.html" class="external-link">stan</a></code> for details.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Other arguments passed to <a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html" class="external-link">sampling</a>. For multi-core processing, you can use <code>cores = parallel::detectCores()</code>, or run <code>options(mc.cores = parallel::detectCores())</code> first.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl><dt>summary</dt>
+    
+
+<p>An object of class class <code>geostan_fit</code> (a list) containing:</p><dl><dt>summary</dt>
 <dd><p>Summaries of the main parameters of interest; a data frame</p></dd>
 
 <dt>diagnostic</dt>
@@ -276,49 +320,49 @@ $$ \tilde{\phi} \sim Gaussian(0, 1) $$
 $$ \tilde{\theta} \sim Gaussian(0, 1) $$
 $$ \tau \sim Gaussian(0, 1) $$</p>
 <p>The terms \(\tilde{\phi}\), \(\tilde{\theta}\) are standard normal deviates, \(\rho\) is restricted to values between zero and one, and \(S\) is the 'scale_factor' (a constant term provided by the user). By default, the 'scale_factor' is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure of the connectivity matrix \(C\). This implies that the same prior distribution assigned to \(\tau_s\) will differ in its implications if \(C\) is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to \(\tau_s\).</p>
-<p>Borrowing <code>R</code> code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following <code>R</code> code can be used to create the 'scale_factor' \(S\) for the BYM2 model (note, this requires the INLA R package), given a spatial adjacency matrix, \(C\):</p><div class="sourceCode"><pre><code><span class="co">## create a list of data for stan_icar</span>
-<span class="va">icar.data</span> <span class="op">&lt;-</span> <span class="fu">geostan</span><span class="fu">::</span><span class="fu"><a href="../reference/prep_icar_data.html">prep_icar_data</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span>
-<span class="co">## calculate scale_factor for each of k connected group of nodes</span>
-<span class="va">k</span> <span class="op">&lt;-</span> <span class="va">icar.data</span><span class="op">$</span><span class="va">k</span>
-<span class="va">scale_factor</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span>mode <span class="op">=</span> <span class="st">"numeric"</span>, length <span class="op">=</span> <span class="va">k</span><span class="op">)</span>
-<span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="va">k</span><span class="op">)</span> <span class="op">{</span>
-  <span class="va">g.idx</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">icar.data</span><span class="op">$</span><span class="va">comp_id</span> <span class="op">==</span> <span class="va">j</span><span class="op">)</span> 
-  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">g.idx</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span>
-       <span class="va">scale_factor</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span>
-       <span class="kw">next</span>
-    <span class="op">}</span>    
-  <span class="va">Cg</span> <span class="op">&lt;-</span> <span class="va">C</span><span class="op">[</span><span class="va">g.idx</span>, <span class="va">g.idx</span><span class="op">]</span> 
-  <span class="va">scale_factor</span><span class="op">[</span><span class="va">j</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu">scale_c</span><span class="op">(</span><span class="va">Cg</span><span class="op">)</span> 
-<span class="op">}</span></code></pre></div>
-
+<p>Borrowing <code>R</code> code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following <code>R</code> code can be used to create the 'scale_factor' \(S\) for the BYM2 model (note, this requires the INLA R package), given a spatial adjacency matrix, \(C\):</p>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="co">## create a list of data for stan_icar</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>icar.data &lt;-<span class="st"> </span>geostan<span class="op">::</span><span class="kw">prep_icar_data</span>(C)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="co">## calculate scale_factor for each of k connected group of nodes</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>k &lt;-<span class="st"> </span>icar.data<span class="op">$</span>k</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>scale_factor &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="dt">mode =</span> <span class="st">"numeric"</span>, <span class="dt">length =</span> k)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>k) {</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a>  g.idx &lt;-<span class="st"> </span><span class="kw">which</span>(icar.data<span class="op">$</span>comp_id <span class="op">==</span><span class="st"> </span>j) </span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a>  <span class="cf">if</span> (<span class="kw">length</span>(g.idx) <span class="op">==</span><span class="st"> </span><span class="dv">1</span>) {</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a>       scale_factor[j] &lt;-<span class="st"> </span><span class="dv">1</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a>       <span class="cf">next</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a>    }    </span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a>  Cg &lt;-<span class="st"> </span>C[g.idx, g.idx] </span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a>  scale_factor[j] &lt;-<span class="st"> </span><span class="kw">scale_c</span>(Cg) </span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a>}</span></code></pre><p></p></div>
 <p>This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan and Morris 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to \(\phi\) automatically inside the Stan model. Therefore, the user never needs to make any adjustments for this term. (To avoid complications from using a disconnected graph structure, you can apply a proper CAR model instead of the ICAR: <code><a href="stan_car.html">stan_car</a></code>).</p>
-<p>Note, the code above requires the <code>scale_c</code> function; it has package dependencies that are not included in <code>geostan</code>. To use <code>scale_c</code>, you have to load the following <code>R</code> function:</p><div class="sourceCode"><pre><code><span class="co">#' compute scaling factor for adjacency matrix, accounting for differences in spatial connectivity </span>
-<span class="co">#'</span>
-<span class="co">#' @param C connectivity matrix</span>
-<span class="co">#'</span>
-<span class="co">#' @details</span>
-<span class="co">#'</span>
-<span class="co">#' Requires the following packages: </span>
-<span class="co">#'</span>
-<span class="co">#' library(Matrix)</span>
-<span class="co">#' library(INLA);</span>
-<span class="co">#' library(spdep)</span>
-<span class="co">#' library(igraph)</span>
-<span class="co">#'  </span>
-<span class="co">#' @source</span>
-<span class="co">#'</span>
-<span class="co">#'   Morris, Mitzi (2017). Spatial Models in Stan: Intrinsic Auto-Regressive Models for Areal Data. &lt;https://mc-stan.org/users/documentation/case-studies/icar_stan.html&gt;</span>
-<span class="co">#'</span>
-<span class="va">scale_c</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">C</span><span class="op">)</span> <span class="op">{</span>
- <span class="va">geometric_mean</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> 
- <span class="va">N</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>
- <span class="va">Q</span> <span class="op">=</span>  <span class="fu">Diagonal</span><span class="op">(</span><span class="va">N</span>, <span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span><span class="op">)</span> <span class="op">-</span> <span class="va">C</span>
- <span class="va">Q_pert</span> <span class="op">=</span> <span class="va">Q</span> <span class="op">+</span> <span class="fu">Diagonal</span><span class="op">(</span><span class="va">N</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">Q</span><span class="op">)</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">.Machine</span><span class="op">$</span><span class="va">double.eps</span><span class="op">)</span>
- <span class="va">Q_inv</span> <span class="op">=</span> <span class="fu">inla.qinv</span><span class="op">(</span><span class="va">Q_pert</span>, constr<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">1</span>,<span class="va">N</span><span class="op">)</span>,e<span class="op">=</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span>
- <span class="va">scaling_factor</span> <span class="op">&lt;-</span> <span class="fu">geometric_mean</span><span class="op">(</span><span class="fu">Matrix</span><span class="fu">::</span><span class="fu">diag</span><span class="op">(</span><span class="va">Q_inv</span><span class="op">)</span><span class="op">)</span> 
- <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">scaling_factor</span><span class="op">)</span> 
-<span class="op">}</span></code></pre></div>
-
+<p>Note, the code above requires the <code>scale_c</code> function; it has package dependencies that are not included in <code>geostan</code>. To use <code>scale_c</code>, you have to load the following <code>R</code> function:</p>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="co">#' compute scaling factor for adjacency matrix, accounting for differences in spatial connectivity </span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="co">#'</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="co">#' @param C connectivity matrix</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="co">#'</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a><span class="co">#' @details</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a><span class="co">#'</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a><span class="co">#' Requires the following packages: </span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a><span class="co">#'</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a><span class="co">#' library(Matrix)</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a><span class="co">#' library(INLA);</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a><span class="co">#' library(spdep)</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a><span class="co">#' library(igraph)</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a><span class="co">#'  </span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a><span class="co">#' @source</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true"></a><span class="co">#'</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true"></a><span class="co">#'   Morris, Mitzi (2017). Spatial Models in Stan: Intrinsic Auto-Regressive Models for Areal Data. &lt;https://mc-stan.org/users/documentation/case-studies/icar_stan.html&gt;</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true"></a><span class="co">#'</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true"></a>scale_c &lt;-<span class="st"> </span><span class="cf">function</span>(C) {</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true"></a> geometric_mean &lt;-<span class="st"> </span><span class="cf">function</span>(x) <span class="kw">exp</span>(<span class="kw">mean</span>(<span class="kw">log</span>(x))) </span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true"></a> N =<span class="st"> </span><span class="kw">dim</span>(C)[<span class="dv">1</span>]</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true"></a> Q =<span class="st">  </span><span class="kw">Diagonal</span>(N, <span class="kw">rowSums</span>(C)) <span class="op">-</span><span class="st"> </span>C</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true"></a> Q_pert =<span class="st"> </span>Q <span class="op">+</span><span class="st"> </span><span class="kw">Diagonal</span>(N) <span class="op">*</span><span class="st"> </span><span class="kw">max</span>(<span class="kw">diag</span>(Q)) <span class="op">*</span><span class="st"> </span><span class="kw">sqrt</span>(.Machine<span class="op">$</span>double.eps)</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true"></a> Q_inv =<span class="st"> </span><span class="kw">inla.qinv</span>(Q_pert, <span class="dt">constr=</span><span class="kw">list</span>(<span class="dt">A =</span> <span class="kw">matrix</span>(<span class="dv">1</span>,<span class="dv">1</span>,N),<span class="dt">e=</span><span class="dv">0</span>))</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true"></a> scaling_factor &lt;-<span class="st"> </span><span class="kw">geometric_mean</span>(Matrix<span class="op">::</span><span class="kw">diag</span>(Q_inv)) </span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true"></a> <span class="kw">return</span>(scaling_factor) </span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true"></a>}</span></code></pre><p></p></div>
 </div>
 
 <div class="section">
@@ -340,50 +384,49 @@ $$ \tau \sim Gaussian(0, 1) $$</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="co"># \donttest{</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">)</span>
-<span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">sentencing</span>, <span class="st">"B"</span><span class="op">)</span>
-<span class="va">log_e</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">$</span><span class="va">expected_sents</span><span class="op">)</span>
-<span class="va">fit.bym</span> <span class="op">&lt;-</span> <span class="fu">stan_icar</span><span class="op">(</span><span class="va">sents</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="va">log_e</span><span class="op">)</span>,
-                     family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,
-                     data <span class="op">=</span> <span class="va">sentencing</span>,
-                     type <span class="op">=</span> <span class="st">"bym"</span>,
-                     C <span class="op">=</span> <span class="va">C</span>,
-                     chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">800</span><span class="op">)</span> <span class="co"># for speed only</span>
-
-<span class="co"># spatial diagnostics</span>
-<span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit.bym</span>, <span class="va">sentencing</span><span class="op">)</span>
-                                       
-<span class="co"># check effective sample size and convergence</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mc-stan.org/rstan/" class="external-link">rstan</a></span><span class="op">)</span>
-<span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_ess</a></span><span class="op">(</span><span class="va">fit.bym</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span>
-<span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_rhat</a></span><span class="op">(</span><span class="va">fit.bym</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span>
-
-<span class="co"># calculate log-standardized incidence ratios </span>
-<span class="co"># (observed/exected case counts)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span>
-
-<span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit.bym</span>, rates <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">$</span><span class="va">mean</span>
-<span class="va">SSR</span> <span class="op">&lt;-</span> <span class="va">f</span> <span class="op">/</span> <span class="va">sentencing</span><span class="op">$</span><span class="va">expected_sents</span>
-<span class="va">log.SSR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span> <span class="va">SSR</span>, base <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
-
-<span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">)</span> <span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">log.SSR</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient2</a></span><span class="op">(</span>
-   low <span class="op">=</span> <span class="st">"navy"</span>,
-   high <span class="op">=</span> <span class="st">"darkred"</span>
-  <span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Log-standardized sentencing ratios"</span>,
-       subtitle <span class="op">=</span> <span class="st">"log( Fitted/Expected), base 2"</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_void</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>
-   legend.position <span class="op">=</span> <span class="st">"bottom"</span>,
-   legend.key.height <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fl">0.35</span>, <span class="st">"cm"</span><span class="op">)</span>,
-   legend.key.width <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="st">"cm"</span><span class="op">)</span>
-  <span class="op">)</span>
-<span class="co"># }</span>
-</code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># \donttest{</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">)</span></span>
+<span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">sentencing</span>, <span class="st">"B"</span><span class="op">)</span></span>
+<span><span class="va">log_e</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">$</span><span class="va">expected_sents</span><span class="op">)</span></span>
+<span><span class="va">fit.bym</span> <span class="op">&lt;-</span> <span class="fu">stan_icar</span><span class="op">(</span><span class="va">sents</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="va">log_e</span><span class="op">)</span>,</span>
+<span>                     family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>                     data <span class="op">=</span> <span class="va">sentencing</span>,</span>
+<span>                     type <span class="op">=</span> <span class="st">"bym"</span>,</span>
+<span>                     C <span class="op">=</span> <span class="va">C</span>,</span>
+<span>                     chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">800</span><span class="op">)</span> <span class="co"># for speed only</span></span>
+<span></span>
+<span><span class="co"># spatial diagnostics</span></span>
+<span><span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit.bym</span>, <span class="va">sentencing</span><span class="op">)</span></span>
+<span>                                       </span>
+<span><span class="co"># check effective sample size and convergence</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mc-stan.org/rstan/" class="external-link">rstan</a></span><span class="op">)</span></span>
+<span><span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_ess</a></span><span class="op">(</span><span class="va">fit.bym</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span></span>
+<span><span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_rhat</a></span><span class="op">(</span><span class="va">fit.bym</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># calculate log-standardized incidence ratios </span></span>
+<span><span class="co"># (observed/exected case counts)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit.bym</span>, rates <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">$</span><span class="va">mean</span></span>
+<span><span class="va">SSR</span> <span class="op">&lt;-</span> <span class="va">f</span> <span class="op">/</span> <span class="va">sentencing</span><span class="op">$</span><span class="va">expected_sents</span></span>
+<span><span class="va">log.SSR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span> <span class="va">SSR</span>, base <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">log.SSR</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient2</a></span><span class="op">(</span></span>
+<span>   low <span class="op">=</span> <span class="st">"navy"</span>,</span>
+<span>   high <span class="op">=</span> <span class="st">"darkred"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Log-standardized sentencing ratios"</span>,</span>
+<span>       subtitle <span class="op">=</span> <span class="st">"log( Fitted/Expected), base 2"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_void</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
+<span>   legend.position <span class="op">=</span> <span class="st">"bottom"</span>,</span>
+<span>   legend.key.height <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fl">0.35</span>, <span class="st">"cm"</span><span class="op">)</span>,</span>
+<span>   legend.key.width <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grid/unit.html" class="external-link">unit</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="st">"cm"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="co"># }</span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -397,7 +440,7 @@ $$ \tau \sim Gaussian(0, 1) $$</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

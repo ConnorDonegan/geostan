@@ -72,6 +72,6 @@
 #' }
 #' @examples
 #' data(sentencing)
-#' head(sentencing@data)
+#' print(sentencing)
 "sentencing"
 

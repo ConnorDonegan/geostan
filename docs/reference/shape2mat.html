@@ -23,7 +23,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.2</span>
       </span>
     </div>
 
@@ -62,14 +62,14 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">shape2mat</span><span class="op">(</span>
-  <span class="va">shape</span>,
-  style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B"</span>, <span class="st">"W"</span><span class="op">)</span>,
-  queen <span class="op">=</span> <span class="cn">TRUE</span>,
-  snap <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">.Machine</span><span class="op">$</span><span class="va">double.eps</span><span class="op">)</span>,
-  t <span class="op">=</span> <span class="fl">1</span>,
-  st.style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"contemp"</span>, <span class="st">"lag"</span><span class="op">)</span>
-<span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">shape2mat</span><span class="op">(</span></span>
+<span>  <span class="va">shape</span>,</span>
+<span>  style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B"</span>, <span class="st">"W"</span><span class="op">)</span>,</span>
+<span>  queen <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  snap <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">.Machine</span><span class="op">$</span><span class="va">double.eps</span><span class="op">)</span>,</span>
+<span>  t <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  st.style <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"contemp"</span>, <span class="st">"lag"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="source">
@@ -82,20 +82,33 @@
     <h2>Arguments</h2>
     <dl><dt>shape</dt>
 <dd><p>An object of class <code>sf</code>, <code>SpatialPolygons</code> or <code>SpatialPolygonsDataFrame</code>.</p></dd>
+
+
 <dt>style</dt>
 <dd><p>What kind of coding scheme should be used to create the spatial connectivity matrix? Defaults to "B" for binary; use "W" for row-standardized weights.</p></dd>
+
+
 <dt>queen</dt>
 <dd><p>Passed to <code><a href="https://r-spatial.github.io/spdep/reference/poly2nb.html" class="external-link">poly2nb</a></code> to set the contiguity condition. Defaults to <code>TRUE</code> so that a single shared boundary point (rather than a shared border/line) between polygons is sufficient for them to be considered neighbors.</p></dd>
+
+
 <dt>snap</dt>
 <dd><p>Passed to <code><a href="https://r-spatial.github.io/spdep/reference/poly2nb.html" class="external-link">poly2nb</a></code>; "boundary points less than ‘snap’ distance apart are considered to indicate contiguity."</p></dd>
+
+
 <dt>t</dt>
 <dd><p>Number of time periods. Only the binary coding scheme is available for space-time connectivity matrices.</p></dd>
+
+
 <dt>st.style</dt>
 <dd><p>For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and "contemp" (the default) for contemporaneous specification (see Details).</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
-    <p>A spatial connectivity matrix</p>
+    
+
+<p>A spatial connectivity matrix</p>
     </div>
     <div id="details">
     <h2>Details</h2>
@@ -109,28 +122,27 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span>
-
-<span class="co">## binary adjacency matrix</span>
-<span class="va">C</span> <span class="op">&lt;-</span> <span class="fu">shape2mat</span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span>
-<span class="co">## row sums gives the numbers of neighbors per observation</span>
-<span class="fu">Matrix</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">Matrix</span><span class="fu">::</span><span class="fu">summary</span><span class="op">(</span><span class="va">C</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co">## row-standardized matrix </span>
-<span class="va">W</span> <span class="op">&lt;-</span> <span class="fu">shape2mat</span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"W"</span><span class="op">)</span>
-<span class="fu">Matrix</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">W</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">Matrix</span><span class="fu">::</span><span class="fu">summary</span><span class="op">(</span><span class="va">W</span><span class="op">)</span><span class="op">)</span>
-
-<span class="co">## space-time matricies </span>
-<span class="co">## for eigenvector space-time filtering</span>
-<span class="co">## if you have multiple years with same neighbors,</span>
-<span class="co">## provide the geography (for a single year!) and number of years \code{t}</span>
-<span class="va">Cst</span> <span class="op">&lt;-</span> <span class="fu">shape2mat</span><span class="op">(</span><span class="va">georgia</span>, t <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">Cst</span><span class="op">)</span>
-<span class="va">EVst</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_EV.html">make_EV</a></span><span class="op">(</span><span class="va">Cst</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">EVst</span><span class="op">)</span>
-</code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## binary adjacency matrix</span></span>
+<span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu">shape2mat</span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span></span>
+<span><span class="co">## row sums gives the numbers of neighbors per observation</span></span>
+<span><span class="fu">Matrix</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">Matrix</span><span class="fu">::</span><span class="fu">summary</span><span class="op">(</span><span class="va">C</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## row-standardized matrix </span></span>
+<span><span class="va">W</span> <span class="op">&lt;-</span> <span class="fu">shape2mat</span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"W"</span><span class="op">)</span></span>
+<span><span class="fu">Matrix</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Matrix/man/colSums.html" class="external-link">rowSums</a></span><span class="op">(</span><span class="va">W</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">Matrix</span><span class="fu">::</span><span class="fu">summary</span><span class="op">(</span><span class="va">W</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## space-time matricies </span></span>
+<span><span class="co">## for eigenvector space-time filtering</span></span>
+<span><span class="co">## if you have multiple years with same neighbors,</span></span>
+<span><span class="co">## provide the geography (for a single year!) and number of years \code{t}</span></span>
+<span><span class="va">Cst</span> <span class="op">&lt;-</span> <span class="fu">shape2mat</span><span class="op">(</span><span class="va">georgia</span>, t <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">Cst</span><span class="op">)</span></span>
+<span><span class="va">EVst</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_EV.html">make_EV</a></span><span class="op">(</span><span class="va">Cst</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">EVst</span><span class="op">)</span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -144,7 +156,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.1.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>
