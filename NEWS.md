@@ -1,8 +1,8 @@
 # geostan 0.5.2
 
-This release was built using `rstan` 2.26.23`, which incorporates Stan's new syntax for declaring arrays. The models seems to run a little bit faster, but otherwise there are no changes that users should notice.
+This release was built using `rstan` 2.26.23`, which incorporates Stan's new syntax for declaring arrays. Some models seems to run a little bit faster, but otherwise there are no changes that users should notice.
 
-The warnings issued about the sp package are due to geostan's dependence on spdep and will go away with the next release of sp
+The warnings issued about the sp package can be ignored; these are due to geostan's dependence on spdep, which imports sp but does not use any of the deprecated functions. 
 
 # geostan 0.5.1
 
