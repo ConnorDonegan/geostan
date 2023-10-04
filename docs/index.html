@@ -23,13 +23,7 @@
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]--><!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=UA-116873024-1"></script><script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'UA-116873024-1');
-</script>
+<![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
     
@@ -88,7 +82,7 @@
 </h2>
 <p>The <a href="https://connordonegan.github.io/geostan/"><strong>geostan</strong></a> R package supports a complete spatial analysis workflow with Bayesian models for areal data, including a suite of functions for visualizing spatial data and model results. For demonstrations and discussion, see the package <a href="https://connordonegan.github.io/geostan/reference/index.html">help pages</a> and <a href="https://connordonegan.github.io/geostan/articles/index.html">vignettes</a> on spatial autocorrelation, spatial measurement error models, and spatial regression with raster layers.</p>
 <p>The package is particularly suitable for public health research with spatial data, and complements the <a href="https://connordonegan.github.io/surveil/" class="external-link"><strong>surveil</strong></a> R package for time series analysis of public health surveillance data.</p>
-<p><strong>geostan</strong> is an interface to <a href="https://mc-stan.org" class="external-link"><strong>Stan</strong></a>, a state-of-the-art platform for Bayesian inference.</p>
+<p><strong>geostan</strong> models were built using <a href="https://mc-stan.org" class="external-link"><strong>Stan</strong></a>, a state-of-the-art platform for Bayesian modeling.</p>
 <p><a href="https://doi.org/10.21105/joss.04716" class="external-link"><img src="https://joss.theoj.org/papers/10.21105/joss.04716/status.svg" alt="DOI"></a></p>
 <div class="section level3">
 <h3 id="disease-mapping-and-spatial-regression">Disease mapping and spatial regression<a class="anchor" aria-label="anchor" href="#disease-mapping-and-spatial-regression"></a>
@@ -108,12 +102,12 @@
 <div class="section level3">
 <h3 id="spatial-analysis-tools">Spatial analysis tools<a class="anchor" aria-label="anchor" href="#spatial-analysis-tools"></a>
 </h3>
-<p>Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics. Visual diagnostics also support the evaluation of survey data quality and observational error models.</p>
+<p>Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics.</p>
 </div>
 <div class="section level3">
 <h3 id="the-rstan-ecosystem">The RStan ecosystem<a class="anchor" aria-label="anchor" href="#the-rstan-ecosystem"></a>
 </h3>
-<p>Compatible with a suite of high-quality R packages for Bayesian inference and model evaluation.</p>
+<p>Interfaces easily with many high-quality R packages for Bayesian modeling.</p>
 </div>
 <div class="section level3">
 <h3 id="custom-spatial-models">Custom spatial models<a class="anchor" aria-label="anchor" href="#custom-spatial-models"></a>
@@ -179,7 +173,8 @@
 <code class="sourceCode R"><span><span class="fu"><a href="reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span>, w <span class="op">=</span> <span class="va">A</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.</span></span>
 <span><span class="co">#&gt; 3 NA values found in x; they will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. You may want to use a binary connectivity matrix using style = 'B' in shape2mat.</span></span>
-<span><span class="co">#&gt; Warning: Removed 3 rows containing missing values (`geom_pointrange()`).</span></span></code></pre></div>
+<span><span class="co">#&gt; Warning: Removed 3 rows containing missing values</span></span>
+<span><span class="co">#&gt; (`geom_pointrange()`).</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;"></p>
 <p>The <code>print</code> method returns a summary of the probability distributions for model parameters, as well as Markov chain Monte Carlo (MCMC) diagnostics from Stan (Monte Carlo standard errors of the mean <code>se_mean</code>, effective sample size <code>n_eff</code>, and the R-hat statistic <code>Rhat</code>):</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -189,20 +184,20 @@
 <span><span class="co">#&gt; Spatial method (outcome):  CAR </span></span>
 <span><span class="co">#&gt; Likelihood function:  poisson </span></span>
 <span><span class="co">#&gt; Link function:  log </span></span>
-<span><span class="co">#&gt; Residual Moran Coefficient:  0.00316975 </span></span>
-<span><span class="co">#&gt; WAIC:  1291.71 </span></span>
+<span><span class="co">#&gt; Residual Moran Coefficient:  0.0021755 </span></span>
+<span><span class="co">#&gt; WAIC:  1291.91 </span></span>
 <span><span class="co">#&gt; Observations:  159 </span></span>
 <span><span class="co">#&gt; Data models (ME): none</span></span>
 <span><span class="co">#&gt; Inference for Stan model: foundation.</span></span>
 <span><span class="co">#&gt; 4 chains, each with iter=2000; warmup=1000; thin=1; </span></span>
 <span><span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff Rhat</span></span>
-<span><span class="co">#&gt; intercept -4.674   0.002 0.085 -4.845 -4.718 -4.675 -4.632 -4.504  2266    1</span></span>
-<span><span class="co">#&gt; car_rho    0.923   0.001 0.058  0.780  0.893  0.937  0.965  0.995  3281    1</span></span>
-<span><span class="co">#&gt; car_scale  0.457   0.001 0.035  0.392  0.432  0.455  0.479  0.530  3851    1</span></span>
+<span><span class="co">#&gt;             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat</span></span>
+<span><span class="co">#&gt; intercept -4.673   0.002 0.093 -4.843 -4.716 -4.674 -4.630 -4.497  1636 1.000</span></span>
+<span><span class="co">#&gt; car_rho    0.922   0.001 0.058  0.778  0.893  0.935  0.967  0.995  3214 1.001</span></span>
+<span><span class="co">#&gt; car_scale  0.458   0.001 0.035  0.393  0.433  0.455  0.481  0.532  3867 1.000</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Mon May 29 09:01:19 2023.</span></span>
+<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Wed Oct  4 12:20:45 2023.</span></span>
 <span><span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">#&gt; convergence, Rhat=1).</span></span></code></pre></div>

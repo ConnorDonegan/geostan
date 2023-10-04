@@ -23,13 +23,7 @@
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]--><!-- Global site tag (gtag.js) - Google Analytics --><script async src="https://www.googletagmanager.com/gtag/js?id=UA-116873024-1"></script><script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'UA-116873024-1');
-</script>
+<![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
     
@@ -137,13 +131,13 @@
 <pre><code><span><span class="co">## Range of permissible rho values:  -1 1</span></span></code></pre>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_sar.html">stan_sar</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">z</span>, </span>
-<span>                data <span class="op">=</span> <span class="va">grid</span>,</span>
-<span>        centerx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>        sar_parts <span class="op">=</span> <span class="va">sar_list</span>,</span>
-<span>        iter <span class="op">=</span> <span class="fl">500</span>,</span>
-<span>        chains <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>        slim <span class="op">=</span> <span class="cn">TRUE</span> <span class="co">#,</span></span>
-<span>        <span class="co"># cores = 4, # for multi-core processing</span></span>
+<span>      data <span class="op">=</span> <span class="va">grid</span>,</span>
+<span>          centerx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>          sar_parts <span class="op">=</span> <span class="va">sar_list</span>,</span>
+<span>          iter <span class="op">=</span> <span class="fl">500</span>,</span>
+<span>          chains <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>          slim <span class="op">=</span> <span class="cn">TRUE</span> <span class="co">#,</span></span>
+<span>          <span class="co"># cores = 4, # for multi-core processing</span></span>
 <span>        <span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## *Setting prior parameters for intercept</span></span></code></pre>
@@ -168,8 +162,8 @@
 <span><span class="co">## </span></span>
 <span><span class="co">## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).</span></span>
 <span><span class="co">## Chain 1: </span></span>
-<span><span class="co">## Chain 1: Gradient evaluation took 0.001011 seconds</span></span>
-<span><span class="co">## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 10.11 seconds.</span></span>
+<span><span class="co">## Chain 1: Gradient evaluation took 0.001084 seconds</span></span>
+<span><span class="co">## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 10.84 seconds.</span></span>
 <span><span class="co">## Chain 1: Adjust your expectations accordingly!</span></span>
 <span><span class="co">## Chain 1: </span></span>
 <span><span class="co">## Chain 1: </span></span>
@@ -177,15 +171,15 @@
 <span><span class="co">## Chain 1: Iteration: 251 / 500 [ 50%]  (Sampling)</span></span>
 <span><span class="co">## Chain 1: Iteration: 500 / 500 [100%]  (Sampling)</span></span>
 <span><span class="co">## Chain 1: </span></span>
-<span><span class="co">## Chain 1:  Elapsed Time: 4.504 seconds (Warm-up)</span></span>
-<span><span class="co">## Chain 1:                1.098 seconds (Sampling)</span></span>
-<span><span class="co">## Chain 1:                5.602 seconds (Total)</span></span>
+<span><span class="co">## Chain 1:  Elapsed Time: 4.559 seconds (Warm-up)</span></span>
+<span><span class="co">## Chain 1:                1.12 seconds (Sampling)</span></span>
+<span><span class="co">## Chain 1:                5.679 seconds (Total)</span></span>
 <span><span class="co">## Chain 1: </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 2).</span></span>
 <span><span class="co">## Chain 2: </span></span>
-<span><span class="co">## Chain 2: Gradient evaluation took 0.000764 seconds</span></span>
-<span><span class="co">## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 7.64 seconds.</span></span>
+<span><span class="co">## Chain 2: Gradient evaluation took 0.000696 seconds</span></span>
+<span><span class="co">## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 6.96 seconds.</span></span>
 <span><span class="co">## Chain 2: Adjust your expectations accordingly!</span></span>
 <span><span class="co">## Chain 2: </span></span>
 <span><span class="co">## Chain 2: </span></span>
@@ -193,15 +187,15 @@
 <span><span class="co">## Chain 2: Iteration: 251 / 500 [ 50%]  (Sampling)</span></span>
 <span><span class="co">## Chain 2: Iteration: 500 / 500 [100%]  (Sampling)</span></span>
 <span><span class="co">## Chain 2: </span></span>
-<span><span class="co">## Chain 2:  Elapsed Time: 1.882 seconds (Warm-up)</span></span>
-<span><span class="co">## Chain 2:                1 seconds (Sampling)</span></span>
-<span><span class="co">## Chain 2:                2.882 seconds (Total)</span></span>
+<span><span class="co">## Chain 2:  Elapsed Time: 1.873 seconds (Warm-up)</span></span>
+<span><span class="co">## Chain 2:                1.01 seconds (Sampling)</span></span>
+<span><span class="co">## Chain 2:                2.883 seconds (Total)</span></span>
 <span><span class="co">## Chain 2: </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 3).</span></span>
 <span><span class="co">## Chain 3: </span></span>
-<span><span class="co">## Chain 3: Gradient evaluation took 0.000713 seconds</span></span>
-<span><span class="co">## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 7.13 seconds.</span></span>
+<span><span class="co">## Chain 3: Gradient evaluation took 0.000745 seconds</span></span>
+<span><span class="co">## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 7.45 seconds.</span></span>
 <span><span class="co">## Chain 3: Adjust your expectations accordingly!</span></span>
 <span><span class="co">## Chain 3: </span></span>
 <span><span class="co">## Chain 3: </span></span>
@@ -209,15 +203,15 @@
 <span><span class="co">## Chain 3: Iteration: 251 / 500 [ 50%]  (Sampling)</span></span>
 <span><span class="co">## Chain 3: Iteration: 500 / 500 [100%]  (Sampling)</span></span>
 <span><span class="co">## Chain 3: </span></span>
-<span><span class="co">## Chain 3:  Elapsed Time: 1.9 seconds (Warm-up)</span></span>
-<span><span class="co">## Chain 3:                1.119 seconds (Sampling)</span></span>
-<span><span class="co">## Chain 3:                3.019 seconds (Total)</span></span>
+<span><span class="co">## Chain 3:  Elapsed Time: 1.926 seconds (Warm-up)</span></span>
+<span><span class="co">## Chain 3:                1.103 seconds (Sampling)</span></span>
+<span><span class="co">## Chain 3:                3.029 seconds (Total)</span></span>
 <span><span class="co">## Chain 3: </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 4).</span></span>
 <span><span class="co">## Chain 4: </span></span>
-<span><span class="co">## Chain 4: Gradient evaluation took 0.000713 seconds</span></span>
-<span><span class="co">## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 7.13 seconds.</span></span>
+<span><span class="co">## Chain 4: Gradient evaluation took 0.000703 seconds</span></span>
+<span><span class="co">## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 7.03 seconds.</span></span>
 <span><span class="co">## Chain 4: Adjust your expectations accordingly!</span></span>
 <span><span class="co">## Chain 4: </span></span>
 <span><span class="co">## Chain 4: </span></span>
@@ -225,9 +219,9 @@
 <span><span class="co">## Chain 4: Iteration: 251 / 500 [ 50%]  (Sampling)</span></span>
 <span><span class="co">## Chain 4: Iteration: 500 / 500 [100%]  (Sampling)</span></span>
 <span><span class="co">## Chain 4: </span></span>
-<span><span class="co">## Chain 4:  Elapsed Time: 2.505 seconds (Warm-up)</span></span>
-<span><span class="co">## Chain 4:                1.217 seconds (Sampling)</span></span>
-<span><span class="co">## Chain 4:                3.722 seconds (Total)</span></span>
+<span><span class="co">## Chain 4:  Elapsed Time: 2.13 seconds (Warm-up)</span></span>
+<span><span class="co">## Chain 4:                1.1 seconds (Sampling)</span></span>
+<span><span class="co">## Chain 4:                3.23 seconds (Total)</span></span>
 <span><span class="co">## Chain 4:</span></span></code></pre>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>      </span></code></pre></div>
@@ -249,7 +243,7 @@
 <span><span class="co">## sar_rho    0.873   0.001 0.017  0.838  0.862  0.874  0.884  0.904   676 1.000</span></span>
 <span><span class="co">## sar_scale  0.312   0.000 0.007  0.298  0.307  0.312  0.316  0.327   876 1.000</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Samples were drawn using NUTS(diag_e) at Sun Oct  1 11:33:26 2023.</span></span>
+<span><span class="co">## Samples were drawn using NUTS(diag_e) at Wed Oct  4 12:09:10 2023.</span></span>
 <span><span class="co">## For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">## and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">## convergence, Rhat=1).</span></span></code></pre>

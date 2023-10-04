@@ -24,7 +24,7 @@ The [**geostan**](https://connordonegan.github.io/geostan/) R package supports a
 
 The package is particularly suitable for public health research with spatial data, and complements the [**surveil**](https://connordonegan.github.io/surveil/) R package for time series analysis of public health surveillance data.
 
-**geostan** is an interface to [**Stan**](https://mc-stan.org), a state-of-the-art platform for Bayesian inference. 
+**geostan** models were built using [**Stan**](https://mc-stan.org), a state-of-the-art platform for Bayesian modeling.
 
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.04716/status.svg)](https://doi.org/10.21105/joss.04716)
 
@@ -42,11 +42,11 @@ Vital statistics and disease surveillance systems like CDC Wonder censor case co
 
 ### Spatial analysis tools
 
-Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics. Visual diagnostics also support the evaluation of survey data quality and observational error models.
+Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics. 
 
 ### The RStan ecosystem
 
-Compatible with a suite of high-quality R packages for Bayesian inference and model evaluation.
+Interfaces easily with many high-quality R packages for Bayesian modeling.
 
 ### Custom spatial models
 

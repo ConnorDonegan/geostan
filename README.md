@@ -20,8 +20,8 @@ spatial data, and complements the
 [**surveil**](https://connordonegan.github.io/surveil/) R package for
 time series analysis of public health surveillance data.
 
-**geostan** is an interface to [**Stan**](https://mc-stan.org), a
-state-of-the-art platform for Bayesian inference.
+**geostan** models were built using [**Stan**](https://mc-stan.org), a
+state-of-the-art platform for Bayesian modeling.
 
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.04716/status.svg)](https://doi.org/10.21105/joss.04716)
 
@@ -44,14 +44,12 @@ disease or mortality risk with censored observations.
 ### Spatial analysis tools
 
 Tools for visualizing and measuring spatial autocorrelation and map
-patterns, for exploratory analysis and model diagnostics. Visual
-diagnostics also support the evaluation of survey data quality and
-observational error models.
+patterns, for exploratory analysis and model diagnostics.
 
 ### The RStan ecosystem
 
-Compatible with a suite of high-quality R packages for Bayesian
-inference and model evaluation.
+Interfaces easily with many high-quality R packages for Bayesian
+modeling.
 
 ### Custom spatial models
 
@@ -144,7 +142,8 @@ diagnostics for spatial models:
 sp_diag(fit, georgia, w = A)
 #> Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.
 #> 3 NA values found in x; they will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. You may want to use a binary connectivity matrix using style = 'B' in shape2mat.
-#> Warning: Removed 3 rows containing missing values (`geom_pointrange()`).
+#> Warning: Removed 3 rows containing missing values
+#> (`geom_pointrange()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
@@ -162,20 +161,20 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.00316975 
-#> WAIC:  1291.71 
+#> Residual Moran Coefficient:  0.0021755 
+#> WAIC:  1291.91 
 #> Observations:  159 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
 #> 4 chains, each with iter=2000; warmup=1000; thin=1; 
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
-#>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff Rhat
-#> intercept -4.674   0.002 0.085 -4.845 -4.718 -4.675 -4.632 -4.504  2266    1
-#> car_rho    0.923   0.001 0.058  0.780  0.893  0.937  0.965  0.995  3281    1
-#> car_scale  0.457   0.001 0.035  0.392  0.432  0.455  0.479  0.530  3851    1
+#>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
+#> intercept -4.673   0.002 0.093 -4.843 -4.716 -4.674 -4.630 -4.497  1636 1.000
+#> car_rho    0.922   0.001 0.058  0.778  0.893  0.935  0.967  0.995  3214 1.001
+#> car_scale  0.458   0.001 0.035  0.393  0.433  0.455  0.481  0.532  3867 1.000
 #> 
-#> Samples were drawn using NUTS(diag_e) at Mon May 29 09:01:19 2023.
+#> Samples were drawn using NUTS(diag_e) at Wed Oct  4 12:20:45 2023.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
