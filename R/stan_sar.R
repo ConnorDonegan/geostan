@@ -61,7 +61,7 @@
 #' Using `drop = c('fitted', 'log_lik', 'alpha_re', 'x_true')` is equivalent to `slim = TRUE`. Note that if `slim = TRUE`, then `drop` will be ignored---so only use one or the other.
 #' @param control A named list of parameters to control the sampler's behavior. See \code{\link[rstan]{stan}} for details. 
 #' 
-#' @param ... Other arguments passed to \code{\link[rstan]{sampling}}. For multi-core processing, you can use \code{cores = parallel::detectCores()}, or run \code{options(mc.cores = parallel::detectCores())} first.
+#' @param ... Other arguments passed to \code{\link[rstan]{sampling}}. For multi-core processing, you can use \code{cores = parallel::detectCores()}.
 #' 
 #' @details
 #'
@@ -332,7 +332,7 @@ stan_sar <- function(formula,
         y = y,
         y_int = y_int,
         trials = rep(0, length(y)),
-        n = n,
+        #n = n,
         input_offset = offset,
         has_re = has_re,
         n_ids = n_ids,
@@ -405,7 +405,7 @@ stan_sar <- function(formula,
     if (censor_point > 0 | (standata$has_me == 1 && any(standata$use_logit == 1))) {
         FRAME <- sys.nframe()
         inits <- init_fn_builder(FRAME_NUMBER = FRAME)
-    }     
+    }
     ## CALL STAN -------------  
     if (keep_all == TRUE) {
         xparsx <- NA

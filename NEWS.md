@@ -1,3 +1,12 @@
+# geostan 0.5.2.1
+
+### minor fixes
+
+ - This fixes a bug identified in [issue 17](https://github.com/ConnorDonegan/geostan/issues/17); it does not seem to have caused an problems with the models. Some indicator variables that get passed to Stan in a list of data were being duplicated inside `stan_car`. However, this should not have affected the integrity of any previous results. 
+
+ - The `gamma` function is now named `gamma2` so that it does not clash with `base::gamma`. 
+
+
 # geostan 0.5.2
 
 This release was built using rstan 2.26.23, which incorporates Stan's new syntax for declaring arrays. Some models seems to run a little bit faster, but otherwise there are no changes that users should notice.

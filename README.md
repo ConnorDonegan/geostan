@@ -25,33 +25,33 @@ state-of-the-art platform for Bayesian modeling.
 
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.04716/status.svg)](https://doi.org/10.21105/joss.04716)
 
-### Disease mapping and spatial regression
+#### Disease mapping and spatial regression
 
 Statistical models for data recorded across areal units like states,
 counties, or census tracts.
 
-### Observational uncertainty
+#### Observational uncertainty
 
 Incorporate information on data reliability, such as standard errors of
 American Community Survey estimates, into any **geostan** model.
 
-### Censored observations
+#### Censored observations
 
 Vital statistics and disease surveillance systems like CDC Wonder censor
 case counts that fall below a threshold number; **geostan** can model
 disease or mortality risk with censored observations.
 
-### Spatial analysis tools
+#### Spatial analysis tools
 
 Tools for visualizing and measuring spatial autocorrelation and map
 patterns, for exploratory analysis and model diagnostics.
 
-### The RStan ecosystem
+#### The RStan ecosystem
 
 Interfaces easily with many high-quality R packages for Bayesian
 modeling.
 
-### Custom spatial models
+#### Custom spatial models
 
 Tools for building custom spatial models in
 [Stan](https://mc-stan.org/).
@@ -95,7 +95,7 @@ including a histogram, Moran scatter plot, and map:
 ``` r
 A <- shape2mat(georgia, style = "B")
 sp_diag(georgia$rate.female, georgia, w = A)
-#> 3 NA values found in x; they will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. You may want to use a binary connectivity matrix using style = 'B' in shape2mat.
+#> 3 NA values found in x will be dropped from data x and matrix w
 #> Warning: Removed 3 rows containing non-finite values (`stat_bin()`).
 ```
 
@@ -141,9 +141,8 @@ diagnostics for spatial models:
 ``` r
 sp_diag(fit, georgia, w = A)
 #> Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.
-#> 3 NA values found in x; they will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. You may want to use a binary connectivity matrix using style = 'B' in shape2mat.
-#> Warning: Removed 3 rows containing missing values
-#> (`geom_pointrange()`).
+#> 3 NA values found in x will be dropped from data x and matrix w
+#> Warning: Removed 3 rows containing missing values (`geom_pointrange()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
@@ -161,8 +160,8 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.0021755 
-#> WAIC:  1291.91 
+#> Residual Moran Coefficient:  0.00188375 
+#> WAIC:  1290.06 
 #> Observations:  159 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
@@ -170,11 +169,11 @@ print(fit)
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-#> intercept -4.673   0.002 0.093 -4.843 -4.716 -4.674 -4.630 -4.497  1636 1.000
-#> car_rho    0.922   0.001 0.058  0.778  0.893  0.935  0.967  0.995  3214 1.001
-#> car_scale  0.458   0.001 0.035  0.393  0.433  0.455  0.481  0.532  3867 1.000
+#> intercept -4.682   0.006 0.124 -4.885 -4.721 -4.676 -4.630 -4.498   503 1.012
+#> car_rho    0.925   0.001 0.057  0.784  0.898  0.938  0.968  0.996  2856 1.001
+#> car_scale  0.456   0.001 0.035  0.394  0.432  0.455  0.479  0.527  3902 1.000
 #> 
-#> Samples were drawn using NUTS(diag_e) at Wed Oct  4 12:20:45 2023.
+#> Samples were drawn using NUTS(diag_e) at Thu Oct 19 16:17:04 2023.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).

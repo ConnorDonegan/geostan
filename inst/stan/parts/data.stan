@@ -56,7 +56,7 @@
   vector[2] prior_rhox_true;
   // data for auto-Guassian [ME] models
   int<lower=0,upper=1> spatial_me;
-  int<lower=0,upper=1> WCAR;
+  int<lower=0,upper=1> ME_WCAR;
   int nAx_w;
   int nC;
   vector[nAx_w] Ax_w;
@@ -103,6 +103,7 @@
   real<lower=0> slab_df;
 
   // CAR
+  int<lower=0,upper=1> WCAR;
   array[2] real car_rho_lims;
   int<lower=0,upper=1> car;
 

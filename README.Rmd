@@ -28,27 +28,27 @@ The package is particularly suitable for public health research with spatial dat
 
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.04716/status.svg)](https://doi.org/10.21105/joss.04716)
 
-### Disease mapping and spatial regression
+#### Disease mapping and spatial regression
 
 Statistical models for data recorded across areal units like states, counties, or census tracts.  
 
-### Observational uncertainty 
+#### Observational uncertainty 
 
 Incorporate information on data reliability, such as standard errors of American Community Survey estimates, into any **geostan** model.
 
-### Censored observations
+#### Censored observations
 
 Vital statistics and disease surveillance systems like CDC Wonder censor case counts that fall below a threshold number; **geostan** can model disease or mortality risk with censored observations.
 
-### Spatial analysis tools
+#### Spatial analysis tools
 
 Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics. 
 
-### The RStan ecosystem
+#### The RStan ecosystem
 
 Interfaces easily with many high-quality R packages for Bayesian modeling.
 
-### Custom spatial models
+#### Custom spatial models
 
 Tools for building custom spatial models in [Stan](https://mc-stan.org/).
 
@@ -69,6 +69,7 @@ To ask questions, report a bug, or discuss ideas for improvements or new feature
 ## Usage
 
 Load the package and the `georgia` county mortality data set (ages 55-64, years 2014-2018):
+
 ```{r}
 library(geostan)
 data(georgia)

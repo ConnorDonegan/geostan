@@ -45,7 +45,7 @@ make_me_data <- function(ME, x) { # for x pass in x_no_Wx !
         sigma_me = array(t(sigma_me), dim = c(dx_me, n)),
         nm_me = names(ME$se),
         has_me = TRUE,
-        spatial_me = ME$spatial_me,
+        spatial_me = ME$spatial_me, #### also in ME$car_parts? or make_me_priors?
         use_logit = as.array(as.numeric(ME$logit))
         )
     me.list <- c(me.list, ME$car_parts)
@@ -81,10 +81,12 @@ empty_me.list <- function(x) {
         sigma_me = a.n.zeros(n),
         ME_prior_car_rho = vec.n.zeros(2),
         has_me = FALSE,
-        spatial_me = FALSE,
+        #spatial_me = FALSE, # created in make_me_priors
         use_logit = as.array(rep(0, times = dx_me))
     )
     me.list <- c(me.list, car_parts_shell(n))
+    me.list$ME_WCAR <- me.list$WCAR
+    me.list$WCAR <- NULL
     pl <- make_me_priors(NULL, me.list)
     me.list <- c(me.list, pl)
     return(me.list)

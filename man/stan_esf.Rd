@@ -79,7 +79,7 @@ alpha_tau ~ Student_t(d.f., location, scale).
 
 \item{sigma}{For \code{family = gaussian()} and \code{family = student_t()} models, the scale parameter, \code{sigma}, is assigned a (half-) Student's t prior distribution. The half-Student's t prior for \code{sigma} is constrained to be positive.}
 
-\item{nu}{\code{nu} is the degrees of freedom parameter in the Student's t likelihood (only used when \code{family = student_t()}). \code{nu} is assigned a gamma prior distribution. The default prior is \code{prior = list(nu = gamma(alpha = 3, beta = 0.2))}. }
+\item{nu}{\code{nu} is the degrees of freedom parameter in the Student's t likelihood (only used when \code{family = student_t()}). \code{nu} is assigned a gamma prior distribution. The default prior is \code{prior = list(nu = gamma2(alpha = 3, beta = 0.2))}. }
 
 \item{tau}{The scale parameter for random effects, or varying intercepts, terms. This scale parameter, \code{tau}, is assigned a half-Student's t prior. To set this, use, e.g., \code{prior = list(tau = student_t(df = 20, location = 0, scale = 20))}.}
 

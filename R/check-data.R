@@ -6,7 +6,7 @@ check_me_data <- function(ME, x.df) {
     stopifnot(length(ME$bounds) == 2)
     stopifnot(length(ME$logit) == ncol(ME$se))
     stopifnot(inherits(ME$logit, "logical") | inherits(ME$logit, "numeric"))
-    check_car_parts(ME$car_parts)
+    check_me_car_parts(ME$car_parts)
     check_me_prior(ME$prior)
     if (ME$spatial_me) stopifnot(nrow(ME$car_parts$C) == nrow(ME$se))
 }
@@ -30,6 +30,12 @@ check_me_prior <- function(prior) {
 check_car_parts <- function(car_parts) {
     if(!inherits(car_parts, "list")) stop("car_parts must be a list of data for the CAR model. See ?prep_car_data.")
     if(!all(c("Ax_w", "Ax_v", "Ax_u", "nAx_w", "Cidx", "nC", "Delta_inv", "log_det_Delta_inv", "WCAR", "lambda", "C") %in% names(car_parts))) stop("car_parts is missing at least one required part. See ?prep_car_data. Did you use cmat = TRUE and lambda = TRUE?")
+    stopifnot(inherits(car_parts$C, "Matrix") | inherits(car_parts$C, "matrix"))    
+}
+
+check_me_car_parts <- function(car_parts) {
+    if(!inherits(car_parts, "list")) stop("car_parts must be a list of data for the CAR model. See ?prep_car_data.")
+    if(!all(c("Ax_w", "Ax_v", "Ax_u", "nAx_w", "Cidx", "nC", "Delta_inv", "log_det_Delta_inv", "ME_WCAR", "lambda", "C") %in% names(car_parts))) stop("car_parts is missing at least one required part. See ?prep_car_data. Did you use cmat = TRUE and lambda = TRUE?")
     stopifnot(inherits(car_parts$C, "Matrix") | inherits(car_parts$C, "matrix"))    
 }
 

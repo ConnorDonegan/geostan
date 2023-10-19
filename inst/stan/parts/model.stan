@@ -19,7 +19,7 @@
 				   Ax_w, Ax_v, Ax_u,
 				   Cidx,
 				   Delta_inv, log_det_Delta_inv,
-				   lambda, n, WCAR);
+				   lambda, n, ME_WCAR);
       }
     } else {
       for (j in 1:dx_me) {
