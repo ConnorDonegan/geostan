@@ -332,12 +332,12 @@ stan_sar <- function(formula,
         y = y,
         y_int = y_int,
         trials = rep(0, length(y)),
-        n = n,
+        #n = n, # getting n from sar_parts, below
         input_offset = offset,
         has_re = has_re,
         n_ids = n_ids,
         id = id_index$idx,
-        center_x = centerx,  ####////!!!!####        
+        center_x = centerx,    
         ## slx data -------------    
         W_w = as.array(W.list$w),
         W_v = as.array(W.list$v),

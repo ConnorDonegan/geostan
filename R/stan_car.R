@@ -339,7 +339,7 @@ stan_car <- function(formula,
         y = y,
         y_int = y_int,
         trials = rep(0, length(y)),
-        n = n,
+        #n = n, # getting n from car_parts, below
         input_offset = offset,
         has_re = has_re,
         n_ids = n_ids,
@@ -381,7 +381,14 @@ stan_car <- function(formula,
     standata <- c(standata, empty_icar_data(n), empty_esf_data(n), empty_sar_data(n))    
     ## ME MODEL -------------
     me.list <- make_me_data(ME, xraw)
+
+    # remove ME-car parts: othwerise, they duplicate the car_parts argument
+    duplicates <- c("n", "nC", "nAx_w", "C", "Delta_inv", "log_det_Delta_inv", "Ax_w", "Ax_v", "Ax_u", "Cidx", "lambda", "WCAR")
+    me.list[which(names(me.list) %in% duplicates)] <- NULL
+
+    # append me.list to standata
     standata <- c(standata, me.list)
+        
     ## INTEGER OUTCOMES -------------    
     if (family$family == "binomial") {
         standata$y <- standata$y_int <- y[,1]
