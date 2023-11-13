@@ -60,7 +60,7 @@
 #' Using `drop = c('fitted', 'log_lik', 'alpha_re', 'x_true')` is equivalent to `slim = TRUE`. Note that if `slim = TRUE`, then `drop` will be ignored---so only use one or the other.
 #' @param control A named list of parameters to control the sampler's behavior. See \code{\link[rstan]{stan}} for details. 
 #' 
-#' @param ... Other arguments passed to \code{\link[rstan]{sampling}}. For multi-core processing, you can use \code{cores = parallel::detectCores()}.
+#' @param ... Other arguments passed to \code{\link[rstan]{sampling}}.
 #' 
 #' @details
 #'
@@ -344,7 +344,7 @@ stan_car <- function(formula,
         has_re = has_re,
         n_ids = n_ids,
         id = id_index$idx,
-        center_x = centerx,  ####////!!!!####        
+        center_x = centerx,         
         ## slx data -------------    
         W_w = as.array(W.list$w),
         W_v = as.array(W.list$v),

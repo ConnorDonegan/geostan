@@ -63,7 +63,7 @@
 #' Using `drop = c('fitted', 'log_lik', 'alpha_re', 'x_true')` is equivalent to `slim = TRUE`. Note that if `slim = TRUE`, then `drop` will be ignored---so only use one or the other.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
 #' @param control A named list of parameters to control the sampler's behavior. See \code{\link[rstan]{stan}} for details. 
-#' @param ... Other arguments passed to \link[rstan]{sampling}. For multi-core processing, you can use \code{cores = parallel::detectCores()}.
+#' @param ... Other arguments passed to \link[rstan]{sampling}.
 #' @details
 #' 
 #'  The intrinsic conditional autoregressive (ICAR) model for spatial data was introduced by Besag et al. (1991). The Stan code for the ICAR component of the model and the BYM2 option is from Morris et al. (2019) with adjustments to enable non-binary weights and disconnected graph structures (see Freni-Sterrantino (2018) and Donegan (2021)).
