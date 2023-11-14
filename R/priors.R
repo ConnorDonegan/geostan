@@ -35,7 +35,7 @@
 #'
 #' se <- data.frame(insurance = georgia$insurance.se)
 #' prior <- list()
-#' prior$df <- gamma(3, 0.2)
+#' prior$df <- gamma2(3, 0.2)
 #' prior$location <- normal(50, 50)
 #' prior$scale <- student_t(12, 10, 20)
 #' print(prior)
@@ -106,7 +106,7 @@ student_t <- function(df = 10, location = 0, scale, variable = NULL) {
 #' @rdname priors
 #' @export
 #' @md
-gamma <- function(alpha, beta, variable = NULL) {
+gamma2 <- function(alpha, beta, variable = NULL) {
     out <- list(dist = "gamma", alpha = alpha, beta = beta, variable = variable)
     class(out) <- append("prior", class(out))
     return (out)    

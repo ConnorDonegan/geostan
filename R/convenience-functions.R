@@ -1176,7 +1176,7 @@ get_shp <- function(url, folder = "shape") {
 #' @param car_parts A list of data required for spatial CAR models, as created by \code{\link[geostan]{prep_car_data}}; optional. If omitted, the measurement error model will be a non-spatial Student's t model.
 #' @param prior A named list of prior distributions (see \code{\link[geostan]{priors}}). If none are provided, default priors will be assigned. The list of priors may include the following parameters:
 #' \describe{
-#'  \item{df}{If using a non-spatial ME model, the degrees of freedom (df) for the Student's t model is assigned a gamma prior with default parameters of `gamma(alpha = 3, beta = 0.2)`. Provide values for each covariate in `se`, listing the values in the same order as the columns of `se`.}
+#'  \item{df}{If using a non-spatial ME model, the degrees of freedom (df) for the Student's t model is assigned a gamma prior with default parameters of `gamma2(alpha = 3, beta = 0.2)`. Provide values for each covariate in `se`, listing the values in the same order as the columns of `se`.}
 #'
 #' \item{location}{The prior for the location parameter (mu) is a normal (Gaussian) distribution (the default being `normal(location = 0, scale = 100)`). To adjust the prior distributions, provide values for each covariate in `se`, listing the values in the same order as the columns of se.}
 #'
@@ -1241,7 +1241,7 @@ prep_me_data <- function(se, bounds = c(-Inf, Inf), car_parts, prior, logit = re
             prior$car_rho <- uniform(lims[1], lims[2])
         }
     } else {
-        if (inherits(prior$df, "NULL")) prior$df <- gamma(rep(3, k), rep(0.2, k))
+        if (inherits(prior$df, "NULL")) prior$df <- gamma2(rep(3, k), rep(0.2, k))
     }            
     if (inherits(prior$location, "NULL")) prior$location <- normal(rep(0, k), rep(100, k))
     if (inherits(prior$scale, "NULL")) prior$scale <- student_t(df = rep(10, k), location = rep(0, k), scale = rep(40, k))

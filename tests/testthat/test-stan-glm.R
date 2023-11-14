@@ -153,7 +153,7 @@ test_that("Set priors for GLM", {
                         chains = 1,
                         family = student_t(),
                         prior = list(
-                            nu = gamma(3, 0.1),
+                            nu = gamma2(3, 0.1),
                             beta = normal(location = c(0,0),
                                                    scale = c(10,10)),
                                      intercept = normal(0, 10),

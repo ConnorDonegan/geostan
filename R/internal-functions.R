@@ -169,7 +169,7 @@ make_priors <- function(user_priors = NULL, y, x, hs_global_scale, scaling_facto
   }
   priors$alpha_tau <- student_t(df = 10, location = 0, scale = max(scaling_factor * scale.y, 3))
   priors$sigma <- student_t(df = 10, location = 0, scale = max(scaling_factor * scale.y, 3))
-  priors$nu <- gamma(alpha = 3, beta = 0.2)
+  priors$nu <- gamma2(alpha = 3, beta = 0.2)
   if(!missing(hs_global_scale)) {
       scale_ev <- sd(EV[,1])
       priors$beta_ev = hs(global_scale = hs_global_scale, slab_df = 15, slab_scale = 0.5 * (scale.y / scale_ev))
