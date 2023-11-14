@@ -40,7 +40,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.3</span>
       </span>
     </div>
 
@@ -106,8 +106,9 @@
 <blockquote>
 <p>Confirmatory statistics consists of experimental design, significance testing, estimation, and prediction, whereas EDA is concerned mainly with the encouragement of hypothesis formulation. (284)</p>
 </blockquote>
-<p>EDA techniques include all sorts of visual methods (histograms, scatter plots, etc.) that take a set of data, extract a limited summary of it (suppressing most other information), and then return a visual depiction that brings certain dimensions of (non-) variation to the foreground. As <span class="citation">Good (<a href="#ref-good_1983" role="doc-biblioref">1983</a>)</span> continues, “techniques of descriptive statistics are designed to match the salient features of the data set to human cognitive abilities” (287). Rather than ‘data-driven’ or descriptive, the investigator is explicitly interested in patterns that could be connected to a substantively interesting (“explicable”) hypothesis. EDA is also iterative: given some model has been built (or a hypothesis is entertained), one starts the process again by examining residuals and other features of the model. EDA thus suggests a process for model criticism and improvement by way successive approximation <span class="citation">(see Gabry et al. <a href="#ref-gabry_2019" role="doc-biblioref">2019</a>)</span>.</p>
-<p>Exploratory spatial data analysis (ESDA) <span class="citation">(Koschinsky <a href="#ref-koschinsky_2020" role="doc-biblioref">2020</a>)</span> includes all of this but also involves techniques that are of particular importance for spatially referenced data. ESDA involves tools for visualizing (residual) spatial patterns, decomposing spatial patterns into different elements across the map, and measuring the extent of spatial patterning in the data. Helpful ESDA tools draw out different spatial patterns from the data and communicate them in ways that are comprehensible to the human mind.</p>
+<p>EDA techniques include all sorts of visual methods (histograms, scatter plots, etc.) that take a set of data, extract a limited summary of it (suppressing most other information), and then return a visual depiction that brings certain dimensions of (non-) variation to the foreground. As <span class="citation">Good (<a href="#ref-good_1983" role="doc-biblioref">1983</a>)</span> continues, “techniques of descriptive statistics are designed to match the salient features of the data set to human cognitive abilities” (287). EDA is also iterative: given some model has been built (or a hypothesis is entertained), one starts the process again by examining residuals and other features of the model. EDA thus suggests a process for model criticism and improvement by way successive approximation <span class="citation">(see Gabry et al. <a href="#ref-gabry_2019" role="doc-biblioref">2019</a>)</span>.</p>
+<p>Exploratory spatial data analysis (ESDA) <span class="citation">(Koschinsky <a href="#ref-koschinsky_2020" role="doc-biblioref">2020</a>)</span> includes all of this but also involves techniques that are of particular importance for spatially referenced data. ESDA involves tools for visualizing (residual) spatial patterns, decomposing spatial patterns into different elements across the map, and measuring the extent of spatial patterning in the data. Helpful ESDA tools draw out different spatial patterns from the data and communicate them in ways that are comprehensible to the human mind. In some cases, ESDA can help to <em>contextualize</em> data points. If ESDA draws attention to certain data points—for example, select observations that are very different from surrounding values—then locating them geographically may help to understand them as specific cases, as opposed to quantitative abstractions.</p>
+<p>Given the purpose of ESDA, hypothesis tests are, in many cases, neither helpful nor necessary. This statement is consistent with the principles presented in Tukey’s <em>Exploratory Data Analysis</em> <span class="citation">(Tukey <a href="#ref-tukey_1993" role="doc-biblioref">1993</a>)</span>, although it conflicts with most texts on spatial data analysis.</p>
 </div>
 <div class="section level2">
 <h2 id="spatial-diagnostic-summary">Spatial diagnostic summary<a class="anchor" aria-label="anchor" href="#spatial-diagnostic-summary"></a>
@@ -268,8 +269,8 @@
 <span><span class="co">#&gt; Spatial method (outcome):  Exchangeable </span></span>
 <span><span class="co">#&gt; Likelihood function:  poisson </span></span>
 <span><span class="co">#&gt; Link function:  log </span></span>
-<span><span class="co">#&gt; Residual Moran Coefficient:  0.02310975 </span></span>
-<span><span class="co">#&gt; WAIC:  1319.74 </span></span>
+<span><span class="co">#&gt; Residual Moran Coefficient:  0.02397425 </span></span>
+<span><span class="co">#&gt; WAIC:  1318.96 </span></span>
 <span><span class="co">#&gt; Observations:  159 </span></span>
 <span><span class="co">#&gt; Data models (ME): none</span></span>
 <span><span class="co">#&gt; Inference for Stan model: foundation.</span></span>
@@ -277,10 +278,10 @@
 <span><span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat</span></span>
-<span><span class="co">#&gt; intercept -4.180   0.001 0.022 -4.223 -4.195 -4.180 -4.164 -4.137   240 1.027</span></span>
-<span><span class="co">#&gt; alpha_tau  0.248   0.000 0.016  0.219  0.236  0.247  0.258  0.281  3921 1.000</span></span>
+<span><span class="co">#&gt; intercept -4.180   0.001 0.021 -4.222 -4.194 -4.179 -4.165 -4.139   262 1.017</span></span>
+<span><span class="co">#&gt; alpha_tau  0.247   0.000 0.016  0.218  0.236  0.247  0.258  0.279  4325 1.000</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Wed Oct  4 12:08:33 2023.</span></span>
+<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Mon Nov 13 20:10:28 2023.</span></span>
 <span><span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">#&gt; convergence, Rhat=1).</span></span></code></pre></div>
@@ -318,13 +319,16 @@
 <p>Haining, Robert, and Guangquan Li. 2020. <em>Modelling Spatial and Spatial-Temporal Data: A Bayesian Approach</em>. CRC Press.</p>
 </div>
 <div id="ref-koschinsky_2020">
-<p>Koschinsky, Julia. 2020. “Discovering the Unexpected &amp; Explicable: Scientific Reasoning and Research Design for Spatial Data Analysis.” In <em>Central European Cartographic Conference and 68th German Cartography Congress—Eurocarto 2020, 21–25 September</em>. <a href="https://pdfs.semanticscholar.org/181e/b6b6f5c7d084141f99de2861dd31f4ac900b.pdf" class="external-link">https://pdfs.semanticscholar.org/181e/b6b6f5c7d084141f99de2861dd31f4ac900b.pdf</a>.</p>
+<p>Koschinsky, Julia. 2020. “Discovering the Unexpected &amp; Explicable: Scientific Reasoning and Research Design for Spatial Data Analysis.” In <em>Central European Cartographic Conference and 68th German Cartography Congress—Eurocarto 2020, 21–25 September</em>.</p>
 </div>
 <div id="ref-li_2007">
 <p>Li, Honfei, Catherine A. Calder, and Noel Cressie. 2007. “Beyond Moran’s I: Testing for Spatial Dependence Based on the Spatial Autoregressive Model.” <em>Geographical Analysis</em> 39 (4): 357–75.</p>
 </div>
 <div id="ref-mcelreath_2016">
 <p>McElreath, Richard. 2016. <em>Statistical Rethinking: A Bayesian Course with Eexamples in R and Stan</em>. CRC Press.</p>
+</div>
+<div id="ref-tukey_1993">
+<p>Tukey, John W. 1993. “Exploratory Data Analysis: Past, Present, and Future.” Technical Report No. 302 (Series 2), Department of Statistics, Princeton University. Accessed 10 Nov, 2023 from <code>https://apps.dtic.mil/sti/pdfs/ADA266775.pdf</code>.</p>
 </div>
 <div id="ref-unwin_1996">
 <p>Unwin, Antony. 1996. “Geary’s Contiguity Ratio.” <em>The Economic and Social Review</em> 27 (2): 145–59.</p>

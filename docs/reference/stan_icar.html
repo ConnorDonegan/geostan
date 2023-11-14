@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.3</span>
       </span>
     </div>
 
@@ -145,7 +145,7 @@
 
 
 <dt>nu</dt>
-<dd><p><code>nu</code> is the degrees of freedom parameter in the Student's t likelihood (only used when <code>family = student_t()</code>). <code>nu</code> is assigned a gamma prior distribution. The default prior is <code>prior = list(nu = gamma(alpha = 3, beta = 0.2))</code>.</p></dd>
+<dd><p><code>nu</code> is the degrees of freedom parameter in the Student's t likelihood (only used when <code>family = student_t()</code>). <code>nu</code> is assigned a gamma prior distribution. The default prior is <code>prior = list(nu = gamma2(alpha = 3, beta = 0.2))</code>.</p></dd>
 
 
 <dt>tau</dt>
@@ -223,7 +223,7 @@
 
 
 <dt>...</dt>
-<dd><p>Other arguments passed to <a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html" class="external-link">sampling</a>. For multi-core processing, you can use <code>cores = parallel::detectCores()</code>, or run <code>options(mc.cores = parallel::detectCores())</code> first.</p></dd>
+<dd><p>Other arguments passed to <a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html" class="external-link">sampling</a>.</p></dd>
 
 </dl></div>
     <div id="value">

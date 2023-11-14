@@ -94,8 +94,6 @@ lg <- function(x, w, digits = 3, scale = TRUE, na.rm = FALSE, warn = TRUE) {
 #' 
 #' Chun, Yongwan, and Daniel A. Griffith. Spatial Statistics and Geostatistics: Theory and Applications for Geographic Information Science and Technology. Sage, 2013.
 #' 
-#' Qing, Luo and Griffith, Daniel A. and Wu, Huayi. "The Moran Coefficient and Geary Ratio: Some mathematical and numerical comparisons." Proceedings of the 13th International Conference on Geocomputation. Richardson, TX (USA), May 20-23, 2015. \url{http://www.geocomputation.org/2015/}
-#' 
 #' Geary, R. C. "The contiguity ratio and statistical mapping." The Incorporated Statistician 5, no. 3 (1954): 115-127_129-146.
 #'
 #' Unwin, Antony. "Geary's Contiguity Ratio." The Economic and Social Review 27, no. 2 (1996): 145-159.
