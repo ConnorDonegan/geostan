@@ -113,7 +113,7 @@
 #' For \code{family = poisson()}, the model is specified as:
 #' \deqn{y \sim Poisson(e^{O + \lambda})}
 #' \deqn{\lambda \sim Gauss(\mu, (I - \rho C)^{-1} \boldsymbol M).}
-#' If the raw outcome consists of a rate \eqn{\frac{y}{p}} with observed counts \eqn{y} and denominator {p} (often this will be the size of the population at risk), then the offset term \eqn{O=log(p)} is the log of the denominator.
+#' If the raw outcome consists of a rate \eqn{\frac{y}{p}} with observed counts \eqn{y} and denominator \eqn{p} (often this will be the size of the population at risk), then the offset term \eqn{O=log(p)} is the log of the denominator.
 #'
 #' This is often written (equivalently) as:
 #' \deqn{y \sim Poisson(e^{O + \mu + \phi})}

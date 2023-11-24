@@ -110,7 +110,7 @@
 #' \deqn{\lambda \sim Gauss(\mu, \Sigma)}
 #' \deqn{\Sigma = \sigma^2 (I - \rho W)^{-1}(I - \rho W')^{-1}.}
 #' 
-#' If the raw outcome consists of a rate \eqn{\frac{y}{p}} with observed counts \eqn{y} and denominator {p} (often this will be the size of the population at risk), then the offset term \eqn{O=log(p)} is the log of the denominator.
+#' If the raw outcome consists of a rate \eqn{\frac{y}{p}} with observed counts \eqn{y} and denominator \eqn{p} (often this will be the size of the population at risk), then the offset term \eqn{O=log(p)} is the log of the denominator.
 #' 
 #' This is often written (equivalently) as:
 #' 

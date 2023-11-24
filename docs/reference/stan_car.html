@@ -309,7 +309,7 @@ To obtain "raw" residuals (\(y - \mu\)), use <code>residuals(fit, detrend = FALS
 <p>For <code>family = poisson()</code>, the model is specified as:
 $$y \sim Poisson(e^{O + \lambda})$$
 $$\lambda \sim Gauss(\mu, (I - \rho C)^{-1} \boldsymbol M).$$
-If the raw outcome consists of a rate \(\frac{y}{p}\) with observed counts \(y\) and denominator p (often this will be the size of the population at risk), then the offset term \(O=log(p)\) is the log of the denominator.</p>
+If the raw outcome consists of a rate \(\frac{y}{p}\) with observed counts \(y\) and denominator \(p\) (often this will be the size of the population at risk), then the offset term \(O=log(p)\) is the log of the denominator.</p>
 <p>This is often written (equivalently) as:
 $$y \sim Poisson(e^{O + \mu + \phi})$$
 $$\phi \sim Gauss(0, (I - \rho C)^{-1} \boldsymbol M).$$
