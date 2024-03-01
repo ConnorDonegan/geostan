@@ -203,9 +203,9 @@
 <span><span class="co">## 1 10        0     3</span></span>
 <span><span class="co">##   lower upper</span></span>
 <span><span class="co">## 1  -1.7     1</span></span></code></pre>
-<pre><code><span><span class="co">## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span></span>
+<pre><code><span><span class="co">## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span></span>
 <span><span class="co">## Running the chains for more iterations may help. See</span></span>
-<span><span class="co">## https://mc-stan.org/misc/warnings.html#tail-ess</span></span></code></pre>
+<span><span class="co">## https://mc-stan.org/misc/warnings.html#bulk-ess</span></span></code></pre>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Spatial Model Results </span></span>
@@ -213,8 +213,8 @@
 <span><span class="co">## Spatial method (outcome):  CAR </span></span>
 <span><span class="co">## Likelihood function:  poisson </span></span>
 <span><span class="co">## Link function:  log </span></span>
-<span><span class="co">## Residual Moran Coefficient:  6.076923e-05 </span></span>
-<span><span class="co">## WAIC:  1320.44 </span></span>
+<span><span class="co">## Residual Moran Coefficient:  -0.002759231 </span></span>
+<span><span class="co">## WAIC:  1322.25 </span></span>
 <span><span class="co">## Observations:  159 </span></span>
 <span><span class="co">## Data models (ME): insurance</span></span>
 <span><span class="co">##  Data model (ME prior): CAR (auto Gaussian)</span></span>
@@ -223,12 +223,12 @@
 <span><span class="co">## post-warmup draws per chain=325, total post-warmup draws=1300.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat</span></span>
-<span><span class="co">## intercept -4.168   0.002 0.053 -4.275 -4.201 -4.168 -4.136 -4.064  1210 0.999</span></span>
-<span><span class="co">## insurance -2.702   0.023 0.726 -4.084 -3.192 -2.706 -2.231 -1.263   975 1.003</span></span>
-<span><span class="co">## car_rho    0.860   0.003 0.088  0.651  0.808  0.876  0.924  0.982   923 1.000</span></span>
-<span><span class="co">## car_scale  0.451   0.001 0.034  0.388  0.427  0.450  0.472  0.518   837 0.999</span></span>
+<span><span class="co">## intercept -4.165   0.002 0.057 -4.279 -4.199 -4.166 -4.134 -4.040   982 1.000</span></span>
+<span><span class="co">## insurance -2.705   0.021 0.775 -4.168 -3.207 -2.729 -2.185 -1.108  1301 1.001</span></span>
+<span><span class="co">## car_rho    0.869   0.002 0.085  0.673  0.821  0.886  0.933  0.985  1281 0.999</span></span>
+<span><span class="co">## car_scale  0.446   0.001 0.032  0.388  0.423  0.444  0.466  0.511  1030 0.999</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Samples were drawn using NUTS(diag_e) at Fri Mar  1 17:47:26 2024.</span></span>
+<span><span class="co">## Samples were drawn using NUTS(diag_e) at Fri Mar  1 17:55:22 2024.</span></span>
 <span><span class="co">## For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">## and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">## convergence, Rhat=1).</span></span></code></pre>
@@ -271,15 +271,15 @@
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mu.x</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##           parameters</span></span>
 <span><span class="co">## iterations mu_x_true[1]</span></span>
-<span><span class="co">##       [1,]     1.765196</span></span>
-<span><span class="co">##       [2,]     1.835926</span></span>
-<span><span class="co">##       [3,]     1.885358</span></span>
-<span><span class="co">##       [4,]     1.822978</span></span>
-<span><span class="co">##       [5,]     1.719493</span></span>
-<span><span class="co">##       [6,]     1.563228</span></span></code></pre>
+<span><span class="co">##       [1,]     1.791290</span></span>
+<span><span class="co">##       [2,]     1.829802</span></span>
+<span><span class="co">##       [3,]     1.752293</span></span>
+<span><span class="co">##       [4,]     1.765069</span></span>
+<span><span class="co">##       [5,]     1.864278</span></span>
+<span><span class="co">##       [6,]     1.689700</span></span></code></pre>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">mu.x</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 1.787358</span></span></code></pre>
+<pre><code><span><span class="co">## [1] 1.785871</span></span></code></pre>
 <p>We can visualize these using <code>plot</code> or print a summary:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span>, pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mu_x_true"</span>, <span class="st">"car_rho_x_true"</span>, <span class="st">"sigma_x_true"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
@@ -288,11 +288,11 @@
 <span><span class="co">## post-warmup draws per chain=325, total post-warmup draws=1300.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##                   mean se_mean   sd 2.5%  25%  50%  75% 97.5% n_eff Rhat</span></span>
-<span><span class="co">## mu_x_true[1]      1.79    0.01 0.09 1.61 1.75 1.79 1.83  1.98   206 1.03</span></span>
-<span><span class="co">## car_rho_x_true[1] 0.91    0.00 0.06 0.76 0.88 0.93 0.96  0.99   808 1.00</span></span>
-<span><span class="co">## sigma_x_true[1]   0.48    0.00 0.03 0.42 0.46 0.48 0.50  0.56   909 1.00</span></span>
+<span><span class="co">## mu_x_true[1]      1.79       0 0.09 1.63 1.74 1.79 1.83  1.94   648    1</span></span>
+<span><span class="co">## car_rho_x_true[1] 0.91       0 0.07 0.73 0.87 0.92 0.95  0.99  1138    1</span></span>
+<span><span class="co">## sigma_x_true[1]   0.48       0 0.03 0.42 0.46 0.48 0.50  0.55  1393    1</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Samples were drawn using NUTS(diag_e) at Fri Mar  1 17:47:26 2024.</span></span>
+<span><span class="co">## Samples were drawn using NUTS(diag_e) at Fri Mar  1 17:55:22 2024.</span></span>
 <span><span class="co">## For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">## and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">## convergence, Rhat=1).</span></span></code></pre>
@@ -306,9 +306,9 @@
 <code class="sourceCode R"><span><span class="va">x.mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2</span>, <span class="va">mean</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">x.mu</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## x_insurance[1] x_insurance[2] x_insurance[3] x_insurance[4] x_insurance[5] </span></span>
-<span><span class="co">##      0.8366108      0.7999680      0.8518015      0.8520586      0.9180799 </span></span>
+<span><span class="co">##      0.8366455      0.7997958      0.8517097      0.8521625      0.9179326 </span></span>
 <span><span class="co">## x_insurance[6] </span></span>
-<span><span class="co">##      0.8701718</span></span></code></pre>
+<span><span class="co">##      0.8702921</span></span></code></pre>
 <p>The vector <code>x.mu</code> contains estimates (posterior means) for <span class="math inline">\(x_i\)</span>. We might want to use these to plot the residuals or fitted values against the predictor:</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">$</span><span class="va">mean</span></span>

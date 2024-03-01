@@ -45,7 +45,7 @@ eigen_grid <- function(row = 5, col = 5) {
 #'
 #' Prepare input data for the CAR model when your dataset consists of observations on a regular (rectangular) tessellation, such as a raster layer or remotely sensed imagery. The rook criteria is used to determine adjacency. This function uses Equation 5 from Griffith (2000) to generate approximate eigenvalues for a row-standardized spatial weights matrix from a P-by-Q dimension regular tessellation.
 #'
-#' This function can accomodate very large numbers of observations for use with \code{\link[geostan]{stan_car}}; for large N data, it is also recommended to use `slim = TRUE` or the `drop` argument. For more details, see: \code{vignette("raster-regression", package = "geostan")}.
+#' This function can accommodate very large numbers of observations for use with \code{\link[geostan]{stan_car}}; for large N data, it is also recommended to use `slim = TRUE` or the `drop` argument. For more details, see: \code{vignette("raster-regression", package = "geostan")}.
 #' 
 #' @source
 #'
@@ -114,7 +114,7 @@ prep_car_data2 <- function(row = 100, col = 100) {
 #'
 #' Prepare data for the SAR model when your raw dataset consists of observations on a regular tessellation, such as a raster layer or remotely sensed imagery. The rook criteria is used to determine adjacency. This function uses Equation 5 from Griffith (2000) to calculate the eigenvalues for a row-standardized spatial weights matrix of a P-by-Q dimension regular tessellation.
 #'
-#' This function can accomodate very large numbers of observations for use with \code{\link[geostan]{stan_sar}}; for large N data, it is also recommended to use `slim = TRUE` or the `drop` argument. For details, see: \code{vignette("raster-regression", package = "geostan")}.
+#' This function can accommodate very large numbers of observations for use with \code{\link[geostan]{stan_sar}}; for large N data, it is also recommended to use `slim = TRUE` or the `drop` argument. For details, see: \code{vignette("raster-regression", package = "geostan")}.
 #'
 #' @seealso
 #' \code{\link[geostan]{prep_car_data2}}, \code{\link[geostan]{prep_sar_data}}, \code{\link[geostan]{stan_sar}}.

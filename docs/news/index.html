@@ -84,7 +84,7 @@
 <code>slim = TRUE</code> The model fitting functions (<code>stan_glm</code>, <code>stan_car</code>, <code>stan_sar</code>, <code>stan_esf</code>, <code>stan_icar</code>) now provide the option to trim down the parameters for which MCMC samples are collected. For large N and/or many N-length vectors of parameters, this option can speed up sampling considerably and reduce memory usage. The new <code>drop</code> argument provides users control over which parameter vectors will be ignored. This functionality may be helpful for any number of purposes, including modeling large data sets, measurement error models, and Monte Carlo studies.</li>
 <li>
 <code>prep_sar_data2</code> and <code>prep_car_data2</code> These two functions can quickly prepare required data for SAR and CAR models when using raster layers (observations on a regularly spaced grid). The standard and more generally applicable functions <code>prep_car_data</code> and <code>prep_sar_data</code> are limited in terms of the size of spatial weights matrices they can handle.</li>
-</ol><p>These new functions are dicussed in a new vignette titled “Raster regression.”</p>
+</ol><p>These new functions are discussed in a new vignette titled “Raster regression.”</p>
 </div>
 <div class="section level3">
 <h3 id="minor-changes-0-5-0">Minor changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-5-0"></a></h3>

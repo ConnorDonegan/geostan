@@ -33,7 +33,7 @@ The package now provides some support for spatial regression with raster data, i
  1. `slim = TRUE` The model fitting functions (`stan_glm`, `stan_car`, `stan_sar`, `stan_esf`, `stan_icar`) now provide the option to trim down the parameters for which MCMC samples are collected. For large N and/or many N-length vectors of parameters, this option can speed up sampling considerably and reduce memory usage. The new `drop` argument provides users control over which parameter vectors will be ignored. This functionality may be helpful for any number of purposes, including modeling large data sets, measurement error models, and Monte Carlo studies.
  2. `prep_sar_data2` and `prep_car_data2` These two functions can quickly prepare required data for SAR and CAR models when using raster layers (observations on a regularly spaced grid). The standard and more generally applicable functions `prep_car_data` and `prep_sar_data` are limited in terms of the size of spatial weights matrices they can handle.
 
-These new functions are dicussed in a new vignette titled "Raster regression."
+These new functions are discussed in a new vignette titled "Raster regression."
 
 ## Minor changes
 
