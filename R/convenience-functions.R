@@ -725,8 +725,6 @@ auto_gaussian <- function(type) {
 #' @param digits Round results to this many digits.
 #' 
 #' @return A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density \code{Lpd}. If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
-#' 
-#' @seealso \code{\link[loo]{waic}} \code{\link[loo]{loo}}
 #'
 #' @examples
 #' data(georgia)
@@ -1172,7 +1170,6 @@ get_shp <- function(url, folder = "shape") {
 #' @description Prepares the list of data required for geostan's (spatial) measurement error models. Given a data frame of standard errors and any optional arguments, the function returns a list with all required data for the models, filling in missing elements with default values.
 #' 
 #' @param se Data frame of standard errors; column names must match (exactly) the variable names used in the model formula. 
-#' @param bounds An optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables. If not provided, they will be set to c(-Inf, Inf) (i.e., unbounded). Common usages include keeping percentages between zero and one hundred or proportions between zero and one.
 #' @param car_parts A list of data required for spatial CAR models, as created by \code{\link[geostan]{prep_car_data}}; optional. If omitted, the measurement error model will be a non-spatial Student's t model.
 #' @param prior A named list of prior distributions (see \code{\link[geostan]{priors}}). If none are provided, default priors will be assigned. The list of priors may include the following parameters:
 #' \describe{
@@ -1185,11 +1182,15 @@ get_shp <- function(url, folder = "shape") {
 #' \item{car_rho}{The CAR model, if used, has a spatial autocorrelation parameter, `rho`, which is assigned a uniform prior distribution. You must specify values that are within the permissible range of values for `rho`; these are automatically printed to the console by the \code{\link[geostan]{prep_car_data}} function.}
 #' 
 #' }
-#' @param logit Optional vector of logical values (`TRUE`, `FALSE`) indicating if the variable should be logit-transformed before being modeled. When `TRUE`, the sampling error will be modeled on the untransformed scale as usual; however, the spatial CAR prior model (or non-spatial Student's t prior model) will be assigned to the logit-transformed variate. Transformation can be crucial for modeling proportions with frequency distributions that are highly skewed.
-#'
+#' @param logit Optional vector of logical values (`TRUE`, `FALSE`) indicating if the latent variable should be logit-transformed. Only use for rates. This keeps rates between zero and one and may improve modeling of skewed variables (e.g., the poverty rate).
+#' 
+#'@param bounds Rarely needed; an optional numeric vector of length two providing the upper and lower bounds, respectively, of the variables (e.g., a magnitudes must be greater than 0). If not provided, they will be set to c(-Inf, Inf) (i.e., unbounded).
+#' 
 #' @return
 #'
 #' A list of data as required for (spatial) ME models. Missing arguments will be filled in with default values, including prior distributions.
+#'
+#' @seealso \link[geostan]{se_log}
 #' 
 #' @examples
 #' data(georgia)
@@ -1215,7 +1216,7 @@ get_shp <- function(url, folder = "shape") {
 #'                    car_parts = cars)
 #' @export
 #' @md
-prep_me_data <- function(se, bounds = c(-Inf, Inf), car_parts, prior, logit = rep(FALSE, times = ncol(se))) {
+prep_me_data <- function(se, car_parts, prior, logit = rep(FALSE, times = ncol(se)), bounds = c(-Inf, Inf)) {
     stopifnot(inherits(se, "data.frame"))
     stopifnot(inherits(bounds, "numeric"))
     stopifnot(length(bounds) == 2)

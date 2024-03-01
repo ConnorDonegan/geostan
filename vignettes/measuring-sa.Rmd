@@ -3,7 +3,9 @@ title: "Exploratory spatial data analysis"
 date: September 13, 2021
 output: 
   rmarkdown::html_vignette:
-    toc: true
+    toc: true 
+    toc_depth: 3  # upto three depths of headings (specified by #, ## and ###)
+    number_sections: true    
 header-includes:
    - \usepackage{amsmath}
 vignette: >
@@ -49,7 +51,7 @@ EDA techniques include all sorts of visual methods (histograms, scatter plots, e
 
 Exploratory spatial data analysis (ESDA) [@koschinsky_2020] includes all of this but also involves techniques that are of particular importance for spatially referenced data. ESDA involves tools for visualizing (residual) spatial patterns, decomposing spatial patterns into different elements across the map, and measuring the extent of spatial patterning in the data. Helpful ESDA tools draw out different spatial patterns from the data and communicate them in ways that are comprehensible to the human mind. In some cases, ESDA can help to *contextualize* data points. If ESDA draws attention to certain data points---for example, select observations that are very different from surrounding values---then locating them geographically may help to understand them as specific cases, as opposed to quantitative abstractions. 
 
-Given the purpose of ESDA, hypothesis tests are, in many cases, neither helpful nor necessary. This statement is consistent with the principles presented in Tukey's *Exploratory Data Analysis* [@tukey_1993], although it conflicts with most texts on spatial data analysis. 
+Tukey's *Exploratory Data Analysis* [@tukey_1993] also offers principles for EDA and favors an approach to EDA that generally eschews hypothesis testing.
 
 ## Spatial diagnostic summary
 

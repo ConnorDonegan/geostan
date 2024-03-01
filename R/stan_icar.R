@@ -51,7 +51,7 @@
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples; set \code{refresh=0} to silence this.
 #' @param keep_all  If `keep_all = TRUE` then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors and the `bridgesampling` package.
 #' @param slim If `slim = TRUE`, then the Stan model will not collect the most memory-intensive parameters (including n-length vectors of fitted values, log-likelihoods, and ME-modeled covariate values). This will disable many convenience functions that are otherwise available for fitted \code{geostan} models, such as the extraction of residuals, fitted values, and spatial trends, WAIC, and spatial diagnostics, and ME diagnostics; many quantities of interest, such as fitted values and spatial trends, can still be calculated manually using given parameter estimates. The "slim" option is designed for data-intensive routines, such as regression with raster data, Monte Carlo studies, and measurement error models. For more control over which parameters are kept or dropped, use the `drop` argument instead of `slim`.
-#' @param drop Provide a vector of character strings to specify the names of any parameters that you do not want MCMC samples for. Dropping parameters in this way can improve sampling speed and reduce memory usage. The following parameter vectors can potentially be dropped from GLM models:
+#' @param drop Provide a vector of character strings to specify the names of any parameters that you do not want MCMC samples for. Dropping parameters in this way can improve sampling speed and reduce memory usage. The following parameter vectors can potentially be dropped from ICAR models:
 #' \describe{
 #' \item{fitted}{The N-length vector of fitted values}
 #' \item{log_lik}{The N-length vector of pointwise log-likelihoods, which is used to calculate WAIC.}
@@ -60,7 +60,7 @@
 #' \item{phi}{The N-length vector of spatially-autocorrelated parameters (with the ICAR prior).}
 #' \item{theta}{The N-length vector of spatially unstructured parameters ('random effects'), for the BYM and BYM2 models.}
 #' }
-#' Using `drop = c('fitted', 'log_lik', 'alpha_re', 'x_true')` is equivalent to `slim = TRUE`. Note that if `slim = TRUE`, then `drop` will be ignored---so only use one or the other.
+#' If `slim = TRUE`, then `drop` will be ignored.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
 #' @param control A named list of parameters to control the sampler's behavior. See \code{\link[rstan]{stan}} for details. 
 #' @param ... Other arguments passed to \link[rstan]{sampling}.

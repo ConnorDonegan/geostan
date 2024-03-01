@@ -103,7 +103,7 @@ Before using this term, read the \code{Details} section and the \code{type} argu
 
 \item{slim}{If \code{slim = TRUE}, then the Stan model will not collect the most memory-intensive parameters (including n-length vectors of fitted values, log-likelihoods, and ME-modeled covariate values). This will disable many convenience functions that are otherwise available for fitted \code{geostan} models, such as the extraction of residuals, fitted values, and spatial trends, WAIC, and spatial diagnostics, and ME diagnostics; many quantities of interest, such as fitted values and spatial trends, can still be calculated manually using given parameter estimates. The "slim" option is designed for data-intensive routines, such as regression with raster data, Monte Carlo studies, and measurement error models. For more control over which parameters are kept or dropped, use the \code{drop} argument instead of \code{slim}.}
 
-\item{drop}{Provide a vector of character strings to specify the names of any parameters that you do not want MCMC samples for. Dropping parameters in this way can improve sampling speed and reduce memory usage. The following parameter vectors can potentially be dropped from GLM models:
+\item{drop}{Provide a vector of character strings to specify the names of any parameters that you do not want MCMC samples for. Dropping parameters in this way can improve sampling speed and reduce memory usage. The following parameter vectors can potentially be dropped from ICAR models:
 \describe{
 \item{fitted}{The N-length vector of fitted values}
 \item{log_lik}{The N-length vector of pointwise log-likelihoods, which is used to calculate WAIC.}
@@ -112,7 +112,7 @@ Before using this term, read the \code{Details} section and the \code{type} argu
 \item{phi}{The N-length vector of spatially-autocorrelated parameters (with the ICAR prior).}
 \item{theta}{The N-length vector of spatially unstructured parameters ('random effects'), for the BYM and BYM2 models.}
 }
-Using \code{drop = c('fitted', 'log_lik', 'alpha_re', 'x_true')} is equivalent to \code{slim = TRUE}. Note that if \code{slim = TRUE}, then \code{drop} will be ignored---so only use one or the other.}
+If \code{slim = TRUE}, then \code{drop} will be ignored.}
 
 \item{pars}{Optional; specify any additional parameters you'd like stored from the Stan model.}
 

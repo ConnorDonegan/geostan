@@ -4,7 +4,9 @@ date: October 2, 2023
 author: Connor Donegan
 output: 
   rmarkdown::html_vignette:
-    toc: true
+    toc: true 
+    toc_depth: 3  # upto three depths of headings (specified by #, ## and ###)
+    number_sections: true    
 header-includes:
    - \usepackage{amsmath}
 vignette: >

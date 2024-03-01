@@ -1,0 +1,3 @@
+
+
+Package was archived on CRAN due to gcc-UBSAN issues which stem from StanHeaders. StanHeaders has since been updated to fix this issue. 

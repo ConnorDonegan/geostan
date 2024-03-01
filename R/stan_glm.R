@@ -59,7 +59,7 @@
 #' \item{'alpha_re'}{Vector of 'random effects'/varying intercepts.}
 #' \item{'x_true'}{N-length vector of 'latent'/modeled covariate values created for measurement error (ME) models.}
 #' }
-#' Using `drop = c('fitted', 'log_lik', 'alpha_re', 'x_true')` is equivalent to `slim = TRUE`. Note that if `slim = TRUE`, then `drop` will be ignored---so only use one or the other.
+#' Using `drop = c('fitted', 'log_lik', 'alpha_re', 'x_true')` is equivalent to `slim = TRUE`. If `slim = TRUE`, then `drop` will be ignored.
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. 
 #' @param ... Other arguments passed to \link[rstan]{sampling}.
 #' 

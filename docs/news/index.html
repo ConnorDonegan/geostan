@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.4</span>
       </span>
     </div>
 
@@ -51,11 +51,15 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="0.5.3" id="geostan-053">geostan 0.5.3<a class="anchor" aria-label="anchor" href="#geostan-053"></a></h2>
+<h2 class="page-header" data-toc-text="0.5.4" id="geostan-054">geostan 0.5.4<a class="anchor" aria-label="anchor" href="#geostan-054"></a></h2>
+<p>Minor updates to the vignettees and documentation, also re-compiled geostan models using the latest StanHeaders (fixing an error on CRAN).</p>
+</div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.5.3" id="geostan-053">geostan 0.5.3<small>2023-11-24</small><a class="anchor" aria-label="anchor" href="#geostan-053"></a></h2>
 <div class="section level4">
 <h4 id="minor-changes-0-5-3">Minor changes<a class="anchor" aria-label="anchor" href="#minor-changes-0-5-3"></a></h4>
-<p>The <code>gamma</code> function has been renamed to <code><a href="../reference/priors.html">geostan::gamma2</a></code> to avoid conflict with <code><a href="https://rdrr.io/r/base/Special.html" class="external-link">base::gamma</a></code>.</p>
-<p>Some code for <code><a href="../reference/stan_car.html">geostan::stan_car</a></code> was cleaned up to avoid sending duplicate variables to the Stan model when a spatial ME (measurement error) model was used: <a href="https://github.com/ConnorDonegan/geostan/issues/17" class="external-link uri">https://github.com/ConnorDonegan/geostan/issues/17</a>. This should not change any functionality or results.</p>
+<p>The <code>gamma</code> function (which is available to help set prior distributions) has been renamed to <code><a href="../reference/priors.html">geostan::gamma2</a></code> to avoid conflict with <code><a href="https://rdrr.io/r/base/Special.html" class="external-link">base::gamma</a></code>.</p>
+<p>Some code for <code><a href="../reference/stan_car.html">geostan::stan_car</a></code> was cleaned up to avoid sending duplicate variables to the Stan model when a spatial ME (measurement error) model was used: <a href="https://github.com/ConnorDonegan/geostan/issues/17" class="external-link uri">https://github.com/ConnorDonegan/geostan/issues/17</a>. This should not change any functionality and there is no reason to suspect that results were ever impacted by the duplicate variables.</p>
 </div>
 </div>
     <div class="section level2">

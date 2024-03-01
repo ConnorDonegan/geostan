@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.4</span>
       </span>
     </div>
 
@@ -192,7 +192,7 @@
 
 
 <dt>drop</dt>
-<dd><p>Provide a vector of character strings to specify the names of any parameters that you do not want MCMC samples for. Dropping parameters in this way can improve sampling speed and reduce memory usage. The following parameter vectors can potentially be dropped from GLM models:</p><dl><dt>fitted</dt>
+<dd><p>Provide a vector of character strings to specify the names of any parameters that you do not want MCMC samples for. Dropping parameters in this way can improve sampling speed and reduce memory usage. The following parameter vectors can potentially be dropped from ICAR models:</p><dl><dt>fitted</dt>
 <dd><p>The N-length vector of fitted values</p></dd>
 
 <dt>log_lik</dt>
@@ -211,7 +211,7 @@
 <dd><p>The N-length vector of spatially unstructured parameters ('random effects'), for the BYM and BYM2 models.</p></dd>
 
 
-</dl><p>Using <code>drop = c('fitted', 'log_lik', 'alpha_re', 'x_true')</code> is equivalent to <code>slim = TRUE</code>. Note that if <code>slim = TRUE</code>, then <code>drop</code> will be ignored---so only use one or the other.</p></dd>
+</dl><p>If <code>slim = TRUE</code>, then <code>drop</code> will be ignored.</p></dd>
 
 
 <dt>pars</dt>

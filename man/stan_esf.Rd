@@ -113,7 +113,7 @@ alpha_tau ~ Student_t(d.f., location, scale).
 \item{esf}{The N-length eigenvector spatial filter.}
 \item{beta_ev}{The vector of coefficients for the eigenvectors.}
 }
-Using \code{drop = c('fitted', 'log_lik', 'alpha_re', 'x_true', 'esf', 'beta_ev')} is equivalent to \code{slim = TRUE}. Note that if \code{slim = TRUE}, then \code{drop} will be ignored---so only use one or the other.}
+If \code{slim = TRUE}, then \code{drop} will be ignored.}
 
 \item{pars}{Optional; specify any additional parameters you'd like stored from the Stan model.}
 

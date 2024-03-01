@@ -1,3 +1,7 @@
+# geostan 0.5.4
+
+Minor updates to the vignettees and documentation, also re-compiled geostan models using the latest StanHeaders (fixing an error on CRAN).
+
 # geostan 0.5.3
 
 ### Minor changes

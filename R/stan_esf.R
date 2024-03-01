@@ -62,7 +62,7 @@
 #' \item{esf}{The N-length eigenvector spatial filter.}
 #' \item{beta_ev}{The vector of coefficients for the eigenvectors.}
 #' }
-#' Using `drop = c('fitted', 'log_lik', 'alpha_re', 'x_true', 'esf', 'beta_ev')` is equivalent to `slim = TRUE`. Note that if `slim = TRUE`, then `drop` will be ignored---so only use one or the other.
+#' If `slim = TRUE`, then `drop` will be ignored.
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. 
 #' 
