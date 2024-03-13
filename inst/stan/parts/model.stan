@@ -5,6 +5,7 @@
   if (dx_all) target += normal_lpdf(append_row(gamma, beta) | prior_beta_location, prior_beta_scale);
   if (has_sigma) target += student_t_lpdf(sigma | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
   if (is_student) target += gamma_lpdf(nu[1] | prior_t_nu[1], prior_t_nu[2]);
+
 // data models (observational uncertainty)
   if (dx_me) {
     if (spatial_me) {
@@ -32,20 +33,24 @@
       target += normal_lpdf(mu_x_true | prior_mux_true_location, prior_mux_true_scale);
       target += student_t_lpdf(sigma_x_true | prior_sigmax_true_df, prior_sigmax_true_location, prior_sigmax_true_scale);
 }
+
 // partial pooling of observations across all groups/geographies (varying intercept)
   if (has_re) {
     target += normal_lpdf(alpha_re | 0, alpha_tau[has_re]);
     target += student_t_lpdf(alpha_tau[has_re] | prior_alpha_tau[1], prior_alpha_tau[2], prior_alpha_tau[3]);
   }
+
 // process model (likelihood)
   if (!prior_only) {
-    if (is_student)  target += student_t_lpdf(y | nu[1], fitted, sigma[has_sigma]);
-    if (is_gaussian) target += normal_lpdf(y | fitted, sigma[has_sigma]);
+    if (is_student)  target += student_t_lpdf(y[y_obs_idx] | nu[1], fitted[y_obs_idx], sigma[has_sigma]);
+    if (is_gaussian) target += normal_lpdf(y[y_obs_idx] | fitted[y_obs_idx], sigma[has_sigma]);
     if (is_poisson) {
       target += poisson_lpmf(y_int[y_obs_idx] | fitted[y_obs_idx]);
       if (censor_point > 0) target += poisson_lcdf(censor_point | fitted[y_mis_idx]);
     }
-    if (is_binomial) target += binomial_lpmf(y_int | trials, fitted);
+    if (is_binomial) {
+      target += binomial_lpmf(y_int[y_obs_idx] | trials[y_obs_idx], fitted[y_obs_idx]);
+    }   
 }
 
   // ICAR
@@ -59,6 +64,7 @@
     phi_tilde ~ icar_normal(spatial_scale[1], node1, node2, k, group_size, group_idx, has_theta);
     if (m) target += normal_lpdf(alpha_phi | 0, prior_alpha[2]);
   }
+
   // ESF
   if (dev) {
     target += std_normal_lpdf(z);
@@ -68,6 +74,7 @@
     target += inv_gamma_lpdf(aux2_global[1] | 0.5, 0.5); // .5 * nu_local, .5 * nu_global, both = 1
     target += inv_gamma_lpdf(caux[1] | 0.5*slab_df, 0.5*slab_df);
   }
+
   // CAR
   if (car) {
     target += student_t_lpdf(car_scale[1] | prior_sigma[1], prior_sigma[2], prior_sigma[3]);

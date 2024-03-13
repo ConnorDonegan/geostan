@@ -29,9 +29,9 @@ This tutorial is written with the assumption that the reader is already familiar
 
 The CAR model is a multivariate normal distribution with covariance matrix $$\Sigma = (I - \rho \cdot C)^{-1} M,$$ where $I$ is the identity matrix, $\rho$ a spatial autocorrelation parameter which may be positive or negative, $C$ is a sparse connectivity matrix, and $M$ is a diagonal matrix with scale parameters $\tau_i^2$. There is typically a single scale parameter $\tau$ multiplied by weights $\delta_i$. The term $\tau^2 \cdot \delta_i$ is the conditional variance pertaining to $y_i | y_{n(i)}$ where $n(i)$ lists the areas that neighbor the $i^{th}$ one.
 
-The defining feature of the CAR model is that, similar to time-series autoregression, the expectation for the value at the $i^{th}$ site given any or all other values of $y$ besides $i$ ($y_{-i}$) are known, is a function of the neighboring values: $$\mathbb{E}[y_i | y_{-i}] = \mu_ + \sum_{j \in n(i)} \rho \cdot c_{ij} (y_j - \mu).$$
+The defining feature of the CAR model is that, similar to time-series autoregression, the expectation for the value at the $i^{th}$ site given any or all other values of $y$ besides $i$ ($y_{-i}$) are known, is a function of the neighboring values: $$\mathbb{E}[y_i | y_{-i}] = \mu_j + \sum_{j \in n(i)} \rho \cdot c_{ij} (y_j - \mu_j).$$
 
-The CAR function presented here is valid for what is sometimes called the WCAR specification. This is the most commonly employed CAR specification. The connectivity matrix is row-standardized. Let $A$ be a symmetric binary connectivity matrix where $a_{ij}= 1$ only if the $i^{th}$ and $j^{th}$ sites are neighbors, all other entries are zero (including the diagonal entries $i=j$). The elements of $C$ are
+The CAR function presented here is valid for what is sometimes called the WCAR specification. This is the most commonly employed CAR specification (see @donegan_2022 for CAR models without this restriction). The connectivity matrix is row-standardized. Let $A$ be a symmetric binary connectivity matrix where $a_{ij}= 1$ only if the $i^{th}$ and $j^{th}$ sites are neighbors, all other entries are zero (including the diagonal entries $i=j$). The elements of $C$ are
 $$c_{ij} = \frac{a_{ij}}{\sum_j^n a_{ij}} = \frac{a_{ij}}{|n(i)|}.$$
 
 The diagonal of matrix $M$ then is specified by the n-length vector of weights $\delta_i = \tau^2 \cdot \frac{1}{|n(i)|}$.
@@ -481,5 +481,6 @@ fit <- stan_sar(log(income / 10e3) ~ log(population / 10e3), data = georgia,
 ```
 
 One can also use the SAR model as a prior distribution for a parameter vector, just as was done above with the CAR model.
+
 
 # References

@@ -247,6 +247,7 @@ stan_sar <- function(formula,
     if (family$family == "gaussian" | family$family == "auto_gaussian") family <- auto_gaussian(type = "SAR")
     stopifnot(!missing(data))
     check_sar_parts(sar_parts)
+    stopifnot(sar_parts$n == nrow(data))
     if (!missing(C)) {
         stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
         stopifnot(all(dim(C) == nrow(data)))
@@ -260,13 +261,25 @@ stan_sar <- function(formula,
     if (missing(censor_point)) censor_point <- FALSE
     mod_frame <- model.frame(formula, tmpdf, na.action = NULL)
     handle_missing_x(mod_frame)
+    ## prep Y for missingness //
     y_index_list <- handle_censored_y(censor_point, mod_frame)
-    y <- y_int <- model.response(mod_frame)
-    ## SAR: INCLUDE AUTO-GAUSSIAN AS family_int=6 -------------      
-    if (family_int %in% c(1,2,6)) y_int <- rep(0, length(y))
-    ## -------------      
-    y[y_index_list$y_mis_idx] <- y_int[y_index_list$y_mis_idx] <- 0
-    mod_frame[y_index_list$y_mis_idx, 1] <- 0 
+    mi_idx <- y_index_list$y_mis_idx
+    y_tmp <- model.response(mod_frame)
+    if (family$family == "binomial") {
+        trials <- y_tmp[,1] + y_tmp[,2]
+        y <- y_int <- y_tmp[,1]
+    }
+    if (family$family == "poisson") {
+        y <- y_int <- y_tmp        
+        trials <- rep(0, n)
+    }
+    if (family$family %in% c("gaussian", "auto_gaussian")) {
+        y <- y_tmp
+        y_int <- trials <- rep(0, n)
+        if ( length(y_index_list$y_mis_idx) > 0) stop("Missing values in y; missing values are not allow for CAR/SAR models with continuous (non-count) outcomes. You may want to try stan_esf.")
+    }    
+    y[mi_idx] <- y_int[mi_idx] <- trials[mi_idx] <- 0
+    ## //    
     if (is.null(model.offset(mod_frame))) {
         offset <- rep(0, times = n)
     } else {
@@ -332,7 +345,7 @@ stan_sar <- function(formula,
         prior_only = prior_only,        
         y = y,
         y_int = y_int,
-        trials = rep(0, length(y)),
+        trials = trials,
         #n = n, # getting n from sar_parts, below
         input_offset = offset,
         has_re = has_re,
@@ -352,10 +365,11 @@ stan_sar <- function(formula,
     ## PRIORS & SAR DATA -------------  
     is_student <- FALSE ##family$family == "student_t"
     priors_made <- make_priors(user_priors = prior,
-                               y = y,
+                               y = y[y_index_list$y_obs_idx],
+                               trials = trials[y_index_list$y_obs_idx],
                                x = x_full,
                                link = family$link,
-                               offset = offset)
+                               offset = offset[y_index_list$y_obs_idx])    
     if (is.null(prior$sar_scale)) {
         priors_made$sar_scale <- priors_made$sigma        
     } else {
@@ -375,11 +389,6 @@ stan_sar <- function(formula,
     ## ME MODEL -------------
     me.list <- make_me_data(ME, xraw)
     standata <- c(standata, me.list)
-    ## INTEGER OUTCOMES -------------    
-    if (family$family == "binomial") {
-        standata$y <- standata$y_int <- y[,1]
-        standata$trials <- y[,1] + y[,2]
-    }
     ## PARAMETERS TO KEEP, with SAR PARAMETERS [START] -------------            
     pars <- c(pars, 'intercept', 'sar_scale', 'sar_rho', 'fitted', 'log_lik')
     if (family_int < 6) pars <- c(pars, 'log_lambda_mu') 
@@ -433,7 +442,8 @@ stan_sar <- function(formula,
         out$C <- as(C, "sparseMatrix")
         R <- resid(out, summary = FALSE)
         out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )
-    } 
+    }
+    out$N <- length( y_index_list$y_obs_idx )    
     return (out)
 }
 

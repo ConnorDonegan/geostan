@@ -40,7 +40,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.0</span>
       </span>
     </div>
 
@@ -80,7 +80,7 @@
 <div class="section level2">
 <h2 id="geostan-bayesian-spatial-analysis">geostan: Bayesian spatial analysis<a class="anchor" aria-label="anchor" href="#geostan-bayesian-spatial-analysis"></a>
 </h2>
-<p>The <a href="https://connordonegan.github.io/geostan/"><strong>geostan</strong></a> R package supports a complete spatial analysis workflow with Bayesian models for areal data, including a suite of functions for visualizing spatial data and model results. For demonstrations and discussion, see the package <a href="https://connordonegan.github.io/geostan/reference/index.html">help pages</a> and <a href="https://connordonegan.github.io/geostan/articles/index.html">vignettes</a> on spatial autocorrelation, spatial measurement error models, and spatial regression with raster layers.</p>
+<p>The <a href="https://connordonegan.github.io/geostan/"><strong>geostan</strong></a> R package supports a complete spatial analysis workflow with Bayesian models for areal data, including a suite of functions for visualizing spatial data and model results. For demonstrations and discussion, see the package <a href="https://connordonegan.github.io/geostan/reference/index.html">help pages</a> and <a href="https://connordonegan.github.io/geostan/articles/index.html">vignettes</a> on spatial autocorrelation, spatial measurement error models, spatial regression with raster layers, and building custom spatial model in Stan.</p>
 <p>The package is particularly suitable for public health research with spatial data, and complements the <a href="https://connordonegan.github.io/surveil/" class="external-link"><strong>surveil</strong></a> R package for time series analysis of public health surveillance data.</p>
 <p><strong>geostan</strong> models were built using <a href="https://mc-stan.org" class="external-link"><strong>Stan</strong></a>, a state-of-the-art platform for Bayesian modeling.</p>
 <p><a href="https://doi.org/10.21105/joss.04716" class="external-link"><img src="https://joss.theoj.org/papers/10.21105/joss.04716/status.svg" alt="DOI"></a></p>
@@ -134,12 +134,13 @@
 <p>Load the package and the <code>georgia</code> county mortality data set (ages 55-64, years 2014-2018):</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; This is geostan version 0.5.3</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span></code></pre></div>
 <p>The <code>sp_diag</code> function provides visual summaries of spatial data, including a histogram, Moran scatter plot, and map:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">rate.female</span>, <span class="va">georgia</span>, w <span class="op">=</span> <span class="va">A</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 3 NA values found in x; they will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. You may want to use a binary connectivity matrix using style = 'B' in shape2mat.</span></span>
+<span><span class="co">#&gt; 3 NA values found in x will be dropped from data x and matrix w</span></span>
 <span><span class="co">#&gt; Warning: Removed 3 rows containing non-finite values (`stat_bin()`).</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-3-1.png" style="display: block; margin: auto;"></p>
 <p>There are three censored observations in the <code>georgia</code> female mortality data, which means there were 9 or fewer deaths in those counties. The following code fits a spatial conditional autoregressive (CAR) model to female county mortality data. By using the <code>censor_point</code> argument we include our information on the censored observations to obtain results for all counties:</p>
@@ -167,14 +168,19 @@
 <span><span class="co">#&gt; *Setting prior for CAR spatial autocorrelation parameter (car_rho)</span></span>
 <span><span class="co">#&gt; Distribution: uniform</span></span>
 <span><span class="co">#&gt;   lower upper</span></span>
-<span><span class="co">#&gt; 1  -1.7     1</span></span></code></pre></div>
+<span><span class="co">#&gt; 1  -1.7     1</span></span>
+<span><span class="co">#&gt; Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span></span>
+<span><span class="co">#&gt; Running the chains for more iterations may help. See</span></span>
+<span><span class="co">#&gt; https://mc-stan.org/misc/warnings.html#bulk-ess</span></span>
+<span><span class="co">#&gt; Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span></span>
+<span><span class="co">#&gt; Running the chains for more iterations may help. See</span></span>
+<span><span class="co">#&gt; https://mc-stan.org/misc/warnings.html#tail-ess</span></span></code></pre></div>
 <p>Passing a fitted model to the <code>sp_diag</code> function will return a set of diagnostics for spatial models:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span>, w <span class="op">=</span> <span class="va">A</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.</span></span>
-<span><span class="co">#&gt; 3 NA values found in x; they will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. You may want to use a binary connectivity matrix using style = 'B' in shape2mat.</span></span>
-<span><span class="co">#&gt; Warning: Removed 3 rows containing missing values</span></span>
-<span><span class="co">#&gt; (`geom_pointrange()`).</span></span></code></pre></div>
+<span><span class="co">#&gt; 3 NA values found in x will be dropped from data x and matrix w</span></span>
+<span><span class="co">#&gt; Warning: Removed 3 rows containing missing values (`geom_pointrange()`).</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;"></p>
 <p>The <code>print</code> method returns a summary of the probability distributions for model parameters, as well as Markov chain Monte Carlo (MCMC) diagnostics from Stan (Monte Carlo standard errors of the mean <code>se_mean</code>, effective sample size <code>n_eff</code>, and the R-hat statistic <code>Rhat</code>):</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -184,8 +190,8 @@
 <span><span class="co">#&gt; Spatial method (outcome):  CAR </span></span>
 <span><span class="co">#&gt; Likelihood function:  poisson </span></span>
 <span><span class="co">#&gt; Link function:  log </span></span>
-<span><span class="co">#&gt; Residual Moran Coefficient:  0.0021755 </span></span>
-<span><span class="co">#&gt; WAIC:  1291.91 </span></span>
+<span><span class="co">#&gt; Residual Moran Coefficient:  -0.0004015 </span></span>
+<span><span class="co">#&gt; WAIC:  1290.5 </span></span>
 <span><span class="co">#&gt; Observations:  159 </span></span>
 <span><span class="co">#&gt; Data models (ME): none</span></span>
 <span><span class="co">#&gt; Inference for Stan model: foundation.</span></span>
@@ -193,11 +199,11 @@
 <span><span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat</span></span>
-<span><span class="co">#&gt; intercept -4.673   0.002 0.093 -4.843 -4.716 -4.674 -4.630 -4.497  1636 1.000</span></span>
-<span><span class="co">#&gt; car_rho    0.922   0.001 0.058  0.778  0.893  0.935  0.967  0.995  3214 1.001</span></span>
-<span><span class="co">#&gt; car_scale  0.458   0.001 0.035  0.393  0.433  0.455  0.481  0.532  3867 1.000</span></span>
+<span><span class="co">#&gt; intercept -4.620   0.055 0.418 -4.851 -4.719 -4.674 -4.627 -4.334    57 1.074</span></span>
+<span><span class="co">#&gt; car_rho    0.926   0.001 0.057  0.783  0.896  0.937  0.968  0.999  1494 1.002</span></span>
+<span><span class="co">#&gt; car_scale  0.457   0.001 0.035  0.394  0.433  0.455  0.479  0.529  3559 1.000</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Wed Oct  4 12:20:45 2023.</span></span>
+<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Tue Mar 19 14:14:50 2024.</span></span>
 <span><span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">#&gt; convergence, Rhat=1).</span></span></code></pre></div>

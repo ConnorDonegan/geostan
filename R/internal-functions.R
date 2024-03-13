@@ -79,7 +79,6 @@ SLX <- function(f, DF, x, W) {
 #' @param y_mis_idx Index of censored counts in the outcome, if any.
 make_data <- function(frame, x, y_mis_idx) {
     y <- model.response(frame)
-    if (length(y_mis_idx) > 0) y[y_mis_idx] <- NA
     offset <- model.offset(frame)
     if (is.null(offset)) return(cbind(y, x))
     return(cbind(y, offset, x))
@@ -127,25 +126,37 @@ inv_logit <- function(x) exp(x)/(1 + exp(x))
 #' 
 #' @importFrom stats sd
 #' @noRd
-make_priors <- function(user_priors = NULL, y, x, hs_global_scale, scaling_factor = 2, link = c("identity", "log", "logit"), EV, offset) {
+make_priors <- function(user_priors = NULL, y, trials, x, hs_global_scale, scaling_factor = 2, link = c("identity", "log", "logit"), EV, offset) {
     link <- match.arg(link)
     if (link == "identity") {
-        scale.y <- sd(y)
+        y <- na.omit(y)
+        scale.y <- max(sd(y), .1)
         alpha_scale <- max(4 * sd(y), 5)
         alpha_mean <- mean(y)
     }
   if (link == "log") {
       if (any(y == 0)) y[which(y == 0)] <- 1 # local assignment only, not returned
       y <- log(y / exp(offset))
+      if (any(is.infinite(y))) {
+          any_inf <- which(is.infinite(y))                
+          y[any_inf] <- NA
+      }
+      y <- na.omit(y)      
       alpha_mean <- mean(y)
-      scale.y <- sd(y)
+      scale.y <- max(sd(y), .1, na.rm = T)
       alpha_scale <- max(4 * scale.y, 5)
   }
-  if (link == "logit") {
-      y <- y[,1] / (y[,1] + y[,2])
-      alpha_mean <- 0
-      scale.y <- sd(y)
-      alpha_scale <- 5
+    if (link == "logit") {
+      p <- y / trials
+      y <- log( p / (1-p))
+      if (any(is.infinite(y))) {
+          any_inf <- which(is.infinite(y))                
+          y[any_inf] <- NA
+      }
+      y <- na.omit(y)            
+      alpha_mean <- mean(y)
+      scale.y <- max(sd(y), 0.1)
+      alpha_scale <- max(4 * scale.y, 5)
   }
     priors <- list()
     priors$intercept <- normal(location = alpha_mean, scale = alpha_scale)

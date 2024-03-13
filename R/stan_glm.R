@@ -244,11 +244,24 @@ stan_glm <- function(formula,
     if (missing(censor_point)) censor_point <- FALSE
     mod_frame <- model.frame(formula, tmpdf, na.action = NULL)
     handle_missing_x(mod_frame)
+    ## prep Y for missingness //
     y_index_list <- handle_censored_y(censor_point, mod_frame)
-    y <- y_int <- model.response(mod_frame)
-    if (family_int %in% c(1,2)) y_int <- rep(0, length(y))
-    y[y_index_list$y_mis_idx] <- y_int[y_index_list$y_mis_idx] <- 0
-    mod_frame[y_index_list$y_mis_idx, 1] <- 0 
+    mi_idx <- y_index_list$y_mis_idx  
+    y_tmp <- model.response(mod_frame)
+    if (family$family == "binomial") {
+        trials <- y_tmp[,1] + y_tmp[,2]
+        y <- y_int <- y_tmp[,1]
+    }
+    if (family$family == "poisson") {
+        y <- y_int <- y_tmp        
+        trials <- rep(0, n)
+    }
+    if (family$family %in% c("gaussian", "student_t")) {
+        y <- y_tmp
+        y_int <- trials <- rep(0, n)
+    }    
+    y[mi_idx] <- y_int[mi_idx] <- trials[mi_idx] <- 0
+    ## //
     if (is.null(model.offset(mod_frame))) {
         offset <- rep(0, times = n)
     } else {
@@ -314,7 +327,7 @@ stan_glm <- function(formula,
     prior_only = prior_only,    
     y = y,
     y_int = y_int,
-    trials = rep(0, length(y)),
+    trials = trials,
     n = n,
     input_offset = offset,
     has_re = has_re,
@@ -331,24 +344,20 @@ stan_glm <- function(formula,
     )
     ## ADD MISSING/OBSERVED INDICES -------------  
     standata <- c(y_index_list, standata)
-    ## PRIORS -------------  
-    is_student <- family$family == "student_t"
+    ## PRIORS -------------
+    is_student <- family$family == "student_t"    
     priors_made <- make_priors(user_priors = prior,
-                               y = y,
+                               y = y[y_index_list$y_obs_idx],
+                               trials = trials[y_index_list$y_obs_idx],
                                x = x_full,
                                link = family$link,
-                               offset = offset)    
-    standata <- append_priors(standata, priors_made)    
+                               offset = offset[y_index_list$y_obs_idx])    
+    standata <- append_priors(standata, priors_made)
     ## EMPTY PLACEHOLDERS
     standata <- c(standata, empty_icar_data(n), empty_esf_data(n), empty_car_data(), empty_sar_data(n))
     ## ME MODEL -------------  
     me.list <- make_me_data(ME, xraw)
     standata <- c(standata, me.list)  
-    ## INTEGER OUTCOMES -------------    
-    if (family$family == "binomial") {
-        standata$y <- standata$y_int <- y[,1]
-        standata$trials <- y[,1] + y[,2]
-    }
     ## PARAMETERS TO KEEP -------------               
     pars <- c(pars, 'intercept', 'fitted', 'log_lik')
     if (!intercept_only) pars <- c(pars, 'beta')
@@ -391,7 +400,7 @@ stan_glm <- function(formula,
     out$re <- re_list
     out$priors <- priors_made_slim
     out$x_center <- get_x_center(standata, samples)
-    out$ME <- list(has_me = me.list$has_me, spatial_me = me.list$spatial_me)
+    out$ME <- list(has_me = me.list$has_me, spatial_me = me.list$spatial_me)    
     if (out$ME$has_me) out$ME <- c(out$ME, ME)
     if (has_re) {
         out$spatial <- data.frame(par = "alpha_re", method = "Exchangeable")
@@ -402,8 +411,8 @@ stan_glm <- function(formula,
         out$C <- as(C, "sparseMatrix")        
         R <- resid(out, summary = FALSE)
         out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )
-    }        
+    }
+    out$N <- length( y_index_list$y_obs_idx )
     return(out)
 }
-
 

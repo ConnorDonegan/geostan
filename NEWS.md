@@ -1,10 +1,16 @@
+# geostan 0.6.0
+
+## New Additions
+
+The model fitting functions (`stan_glm`, `stan_car`, etc.) now allow for missing data in the outcome variable and a new vignette provides the details. This functionality is not available for auto-Gaussian models - that is, CAR and SAR models that have been fit to continuous outcome variables - but is available for all other available models (including eigenvector spatial filtering `stan_esf` models for continuous outcomes, and all models for count outcomes [binomial and Poisson models]).
+
 # geostan 0.5.4
 
 Minor updates to the vignettees and documentation, also re-compiled geostan models using the latest StanHeaders (fixing an error on CRAN).
 
 # geostan 0.5.3
 
-### Minor changes
+## Minor changes
 
 The `gamma` function (which is available to help set prior distributions) has been renamed to `geostan::gamma2` to avoid conflict with `base::gamma`. 
 

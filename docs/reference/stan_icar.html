@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.0</span>
       </span>
     </div>
 
@@ -106,8 +106,8 @@
 
 <dt>re</dt>
 <dd><p>To include a varying intercept (or "random effects") term, <code>alpha_re</code>, specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re</code> is a vector of parameters added to the linear predictor of the model, and:</p>
-<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>alpha_re <span class="op">~</span><span class="st"> </span><span class="kw">N</span>(<span class="dv">0</span>, alpha_tau)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>alpha_tau <span class="op">~</span><span class="st"> </span><span class="kw">Student_t</span>(d.f., location, scale).</span></code></pre><p></p></div>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>alpha_re <span class="sc">~</span> <span class="fu">N</span>(<span class="dv">0</span>, alpha_tau)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>alpha_tau <span class="sc">~</span> <span class="fu">Student_t</span>(d.f., location, scale).</span></code></pre><p></p></div>
 <p>Before using this term, read the <code>Details</code> section and the <code>type</code> argument. Specifically, if you use <code>type = bym</code>, then an observational-level <code>re</code> term is already included in the model. (Similar for <code>type = bym2</code>.)</p></dd>
 
 
@@ -315,48 +315,48 @@ $$ \tilde{\theta} \sim Gaussian(0, 1) $$
 $$ \tau \sim Gaussian(0, 1) $$</p>
 <p>The terms \(\tilde{\phi}\), \(\tilde{\theta}\) are standard normal deviates, \(\rho\) is restricted to values between zero and one, and \(S\) is the 'scale_factor' (a constant term provided by the user). By default, the 'scale_factor' is equal to one, so that it does nothing. Riebler et al. (2016) argue that the interpretation or meaning of the scale of the ICAR model depends on the graph structure of the connectivity matrix \(C\). This implies that the same prior distribution assigned to \(\tau_s\) will differ in its implications if \(C\) is changed; in other words, the priors are not transportable across models, and models that use the same nominal prior actually have different priors assigned to \(\tau_s\).</p>
 <p>Borrowing <code>R</code> code from Morris (2017) and following Freni-Sterrantino et al. (2018), the following <code>R</code> code can be used to create the 'scale_factor' \(S\) for the BYM2 model (note, this requires the INLA R package), given a spatial adjacency matrix, \(C\):</p>
-<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="co">## create a list of data for stan_icar</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>icar.data &lt;-<span class="st"> </span>geostan<span class="op">::</span><span class="kw">prep_icar_data</span>(C)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="co">## calculate scale_factor for each of k connected group of nodes</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>k &lt;-<span class="st"> </span>icar.data<span class="op">$</span>k</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>scale_factor &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="dt">mode =</span> <span class="st">"numeric"</span>, <span class="dt">length =</span> k)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span>k) {</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a>  g.idx &lt;-<span class="st"> </span><span class="kw">which</span>(icar.data<span class="op">$</span>comp_id <span class="op">==</span><span class="st"> </span>j) </span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a>  <span class="cf">if</span> (<span class="kw">length</span>(g.idx) <span class="op">==</span><span class="st"> </span><span class="dv">1</span>) {</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a>       scale_factor[j] &lt;-<span class="st"> </span><span class="dv">1</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a>       <span class="cf">next</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a>    }    </span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a>  Cg &lt;-<span class="st"> </span>C[g.idx, g.idx] </span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a>  scale_factor[j] &lt;-<span class="st"> </span><span class="kw">scale_c</span>(Cg) </span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a>}</span></code></pre><p></p></div>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="do">## create a list of data for stan_icar</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>icar.data <span class="ot">&lt;-</span> geostan<span class="sc">::</span><span class="fu">prep_icar_data</span>(C)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="do">## calculate scale_factor for each of k connected group of nodes</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>k <span class="ot">&lt;-</span> icar.data<span class="sc">$</span>k</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>scale_factor <span class="ot">&lt;-</span> <span class="fu">vector</span>(<span class="at">mode =</span> <span class="st">"numeric"</span>, <span class="at">length =</span> k)</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>k) {</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>  g.idx <span class="ot">&lt;-</span> <span class="fu">which</span>(icar.data<span class="sc">$</span>comp_id <span class="sc">==</span> j) </span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(g.idx) <span class="sc">==</span> <span class="dv">1</span>) {</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>       scale_factor[j] <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>       <span class="cf">next</span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>    }    </span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>  Cg <span class="ot">&lt;-</span> C[g.idx, g.idx] </span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>  scale_factor[j] <span class="ot">&lt;-</span> <span class="fu">scale_c</span>(Cg) </span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>}</span></code></pre><p></p></div>
 <p>This code adjusts for 'islands' or areas with zero neighbors, and it also handles disconnected graph structures (see Donegan and Morris 2021). Following Freni-Sterrantino (2018), disconnected components of the graph structure are given their own intercept term; however, this value is added to \(\phi\) automatically inside the Stan model. Therefore, the user never needs to make any adjustments for this term. (To avoid complications from using a disconnected graph structure, you can apply a proper CAR model instead of the ICAR: <code><a href="stan_car.html">stan_car</a></code>).</p>
 <p>Note, the code above requires the <code>scale_c</code> function; it has package dependencies that are not included in <code>geostan</code>. To use <code>scale_c</code>, you have to load the following <code>R</code> function:</p>
-<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="co">#' compute scaling factor for adjacency matrix, accounting for differences in spatial connectivity </span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a><span class="co">#'</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a><span class="co">#' @param C connectivity matrix</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a><span class="co">#'</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a><span class="co">#' @details</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a><span class="co">#'</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a><span class="co">#' Requires the following packages: </span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a><span class="co">#'</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a><span class="co">#' library(Matrix)</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true"></a><span class="co">#' library(INLA);</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true"></a><span class="co">#' library(spdep)</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true"></a><span class="co">#' library(igraph)</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true"></a><span class="co">#'  </span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true"></a><span class="co">#' @source</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true"></a><span class="co">#'</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true"></a><span class="co">#'   Morris, Mitzi (2017). Spatial Models in Stan: Intrinsic Auto-Regressive Models for Areal Data. &lt;https://mc-stan.org/users/documentation/case-studies/icar_stan.html&gt;</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true"></a><span class="co">#'</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true"></a>scale_c &lt;-<span class="st"> </span><span class="cf">function</span>(C) {</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true"></a> geometric_mean &lt;-<span class="st"> </span><span class="cf">function</span>(x) <span class="kw">exp</span>(<span class="kw">mean</span>(<span class="kw">log</span>(x))) </span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true"></a> N =<span class="st"> </span><span class="kw">dim</span>(C)[<span class="dv">1</span>]</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true"></a> Q =<span class="st">  </span><span class="kw">Diagonal</span>(N, <span class="kw">rowSums</span>(C)) <span class="op">-</span><span class="st"> </span>C</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true"></a> Q_pert =<span class="st"> </span>Q <span class="op">+</span><span class="st"> </span><span class="kw">Diagonal</span>(N) <span class="op">*</span><span class="st"> </span><span class="kw">max</span>(<span class="kw">diag</span>(Q)) <span class="op">*</span><span class="st"> </span><span class="kw">sqrt</span>(.Machine<span class="op">$</span>double.eps)</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true"></a> Q_inv =<span class="st"> </span><span class="kw">inla.qinv</span>(Q_pert, <span class="dt">constr=</span><span class="kw">list</span>(<span class="dt">A =</span> <span class="kw">matrix</span>(<span class="dv">1</span>,<span class="dv">1</span>,N),<span class="dt">e=</span><span class="dv">0</span>))</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true"></a> scaling_factor &lt;-<span class="st"> </span><span class="kw">geometric_mean</span>(Matrix<span class="op">::</span><span class="kw">diag</span>(Q_inv)) </span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true"></a> <span class="kw">return</span>(scaling_factor) </span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true"></a>}</span></code></pre><p></p></div>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co">#' compute scaling factor for adjacency matrix, accounting for differences in spatial connectivity </span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#' @param C connectivity matrix</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#' @details</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co">#' Requires the following packages: </span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="co">#' library(Matrix)</span></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="co">#' library(INLA);</span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="co">#' library(spdep)</span></span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co">#' library(igraph)</span></span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="co">#'  </span></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="co">#' @source</span></span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="co">#'   Morris, Mitzi (2017). Spatial Models in Stan: Intrinsic Auto-Regressive Models for Areal Data. &lt;https://mc-stan.org/users/documentation/case-studies/icar_stan.html&gt;</span></span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="co">#'</span></span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a>scale_c <span class="ot">&lt;-</span> <span class="cf">function</span>(C) {</span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a> geometric_mean <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">exp</span>(<span class="fu">mean</span>(<span class="fu">log</span>(x))) </span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a> N <span class="ot">=</span> <span class="fu">dim</span>(C)[<span class="dv">1</span>]</span>
+<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a> Q <span class="ot">=</span>  <span class="fu">Diagonal</span>(N, <span class="fu">rowSums</span>(C)) <span class="sc">-</span> C</span>
+<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a> Q_pert <span class="ot">=</span> Q <span class="sc">+</span> <span class="fu">Diagonal</span>(N) <span class="sc">*</span> <span class="fu">max</span>(<span class="fu">diag</span>(Q)) <span class="sc">*</span> <span class="fu">sqrt</span>(.Machine<span class="sc">$</span>double.eps)</span>
+<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a> Q_inv <span class="ot">=</span> <span class="fu">inla.qinv</span>(Q_pert, <span class="at">constr=</span><span class="fu">list</span>(<span class="at">A =</span> <span class="fu">matrix</span>(<span class="dv">1</span>,<span class="dv">1</span>,N),<span class="at">e=</span><span class="dv">0</span>))</span>
+<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a> scaling_factor <span class="ot">&lt;-</span> <span class="fu">geometric_mean</span>(Matrix<span class="sc">::</span><span class="fu">diag</span>(Q_inv)) </span>
+<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a> <span class="fu">return</span>(scaling_factor) </span>
+<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a>}</span></code></pre><p></p></div>
 </div>
 
 <div class="section">

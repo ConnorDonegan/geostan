@@ -12,8 +12,9 @@ and model results. For demonstrations and discussion, see the package
 [help
 pages](https://connordonegan.github.io/geostan/reference/index.html) and
 [vignettes](https://connordonegan.github.io/geostan/articles/index.html)
-on spatial autocorrelation, spatial measurement error models, and
-spatial regression with raster layers.
+on spatial autocorrelation, spatial measurement error models, spatial
+regression with raster layers, and building custom spatial model in
+Stan.
 
 The package is particularly suitable for public health research with
 spatial data, and complements the
@@ -86,6 +87,7 @@ Load the package and the `georgia` county mortality data set (ages
 
 ``` r
 library(geostan)
+#> This is geostan version 0.5.3
 data(georgia)
 ```
 
@@ -95,7 +97,7 @@ including a histogram, Moran scatter plot, and map:
 ``` r
 A <- shape2mat(georgia, style = "B")
 sp_diag(georgia$rate.female, georgia, w = A)
-#> 3 NA values found in x; they will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. You may want to use a binary connectivity matrix using style = 'B' in shape2mat.
+#> 3 NA values found in x will be dropped from data x and matrix w
 #> Warning: Removed 3 rows containing non-finite values (`stat_bin()`).
 ```
 
@@ -133,6 +135,12 @@ fit <- stan_car(deaths.female ~ offset(log(pop.at.risk.female)),
 #> Distribution: uniform
 #>   lower upper
 #> 1  -1.7     1
+#> Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#bulk-ess
+#> Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#tail-ess
 ```
 
 Passing a fitted model to the `sp_diag` function will return a set of
@@ -141,9 +149,8 @@ diagnostics for spatial models:
 ``` r
 sp_diag(fit, georgia, w = A)
 #> Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.
-#> 3 NA values found in x; they will be dropped from the data before creating the Moran plot. If matrix w was row-standardized, it no longer is. You may want to use a binary connectivity matrix using style = 'B' in shape2mat.
-#> Warning: Removed 3 rows containing missing values
-#> (`geom_pointrange()`).
+#> 3 NA values found in x will be dropped from data x and matrix w
+#> Warning: Removed 3 rows containing missing values (`geom_pointrange()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
@@ -161,8 +168,8 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.0021755 
-#> WAIC:  1291.91 
+#> Residual Moran Coefficient:  -0.0004015 
+#> WAIC:  1290.5 
 #> Observations:  159 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
@@ -170,11 +177,11 @@ print(fit)
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
 #>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-#> intercept -4.673   0.002 0.093 -4.843 -4.716 -4.674 -4.630 -4.497  1636 1.000
-#> car_rho    0.922   0.001 0.058  0.778  0.893  0.935  0.967  0.995  3214 1.001
-#> car_scale  0.458   0.001 0.035  0.393  0.433  0.455  0.481  0.532  3867 1.000
+#> intercept -4.620   0.055 0.418 -4.851 -4.719 -4.674 -4.627 -4.334    57 1.074
+#> car_rho    0.926   0.001 0.057  0.783  0.896  0.937  0.968  0.999  1494 1.002
+#> car_scale  0.457   0.001 0.035  0.394  0.433  0.455  0.479  0.529  3559 1.000
 #> 
-#> Samples were drawn using NUTS(diag_e) at Wed Oct  4 12:20:45 2023.
+#> Samples were drawn using NUTS(diag_e) at Tue Mar 19 14:14:50 2024.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).

@@ -32,7 +32,7 @@
 #' @method print geostan_fit
 #' @rdname print_geostan_fit
 print.geostan_fit <- function(x,
-                              probs = c(0.025, 0.25, 0.5, 0.75, 0.975),
+                              probs = c(0.025, 0.2, 0.5, 0.8, 0.975),
                               digits = 3,
                               pars = NULL, ...) {
   pars <- c(pars, "intercept")
@@ -61,7 +61,7 @@ print.geostan_fit <- function(x,
   cat("Link function: ", x$family$link, "\n")
   cat("Residual Moran Coefficient: ", x$diagnostic["Residual_MC"], "\n")
   if (!is.na(x$diagnostic["WAIC"])) cat("WAIC: ", x$diagnostic["WAIC"], "\n")
-  cat("Observations: ", nrow(x$data), "\n")  
+  cat("Observations: ", x$N, "\n")  
   cat("Data models (ME): ")
   if (x$ME$has_me) {
       cat(paste(names(x$ME$se), sep = ", ")) 

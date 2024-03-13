@@ -6,11 +6,13 @@
 
   int<lower=0> center_x;
 
-// censored counts
+// missing y
   int<lower=0> n_mis;
   int<lower=0> n_obs;
   array[n_mis] int y_mis_idx;
   array[n_obs] int y_obs_idx;
+
+// censored counts
   int censor_point;
 
 // outcome 

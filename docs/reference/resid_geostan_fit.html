@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.0</span>
       </span>
     </div>
 
@@ -97,14 +97,14 @@
     <div id="details">
     <h2>Details</h2>
     <p>When <code>rates = FALSE</code> and the model is Poisson or Binomial, the fitted values returned by the <code>fitted</code> method are the expected value of the response variable. The <code>rates</code> argument is used to translate count outcomes to rates by dividing by the appropriate denominator. The behavior of the <code>rates</code> argument depends on the model specification. Consider a Poisson model of disease incidence, such as the following intercept-only case:</p>
-<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>fit &lt;-<span class="st"> </span><span class="kw">stan_glm</span>(y <span class="op">~</span><span class="st"> </span><span class="kw">offset</span>(<span class="kw">log</span>(E)),</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>               <span class="dt">data =</span> data,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>               <span class="dt">family =</span> <span class="kw">poisson</span>())</span></code></pre><p></p></div>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">stan_glm</span>(y <span class="sc">~</span> <span class="fu">offset</span>(<span class="fu">log</span>(E)),</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>               <span class="at">data =</span> data,</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>               <span class="at">family =</span> <span class="fu">poisson</span>())</span></code></pre><p></p></div>
 <p>If the fitted values are extracted using <code>rates = FALSE</code>, then <code>fitted(fit)</code> will return the expectation of \(y\). If <code>rates = TRUE</code> (the default), then <code>fitted(fit)</code> will return the expected value of the rate \(\frac{y}{E}\).</p>
 <p>If a binomial model is used instead of the Poisson, then using <code>rates = TRUE</code> will return the expectation of \(\frac{y}{N}\) where \(N\) is the sum of the number of 'successes' and 'failures', as in:</p>
-<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>fit &lt;-<span class="st"> </span><span class="kw">stan_glm</span>(<span class="kw">cbind</span>(successes, failures) <span class="op">~</span><span class="st"> </span><span class="dv">1</span>,</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>               <span class="dt">data =</span> data,</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>               <span class="dt">family =</span> <span class="kw">binomial</span>())</span></code></pre><p></p></div>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">stan_glm</span>(<span class="fu">cbind</span>(successes, failures) <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>               <span class="at">data =</span> data,</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>               <span class="at">family =</span> <span class="fu">binomial</span>())</span></code></pre><p></p></div>
     </div>
 
     <div id="ref-examples">

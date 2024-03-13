@@ -18,17 +18,17 @@
 				 eigenvalues_w,
 				 n);
   }
-  for (i in 1:n) {
+  for (i in 1:n_obs) {
    if (is_student) {
-      log_lik[i] = student_t_lpdf(y[i] | nu[1], fitted[i], sigma[has_sigma]); 
+      log_lik[i] = student_t_lpdf(y[y_obs_idx[i]] | nu[1], fitted[y_obs_idx[i]], sigma[has_sigma]); 
    }
    if (is_gaussian) {
-      log_lik[i] = normal_lpdf(y[i] | fitted[i], sigma[has_sigma]);   
+      log_lik[i] = normal_lpdf(y[y_obs_idx[i]] | fitted[y_obs_idx[i]], sigma[has_sigma]);   
    }
    if (is_poisson) {
-       log_lik[i] = poisson_lpmf(y_int[i] | fitted[i]);
+     log_lik[i] = poisson_lpmf(y_int[y_obs_idx[i]] | fitted[y_obs_idx[i]]);
   }
   if (is_binomial) {
-     log_lik[i] = binomial_lpmf(y_int[i] | trials[i], fitted[i]); 
+    log_lik[i] = binomial_lpmf(y_int[y_obs_idx[i]] | trials[y_obs_idx[i]], fitted[y_obs_idx[i]]);
   }   
   }

@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 
 ## geostan: Bayesian spatial analysis
 
-The [**geostan**](https://connordonegan.github.io/geostan/) R package supports a complete spatial analysis workflow with Bayesian models for areal data, including a suite of functions for visualizing spatial data and model results. For demonstrations and discussion, see the package [help pages](https://connordonegan.github.io/geostan/reference/index.html) and [vignettes](https://connordonegan.github.io/geostan/articles/index.html) on spatial autocorrelation, spatial measurement error models, and spatial regression with raster layers.
+The [**geostan**](https://connordonegan.github.io/geostan/) R package supports a complete spatial analysis workflow with Bayesian models for areal data, including a suite of functions for visualizing spatial data and model results. For demonstrations and discussion, see the package [help pages](https://connordonegan.github.io/geostan/reference/index.html) and [vignettes](https://connordonegan.github.io/geostan/articles/index.html) on spatial autocorrelation, spatial measurement error models, spatial regression with raster layers, and building custom spatial model in Stan.
 
 The package is particularly suitable for public health research with spatial data, and complements the [**surveil**](https://connordonegan.github.io/surveil/) R package for time series analysis of public health surveillance data.
 

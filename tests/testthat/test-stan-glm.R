@@ -10,7 +10,7 @@ test_that("GLM works", {
                     data = sentencing,
                     chains = 1,
                     family = poisson(),
-                    init_r = 0.2,
+                   init_r = 0.2,
                     iter = iter,
                     refresh = refresh)
        )

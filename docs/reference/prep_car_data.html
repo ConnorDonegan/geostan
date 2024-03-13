@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.0</span>
       </span>
     </div>
 
@@ -116,7 +116,7 @@
     <div id="details">
     <h2>Details</h2>
     <p>The CAR model is:</p>
-<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>  <span class="kw">Normal</span>(Mu, Sigma), Sigma =<span class="st"> </span>(I <span class="op">-</span><span class="st"> </span>rho <span class="op">*</span><span class="st"> </span>C)<span class="op">^-</span><span class="dv">1</span> <span class="op">*</span><span class="st"> </span>M <span class="op">*</span><span class="st"> </span>tau<span class="op">^</span><span class="dv">2</span>,</span></code></pre><p></p></div>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>  <span class="fu">Normal</span>(Mu, Sigma), Sigma <span class="ot">=</span> (I <span class="sc">-</span> rho <span class="sc">*</span> C)<span class="sc">^-</span><span class="dv">1</span> <span class="sc">*</span> M <span class="sc">*</span> tau<span class="sc">^</span><span class="dv">2</span>,</span></code></pre><p></p></div>
 <p>where <code>I</code> is the identity matrix, <code>rho</code> is a spatial autocorrelation parameter, <code>C</code> is a connectivity matrix, and <code>M * tau^2</code> is a diagonal matrix with conditional variances on the diagonal. <code>tau^2</code> is a (scalar) scale parameter.</p>
 <p>In the WCAR specification, <code>C</code> is the row-standardized version of <code>A</code>. This means that the non-zero elements of <code>A</code> will be converted to <code>1/N_i</code> where <code>N_i</code> is the number of neighbors for the <code>i</code>th site (obtained using <code>Matrix::rowSums(A)</code>. The conditional variances (on the diagonal of <code>M * tau^2</code>), are also proportional to <code>1/N_i</code>.</p>
 <p>The ACAR specification is from Cressie, Perrin and Thomas-Agnon (2005); also see Cressie and Wikle (2011, p. 188) and Donegan (2021).</p>
