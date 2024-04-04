@@ -907,8 +907,9 @@ prep_icar_data <- function(C, scale_factor = NULL) {
   if (m) {
     GS <- group_size
     ID <- nb2$comp.id
-    change.to.one <- which(GS == 1)
-    ID[which(ID == change.to.one)] <- 1
+    main.group <- ID[which(rowSums(as.matrix(C))!=0)[1]]
+    change.group <- which(GS == 1)
+    ID[which(ID %in% change.group)] <- main.group
     A = model.matrix(~ factor(ID))
     A <- as.matrix(A[,-1])
   } else {
