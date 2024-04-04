@@ -1,8 +1,8 @@
 
 
 
-#' @description Return index of observed, censored y; elsewhere, use results to replace NAs with zeros
-#' This will stop if there are missing values and the censor_point argument is not being used; outside of this call, must check that censor_point argument is only used with Poisson likelihood.
+#' @description Return index of observed and missing y (elsewhere, these results hould be used to replace NAs with zeros or an indicator integer: Stan cannot accept NA values)
+#' Outside of this call, must check that censor_point argument is only used with Poisson likelihood.
 #' 
 #' @param censor the censor_point argument
 #' @param frame from model.frame(formula, tmpdf, na.action = NULL)
@@ -15,6 +15,10 @@ handle_censored_y <- function(censor, frame) {
     }
     y_mis_idx <- which(is.na(y_raw))
     y_obs_idx <- which(!is.na(y_raw))
+    n_mis <- length(y_mis_idx)
+    if ( n_mis > 0 ) {
+        message( paste0(n_mis, " NA values identified in the outcome variable\nFound in rows: ", paste0(y_mis_idx, collapse = ', ' )) )
+    }
     return (list(n_mis = length(y_mis_idx),
                 n_obs = length(y_obs_idx),
                 y_mis_idx = y_mis_idx,

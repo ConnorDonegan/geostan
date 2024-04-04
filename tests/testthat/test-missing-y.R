@@ -29,28 +29,40 @@ test_that("Binomial missing y", {
     georgia$y <- round(georgia$deaths.female / 10)
     georgia$y[sample.int(N, 5)] <- 0
     georgia$f <- round(4 * georgia$deaths.female / 10)
-    georgia$f[which(!is.na(georgia$y))[1]] <- NA
+    #georgia$f[which(!is.na(georgia$y))[1]] <- NA
   SW(
     fit <- stan_glm(cbind(y, f) ~ 1,
                     data = georgia,
-                  #  car_parts = prep_car_data(shape2mat(georgia, "B")),
                     chains = 1,
                     family = binomial(),
                     iter = iter,
                     refresh = refresh)
   )
-  expect_geostan(fit)
+    SW (
+            fit <- stan_icar(cbind(deaths.female, pop.at.risk.female) ~ 1,
+                             data = georgia,
+                             type = 'bym',
+                             C = A,
+                    chains = 1,
+                    family = binomial(),
+                    iter = iter,
+                    refresh = refresh)
+    )
+    expect_geostan(fit)
+    
     SW(
         
     fit <- stan_icar(cbind(y, f) ~ 1,
                     data = georgia,
                     C = A,
+                    type = 'bym',
                     chains = 1,
                     family = binomial(),
                     iter = iter,
                     refresh = refresh)
     
-  )
+    )
+    expect_geostan(fit)
 
 })
 
@@ -71,6 +83,3 @@ test_that("ESF missing y", {
   )
   expect_geostan(fit)    
 })
-
-
-
