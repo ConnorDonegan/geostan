@@ -98,8 +98,8 @@
 
 <dt>re</dt>
 <dd><p>To include a varying intercept (or "random effects") term, <code>alpha_re</code>, specify the grouping variable here using formula syntax, as in <code>~ ID</code>. Then, <code>alpha_re</code> is a vector of parameters added to the linear predictor of the model, and:</p>
-<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>alpha_re <span class="sc">~</span> <span class="fu">N</span>(<span class="dv">0</span>, alpha_tau)</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>alpha_tau <span class="sc">~</span> <span class="fu">Student_t</span>(d.f., location, scale).</span></code></pre><p></p></div></dd>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>alpha_re <span class="op">~</span><span class="st"> </span><span class="kw">N</span>(<span class="dv">0</span>, alpha_tau)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>alpha_tau <span class="op">~</span><span class="st"> </span><span class="kw">Student_t</span>(d.f., location, scale).</span></code></pre><p></p></div></dd>
 
 
 <dt>data</dt>
@@ -278,9 +278,9 @@ $$
  y = W X \gamma + X \beta + \epsilon
 $$
 where \(W\) is a row-standardized spatial weights matrix (see <code><a href="shape2mat.html">shape2mat</a></code>), \(WX\) is the mean neighboring value of \(X\), and \(\gamma\) is a coefficient vector. This specifies a regression with spatially lagged covariates. SLX terms can specified by providing a formula to the <code>slx</code> argument:</p>
-<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">stan_glm</span>(y <span class="sc">~</span> x1 <span class="sc">+</span> x2, <span class="at">slx =</span> <span class="sc">~</span> x1 <span class="sc">+</span> x2, \...),</span></code></pre><p></p></div>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">stan_glm</span>(y <span class="op">~</span><span class="st"> </span>x1 <span class="op">+</span><span class="st"> </span>x2, <span class="dt">slx =</span> <span class="op">~</span><span class="st"> </span>x1 <span class="op">+</span><span class="st"> </span>x2, \...),</span></code></pre><p></p></div>
 <p>which is a shortcut for</p>
-<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">stan_glm</span>(y <span class="sc">~</span> <span class="fu">I</span>(W \<span class="sc">%*\%</span> x1) <span class="sc">+</span> <span class="fu">I</span>(W \<span class="sc">%*\%</span> x2) <span class="sc">+</span> x1 <span class="sc">+</span> x2, \...)</span></code></pre><p></p></div>
+<p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a><span class="kw">stan_glm</span>(y <span class="op">~</span><span class="st"> </span><span class="kw">I</span>(W \<span class="op">%*\%</span><span class="st"> </span>x1) <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(W \<span class="op">%*\%</span><span class="st"> </span>x2) <span class="op">+</span><span class="st"> </span>x1 <span class="op">+</span><span class="st"> </span>x2, \...)</span></code></pre><p></p></div>
 <p>SLX terms will always be <em>prepended</em> to the design matrix, as above, which is important to know when setting prior distributions for regression coefficients.</p>
 <p>For measurement error (ME) models, the SLX argument is the only way to include spatially lagged covariates since the SLX term needs to be re-calculated on each iteration of the MCMC algorithm.</p>
 </div>
@@ -310,6 +310,14 @@ $$logit(z) \sim Gauss(\mu_z, \Sigma_z) $$
 and similarly for the Student t model:
 $$x \sim Gauss(z, s^2)$$
 $$logit(z) \sim student(\nu_z, \mu_z, \sigma_z)$$</p>
+</div>
+
+<div class="section">
+<h3 id="missing-data">Missing data<a class="anchor" aria-label="anchor" href="#missing-data"></a></h3>
+
+
+<p>For most geostan models, missing (NA) observations are allowed in the outcome variable. However, there cannot be any missing covariate data. Models that can handle missing data are: any Poisson or binomial model (GLM, SAR, CAR, ESF, ICAR), all GLMs and ESF models. The only models that cannot handle missing outcome data are the CAR and SAR models when the outcome is a continuous variable (auto-normal/Gaussian models).</p>
+<p>When observations are missing, they will simply be ignored when calculating the likelihood in the MCMC sampling process (reflecting the absence of information). The estimated model parameters (including any covariates and spatial trend) will then be used to produce estimates or fitted values for the missing observations. The <code>fitted</code> and <code>posterior_predict</code> functions will work as normal in this case, and return values for all rows in your data.</p>
 </div>
 
 <div class="section">

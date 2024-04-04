@@ -73,13 +73,11 @@
 
       
 
-      </header><div class="row">
+      </header><script src="custom-spatial-models_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Custom spatial models with RStan and
-geostan</h1>
-                        <h4 data-toc-skip class="author">Connor
-Donegan</h4>
+      <h1 data-toc-skip>Custom spatial models with RStan and geostan</h1>
+                        <h4 data-toc-skip class="author">Connor Donegan</h4>
             
             <h4 data-toc-skip class="date">October 2, 2023</h4>
       
@@ -90,174 +88,122 @@ Donegan</h4>
 
     
     
-<p>The spatial models in geostan use custom Stan functions that are far
-more efficient than using built-in functions, including the conditional
-(CAR) and simultaneous spatial autoregressive (SAR) models (both are
-particular specifications of the multivariate normal distribution). This
-vignette shows how you can use those functions together with some R
-functions in geostan to start building custom spatial models.</p>
-<p>This tutorial is written with the assumption that the reader is
-already familiar with <a href="https://mc-stan.org/users/documentation/" class="external-link">RStan</a>. Users are
-expected to make adjustments to the code as needed, including to prior
-distributions. For more details and an explanation of the computational
-approach, see <span class="citation">Donegan (<a href="#ref-donegan_2022">2022</a>)</span>. For more background on
-spatial modeling see <span class="citation">Haining and Li (<a href="#ref-haining_2020">2020</a>)</span>.</p>
+<p>The spatial models in geostan use custom Stan functions that are far more efficient than using built-in functions, including the conditional (CAR) and simultaneous spatial autoregressive (SAR) models (both are particular specifications of the multivariate normal distribution). This vignette shows how you can use those functions together with some R functions in geostan to start building custom spatial models.</p>
+<p>This tutorial is written with the assumption that the reader is already familiar with <a href="https://mc-stan.org/users/documentation/" class="external-link">RStan</a>. Users are expected to make adjustments to the code as needed, including to prior distributions. For more details and an explanation of the computational approach, see <span class="citation">Donegan (<a href="#ref-donegan_2022" role="doc-biblioref">2022</a>)</span>. For more background on spatial modeling see <span class="citation">Haining and Li (<a href="#ref-haining_2020" role="doc-biblioref">2020</a>)</span>.</p>
 <div class="section level2">
 <h2 id="car-models">CAR models<a class="anchor" aria-label="anchor" href="#car-models"></a>
 </h2>
-<p>The CAR model is a multivariate normal distribution with covariance
-matrix <span class="math display">\[\Sigma = (I - \rho \cdot C)^{-1}
-M,\]</span> where <span class="math inline">\(I\)</span> is the identity
-matrix, <span class="math inline">\(\rho\)</span> a spatial
-autocorrelation parameter which may be positive or negative, <span class="math inline">\(C\)</span> is a sparse connectivity matrix, and
-<span class="math inline">\(M\)</span> is a diagonal matrix with scale
-parameters <span class="math inline">\(\tau_i^2\)</span>. There is
-typically a single scale parameter <span class="math inline">\(\tau\)</span> multiplied by weights <span class="math inline">\(\delta_i\)</span>. The term <span class="math inline">\(\tau^2 \cdot \delta_i\)</span> is the conditional
-variance pertaining to <span class="math inline">\(y_i |
-y_{n(i)}\)</span> where <span class="math inline">\(n(i)\)</span> lists
-the areas that neighbor the <span class="math inline">\(i^{th}\)</span>
-one.</p>
-<p>The defining feature of the CAR model is that, similar to time-series
-autoregression, the expectation for the value at the <span class="math inline">\(i^{th}\)</span> site given any or all other values
-of <span class="math inline">\(y\)</span> besides <span class="math inline">\(i\)</span> (<span class="math inline">\(y_{-i}\)</span>) are known, is a function of the
-neighboring values: <span class="math display">\[\mathbb{E}[y_i |
-y_{-i}] = \mu_ + \sum_{j \in n(i)} \rho \cdot c_{ij} (y_j -
-\mu).\]</span></p>
-<p>The CAR function presented here is valid for what is sometimes called
-the WCAR specification. This is the most commonly employed CAR
-specification. The connectivity matrix is row-standardized. Let <span class="math inline">\(A\)</span> be a symmetric binary connectivity
-matrix where <span class="math inline">\(a_{ij}= 1\)</span> only if the
-<span class="math inline">\(i^{th}\)</span> and <span class="math inline">\(j^{th}\)</span> sites are neighbors, all other
-entries are zero (including the diagonal entries <span class="math inline">\(i=j\)</span>). The elements of <span class="math inline">\(C\)</span> are <span class="math display">\[c_{ij}
-= \frac{a_{ij}}{\sum_j^n a_{ij}} = \frac{a_{ij}}{|n(i)|}.\]</span></p>
-<p>The diagonal of matrix <span class="math inline">\(M\)</span> then is
-specified by the n-length vector of weights <span class="math inline">\(\delta_i = \tau^2 \cdot
-\frac{1}{|n(i)|}\)</span>.</p>
-<p>The <code><a href="../reference/prep_car_data.html">geostan::prep_car_data</a></code> function will complete all of
-this for you. The user passes in a binary connectivity matrix <span class="math inline">\(A\)</span> and and specifies
-<code>style = "WCAR"</code>, then the function returns a list of data
-inputs for the Stan model.</p>
+<p>The CAR model is a multivariate normal distribution with covariance matrix <span class="math display">\[\Sigma = (I - \rho \cdot C)^{-1} M,\]</span> where <span class="math inline">\(I\)</span> is the identity matrix, <span class="math inline">\(\rho\)</span> a spatial autocorrelation parameter which may be positive or negative, <span class="math inline">\(C\)</span> is a sparse connectivity matrix, and <span class="math inline">\(M\)</span> is a diagonal matrix with scale parameters <span class="math inline">\(\tau_i^2\)</span>. There is typically a single scale parameter <span class="math inline">\(\tau\)</span> multiplied by weights <span class="math inline">\(\delta_i\)</span>. The term <span class="math inline">\(\tau^2 \cdot \delta_i\)</span> is the conditional variance pertaining to <span class="math inline">\(y_i | y_{n(i)}\)</span> where <span class="math inline">\(n(i)\)</span> lists the areas that neighbor the <span class="math inline">\(i^{th}\)</span> one.</p>
+<p>The defining feature of the CAR model is that, similar to time-series autoregression, the expectation for the value at the <span class="math inline">\(i^{th}\)</span> site given any or all other values of <span class="math inline">\(y\)</span> besides <span class="math inline">\(i\)</span> (<span class="math inline">\(y_{-i}\)</span>) are known, is a function of the neighboring values: <span class="math display">\[\mathbb{E}[y_i | y_{-i}] = \mu_j + \sum_{j \in n(i)} \rho \cdot c_{ij} (y_j - \mu_j).\]</span></p>
+<p>The CAR function presented here is valid for what is sometimes called the WCAR specification. This is the most commonly employed CAR specification (see <span class="citation">Donegan (<a href="#ref-donegan_2022" role="doc-biblioref">2022</a>)</span> for CAR models without this restriction). The connectivity matrix is row-standardized. Let <span class="math inline">\(A\)</span> be a symmetric binary connectivity matrix where <span class="math inline">\(a_{ij}= 1\)</span> only if the <span class="math inline">\(i^{th}\)</span> and <span class="math inline">\(j^{th}\)</span> sites are neighbors, all other entries are zero (including the diagonal entries <span class="math inline">\(i=j\)</span>). The elements of <span class="math inline">\(C\)</span> are <span class="math display">\[c_{ij} = \frac{a_{ij}}{\sum_j^n a_{ij}} = \frac{a_{ij}}{|n(i)|}.\]</span></p>
+<p>The diagonal of matrix <span class="math inline">\(M\)</span> then is specified by the n-length vector of weights <span class="math inline">\(\delta_i = \tau^2 \cdot \frac{1}{|n(i)|}\)</span>.</p>
+<p>The <code><a href="../reference/prep_car_data.html">geostan::prep_car_data</a></code> function will complete all of this for you. The user passes in a binary connectivity matrix <span class="math inline">\(A\)</span> and and specifies <code>style = "WCAR"</code>, then the function returns a list of data inputs for the Stan model.</p>
 <div class="section level3">
 <h3 id="autonormal-model">Autonormal model<a class="anchor" aria-label="anchor" href="#autonormal-model"></a>
 </h3>
-<p>This first example is an autonormal model: <span class="math display">\[y \sim Normal(\alpha + x \beta, \Sigma).\]</span>
-Here you have <span class="math inline">\(n\)</span> observations of a
-continuously measured outcome <span class="math inline">\(y\)</span>,
-possibly <span class="math inline">\(k=1\)</span> or more covariates
-<span class="math inline">\(x\)</span>, and you’re accounting for
-spatial autocorrelation in <span class="math inline">\(y\)</span> using
-the covariance matrix of an <span class="math inline">\(n\)</span>-dimensional multivariate normal
-distribution.</p>
-<p>The following Stan code implements the above model; if you’re
-following along, copy the Stan code and save it in a file inside your
-working directory; I’ll name it “autonormal.stan” and I’ll save the name
-as an R variable:</p>
+<p>This first example is an autonormal model: <span class="math display">\[y \sim Normal(\alpha + x \beta, \Sigma).\]</span> Here you have <span class="math inline">\(n\)</span> observations of a continuously measured outcome <span class="math inline">\(y\)</span>, possibly <span class="math inline">\(k=1\)</span> or more covariates <span class="math inline">\(x\)</span>, and you’re accounting for spatial autocorrelation in <span class="math inline">\(y\)</span> using the covariance matrix of an <span class="math inline">\(n\)</span>-dimensional multivariate normal distribution.</p>
+<p>The following Stan code implements the above model; if you’re following along, copy the Stan code and save it in a file inside your working directory; I’ll name it “autonormal.stan” and I’ll save the name as an R variable:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">autonormal_file</span> <span class="op">&lt;-</span> <span class="st">"autonormal.stan"</span></span></code></pre></div>
 <p>Here’s the Stan code:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode stan"><code class="sourceCode stan"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="kw">functions</span> {</span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#include wcar-lpdf.stan</span></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>}</span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="kw">data</span> {</span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="co">// data</span></span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>&gt; n;</span>
-<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>&gt; k;</span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>  <span class="dt">vector</span>[n] y;</span>
-<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  <span class="dt">matrix</span>[n, k] x;</span>
-<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>    <span class="co">// CAR parts</span></span>
-<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  <span class="dt">int</span> nAx_w;</span>
-<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>  <span class="dt">int</span> nC;</span>
-<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>  <span class="dt">vector</span>[nAx_w] Ax_w;</span>
-<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>  <span class="dt">array</span>[nAx_w] <span class="dt">int</span> Ax_v;</span>
-<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>  <span class="dt">array</span>[n + <span class="dv">1</span>] <span class="dt">int</span> Ax_u;</span>
-<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>  <span class="dt">array</span>[nC] <span class="dt">int</span> Cidx;</span>
-<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>  <span class="dt">vector</span>[n] Delta_inv;</span>
-<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>  <span class="dt">real</span> log_det_Delta_inv;</span>
-<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>  <span class="dt">vector</span>[n] lambda;</span>
-<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>}</span>
-<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a></span>
-<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="kw">parameters</span> {</span>
-<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a>  <span class="co">// spatial autocorrelation (SA) parameter</span></span>
-<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>/min(lambda), <span class="kw">upper</span>=<span class="dv">1</span>/max(lambda)&gt; rho;</span>
-<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a>  </span>
-<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a>  <span class="co">// scale parameter</span></span>
-<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; tau;</span>
-<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a>  </span>
-<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a>  <span class="co">// intercept</span></span>
-<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a>  <span class="dt">real</span> alpha;</span>
-<span id="cb2-33"><a href="#cb2-33" tabindex="-1"></a>  </span>
-<span id="cb2-34"><a href="#cb2-34" tabindex="-1"></a>  <span class="co">// coefficients</span></span>
-<span id="cb2-35"><a href="#cb2-35" tabindex="-1"></a>  <span class="dt">vector</span>[k] beta;  </span>
-<span id="cb2-36"><a href="#cb2-36" tabindex="-1"></a>}</span>
-<span id="cb2-37"><a href="#cb2-37" tabindex="-1"></a></span>
-<span id="cb2-38"><a href="#cb2-38" tabindex="-1"></a><span class="kw">model</span> {</span>
-<span id="cb2-39"><a href="#cb2-39" tabindex="-1"></a>  <span class="dt">vector</span>[n] mu = alpha + x * beta;</span>
-<span id="cb2-40"><a href="#cb2-40" tabindex="-1"></a></span>
-<span id="cb2-41"><a href="#cb2-41" tabindex="-1"></a>  <span class="co">// Likelihood: y ~ Normal(Mu, Sigma)</span></span>
-<span id="cb2-42"><a href="#cb2-42" tabindex="-1"></a>  <span class="kw">target +=</span> wcar_normal_lpdf(y |</span>
-<span id="cb2-43"><a href="#cb2-43" tabindex="-1"></a>                 mu, tau, rho, <span class="co">// mean, scale, SA</span></span>
-<span id="cb2-44"><a href="#cb2-44" tabindex="-1"></a>                 Ax_w, Ax_v, Ax_u, <span class="co">// stuff from prep_car_data</span></span>
-<span id="cb2-45"><a href="#cb2-45" tabindex="-1"></a>                 Delta_inv, </span>
-<span id="cb2-46"><a href="#cb2-46" tabindex="-1"></a>                 log_det_Delta_inv,</span>
-<span id="cb2-47"><a href="#cb2-47" tabindex="-1"></a>                 lambda, </span>
-<span id="cb2-48"><a href="#cb2-48" tabindex="-1"></a>                 n);    </span>
-<span id="cb2-49"><a href="#cb2-49" tabindex="-1"></a>  </span>
-<span id="cb2-50"><a href="#cb2-50" tabindex="-1"></a>  <span class="co">// prior for scale parameter</span></span>
-<span id="cb2-51"><a href="#cb2-51" tabindex="-1"></a>  <span class="kw">target +=</span> student_t_lpdf(tau | <span class="dv">10</span>, <span class="dv">0</span>, <span class="dv">5</span>);</span>
-<span id="cb2-52"><a href="#cb2-52" tabindex="-1"></a></span>
-<span id="cb2-53"><a href="#cb2-53" tabindex="-1"></a>  <span class="co">// prior for beta</span></span>
-<span id="cb2-54"><a href="#cb2-54" tabindex="-1"></a>  <span class="kw">target +=</span> normal_lpdf(beta | <span class="dv">0</span>, <span class="dv">5</span>);</span>
-<span id="cb2-55"><a href="#cb2-55" tabindex="-1"></a></span>
-<span id="cb2-56"><a href="#cb2-56" tabindex="-1"></a>  <span class="co">// prior for intercept</span></span>
-<span id="cb2-57"><a href="#cb2-57" tabindex="-1"></a>  <span class="kw">target +=</span> normal_lpdf(alpha | <span class="dv">0</span>, <span class="dv">5</span>);</span>
-<span id="cb2-58"><a href="#cb2-58" tabindex="-1"></a>}</span></code></pre></div>
-<p>The input file “wcar-lpdf.stan” contains the following code (save
-this code inside your working directory and name it
-“wcar-lpdf.stan”):</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode stan"><code class="sourceCode stan"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co">/**</span></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co"> * Log probability density of the conditional autoregressive (CAR) model: WCAR specifications only</span></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co"> *</span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"> * @param y Process to model</span></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co"> * @param mu Mean vector</span></span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co"> * @param tau Scale parameter</span></span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co"> * @param rho Spatial dependence parameter</span></span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co"> * @param A_w Sparse representation of the symmetric connectivity matrix, A</span></span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co"> * @param A_v Column indices for values in A_w</span></span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co"> * @param A_u Row starting indices for values in A_u</span></span>
-<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co"> * @param D_inv The row sums of A; i.e., the diagonal elements from the inverse of Delta, where M = Delta * tau^2 is a diagonal matrix containing the conditional variances.</span></span>
-<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co"> * @param log_det_D_inv Log determinant of Delta inverse.</span></span>
-<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co"> * @param lambda Eigenvalues of C (or of the symmetric, scaled matrix Delta^{-1/2}*C*Delta^{1/2}); for the WCAR specification, C is the row-standardized version of W.</span></span>
-<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co"> * @param n Length of y</span></span>
-<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co"> *</span></span>
-<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co"> * @return Log probability density of CAR prior up to additive constant</span></span>
-<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co"> */</span></span>
-<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="dt">real</span> wcar_normal_lpdf(<span class="dt">vector</span> y, <span class="dt">vector</span> mu,</span>
-<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a>              <span class="dt">real</span> tau, <span class="dt">real</span> rho,</span>
-<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a>              <span class="dt">vector</span> A_w, <span class="dt">array</span>[] <span class="dt">int</span> A_v, <span class="dt">array</span>[] <span class="dt">int</span> A_u,</span>
-<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>              <span class="dt">vector</span> D_inv, <span class="dt">real</span> log_det_D_inv,</span>
-<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>              <span class="dt">vector</span> lambda,</span>
-<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>              <span class="dt">int</span> n) {</span>
-<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a>  <span class="dt">vector</span>[n] z = y - mu;</span>
-<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>  <span class="dt">real</span> ztDz; </span>
-<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a>  <span class="dt">real</span> ztAz; </span>
-<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a>  <span class="dt">vector</span>[n] ldet_ImrhoC;</span>
-<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a>  ztDz = (z .* D_inv)' * z;</span>
-<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a>  ztAz = z' * csr_matrix_times_vector(n, n, A_w, A_v, A_u, z);</span>
-<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span>:n) ldet_ImrhoC[i] = log1m(rho * lambda[i]);</span>
-<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a>  <span class="cf">return</span> <span class="fl">0.5</span> * (</span>
-<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a>        -n * log( <span class="dv">2</span> * pi() )</span>
-<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a>        -<span class="dv">2</span> * n * log(tau)</span>
-<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a>        + log_det_D_inv</span>
-<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a>        + sum(ldet_ImrhoC)</span>
-<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a>        - (<span class="dv">1</span> / tau^<span class="dv">2</span>) * (ztDz - rho * ztAz));</span>
-<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a>}</span></code></pre></div>
-<p>From R, you can use the following code to prepare the input data
-(<span class="math inline">\(y\)</span>, <span class="math inline">\(x\)</span>, etc.). I use
-<code>prep_car_data</code> to get a list of parts for the CAR model,
-then I append the outcome data to the same list and pass it all to a
-Stan model to draw samples.</p>
+<pre class="stan"><code>functions {
+#include wcar-lpdf.stan
+}
+
+data {
+  // data
+  int&lt;lower=1&gt; n;
+  int&lt;lower=1&gt; k;
+  vector[n] y;
+  matrix[n, k] x;
+
+    // CAR parts
+  int nAx_w;
+  int nC;
+  vector[nAx_w] Ax_w;
+  array[nAx_w] int Ax_v;
+  array[n + 1] int Ax_u;
+  array[nC] int Cidx;
+  vector[n] Delta_inv;
+  real log_det_Delta_inv;
+  vector[n] lambda;
+}
+
+parameters {
+  // spatial autocorrelation (SA) parameter
+  real&lt;lower=1/min(lambda), upper=1/max(lambda)&gt; rho;
+  
+  // scale parameter
+  real&lt;lower=0&gt; tau;
+  
+  // intercept
+  real alpha;
+  
+  // coefficients
+  vector[k] beta;  
+}
+
+model {
+  vector[n] mu = alpha + x * beta;
+
+  // Likelihood: y ~ Normal(Mu, Sigma)
+  target += wcar_normal_lpdf(y |
+                 mu, tau, rho, // mean, scale, SA
+                 Ax_w, Ax_v, Ax_u, // stuff from prep_car_data
+                 Delta_inv, 
+                 log_det_Delta_inv,
+                 lambda, 
+                 n);    
+  
+  // prior for scale parameter
+  target += student_t_lpdf(tau | 10, 0, 5);
+
+  // prior for beta
+  target += normal_lpdf(beta | 0, 5);
+
+  // prior for intercept
+  target += normal_lpdf(alpha | 0, 5);
+}
+</code></pre>
+<p>The input file “wcar-lpdf.stan” contains the following code (save this code inside your working directory and name it “wcar-lpdf.stan”):</p>
+<pre class="stan"><code>/**
+ * Log probability density of the conditional autoregressive (CAR) model: WCAR specifications only
+ *
+ * @param y Process to model
+ * @param mu Mean vector
+ * @param tau Scale parameter
+ * @param rho Spatial dependence parameter
+ * @param A_w Sparse representation of the symmetric connectivity matrix, A
+ * @param A_v Column indices for values in A_w
+ * @param A_u Row starting indices for values in A_u
+ * @param D_inv The row sums of A; i.e., the diagonal elements from the inverse of Delta, where M = Delta * tau^2 is a diagonal matrix containing the conditional variances.
+ * @param log_det_D_inv Log determinant of Delta inverse.
+ * @param lambda Eigenvalues of C (or of the symmetric, scaled matrix Delta^{-1/2}*C*Delta^{1/2}); for the WCAR specification, C is the row-standardized version of W.
+ * @param n Length of y
+ *
+ * @return Log probability density of CAR prior up to additive constant
+ */
+real wcar_normal_lpdf(vector y, vector mu,
+              real tau, real rho,
+              vector A_w, array[] int A_v, array[] int A_u,
+              vector D_inv, real log_det_D_inv,
+              vector lambda,
+              int n) {
+  vector[n] z = y - mu;
+  real ztDz; 
+  real ztAz; 
+  vector[n] ldet_ImrhoC;
+  ztDz = (z .* D_inv)' * z;
+  ztAz = z' * csr_matrix_times_vector(n, n, A_w, A_v, A_u, z);
+  for (i in 1:n) ldet_ImrhoC[i] = log1m(rho * lambda[i]);
+  return 0.5 * (
+        -n * log( 2 * pi() )
+        -2 * n * log(tau)
+        + log_det_D_inv
+        + sum(ldet_ImrhoC)
+        - (1 / tau^2) * (ztDz - rho * ztAz));
+}</code></pre>
+<p>From R, you can use the following code to prepare the input data (<span class="math inline">\(y\)</span>, <span class="math inline">\(x\)</span>, etc.). I use <code>prep_car_data</code> to get a list of parts for the CAR model, then I append the outcome data to the same list and pass it all to a Stan model to draw samples.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mc-stan.org/rstan/" class="external-link">rstan</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>
@@ -276,8 +222,7 @@ Stan model to draw samples.</p>
 <span></span>
 <span><span class="co"># sample from model</span></span>
 <span><span class="va">samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html" class="external-link">sampling</a></span><span class="op">(</span><span class="va">car_model</span>, data <span class="op">=</span> <span class="va">car_list</span>, iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
-<p>The same results can be obtained using
-<code><a href="../reference/stan_car.html">geostan::stan_car</a></code>:</p>
+<p>The same results can be obtained using <code><a href="../reference/stan_car.html">geostan::stan_car</a></code>:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">population</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span>,</span>
 <span>    data <span class="op">=</span> <span class="va">georgia</span>, car <span class="op">=</span> <span class="va">car_list</span>, iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
@@ -285,15 +230,7 @@ Stan model to draw samples.</p>
 <div class="section level3">
 <h3 id="poisson-models">Poisson models<a class="anchor" aria-label="anchor" href="#poisson-models"></a>
 </h3>
-<p>Disease mapping is a common use for CAR models, though these models
-have many applications. In this class of models, the CAR model is
-assigned as the prior distribution to a parameter vector <span class="math inline">\(\phi\)</span>, which is used to model disease
-incidence rates across small areas like counties. The disease data
-consist of counts <span class="math inline">\(y\)</span> together with
-the size of population at risk <span class="math inline">\(p\)</span>,
-or possibly a different denominator such as the expected number of cases
-<span class="math inline">\(E\)</span> (which occurs when using indirect
-age-standardization). These models have the form <span class="math display">\[\begin{equation}
+<p>Disease mapping is a common use for CAR models, though these models have many applications. In this class of models, the CAR model is assigned as the prior distribution to a parameter vector <span class="math inline">\(\phi\)</span>, which is used to model disease incidence rates across small areas like counties. The disease data consist of counts <span class="math inline">\(y\)</span> together with the size of population at risk <span class="math inline">\(p\)</span>, or possibly a different denominator such as the expected number of cases <span class="math inline">\(E\)</span> (which occurs when using indirect age-standardization). These models have the form <span class="math display">\[\begin{equation}
 \begin{aligned}
     &amp;y \sim Poisson(e^\phi) \\
     &amp;\phi \sim Normal(\mu, \Sigma) \\
@@ -308,103 +245,84 @@ age-standardization). These models have the form <span class="math display">\[\b
     &amp;\phi \sim Normal(0, \Sigma) \\
 \end{aligned}
 \end{equation}\]</span></p>
-<p>It is possible to build a Stan modeling using either one of these two
-formulations. They are substantively equivalent, <em>but</em> you may
-find that one is far more amenable to Stan’s MCMC algorithm. The former
-specification (<span class="math inline">\(\mu\)</span> inside the CAR
-model) is less commonly presented in papers, but in this author’s
-experience it is often far more stable computationally than forcing the
-CAR model to have zero mean. (You may very well encounter a case where
-the opposite is true.)</p>
-<p>The purpose of the offset term is sometimes unclear in introductory
-texts. The offset term <span class="math inline">\(p\)</span> is from
-the denominator of the rates <span class="math inline">\(\frac{y}{p}\)</span>. The expectation or mean of
-the model is <span class="math display">\[\begin{equation}
+<p>It is possible to build a Stan modeling using either one of these two formulations. They are substantively equivalent, <em>but</em> you may find that one is far more amenable to Stan’s MCMC algorithm. The former specification (<span class="math inline">\(\mu\)</span> inside the CAR model) is less commonly presented in papers, but in this author’s experience it is often far more stable computationally than forcing the CAR model to have zero mean. (You may very well encounter a case where the opposite is true.)</p>
+<p>The purpose of the offset term is sometimes unclear in introductory texts. The offset term <span class="math inline">\(p\)</span> is from the denominator of the rates <span class="math inline">\(\frac{y}{p}\)</span>. The expectation or mean of the model is <span class="math display">\[\begin{equation}
 \begin{aligned}
-    &amp;\mathbb{E}[y] = e^{log(p) + \mu} = e^{log(p)} \cdot e^{\mu} = p
-\cdot e^\mu \\
+    &amp;\mathbb{E}[y] = e^{log(p) + \mu} = e^{log(p)} \cdot e^{\mu} = p \cdot e^\mu \\
     &amp;\mathbb{E}\Bigl[ \frac{y}{p} \Bigr] = e^\mu
 \end{aligned}
-\end{equation}\]</span> The smaller is the denominator, the less
-informative is the rate with respect to the characteristic level of risk
-bearing upon the population of the given period and place. With small
-denominators, chance renders the rates uninformative (and unstable over
-time and space), and the Poisson model accounts for this.</p>
-<p>The following Stan code provides a template for a simple disease
-mapping model using the CAR model as a prior for <span class="math inline">\(\phi\)</span>. As before, you can save the code in
-your working directory and give it a name like “car_poisson.stan”. I’ll
-store the file name in my R environment:</p>
+\end{equation}\]</span> The smaller is the denominator, the less informative is the rate with respect to the characteristic level of risk bearing upon the population of the given period and place. With small denominators, chance renders the rates uninformative (and unstable over time and space), and the Poisson model accounts for this.</p>
+<p>The following Stan code provides a template for a simple disease mapping model using the CAR model as a prior for <span class="math inline">\(\phi\)</span>. As before, you can save the code in your working directory and give it a name like “car_poisson.stan”. I’ll store the file name in my R environment:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">car_poisson_file</span> <span class="op">&lt;-</span> <span class="st">"car_poisson.stan"</span></span></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="sourceCode stan"><code class="sourceCode stan"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="kw">functions</span> {</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#include wcar-lpdf.stan</span></span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>}</span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="kw">data</span> {</span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="co">// data</span></span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>&gt; n;</span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>&gt; k;</span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  <span class="dt">array</span>[n] <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; y;</span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>  <span class="dt">matrix</span>[n, k] x;</span>
-<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>  <span class="dt">vector</span>[n] const_offset;</span>
-<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a></span>
-<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>    <span class="co">// CAR parts</span></span>
-<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>  <span class="dt">int</span> nAx_w;</span>
-<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>  <span class="dt">int</span> nC;</span>
-<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>  <span class="dt">vector</span>[nAx_w] Ax_w;</span>
-<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>  <span class="dt">array</span>[nAx_w] <span class="dt">int</span> Ax_v;</span>
-<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>  <span class="dt">array</span>[n + <span class="dv">1</span>] <span class="dt">int</span> Ax_u;</span>
-<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>  <span class="dt">array</span>[nC] <span class="dt">int</span> Cidx;</span>
-<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>  <span class="dt">vector</span>[n] Delta_inv;</span>
-<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>  <span class="dt">real</span> log_det_Delta_inv;</span>
-<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a>  <span class="dt">vector</span>[n] lambda;</span>
-<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a>}</span>
-<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a></span>
-<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a><span class="kw">parameters</span> {</span>
-<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a>  <span class="co">// spatial autocorrelation (SA) parameter</span></span>
-<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>/min(lambda), <span class="kw">upper</span>=<span class="dv">1</span>/max(lambda)&gt; rho;</span>
-<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a>  </span>
-<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a>  <span class="co">// scale parameter</span></span>
-<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; tau;</span>
-<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a>  </span>
-<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a>  <span class="co">// intercept</span></span>
-<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a>  <span class="dt">real</span> alpha;</span>
-<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a>  </span>
-<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a>  <span class="co">// coefficients</span></span>
-<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a>  <span class="dt">vector</span>[k] beta;</span>
-<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a>  </span>
-<span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a>  <span class="co">// SA trend component</span></span>
-<span id="cb7-39"><a href="#cb7-39" tabindex="-1"></a>  <span class="dt">vector</span>[n] phi;</span>
-<span id="cb7-40"><a href="#cb7-40" tabindex="-1"></a>}</span>
-<span id="cb7-41"><a href="#cb7-41" tabindex="-1"></a></span>
-<span id="cb7-42"><a href="#cb7-42" tabindex="-1"></a></span>
-<span id="cb7-43"><a href="#cb7-43" tabindex="-1"></a><span class="kw">model</span> {</span>
-<span id="cb7-44"><a href="#cb7-44" tabindex="-1"></a>  <span class="dt">vector</span>[n] mu = const_offset + alpha + x * beta;</span>
-<span id="cb7-45"><a href="#cb7-45" tabindex="-1"></a>  </span>
-<span id="cb7-46"><a href="#cb7-46" tabindex="-1"></a>  <span class="co">// Likelihood: y ~ Poisson(e^[phi])</span></span>
-<span id="cb7-47"><a href="#cb7-47" tabindex="-1"></a>  <span class="kw">target +=</span> poisson_lpmf(y | exp(phi));</span>
-<span id="cb7-48"><a href="#cb7-48" tabindex="-1"></a>    </span>
-<span id="cb7-49"><a href="#cb7-49" tabindex="-1"></a>  <span class="co">// phi ~ Normal(Mu, Sigma)</span></span>
-<span id="cb7-50"><a href="#cb7-50" tabindex="-1"></a>  <span class="kw">target +=</span> wcar_normal_lpdf(phi |</span>
-<span id="cb7-51"><a href="#cb7-51" tabindex="-1"></a>                 mu, tau, rho, <span class="co">// mean, scale, SA</span></span>
-<span id="cb7-52"><a href="#cb7-52" tabindex="-1"></a>                 Ax_w, Ax_v, Ax_u, <span class="co">// stuff from prep_car_data</span></span>
-<span id="cb7-53"><a href="#cb7-53" tabindex="-1"></a>                 Delta_inv, </span>
-<span id="cb7-54"><a href="#cb7-54" tabindex="-1"></a>                 log_det_Delta_inv,</span>
-<span id="cb7-55"><a href="#cb7-55" tabindex="-1"></a>                 lambda, </span>
-<span id="cb7-56"><a href="#cb7-56" tabindex="-1"></a>                 n);</span>
-<span id="cb7-57"><a href="#cb7-57" tabindex="-1"></a></span>
-<span id="cb7-58"><a href="#cb7-58" tabindex="-1"></a>  <span class="co">// prior for scale parameter</span></span>
-<span id="cb7-59"><a href="#cb7-59" tabindex="-1"></a>  <span class="kw">target +=</span> student_t_lpdf(tau | <span class="dv">10</span>, <span class="dv">0</span>, <span class="dv">1</span>);</span>
-<span id="cb7-60"><a href="#cb7-60" tabindex="-1"></a></span>
-<span id="cb7-61"><a href="#cb7-61" tabindex="-1"></a>  <span class="co">// prior for beta</span></span>
-<span id="cb7-62"><a href="#cb7-62" tabindex="-1"></a>  <span class="kw">target +=</span> normal_lpdf(beta | <span class="dv">0</span>, <span class="dv">5</span>);</span>
-<span id="cb7-63"><a href="#cb7-63" tabindex="-1"></a></span>
-<span id="cb7-64"><a href="#cb7-64" tabindex="-1"></a>  <span class="co">// prior for intercept</span></span>
-<span id="cb7-65"><a href="#cb7-65" tabindex="-1"></a>  <span class="kw">target +=</span> normal_lpdf(alpha | <span class="dv">0</span>, <span class="dv">5</span>);</span>
-<span id="cb7-66"><a href="#cb7-66" tabindex="-1"></a>}</span></code></pre></div>
-<p>Again, you can use <code><a href="../reference/prep_car_data.html">geostan::prep_car_data</a></code> to easily
-convert the spatial weights matrix into the list of required inputs for
-the CAR model:</p>
+<pre class="stan"><code>functions {
+#include wcar-lpdf.stan
+}
+
+data {
+  // data
+  int&lt;lower=1&gt; n;
+  int&lt;lower=1&gt; k;
+  array[n] int&lt;lower=0&gt; y;
+  matrix[n, k] x;
+  vector[n] const_offset;
+
+    // CAR parts
+  int nAx_w;
+  int nC;
+  vector[nAx_w] Ax_w;
+  array[nAx_w] int Ax_v;
+  array[n + 1] int Ax_u;
+  array[nC] int Cidx;
+  vector[n] Delta_inv;
+  real log_det_Delta_inv;
+  vector[n] lambda;
+}
+
+parameters {
+  // spatial autocorrelation (SA) parameter
+  real&lt;lower=1/min(lambda), upper=1/max(lambda)&gt; rho;
+  
+  // scale parameter
+  real&lt;lower=0&gt; tau;
+  
+  // intercept
+  real alpha;
+  
+  // coefficients
+  vector[k] beta;
+  
+  // SA trend component
+  vector[n] phi;
+}
+
+
+model {
+  vector[n] mu = const_offset + alpha + x * beta;
+  
+  // Likelihood: y ~ Poisson(e^[phi])
+  target += poisson_lpmf(y | exp(phi));
+    
+  // phi ~ Normal(Mu, Sigma)
+  target += wcar_normal_lpdf(phi |
+                 mu, tau, rho, // mean, scale, SA
+                 Ax_w, Ax_v, Ax_u, // stuff from prep_car_data
+                 Delta_inv, 
+                 log_det_Delta_inv,
+                 lambda, 
+                 n);
+
+  // prior for scale parameter
+  target += student_t_lpdf(tau | 10, 0, 1);
+
+  // prior for beta
+  target += normal_lpdf(beta | 0, 5);
+
+  // prior for intercept
+  target += normal_lpdf(alpha | 0, 5);
+}
+</code></pre>
+<p>Again, you can use <code><a href="../reference/prep_car_data.html">geostan::prep_car_data</a></code> to easily convert the spatial weights matrix into the list of required inputs for the CAR model:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mc-stan.org/rstan/" class="external-link">rstan</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>
@@ -426,8 +344,7 @@ the CAR model:</p>
 <span><span class="va">samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html" class="external-link">sampling</a></span><span class="op">(</span><span class="va">car_poisson</span>,</span>
 <span>    data <span class="op">=</span> <span class="va">car_list</span>,</span>
 <span>    iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
-<p>The same results can be obtained using
-<code><a href="../reference/stan_car.html">geostan::stan_car</a></code>:</p>
+<p>The same results can be obtained using <code><a href="../reference/stan_car.html">geostan::stan_car</a></code>:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span>,</span>
 <span>    data <span class="op">=</span> <span class="va">georgia</span>, car <span class="op">=</span> <span class="va">car_list</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>, iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
@@ -436,129 +353,116 @@ the CAR model:</p>
 <div class="section level2">
 <h2 id="sar-models">SAR models<a class="anchor" aria-label="anchor" href="#sar-models"></a>
 </h2>
-<p>The simultaneously-specified spatial autoregression (SAR) is written
-as <span class="math display">\[\begin{equation}
+<p>The simultaneously-specified spatial autoregression (SAR) is written as <span class="math display">\[\begin{equation}
   \begin{aligned}
     y = \mu + (I - \rho \cdot W)^{-1} \epsilon \\
     \epsilon \sim Normal(0, \sigma^2 \cdot I)
     \end{aligned}
 \end{equation}\]</span><br>
-where <span class="math inline">\(W\)</span> is a row-standardized
-spatial weights matrix, <span class="math inline">\(I\)</span> is the
-n-by-n identity matrix, and <span class="math inline">\(\rho\)</span> is
-a spatial autocorrelation parameter. This is also a multivariate normal
-distribution but with a different covariance matrix than the CAR model:
-<span class="math display">\[\begin{equation}
-  \Sigma = \sigma^2 \cdot (I - \rho \cdot W)^{-1} (I - \rho \cdot
-W^T)^{-1},
-\end{equation}\]</span> where <span class="math inline">\(T\)</span> is
-the matrix transpose operator. The SA parameter <span class="math inline">\(\rho\)</span> for the SAR model has a more
-intuitive connection to the degree of SA than the CAR model (which is
-usually above .95 for moderately high SA).</p>
-<p>The Stan function that is used by <code><a href="../reference/stan_sar.html">geostan::stan_sar</a></code> is
-as follows (the R code below will assume that you have saved this as
-“sar-lpdf.stan”):</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode stan"><code class="sourceCode stan"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co">/**</span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co"> * Log probability density of the simultaneous autoregressive (SAR) model (spatial error model)</span></span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co"> *</span></span>
-<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co"> * @param y Process to model</span></span>
-<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co"> * @param mu Mean vector</span></span>
-<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="co"> * @param sigma Scale parameter</span></span>
-<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="co"> * @param rho Spatial dependence parameter</span></span>
-<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="co"> * @param ImW Sparse representation of (I - W): non-zero values only</span></span>
-<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="co"> * @param ImW_v Column indices for values in ImW</span></span>
-<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="co"> * @param ImW_u Row starting indices for values in ImW</span></span>
-<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="co"> * @param Widx Indices for the off-diagonal elements in ImC</span></span>
-<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co"> * @param lambda Eigenvalues of W</span></span>
-<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="co"> * @param n Length of y</span></span>
-<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="co"> *</span></span>
-<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a><span class="co"> * @return Log probability density of SAR model up to additive constant</span></span>
-<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a><span class="co">*/</span></span>
-<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a>  <span class="dt">real</span>  sar_normal_lpdf(<span class="dt">vector</span> y,</span>
-<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a>              <span class="dt">vector</span> mu,</span>
-<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a>              <span class="dt">real</span> sigma,</span>
-<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a>              <span class="dt">real</span> rho,</span>
-<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a>              <span class="dt">vector</span> ImW,</span>
-<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a>              <span class="dt">array</span>[] <span class="dt">int</span> ImW_v,</span>
-<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a>              <span class="dt">array</span>[] <span class="dt">int</span> ImW_u,</span>
-<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a>              <span class="dt">array</span>[] <span class="dt">int</span> Widx,</span>
-<span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a>              <span class="dt">vector</span> lambda,</span>
-<span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a>              <span class="dt">int</span> n) {</span>
-<span id="cb10-27"><a href="#cb10-27" tabindex="-1"></a>  <span class="dt">vector</span>[n] z = y - mu;</span>
-<span id="cb10-28"><a href="#cb10-28" tabindex="-1"></a>  <span class="dt">real</span> tau = <span class="dv">1</span> / sigma^<span class="dv">2</span>;</span>
-<span id="cb10-29"><a href="#cb10-29" tabindex="-1"></a>  <span class="dt">vector</span>[num_elements(ImW)] ImrhoW = ImW;  <span class="co">// (I - rho W)</span></span>
-<span id="cb10-30"><a href="#cb10-30" tabindex="-1"></a>  <span class="dt">vector</span>[n] ImrhoWz;                       <span class="co">// (I - rho * W) * z</span></span>
-<span id="cb10-31"><a href="#cb10-31" tabindex="-1"></a>  <span class="dt">real</span> zVz;</span>
-<span id="cb10-32"><a href="#cb10-32" tabindex="-1"></a>  <span class="dt">real</span> ldet_V = <span class="dv">2</span> * sum(log1m(rho * lambda)) - <span class="dv">2</span> * n * log(sigma);</span>
-<span id="cb10-33"><a href="#cb10-33" tabindex="-1"></a>  ImrhoW[Widx] = rho * ImW[Widx];</span>
-<span id="cb10-34"><a href="#cb10-34" tabindex="-1"></a>  ImrhoWz = csr_matrix_times_vector(n, n, ImrhoW, ImW_v , ImW_u , z);</span>
-<span id="cb10-35"><a href="#cb10-35" tabindex="-1"></a>  zVz = tau * dot_self(ImrhoWz);</span>
-<span id="cb10-36"><a href="#cb10-36" tabindex="-1"></a>  <span class="cf">return</span>  <span class="fl">0.5</span> * (-n * log(<span class="dv">2</span> * pi()) + ldet_V - zVz);         </span>
-<span id="cb10-37"><a href="#cb10-37" tabindex="-1"></a> }    </span></code></pre></div>
-<p>The following Stan model provides an example of how to use this
-function to build a SAR model. Again, its an autonormal model for
-continuous outcome variable with <span class="math inline">\(k\)</span>
-covariates.</p>
+where <span class="math inline">\(W\)</span> is a row-standardized spatial weights matrix, <span class="math inline">\(I\)</span> is the n-by-n identity matrix, and <span class="math inline">\(\rho\)</span> is a spatial autocorrelation parameter. This is also a multivariate normal distribution but with a different covariance matrix than the CAR model: <span class="math display">\[\begin{equation}
+  \Sigma = \sigma^2 \cdot (I - \rho \cdot W)^{-1} (I - \rho \cdot W^T)^{-1},
+\end{equation}\]</span> where <span class="math inline">\(T\)</span> is the matrix transpose operator. The SA parameter <span class="math inline">\(\rho\)</span> for the SAR model has a more intuitive connection to the degree of SA than the CAR model (which is usually above .95 for moderately high SA).</p>
+<p>The Stan function that is used by <code><a href="../reference/stan_sar.html">geostan::stan_sar</a></code> is as follows (the R code below will assume that you have saved this as “sar-lpdf.stan”):</p>
+<pre class="stan"><code>/**
+ * Log probability density of the simultaneous autoregressive (SAR) model (spatial error model)
+ *
+ * @param y Process to model
+ * @param mu Mean vector
+ * @param sigma Scale parameter
+ * @param rho Spatial dependence parameter
+ * @param ImW Sparse representation of (I - W): non-zero values only
+ * @param ImW_v Column indices for values in ImW
+ * @param ImW_u Row starting indices for values in ImW
+ * @param Widx Indices for the off-diagonal elements in ImC
+ * @param lambda Eigenvalues of W
+ * @param n Length of y
+ *
+ * @return Log probability density of SAR model up to additive constant
+*/
+  real  sar_normal_lpdf(vector y,
+              vector mu,
+              real sigma,
+              real rho,
+              vector ImW,
+              array[] int ImW_v,
+              array[] int ImW_u,
+              array[] int Widx,
+              vector lambda,
+              int n) {
+  vector[n] z = y - mu;
+  real tau = 1 / sigma^2;
+  vector[num_elements(ImW)] ImrhoW = ImW;  // (I - rho W)
+  vector[n] ImrhoWz;                       // (I - rho * W) * z
+  real zVz;
+  real ldet_V = 2 * sum(log1m(rho * lambda)) - 2 * n * log(sigma);
+  ImrhoW[Widx] = rho * ImW[Widx];
+  ImrhoWz = csr_matrix_times_vector(n, n, ImrhoW, ImW_v , ImW_u , z);
+  zVz = tau * dot_self(ImrhoWz);
+  return  0.5 * (-n * log(2 * pi()) + ldet_V - zVz);         
+ }    
+</code></pre>
+<p>The following Stan model provides an example of how to use this function to build a SAR model. Again, its an autonormal model for continuous outcome variable with <span class="math inline">\(k\)</span> covariates.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sar_model_file</span> <span class="op">&lt;-</span> <span class="st">"sar_model.stan"</span></span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre class="sourceCode stan"><code class="sourceCode stan"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="kw">functions</span> {</span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="co">#include sar-lpdf.stan</span></span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>}</span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a></span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="kw">data</span> {</span>
-<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>  <span class="co">// data</span></span>
-<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>&gt; n;</span>
-<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>&gt; k;</span>
-<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>  <span class="dt">vector</span>[n] y;</span>
-<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>  <span class="dt">matrix</span>[n, k] x;</span>
-<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a></span>
-<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a></span>
-<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a><span class="co">// SAR</span></span>
-<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>  <span class="dt">int</span> nImW_w;</span>
-<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a>  <span class="dt">int</span> nW;</span>
-<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a>  <span class="dt">vector</span>[nImW_w] ImW_w;</span>
-<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a>  <span class="dt">array</span>[nImW_w] <span class="dt">int</span> ImW_v;</span>
-<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a>  <span class="dt">array</span>[n + <span class="dv">1</span>] <span class="dt">int</span> ImW_u;</span>
-<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a>  <span class="dt">array</span>[nW] <span class="dt">int</span> Widx;</span>
-<span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a>  <span class="dt">vector</span>[n] eigenvalues_w;</span>
-<span id="cb12-21"><a href="#cb12-21" tabindex="-1"></a>}</span>
-<span id="cb12-22"><a href="#cb12-22" tabindex="-1"></a></span>
-<span id="cb12-23"><a href="#cb12-23" tabindex="-1"></a><span class="kw">parameters</span> {</span>
-<span id="cb12-24"><a href="#cb12-24" tabindex="-1"></a>  <span class="co">// SA parameter</span></span>
-<span id="cb12-25"><a href="#cb12-25" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>/min(eigenvalues_w), <span class="kw">upper</span>=<span class="dv">1</span>/max(eigenvalues_w)&gt; rho;     </span>
-<span id="cb12-26"><a href="#cb12-26" tabindex="-1"></a></span>
-<span id="cb12-27"><a href="#cb12-27" tabindex="-1"></a>  <span class="co">// scale parameter</span></span>
-<span id="cb12-28"><a href="#cb12-28" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; sigma;</span>
-<span id="cb12-29"><a href="#cb12-29" tabindex="-1"></a></span>
-<span id="cb12-30"><a href="#cb12-30" tabindex="-1"></a>  <span class="co">// intercept</span></span>
-<span id="cb12-31"><a href="#cb12-31" tabindex="-1"></a>  <span class="dt">real</span> alpha;</span>
-<span id="cb12-32"><a href="#cb12-32" tabindex="-1"></a></span>
-<span id="cb12-33"><a href="#cb12-33" tabindex="-1"></a>  <span class="co">// coefficients</span></span>
-<span id="cb12-34"><a href="#cb12-34" tabindex="-1"></a>  <span class="dt">vector</span>[k] beta;</span>
-<span id="cb12-35"><a href="#cb12-35" tabindex="-1"></a>}</span>
-<span id="cb12-36"><a href="#cb12-36" tabindex="-1"></a></span>
-<span id="cb12-37"><a href="#cb12-37" tabindex="-1"></a><span class="kw">model</span>{</span>
-<span id="cb12-38"><a href="#cb12-38" tabindex="-1"></a>  <span class="dt">vector</span>[n] mu = alpha + x * beta;</span>
-<span id="cb12-39"><a href="#cb12-39" tabindex="-1"></a></span>
-<span id="cb12-40"><a href="#cb12-40" tabindex="-1"></a>  <span class="co">// Likelihood: Y ~ Normal(Mu, Sigma)</span></span>
-<span id="cb12-41"><a href="#cb12-41" tabindex="-1"></a>  <span class="kw">target +=</span> sar_normal_lpdf(y |</span>
-<span id="cb12-42"><a href="#cb12-42" tabindex="-1"></a>                  mu, sigma, rho,</span>
-<span id="cb12-43"><a href="#cb12-43" tabindex="-1"></a>                  ImW_w,</span>
-<span id="cb12-44"><a href="#cb12-44" tabindex="-1"></a>                  ImW_v,</span>
-<span id="cb12-45"><a href="#cb12-45" tabindex="-1"></a>                  ImW_u,</span>
-<span id="cb12-46"><a href="#cb12-46" tabindex="-1"></a>                  Widx,</span>
-<span id="cb12-47"><a href="#cb12-47" tabindex="-1"></a>                  eigenvalues_w,</span>
-<span id="cb12-48"><a href="#cb12-48" tabindex="-1"></a>                  n);</span>
-<span id="cb12-49"><a href="#cb12-49" tabindex="-1"></a></span>
-<span id="cb12-50"><a href="#cb12-50" tabindex="-1"></a>  <span class="co">// prior for scale parameter</span></span>
-<span id="cb12-51"><a href="#cb12-51" tabindex="-1"></a>  <span class="kw">target +=</span> student_t_lpdf(sigma | <span class="dv">10</span>, <span class="dv">0</span>, <span class="dv">5</span>);</span>
-<span id="cb12-52"><a href="#cb12-52" tabindex="-1"></a></span>
-<span id="cb12-53"><a href="#cb12-53" tabindex="-1"></a>  <span class="co">// prior for beta</span></span>
-<span id="cb12-54"><a href="#cb12-54" tabindex="-1"></a>  <span class="kw">target +=</span> normal_lpdf(beta | <span class="dv">0</span>, <span class="dv">5</span>);</span>
-<span id="cb12-55"><a href="#cb12-55" tabindex="-1"></a></span>
-<span id="cb12-56"><a href="#cb12-56" tabindex="-1"></a>  <span class="co">// prior for intercept</span></span>
-<span id="cb12-57"><a href="#cb12-57" tabindex="-1"></a>  <span class="kw">target +=</span> normal_lpdf(alpha | <span class="dv">0</span>, <span class="dv">5</span>);</span>
-<span id="cb12-58"><a href="#cb12-58" tabindex="-1"></a>}</span></code></pre></div>
+<pre class="stan"><code>functions {
+#include sar-lpdf.stan
+}
+
+data {
+  // data
+  int&lt;lower=1&gt; n;
+  int&lt;lower=1&gt; k;
+  vector[n] y;
+  matrix[n, k] x;
+
+
+// SAR
+  int nImW_w;
+  int nW;
+  vector[nImW_w] ImW_w;
+  array[nImW_w] int ImW_v;
+  array[n + 1] int ImW_u;
+  array[nW] int Widx;
+  vector[n] eigenvalues_w;
+}
+
+parameters {
+  // SA parameter
+  real&lt;lower=1/min(eigenvalues_w), upper=1/max(eigenvalues_w)&gt; rho;     
+
+  // scale parameter
+  real&lt;lower=0&gt; sigma;
+
+  // intercept
+  real alpha;
+
+  // coefficients
+  vector[k] beta;
+}
+
+model{
+  vector[n] mu = alpha + x * beta;
+
+  // Likelihood: Y ~ Normal(Mu, Sigma)
+  target += sar_normal_lpdf(y |
+                  mu, sigma, rho,
+                  ImW_w,
+                  ImW_v,
+                  ImW_u,
+                  Widx,
+                  eigenvalues_w,
+                  n);
+
+  // prior for scale parameter
+  target += student_t_lpdf(sigma | 10, 0, 5);
+
+  // prior for beta
+  target += normal_lpdf(beta | 0, 5);
+
+  // prior for intercept
+  target += normal_lpdf(alpha | 0, 5);
+}
+</code></pre>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mc-stan.org/rstan/" class="external-link">rstan</a></span><span class="op">)</span></span>
@@ -577,27 +481,22 @@ covariates.</p>
 <span></span>
 <span><span class="co"># sample from model</span></span>
 <span><span class="va">samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html" class="external-link">sampling</a></span><span class="op">(</span><span class="va">sar_model</span>, data <span class="op">=</span> <span class="va">sar_list</span>, iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
-<p>We can draw samples from the same model using
-<code><a href="../reference/stan_sar.html">geostan::stan_sar</a></code>:</p>
+<p>We can draw samples from the same model using <code><a href="../reference/stan_sar.html">geostan::stan_sar</a></code>:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sar_dl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep_sar_data.html">prep_sar_data</a></span><span class="op">(</span><span class="va">W</span><span class="op">)</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_sar.html">stan_sar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">population</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">georgia</span>,</span>
 <span>    sar_parts <span class="op">=</span> <span class="va">sar_dl</span>, iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
-<p>One can also use the SAR model as a prior distribution for a
-parameter vector, just as was done above with the CAR model.</p>
+<p>One can also use the SAR model as a prior distribution for a parameter vector, just as was done above with the CAR model.</p>
 </div>
 <div class="section level2">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<div id="refs" class="references csl-bib-body hanging-indent">
-<div id="ref-donegan_2022" class="csl-entry">
-Donegan, Connor. 2022. <span>“Building Spatial Conditional
-Autoregressive Models in the <span>S</span>tan Programming
-Language.”</span> <em>OSF Preprints</em>. <a href="https://doi.org/10.31219/osf.io/3ey65" class="external-link">https://doi.org/10.31219/osf.io/3ey65</a>.
+<div id="refs" class="references hanging-indent">
+<div id="ref-donegan_2022">
+<p>Donegan, Connor. 2022. “Building Spatial Conditional Autoregressive Models in the Stan Programming Language.” <em>OSF Preprints</em>. <a href="https://doi.org/10.31219/osf.io/3ey65" class="external-link">https://doi.org/10.31219/osf.io/3ey65</a>.</p>
 </div>
-<div id="ref-haining_2020" class="csl-entry">
-Haining, Robert P., and Guangquan Li. 2020. <em>Modelling Spatial and
-Spatio-Temporal Data: A Bayesian Approach</em>. CRC Press.
+<div id="ref-haining_2020">
+<p>Haining, Robert P., and Guangquan Li. 2020. <em>Modelling Spatial and Spatio-Temporal Data: A Bayesian Approach</em>. CRC Press.</p>
 </div>
 </div>
 </div>

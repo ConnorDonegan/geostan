@@ -1,8 +1,13 @@
 # geostan 0.6.0
 
-## New Additions
+Updates:
 
-The model fitting functions (`stan_glm`, `stan_car`, etc.) now allow for missing data in the outcome variable and a new vignette provides the details. This functionality is not available for auto-Gaussian models - that is, CAR and SAR models that have been fit to continuous outcome variables - but is available for all other available models (including eigenvector spatial filtering `stan_esf` models for continuous outcomes, and all models for count outcomes [binomial and Poisson models]).
+1. Missing outcome data is now allowed in most models
+2. A bug in `prep_icar_data` has been fixed
+
+The model fitting functions (`stan_glm`, `stan_car`, etc.) now allow for missing data in the outcome variable. This is explained in the `geostan::stan_glm` documentation, next to the discussion of handling censored observations. When missing observations are present, there will (only) be a warning issued. This functionality is available for any GLM (`stan_glm`), any ESF model (`stan_esf`), and any model for count data (Poisson and binomial models including CAR and SAR models). The only models for which this functionality is not currently available are CAR and SAR models that are being been fit to continuous outcome variables.
+
+The `prep_icar_data` function, which is used inside `stan_icar`, did not have the expected behavior in all cases - this has been fixed thanks to this [pull request](https://github.com/ConnorDonegan/geostan/pull/18).
 
 # geostan 0.5.4
 
