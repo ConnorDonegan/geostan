@@ -7,7 +7,8 @@ BugReports: https://github.com/ConnorDonegan/geostan/issues
 Authors@R: c(
     person("Connor", "Donegan", , "connor.donegan@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-9698-5443")),
-    person("Mitzi", "Morris", role = "ctb")
+    person("Mitzi", "Morris", role = "ctb"),
+    person("Amy", "Tims", role = "ctb")
   )
 Description: For Bayesian inference with spatial data, provides exploratory spatial analysis tools, multiple spatial model specifications, spatial model diagnostics, and special methods for inference with small area survey data (e.g., the America Community Survey (ACS)) and censored population health surveillance data. Models are pre-specified using the Stan programming language, a platform for Bayesian inference using Markov chain Monte Carlo (MCMC). References: Carpenter et al. (2017) <doi:10.18637/jss.v076.i01>; Donegan (2021) <doi:10.31219/osf.io/3ey65>; Donegan (2022) <doi:10.21105/joss.04716>; Donegan, Chun and Hughes (2020) <doi:10.1016/j.spasta.2020.100450>; Donegan, Chun and Griffith (2021) <doi:10.3390/ijerph18136856>; Morris et al. (2019) <doi:10.1016/j.sste.2019.100301>.
 License: GPL (>= 3) 

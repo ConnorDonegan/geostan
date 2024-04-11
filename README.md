@@ -38,11 +38,35 @@ Features include:
 
 ## Installation
 
-Install **geostan** from CRAN using:
+Using your R console, you can install **geostan** from CRAN:
 
 ``` r
 install.packages("geostan")
 ```
+
+You can install the latest version (0.6.0) from the package github
+repository:
+
+``` r
+if (!require('devtools')) install.packages('devtools')
+devtools::install_github("connordonegan/geostan")
+```
+
+If you are using Windows, you may need to install
+[Rtools](https://cran.r-project.org/bin/windows/Rtools/) first. To
+install Rtools:
+
+1.  Visit the Rtools site:
+    <https://cran.r-project.org/bin/windows/Rtools/>
+2.  Select the version that corresponds to the version of R that you
+    have installed (e.g., R 4.3).
+3.  After selecting the correct version, look for the “Install Rtools”
+    section (just below the introductory text) and click on the
+    “installer” to download it. For example, for Rtools43 (for R
+    version 4.3), click on “<span style="color:blue">Rtools43
+    installer</span>.”
+4.  Go to the `.exe` file you just downloaded and double-click to begin
+    installation of Rtools.
 
 ## Support
 
@@ -66,6 +90,7 @@ Load the package and the `georgia` county mortality data set:
 
 ``` r
 library(geostan)
+#> This is geostan version 0.6.0
 data(georgia)
 ```
 
@@ -82,8 +107,8 @@ A <- shape2mat(georgia, style = "B")
 mortality_rate <- georgia$rate.female * 10e3
 sp_diag(mortality_rate, georgia, w = A)
 #> 3 NA values found in x will be dropped from data x and matrix w
-#> Warning: Removed 3 rows containing
-#> non-finite values (`stat_bin()`).
+#> Warning: Removed 3 rows containing non-finite outside the scale range
+#> (`stat_bin()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
@@ -111,6 +136,8 @@ fit <- stan_car(deaths.female ~ offset(log(pop.at.risk.female)),
         family = poisson(),
         cores = 4, # for multi-core processing
         refresh = 0) # to silence some printing
+#> 3 NA values identified in the outcome variable
+#> Found in rows: 55, 126, 157
 #> 
 #> *Setting prior parameters for intercept
 #> Distribution: normal
@@ -135,8 +162,8 @@ diagnostics for spatial models:
 sp_diag(fit, georgia, w = A)
 #> Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.
 #> 3 NA values found in x will be dropped from data x and matrix w
-#> Warning: Removed 3 rows containing missing
-#> values (`geom_pointrange()`).
+#> Warning: Removed 3 rows containing missing values or values outside the scale range
+#> (`geom_pointrange()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
@@ -154,20 +181,20 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.0015345 
-#> WAIC:  1290.42 
-#> Observations:  159 
+#> Residual Moran Coefficient:  0.0028665 
+#> WAIC:  1228.09 
+#> Observations:  156 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
 #> 4 chains, each with iter=2000; warmup=1000; thin=1; 
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
-#>             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
-#> intercept -4.679   0.011 0.178 -4.888 -4.718 -4.674 -4.633 -4.480   267 1.014
-#> car_rho    0.925   0.001 0.059  0.776  0.896  0.937  0.968  0.998  2766 1.001
-#> car_scale  0.457   0.001 0.035  0.394  0.432  0.455  0.480  0.532  3518 1.000
+#>             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff Rhat
+#> intercept -4.673   0.002 0.089 -4.842 -4.730 -4.674 -4.621 -4.495  1764    1
+#> car_rho    0.923   0.001 0.058  0.777  0.882  0.937  0.972  0.995  2899    1
+#> car_scale  0.458   0.001 0.035  0.392  0.428  0.456  0.486  0.531  3989    1
 #> 
-#> Samples were drawn using NUTS(diag_e) at Thu Apr  4 16:19:11 2024.
+#> Samples were drawn using NUTS(diag_e) at Thu Apr 11 09:12:28 2024.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -183,19 +210,19 @@ mortality_est <- fitted(fit) * 10e3
 county_name <- georgia$NAME
 head( cbind(county_name, mortality_est) )
 #>           county_name      mean        sd      2.5%       20%       50%
-#> fitted[1]       Crisp 101.64041  9.519141  83.73978  93.36796 101.31662
-#> fitted[2]     Candler 137.30390 15.999801 108.73333 123.23183 136.35141
-#> fitted[3]      Barrow  94.19814  6.141840  82.55457  88.89596  94.11255
-#> fitted[4]      DeKalb  59.73895  1.559960  56.71691  58.39545  59.69778
-#> fitted[5]    Columbia  53.31653  3.216973  47.31274  50.57770  53.26367
-#> fitted[6]        Cobb  54.11649  1.518304  51.17859  52.82489  54.11122
+#> fitted[1]       Crisp 101.69298  9.508124  84.21700  93.70998 101.31671
+#> fitted[2]     Candler 137.51901 16.501093 107.21564 123.28521 136.65931
+#> fitted[3]      Barrow  94.31354  6.325440  82.41186  88.81864  94.08767
+#> fitted[4]      DeKalb  59.76484  1.635268  56.60461  58.36384  59.74816
+#> fitted[5]    Columbia  53.30993  3.258305  47.14342  50.62473  53.25321
+#> fitted[6]        Cobb  54.11545  1.491715  51.19031  52.86885  54.10357
 #>                 80%     97.5%
-#> fitted[1] 109.55245 120.85305
-#> fitted[2] 150.48176 170.97901
-#> fitted[3]  99.37661 106.39628
-#> fitted[4]  61.05971  62.76113
-#> fitted[5]  56.08382  59.67599
-#> fitted[6]  55.39974  57.13810
+#> fitted[1] 109.46104 121.41962
+#> fitted[2] 151.09549 172.61239
+#> fitted[3]  99.79433 106.73475
+#> fitted[4]  61.14575  62.90701
+#> fitted[5]  56.00826  59.86768
+#> fitted[6]  55.36081  57.12056
 ```
 
 The mortality estimates are stored in the column named “mean”, and the

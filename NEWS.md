@@ -9,6 +9,8 @@ The model fitting functions (`stan_glm`, `stan_car`, etc.) now allow for missing
 
 The `prep_icar_data` function, which is used inside `stan_icar`, did not have the expected behavior in all cases - this has been fixed thanks to this [pull request](https://github.com/ConnorDonegan/geostan/pull/18).
 
+The package home page now has instructions for installing from github using `devtools::install_github` https://connordonegan.github.io/geostan/
+
 # geostan 0.5.4
 
 Minor updates to the vignettees and documentation, also re-compiled geostan models using the latest StanHeaders (fixing an error on CRAN).
