@@ -101,9 +101,21 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Install <strong>geostan</strong> from CRAN using:</p>
+<p>Using your R console, you can install <strong>geostan</strong> from CRAN:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"geostan"</span><span class="op">)</span></span></code></pre></div>
+<p>You can install the latest version (0.6.0) from the package github repository:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://devtools.r-lib.org/" class="external-link">'devtools'</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">'devtools'</span><span class="op">)</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"connordonegan/geostan"</span><span class="op">)</span></span></code></pre></div>
+<p>If you are using Windows, you may need to install <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">Rtools</a> first. To install Rtools:</p>
+<ol style="list-style-type: decimal">
+<li>Visit the Rtools site: <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link uri">https://cran.r-project.org/bin/windows/Rtools/</a>
+</li>
+<li>Select the version that corresponds to the version of R that you have installed (e.g., R 4.3).</li>
+<li>After selecting the correct version, look for the “Install Rtools” section (just below the introductory text) and click on the “installer” to download it. For example, for Rtools43 (for R version 4.3), click on “<span style="color:blue">Rtools43 installer</span>.”</li>
+<li>Go to the <code>.exe</code> file you just downloaded and double-click to begin installation of Rtools.</li>
+</ol>
 </div>
 <div class="section level2">
 <h2 id="support">Support<a class="anchor" aria-label="anchor" href="#support"></a>
@@ -115,21 +127,22 @@
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
 <p>Load the package and the <code>georgia</code> county mortality data set:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; This is geostan version 0.6.0</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span></code></pre></div>
 <p>This has county population and mortality data by sex for ages 55-64, and for the period 2014-2018. As is common for public access data, some of the observations missing because the CDC has censored them.</p>
 <p>The <code>sp_diag</code> function provides visual summaries of spatial data, including a histogram, Moran scatter plot, and map. Here is a visual summary of crude female mortality rates (as deaths per 10,000):</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span></span>
 <span><span class="va">mortality_rate</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">rate.female</span> <span class="op">*</span> <span class="fl">10e3</span></span>
 <span><span class="fu"><a href="reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">mortality_rate</span>, <span class="va">georgia</span>, w <span class="op">=</span> <span class="va">A</span><span class="op">)</span></span>
 <span><span class="co">#&gt; 3 NA values found in x will be dropped from data x and matrix w</span></span>
-<span><span class="co">#&gt; Warning: Removed 3 rows containing</span></span>
-<span><span class="co">#&gt; non-finite values (`stat_bin()`).</span></span></code></pre></div>
+<span><span class="co">#&gt; Warning: Removed 3 rows containing non-finite outside the scale range</span></span>
+<span><span class="co">#&gt; (`stat_bin()`).</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-3-1.png" style="display: block; margin: auto;"></p>
 <p>The following code fits a spatial conditional autoregressive (CAR) model to female county mortality data. These models are used for estimating disease risk in small areas like counties, and for analyzing covariation of health outcomes with other area qualities. The R syntax for fitting the models is similar to using <code>lm</code> or <code>glm</code>. We provide the population at risk (the denominator for mortality rates) as an offset term, using the log-transform. In this case, three of the observations are missing because they have been censored; per CDC criteria, this means that there were 9 or fewer deaths in those counties. By using the <code>censor_point</code> argument and setting it to <code>censor_point = 9</code>, the model will account for the censoring process when providing estimates of the mortality rates:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cars</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Range of permissible rho values:  -1.661134 1</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="va">deaths.female</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.female</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -139,6 +152,8 @@
 <span>        family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>        cores <span class="op">=</span> <span class="fl">4</span>, <span class="co"># for multi-core processing</span></span>
 <span>        refresh <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="co"># to silence some printing</span></span>
+<span><span class="co">#&gt; 3 NA values identified in the outcome variable</span></span>
+<span><span class="co">#&gt; Found in rows: 55, 126, 157</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; *Setting prior parameters for intercept</span></span>
 <span><span class="co">#&gt; Distribution: normal</span></span>
@@ -155,57 +170,57 @@
 <span><span class="co">#&gt;   lower upper</span></span>
 <span><span class="co">#&gt; 1  -1.7     1</span></span></code></pre></div>
 <p>Passing a fitted model to the <code>sp_diag</code> function will return a set of diagnostics for spatial models:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span>, w <span class="op">=</span> <span class="va">A</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.</span></span>
 <span><span class="co">#&gt; 3 NA values found in x will be dropped from data x and matrix w</span></span>
-<span><span class="co">#&gt; Warning: Removed 3 rows containing missing</span></span>
-<span><span class="co">#&gt; values (`geom_pointrange()`).</span></span></code></pre></div>
+<span><span class="co">#&gt; Warning: Removed 3 rows containing missing values or values outside the scale range</span></span>
+<span><span class="co">#&gt; (`geom_pointrange()`).</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;"></p>
 <p>The <code>print</code> method returns a summary of the probability distributions for model parameters, as well as Markov chain Monte Carlo (MCMC) diagnostics from Stan (Monte Carlo standard errors of the mean <code>se_mean</code>, effective sample size <code>n_eff</code>, and the R-hat statistic <code>Rhat</code>):</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Spatial Model Results </span></span>
 <span><span class="co">#&gt; Formula: deaths.female ~ offset(log(pop.at.risk.female))</span></span>
 <span><span class="co">#&gt; Spatial method (outcome):  CAR </span></span>
 <span><span class="co">#&gt; Likelihood function:  poisson </span></span>
 <span><span class="co">#&gt; Link function:  log </span></span>
-<span><span class="co">#&gt; Residual Moran Coefficient:  0.0015345 </span></span>
-<span><span class="co">#&gt; WAIC:  1290.42 </span></span>
-<span><span class="co">#&gt; Observations:  159 </span></span>
+<span><span class="co">#&gt; Residual Moran Coefficient:  0.0028665 </span></span>
+<span><span class="co">#&gt; WAIC:  1228.09 </span></span>
+<span><span class="co">#&gt; Observations:  156 </span></span>
 <span><span class="co">#&gt; Data models (ME): none</span></span>
 <span><span class="co">#&gt; Inference for Stan model: foundation.</span></span>
 <span><span class="co">#&gt; 4 chains, each with iter=2000; warmup=1000; thin=1; </span></span>
 <span><span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;             mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat</span></span>
-<span><span class="co">#&gt; intercept -4.679   0.011 0.178 -4.888 -4.718 -4.674 -4.633 -4.480   267 1.014</span></span>
-<span><span class="co">#&gt; car_rho    0.925   0.001 0.059  0.776  0.896  0.937  0.968  0.998  2766 1.001</span></span>
-<span><span class="co">#&gt; car_scale  0.457   0.001 0.035  0.394  0.432  0.455  0.480  0.532  3518 1.000</span></span>
+<span><span class="co">#&gt;             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff Rhat</span></span>
+<span><span class="co">#&gt; intercept -4.673   0.002 0.089 -4.842 -4.730 -4.674 -4.621 -4.495  1764    1</span></span>
+<span><span class="co">#&gt; car_rho    0.923   0.001 0.058  0.777  0.882  0.937  0.972  0.995  2899    1</span></span>
+<span><span class="co">#&gt; car_scale  0.458   0.001 0.035  0.392  0.428  0.456  0.486  0.531  3989    1</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Thu Apr  4 16:19:11 2024.</span></span>
+<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Thu Apr 11 09:12:28 2024.</span></span>
 <span><span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">#&gt; convergence, Rhat=1).</span></span></code></pre></div>
 <p>Applying the <code>fitted</code> method to the fitted model will return the fitted values from the model - in this case, the fitted values are the estimates of the county mortality rates. Multiplying them by 10,000 gives mortality rate per 10,000 at risk:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mortality_est</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span> <span class="op">*</span> <span class="fl">10e3</span></span>
 <span><span class="va">county_name</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">NAME</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">county_name</span>, <span class="va">mortality_est</span><span class="op">)</span> <span class="op">)</span></span>
 <span><span class="co">#&gt;           county_name      mean        sd      2.5%       20%       50%</span></span>
-<span><span class="co">#&gt; fitted[1]       Crisp 101.64041  9.519141  83.73978  93.36796 101.31662</span></span>
-<span><span class="co">#&gt; fitted[2]     Candler 137.30390 15.999801 108.73333 123.23183 136.35141</span></span>
-<span><span class="co">#&gt; fitted[3]      Barrow  94.19814  6.141840  82.55457  88.89596  94.11255</span></span>
-<span><span class="co">#&gt; fitted[4]      DeKalb  59.73895  1.559960  56.71691  58.39545  59.69778</span></span>
-<span><span class="co">#&gt; fitted[5]    Columbia  53.31653  3.216973  47.31274  50.57770  53.26367</span></span>
-<span><span class="co">#&gt; fitted[6]        Cobb  54.11649  1.518304  51.17859  52.82489  54.11122</span></span>
+<span><span class="co">#&gt; fitted[1]       Crisp 101.69298  9.508124  84.21700  93.70998 101.31671</span></span>
+<span><span class="co">#&gt; fitted[2]     Candler 137.51901 16.501093 107.21564 123.28521 136.65931</span></span>
+<span><span class="co">#&gt; fitted[3]      Barrow  94.31354  6.325440  82.41186  88.81864  94.08767</span></span>
+<span><span class="co">#&gt; fitted[4]      DeKalb  59.76484  1.635268  56.60461  58.36384  59.74816</span></span>
+<span><span class="co">#&gt; fitted[5]    Columbia  53.30993  3.258305  47.14342  50.62473  53.25321</span></span>
+<span><span class="co">#&gt; fitted[6]        Cobb  54.11545  1.491715  51.19031  52.86885  54.10357</span></span>
 <span><span class="co">#&gt;                 80%     97.5%</span></span>
-<span><span class="co">#&gt; fitted[1] 109.55245 120.85305</span></span>
-<span><span class="co">#&gt; fitted[2] 150.48176 170.97901</span></span>
-<span><span class="co">#&gt; fitted[3]  99.37661 106.39628</span></span>
-<span><span class="co">#&gt; fitted[4]  61.05971  62.76113</span></span>
-<span><span class="co">#&gt; fitted[5]  56.08382  59.67599</span></span>
-<span><span class="co">#&gt; fitted[6]  55.39974  57.13810</span></span></code></pre></div>
+<span><span class="co">#&gt; fitted[1] 109.46104 121.41962</span></span>
+<span><span class="co">#&gt; fitted[2] 151.09549 172.61239</span></span>
+<span><span class="co">#&gt; fitted[3]  99.79433 106.73475</span></span>
+<span><span class="co">#&gt; fitted[4]  61.14575  62.90701</span></span>
+<span><span class="co">#&gt; fitted[5]  56.00826  59.86768</span></span>
+<span><span class="co">#&gt; fitted[6]  55.36081  57.12056</span></span></code></pre></div>
 <p>The mortality estimates are stored in the column named “mean”, and the limits of the 95% credible interval are found in the columns “2.5%” and “97.5%”.</p>
 <p>Details and demonstrations can be found in the package <a href="https://connordonegan.github.io/geostan/reference/index.html">help pages</a> and <a href="https://connordonegan.github.io/geostan/articles/index.html">vignettes</a>.</p>
 </div>
@@ -215,16 +230,16 @@
 <p>If you use geostan in published work, please include a citation.</p>
 <p>Donegan, Connor (2022) “geostan: An R package for Bayesian spatial analysis” <em>The Journal of Open Source Software</em>. 7, no. 79: 4716. <a href="https://doi.org/10.21105/joss.04716" class="external-link uri">https://doi.org/10.21105/joss.04716</a>.</p>
 <p><a href="https://doi.org/10.21105/joss.04716" class="external-link"><img src="https://joss.theoj.org/papers/10.21105/joss.04716/status.svg" alt="DOI"></a></p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a><span class="op">@</span>Article{,</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>  title =<span class="st"> </span>{{geostan}<span class="op">:</span><span class="st"> </span>An {R} package <span class="cf">for</span> {B}ayesian spatial analysis},</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a>  author =<span class="st"> </span>{Connor Donegan},</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>  journal =<span class="st"> </span>{The Journal of Open Source Software},</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a>  year =<span class="st"> </span>{<span class="dv">2022</span>},</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a>  volume =<span class="st"> </span>{<span class="dv">7</span>},</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true"></a>  number =<span class="st"> </span>{<span class="dv">79</span>},</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true"></a>  pages =<span class="st"> </span>{<span class="dv">4716</span>},</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true"></a>  doi =<span class="st"> </span>{<span class="fl">10.21105</span><span class="op">/</span>joss<span class="fl">.04716</span>},</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="op">@</span>Article{,</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a>  title =<span class="st"> </span>{{geostan}<span class="op">:</span><span class="st"> </span>An {R} package <span class="cf">for</span> {B}ayesian spatial analysis},</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a>  author =<span class="st"> </span>{Connor Donegan},</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a>  journal =<span class="st"> </span>{The Journal of Open Source Software},</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a>  year =<span class="st"> </span>{<span class="dv">2022</span>},</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a>  volume =<span class="st"> </span>{<span class="dv">7</span>},</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true"></a>  number =<span class="st"> </span>{<span class="dv">79</span>},</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true"></a>  pages =<span class="st"> </span>{<span class="dv">4716</span>},</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true"></a>  doi =<span class="st"> </span>{<span class="fl">10.21105</span><span class="op">/</span>joss<span class="fl">.04716</span>},</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true"></a>}</span></code></pre></div>
 </div>
 
   </div>
