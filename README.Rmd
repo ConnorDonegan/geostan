@@ -38,7 +38,7 @@ Using your R console, you can install **geostan** from CRAN:
 install.packages("geostan")
 ```
 
-You can install the latest version from the package github repository:
+Or, you can install the latest version from the package github repository:
 
 ```r
 if (!require('devtools')) install.packages('devtools')
