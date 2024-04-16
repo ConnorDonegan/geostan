@@ -38,14 +38,14 @@ Using your R console, you can install **geostan** from CRAN:
 install.packages("geostan")
 ```
 
-You can install the latest version (0.6.0) from the package github repository:
+You can install the latest version from the package github repository:
 
 ```r
 if (!require('devtools')) install.packages('devtools')
 devtools::install_github("connordonegan/geostan")
 ```
 
-If you are using Windows, you may need to install [Rtools](https://cran.r-project.org/bin/windows/Rtools/) first. To install Rtools:
+If you are using Windows and installing with `install_github`, you may need to install [Rtools](https://cran.r-project.org/bin/windows/Rtools/) first (this is not needed when installing from CRAN). To install Rtools:
 
 1. Visit the Rtools site: https://cran.r-project.org/bin/windows/Rtools/
 2. Select the version that corresponds to the version of R that you have installed (e.g., R 4.3).
