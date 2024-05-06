@@ -1,3 +1,8 @@
+# geostan 0.6.1
+
+ - Visualizing spatial neighbors: `geostan::edges` can now return a simple features object for plotting the connections in the spatial connectivity matrix.
+ - 
+
 # geostan 0.6.0
 
 Updates:

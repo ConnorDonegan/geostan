@@ -4,21 +4,25 @@
 \alias{edges}
 \title{Edge list}
 \usage{
-edges(C, unique_pairs_only = TRUE)
+edges(C, unique_pairs_only = TRUE, spatial)
 }
 \arguments{
 \item{C}{A connectivity matrix where connection between two nodes is indicated by non-zero entries.}
 
 \item{unique_pairs_only}{By default, only unique pairs of nodes (i, j) will be included in the output.}
+
+\item{shape}{Optional spatial object (geometry) to which \code{C} refers. If given, the function returns an \code{sf} object.}
 }
 \value{
-Returns a \code{data.frame} with three columns. The first two columns (\code{node1} and \code{node2}) contain the indices of connected pairs of nodes; only unique pairs of nodes are included (unless \code{unique_pairs_only = FALSE}). The third column (\code{weight}) contains the corresponding matrix element, \code{C[node1, node2]}.
+If \code{shape} is missing, this returns a \code{data.frame} with three columns. The first two columns (\code{node1} and \code{node2}) contain the indices of connected pairs of nodes; only unique pairs of nodes are included (unless \code{unique_pairs_only = FALSE}). The third column (\code{weight}) contains the corresponding matrix element, \code{C[node1, node2]}.
+
+If \code{shape} is provided, the results are joined to an \code{sf} object so the connections can be visualized.
 }
 \description{
 Creates a list of connected nodes following the graph representation of a spatial connectivity matrix.
 }
 \details{
-This is used internally for \code{\link[geostan]{stan_icar}} and it is also helpful for creating the scaling factor for BYM2 models fit with \code{\link[geostan]{stan_icar}}.
+This is used internally for \code{\link[geostan]{stan_icar}}, can be helpful for creating the scaling factor for BYM2 models fit with \code{\link[geostan]{stan_icar}}, and can be used for visualizing a spatial connectivity matrix.
 }
 \examples{
 data(sentencing)
@@ -29,6 +33,15 @@ head(nbs)
 ## similar to:
 head(Matrix::summary(C))
 head(Matrix::summary(shape2mat(georgia, "W")))
+
+## add geometry for plotting
+library(sf)
+E <- edges(C, spatial = sentencing)
+g1 = st_geometry(E)
+g2 = st_geometry(sentencing)
+plot(g1, lwd = .2)
+plot(g2, add = TRUE)
+
 }
 \seealso{
 \code{\link[geostan]{shape2mat}}, \code{\link[geostan]{prep_icar_data}}, \code{\link[geostan]{stan_icar}}

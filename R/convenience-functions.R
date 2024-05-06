@@ -579,11 +579,12 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' @param t Number of time periods. Only the binary coding scheme is available for space-time connectivity matrices.
 #' 
 #' @param st.style For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and "contemp" (the default) for contemporaneous specification (see Details).
-#' 
+#'
+#' @param quiet If `TRUE`, messages will be silenced.
 #' 
 #' @return A spatial connectivity matrix
 #'
-#' @seealso \code{\link[geostan]{edges}} \code{\link[geostan]{prep_car_data}} \code{\link[geostan]{prep_icar_data}}
+#' @seealso \code{\link[geostan]{edges}} \code{\link[geostan]{row_standardize}} \code{\link[geostan]{n_nbs}}
 #' 
 #' @details
 #'
@@ -597,21 +598,24 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' 
 #' Griffith, Daniel A. (2012). Space, time, and space-time eigenvector filter specifications that account for autocorrelation. Estadística Espanola, 54(177), 7-34.
 #'
-#' Haining, Robert P. and Li, Guangquan (2020). Regression Modelling Wih Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.
+#' Haining, Robert P. and Li, Guangquan (2020). Modelling Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.
 #'
 #' @examples 
 #' data(georgia)
 #'
 #' ## binary adjacency matrix
 #' C <- shape2mat(georgia, "B")
-#' ## row sums gives the numbers of neighbors per observation
-#' Matrix::rowSums(C)
+#' 
+#' ## number of neighbors per observation
+#' summary( n_nbs(C) )
 #' head(Matrix::summary(C))
 #'
 #' ## row-standardized matrix 
 #' W <- shape2mat(georgia, "W")
-#' Matrix::rowSums(W)
-#' head(Matrix::summary(W))
+#'
+#' ## summary of weights
+#' E <- edges(W, unique_pairs_only = FALSE)
+#' summary(E$weight)
 #' 
 #' ## space-time matricies 
 #' ## for eigenvector space-time filtering
@@ -621,16 +625,19 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' dim(Cst)
 #' EVst <- make_EV(Cst)
 #' dim(EVst)
+#' 
 #' @importFrom Matrix sparseMatrix rowSums
 #' @importFrom spdep poly2nb
 #' @export
 #'
 shape2mat <- function(shape,
-                       style = c("B", "W"),
-                       queen = TRUE,
-                       snap = sqrt(.Machine$double.eps),
-                       t = 1,
-                       st.style = c("contemp", "lag"))
+                      style = c("B", "W"),
+                      queen = TRUE,
+                      snap = sqrt(.Machine$double.eps),
+                      t = 1,
+                      st.style = c("contemp", "lag"),
+                      quiet = FALSE
+                      )
 {
     style <- match.arg(style)
     st.style <- match.arg(st.style)
@@ -643,7 +650,7 @@ shape2mat <- function(shape,
     j <- j[j>0]
     stopifnot(length(i) == length(j))
     C <- Matrix::sparseMatrix(i = i, j = j, dims = dims)
-    if (style == "W") C <- row_standardize(C, warn = FALSE)
+    if (style == "W") C <- row_standardize(C, warn = FALSE)    
     if (t > 1) { 
         if (style != "B") stop ("Only the binary coding scheme has been implemented for space-time matrices.")
       ## binary temporal connectivity matrix
@@ -657,7 +664,16 @@ shape2mat <- function(shape,
           Is <- diag(1, nrow = s)
           C <- kronecker(It, C) + kronecker(Ct, Is)
       }
-  }    
+    }
+    if (!quiet) {
+        cond <- ifelse(queen == TRUE, "Queen", "Rook")
+        message(paste0("Contiguity condition: ", cond))
+        Ni <- n_nbs(C)
+        message("Number of neighbors per unit, summary:")
+        print(summary(Ni))
+        message("\nSpatial weights, summary:")
+        print(summary(edges(C, unique_pairs_only = FALSE)$weight))
+    }
     return(C)
 }
 
@@ -747,20 +763,44 @@ waic <- function(fit, pointwise = FALSE, digits = 2) {
   return(round(res, digits))
 }
 
+#' Count neighbors in a connectivity matrix
+#'
+#' @param C A connectivity matrix
+#'
+#' @return A vector with the number of non-zero values in each row of `C`
+#'
+#' @examples
+#' data(sentencing)
+#' C <- shape2mat(C)
+#' sentencing$Ni <- n_nbs(C)
+#'
+#' @export 
+n_nbs <- function(C) {
+    stopifnot( inherits(C, "matrix") || inherits(C, "Matrix") )
+    apply(C, 1, FUN = function(x) sum(x != 0))
+}
+
+
 #' Edge list
 #'
 #' @description Creates a list of connected nodes following the graph representation of a spatial connectivity matrix.
 #' 
 #' @param C A connectivity matrix where connection between two nodes is indicated by non-zero entries.
-#' @param unique_pairs_only By default, only unique pairs of nodes (i, j) will be included in the output.
 #' 
+#' @param unique_pairs_only By default, only unique pairs of nodes (i, j) will be included in the output.
+#'
+#' @param shape Optional spatial object (geometry) to which `C` refers. If given, the function returns an `sf` object.
+#'
 #' @return
 #' 
-#' Returns a \code{data.frame} with three columns. The first two columns (\code{node1} and \code{node2}) contain the indices of connected pairs of nodes; only unique pairs of nodes are included (unless `unique_pairs_only = FALSE`). The third column (\code{weight}) contains the corresponding matrix element, \code{C[node1, node2]}.
+#' If `shape` is missing, this returns a \code{data.frame} with three columns. The first two columns (\code{node1} and \code{node2}) contain the indices of connected pairs of nodes; only unique pairs of nodes are included (unless `unique_pairs_only = FALSE`). The third column (\code{weight}) contains the corresponding matrix element, \code{C[node1, node2]}.
 #'
-#' @details This is used internally for \code{\link[geostan]{stan_icar}} and it is also helpful for creating the scaling factor for BYM2 models fit with \code{\link[geostan]{stan_icar}}.
+#' If `shape` is provided, the results are joined to an `sf` object so the connections can be visualized.
+#'
+#' @details This is used internally for \code{\link[geostan]{stan_icar}}, can be helpful for creating the scaling factor for BYM2 models fit with \code{\link[geostan]{stan_icar}}, and can be used for visualizing a spatial connectivity matrix.
 #'
 #' @seealso \code{\link[geostan]{shape2mat}}, \code{\link[geostan]{prep_icar_data}}, \code{\link[geostan]{stan_icar}}
+#' 
 #' @examples
 #' data(sentencing)
 #' C <- shape2mat(sentencing)
@@ -770,9 +810,21 @@ waic <- function(fit, pointwise = FALSE, digits = 2) {
 #' ## similar to:
 #' head(Matrix::summary(C))
 #' head(Matrix::summary(shape2mat(georgia, "W")))
+#'
+#' ## add geometry for plotting
+#' library(sf)
+#' E <- edges(C, spatial = sentencing)
+#' g1 = st_geometry(E)
+#' g2 = st_geometry(sentencing)
+#' plot(g1, lwd = .2)
+#' plot(g2, add = TRUE)
+#' 
 #' @importFrom Matrix summary
+#' 
+#' @importFrom sf st_point_on_surface st_linestring st_sfc st_as_sf st_crs
+#' 
 #' @export
-edges <- function(C, unique_pairs_only = TRUE) {
+edges <- function(C, unique_pairs_only = TRUE, spatial) {
     stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
     edges <- Matrix::summary(Matrix::Matrix(C))
     names(edges)[1:2] <- c("node1", "node2")
@@ -786,7 +838,15 @@ edges <- function(C, unique_pairs_only = TRUE) {
     if (unique_pairs_only) edges <- edges[which(edges$node1 < edges$node2),]
     rownames(edges) <- NULL
     class(edges) <- "data.frame"
-    return(edges)
+    if (missing(spatial)) return(edges)    
+    geos = suppressWarnings(sf::st_point_on_surface(sentencing)$geometry )
+    lines <- lapply(1:nrow(edges), FUN = function(j) {
+        sf::st_linestring( c(geos[[ edges$node1[j] ]], geos[[ edges$node2[j] ]]) )
+    })
+    geo_ls <- sf::st_sfc(lines)
+    df <- cbind(edges, geo_ls)
+    nbs_st <- sf::st_as_sf(df, crs = sf::st_crs(spatial))
+    return (nbs_st)
 }
 
 #' Standard error of log(x)

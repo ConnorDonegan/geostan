@@ -8,7 +8,7 @@ Bivand, Roger S. and Pebesma, Edzer and Gomez-Rubio, Virgilio (2013). Applied sp
 
 Griffith, Daniel A. (2012). Space, time, and space-time eigenvector filter specifications that account for autocorrelation. Estadística Espanola, 54(177), 7-34.
 
-Haining, Robert P. and Li, Guangquan (2020). Regression Modelling Wih Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.
+Haining, Robert P. and Li, Guangquan (2020). Modelling Spatial and Spatial-Temporal Data: A Bayesian Approach. CRC Press.
 }
 \usage{
 shape2mat(
@@ -17,7 +17,8 @@ shape2mat(
   queen = TRUE,
   snap = sqrt(.Machine$double.eps),
   t = 1,
-  st.style = c("contemp", "lag")
+  st.style = c("contemp", "lag"),
+  quiet = FALSE
 )
 }
 \arguments{
@@ -32,6 +33,8 @@ shape2mat(
 \item{t}{Number of time periods. Only the binary coding scheme is available for space-time connectivity matrices.}
 
 \item{st.style}{For space-time data, what type of space-time connectivity structure should be used? Options are "lag" for the lagged specification and "contemp" (the default) for contemporaneous specification (see Details).}
+
+\item{quiet}{If \code{TRUE}, messages will be silenced.}
 }
 \value{
 A spatial connectivity matrix
@@ -49,14 +52,17 @@ data(georgia)
 
 ## binary adjacency matrix
 C <- shape2mat(georgia, "B")
-## row sums gives the numbers of neighbors per observation
-Matrix::rowSums(C)
+
+## number of neighbors per observation
+summary( n_nbs(C) )
 head(Matrix::summary(C))
 
 ## row-standardized matrix 
 W <- shape2mat(georgia, "W")
-Matrix::rowSums(W)
-head(Matrix::summary(W))
+
+## summary of weights
+E <- edges(W, unique_pairs_only = FALSE)
+summary(E$weight)
 
 ## space-time matricies 
 ## for eigenvector space-time filtering
@@ -66,7 +72,8 @@ Cst <- shape2mat(georgia, t = 5)
 dim(Cst)
 EVst <- make_EV(Cst)
 dim(EVst)
+
 }
 \seealso{
-\code{\link[geostan]{edges}} \code{\link[geostan]{prep_car_data}} \code{\link[geostan]{prep_icar_data}}
+\code{\link[geostan]{edges}} \code{\link[geostan]{row_standardize}} \code{\link[geostan]{n_nbs}}
 }
