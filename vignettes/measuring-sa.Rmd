@@ -61,7 +61,7 @@ If we pass any variable `x` and its corresponding spatial object (e.g., simple f
 sp_diag(georgia$college, georgia, name = "College (%)")
 ```
 
-The Moran plot is a visualization of the degree of SA: on the horizontal axis are the `college` estimates while the vertical axis represents the mean neighboring value. The Moran coefficient, an index of SA, is printed at the top (MC=0.42) The expected value of the MC under no SA is $-1/(n-1)$ [@chun_2013]. The map shows that the contrast between the greater Atlanta metropolitan area and the rural counties is a prominent, if not the predominant, spatial pattern. 
+The Moran plot is a visualization of the degree of SA: on the horizontal axis are the `college` estimates while the vertical axis represents the mean neighboring value. The Moran coefficient, an index of SA, is printed at the top (MC=0.42) The expected value of the MC under no SA is $-1/(n-1)$ or a little less than zero [@chun_2013]. The map shows that the contrast between the greater Atlanta metropolitan area and the rural counties is a prominent, if not the predominant, spatial pattern. 
 
 ## Spatial weights matrix
 
@@ -106,13 +106,13 @@ The quadrants of the Moran plot are helpful for classifying observations. The fi
 
 ## The Moran coefficient (MC)
 
-The formula for the Moran coefficient (MC), an index of SA, is
+The Moran coefficient (MC), also known as Moran's I, is an index of SA. Its formula is:
 $$MC = \frac{n}{K}\frac{\sum_i^n \sum_j^n w_{ij} (y_i - \overline{y})(y_j - \overline{y})}{\sum_i^n (y_i - \overline{y})^2} $$
 where $K$ is the sum of all values in the spatial connectivity matrix $W$ (i.e., the sum of all row-sums: $K = \sum_i \sum_j w_{ij}$). 
 
-The MC is related to the Pearson product moment correlation coefficient. [@chun_2013, 10]. Whereas the correlation coefficient ranges from -1 to 1, the MC does not, except under special circumstances---the range usually expands somewhat. Its expected value under a condition of zero SA is not zero, but instead, $-1/(n-1)$ (which approaches zero as $n$ increases).
+The MC is related to the Pearson product moment correlation coefficient. [@chun_2013, 10]. As positive SA increases, it moves towards a value of 1; if there is negative SA, then the Moran coefficient will be negative. Whereas the correlation coefficient ranges from -1 to 1, the MC does not, except under special circumstances---the range usually expands a little bit. Its expected value under a condition of zero SA is not zero, but instead, $-1/(n-1)$ (which is near to zero, and approaches zero as $n$ increases).
 
-It is also important to understand that the MC does not 'behave' similarly to the correlation coefficient. Specifically, for moderate to high levels of autocorrelation, the MC may not be highly sensitive to changes in the degree of autocorrelation; it is more powerful for detecting the presence of autocorrelation. This issue motivated development of an approximate estimator of the spatial autocorrelation parameter from the simultaneous autoregressive (SAR) model, called APLE (approximate-profile likelihood estimator) [@li_2007]. While it is limited to smaller data sets, it is another helpful tool (see `?geostan::aple`).
+The MC does not 'behave' entirely like the correlation coefficient. Specifically, for moderately high levels of autocorrelation, the MC may not be highly sensitive to changes in the degree of autocorrelation; it is more powerful for detecting the presence of autocorrelation. For a measure of SA that acts more consistently like the correlation coefficient, one can use the spatial autoregressive (SAR) model. You can simply fit an intercept only SAR model to the data and examine the estimate for its SA parameter, $\rho$ (see `geostan::stan_sar`). The APLE (see `geostan::aple`) is another index of SA; it provides an approximate estimate of the SAR model's SA parameter; but note that it loses accuracy with moderately large datasets [@li_2007]. 
 
 ##  The Geary ratio (GR)
 
@@ -137,7 +137,7 @@ mc(x, W) + gr(x, W)
 
 Local indicators of spatial association (LISA) were introduced by @anselin_1995 for ESDA. The LISA is a class of *local* SA statistics. Every LISA is related to a global SA index, such as the MC and GR. **geostan** contains functions for calculating local Geary's C and a local version of the MC, known as local Moran's I.
 
-The idea of a *local* statistic is to index the amount and type of SA present at every discrete location on the map (e.g., for every county). The sum of all these LISA values is *proportionate* to its corresponding global SA index.
+The idea of a *local* statistic is to index the amount and type of SA present at every discrete location on the map (e.g., for every county). The sum of all these LISA values is proportionate to its corresponding global SA index.
 
 Local Moran's I for the $i^{th}$ unit is
 $$I_i = z_i \sum_j^n w_{ij} z_j$$

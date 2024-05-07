@@ -2,7 +2,7 @@
 % Please edit documentation in R/moran.R
 \name{moran_plot}
 \alias{moran_plot}
-\title{Moran plot}
+\title{Moran scatter plot}
 \source{
 Anselin, Luc. "Local indicators of spatial association—LISA." Geographical analysis 27, no. 2 (1995): 93-115.
 }

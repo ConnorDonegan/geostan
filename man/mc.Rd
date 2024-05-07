@@ -2,7 +2,7 @@
 % Please edit documentation in R/moran.R
 \name{mc}
 \alias{mc}
-\title{The Moran coefficient}
+\title{The Moran coefficient (Moran's I)}
 \source{
 Chun, Yongwan, and Daniel A. Griffith. Spatial Statistics and Geostatistics: Theory and Applications for Geographic Information Science and Technology. Sage, 2013.
 

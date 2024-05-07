@@ -8,16 +8,25 @@ home:
 articles:
 - title: "Package vignettes"
   contents:
-  - custom-spatial-models
+  - spatial-weights-matrix
   - measuring-sa
+  - raster-regression  
+  - custom-spatial-models
   - spatial-me-models
-  - raster-regression
 reference:
 - title: "Package overview"
 - contents:
   - geostan-package
-- title: "Spatial analysis"
-  desc: Functions for measuring and visualizing spatial autocorrelation and dispersion, including model diagnostics
+- title: "Spatial data"
+- contents:
+  - edges
+  - get_shp
+  - make_EV
+  - n_nbs  
+  - row_standardize  
+  - shape2mat
+  - sim_sar  
+- title: "Spatial autocorrelation"
 - contents: 
   - aple
   - expected_mc
@@ -25,38 +34,26 @@ reference:
   - lg
   - lisa
   - mc
-  - me_diag
   - moran_plot
   - n_eff
-  - sp_diag
-  - row_standardize
-- title: "Models"
-  desc: "Model fitting functions and methods"
+  - sp_diag  
+- title: "Spatial models"
 - contents:
+  - starts_with("prep_")
   - starts_with("stan_")
+- title: "Methods and diagnostics for spatial models"
+- contents:
   - matches("geostan_fit")
+  - me_diag
   - spatial
   - posterior_predict
   - priors
-- title: "Convenience functions"
-  desc: Tools for working with spatial data and **geostan** models
+  - waic
+- title: "Miscellaneous"
 - contents:
   - auto_gaussian
-  - edges
-  - eigen_grid
-  - get_shp
-  - make_EV
-  - prep_car_data
-  - prep_car_data2
-  - prep_icar_data
-  - prep_me_data
-  - prep_sar_data
-  - prep_sar_data2
+  - eigen_grid  
   - se_log
-  - shape2mat
-  - sim_sar
-  - student_t
-  - waic
 - title: "Data"
 - contents:
   - georgia

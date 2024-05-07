@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.1</span>
       </span>
     </div>
 
@@ -56,7 +56,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">edges</span><span class="op">(</span><span class="va">C</span>, unique_pairs_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">edges</span><span class="op">(</span><span class="va">C</span>, unique_pairs_only <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">spatial</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -68,16 +68,23 @@
 <dt>unique_pairs_only</dt>
 <dd><p>By default, only unique pairs of nodes (i, j) will be included in the output.</p></dd>
 
+
+<dt>shape</dt>
+<dd><p>Optional spatial object (geometry) to which <code>C</code> refers. If given, the function returns an <code>sf</code> object.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
     
 
-<p>Returns a <code>data.frame</code> with three columns. The first two columns (<code>node1</code> and <code>node2</code>) contain the indices of connected pairs of nodes; only unique pairs of nodes are included (unless <code>unique_pairs_only = FALSE</code>). The third column (<code>weight</code>) contains the corresponding matrix element, <code>C[node1, node2]</code>.</p>
+<p>If <code>shape</code> is missing, this returns a <code>data.frame</code> with three columns. The first two columns (<code>node1</code> and <code>node2</code>) contain the indices of connected pairs of nodes; only unique pairs of nodes are included (unless <code>unique_pairs_only = FALSE</code>). The third column (<code>weight</code>) contains the corresponding matrix element, <code>C[node1, node2]</code>.</p>
+
+
+<p>If <code>shape</code> is provided, the results are joined to an <code>sf</code> object so the connections can be visualized.</p>
     </div>
     <div id="details">
     <h2>Details</h2>
-    <p>This is used internally for <code><a href="stan_icar.html">stan_icar</a></code> and it is also helpful for creating the scaling factor for BYM2 models fit with <code><a href="stan_icar.html">stan_icar</a></code>.</p>
+    <p>This is used internally for <code><a href="stan_icar.html">stan_icar</a></code>, can be helpful for creating the scaling factor for BYM2 models fit with <code><a href="stan_icar.html">stan_icar</a></code>, and can be used for visualizing a spatial connectivity matrix.</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
@@ -93,7 +100,16 @@
 <span></span>
 <span><span class="co">## similar to:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">Matrix</span><span class="fu">::</span><span class="fu">summary</span><span class="op">(</span><span class="va">C</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">Matrix</span><span class="fu">::</span><span class="fu">summary</span><span class="op">(</span><span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"W"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">Matrix</span><span class="fu">::</span><span class="fu">summary</span><span class="op">(</span><span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"W"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## add geometry for plotting</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
+<span><span class="va">E</span> <span class="op">&lt;-</span> <span class="fu">edges</span><span class="op">(</span><span class="va">C</span>, spatial <span class="op">=</span> <span class="va">sentencing</span><span class="op">)</span></span>
+<span><span class="va">g1</span> <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_geometry</a></span><span class="op">(</span><span class="va">E</span><span class="op">)</span></span>
+<span><span class="va">g2</span> <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_geometry</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">g1</span>, lwd <span class="op">=</span> <span class="fl">.2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">g2</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

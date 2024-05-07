@@ -40,7 +40,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.1</span>
       </span>
     </div>
 
@@ -117,7 +117,7 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span>, <span class="va">georgia</span>, name <span class="op">=</span> <span class="st">"College (%)"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-2-1.png" width="768" style="display: block; margin: auto;"></p>
-<p>The Moran plot is a visualization of the degree of SA: on the horizontal axis are the <code>college</code> estimates while the vertical axis represents the mean neighboring value. The Moran coefficient, an index of SA, is printed at the top (MC=0.42) The expected value of the MC under no SA is <span class="math inline">\(-1/(n-1)\)</span> <span class="citation">(Chun and Griffith <a href="#ref-chun_2013" role="doc-biblioref">2013</a>)</span>. The map shows that the contrast between the greater Atlanta metropolitan area and the rural counties is a prominent, if not the predominant, spatial pattern.</p>
+<p>The Moran plot is a visualization of the degree of SA: on the horizontal axis are the <code>college</code> estimates while the vertical axis represents the mean neighboring value. The Moran coefficient, an index of SA, is printed at the top (MC=0.42) The expected value of the MC under no SA is <span class="math inline">\(-1/(n-1)\)</span> or a little less than zero <span class="citation">(Chun and Griffith <a href="#ref-chun_2013" role="doc-biblioref">2013</a>)</span>. The map shows that the contrast between the greater Atlanta metropolitan area and the rural counties is a prominent, if not the predominant, spatial pattern.</p>
 </div>
 <div class="section level2">
 <h2 id="spatial-weights-matrix">Spatial weights matrix<a class="anchor" aria-label="anchor" href="#spatial-weights-matrix"></a>
@@ -152,9 +152,9 @@
 <div class="section level2">
 <h2 id="the-moran-coefficient-mc">The Moran coefficient (MC)<a class="anchor" aria-label="anchor" href="#the-moran-coefficient-mc"></a>
 </h2>
-<p>The formula for the Moran coefficient (MC), an index of SA, is <span class="math display">\[MC = \frac{n}{K}\frac{\sum_i^n \sum_j^n w_{ij} (y_i - \overline{y})(y_j - \overline{y})}{\sum_i^n (y_i - \overline{y})^2} \]</span> where <span class="math inline">\(K\)</span> is the sum of all values in the spatial connectivity matrix <span class="math inline">\(W\)</span> (i.e., the sum of all row-sums: <span class="math inline">\(K = \sum_i \sum_j w_{ij}\)</span>).</p>
-<p>The MC is related to the Pearson product moment correlation coefficient. <span class="citation">(Chun and Griffith <a href="#ref-chun_2013" role="doc-biblioref">2013</a>, 10)</span>. Whereas the correlation coefficient ranges from -1 to 1, the MC does not, except under special circumstances—the range usually expands somewhat. Its expected value under a condition of zero SA is not zero, but instead, <span class="math inline">\(-1/(n-1)\)</span> (which approaches zero as <span class="math inline">\(n\)</span> increases).</p>
-<p>It is also important to understand that the MC does not ‘behave’ similarly to the correlation coefficient. Specifically, for moderate to high levels of autocorrelation, the MC may not be highly sensitive to changes in the degree of autocorrelation; it is more powerful for detecting the presence of autocorrelation. This issue motivated development of an approximate estimator of the spatial autocorrelation parameter from the simultaneous autoregressive (SAR) model, called APLE (approximate-profile likelihood estimator) <span class="citation">(Li, Calder, and Cressie <a href="#ref-li_2007" role="doc-biblioref">2007</a>)</span>. While it is limited to smaller data sets, it is another helpful tool (see <code><a href="../reference/aple.html">?geostan::aple</a></code>).</p>
+<p>The Moran coefficient (MC), also known as Moran’s I, is an index of SA. Its formula is: <span class="math display">\[MC = \frac{n}{K}\frac{\sum_i^n \sum_j^n w_{ij} (y_i - \overline{y})(y_j - \overline{y})}{\sum_i^n (y_i - \overline{y})^2} \]</span> where <span class="math inline">\(K\)</span> is the sum of all values in the spatial connectivity matrix <span class="math inline">\(W\)</span> (i.e., the sum of all row-sums: <span class="math inline">\(K = \sum_i \sum_j w_{ij}\)</span>).</p>
+<p>The MC is related to the Pearson product moment correlation coefficient. <span class="citation">(Chun and Griffith <a href="#ref-chun_2013" role="doc-biblioref">2013</a>, 10)</span>. As positive SA increases, it moves towards a value of 1; if there is negative SA, then the Moran coefficient will be negative. Whereas the correlation coefficient ranges from -1 to 1, the MC does not, except under special circumstances—the range usually expands a little bit. Its expected value under a condition of zero SA is not zero, but instead, <span class="math inline">\(-1/(n-1)\)</span> (which is near to zero, and approaches zero as <span class="math inline">\(n\)</span> increases).</p>
+<p>The MC does not ‘behave’ entirely like the correlation coefficient. Specifically, for moderately high levels of autocorrelation, the MC may not be highly sensitive to changes in the degree of autocorrelation; it is more powerful for detecting the presence of autocorrelation. For a measure of SA that acts more consistently like the correlation coefficient, one can use the spatial autoregressive (SAR) model. You can simply fit an intercept only SAR model to the data and examine the estimate for its SA parameter, <span class="math inline">\(\rho\)</span> (see <code><a href="../reference/stan_sar.html">geostan::stan_sar</a></code>). The APLE (see <code><a href="../reference/aple.html">geostan::aple</a></code>) is another index of SA; it provides an approximate estimate of the SAR model’s SA parameter; but note that it loses accuracy with moderately large datasets <span class="citation">(Li, Calder, and Cressie <a href="#ref-li_2007" role="doc-biblioref">2007</a>)</span>.</p>
 </div>
 <div class="section level2">
 <h2 id="the-geary-ratio-gr">The Geary ratio (GR)<a class="anchor" aria-label="anchor" href="#the-geary-ratio-gr"></a>
@@ -176,7 +176,7 @@
 <h2 id="local-indicators-of-spatial-association-lisas">Local indicators of spatial association (LISAs)<a class="anchor" aria-label="anchor" href="#local-indicators-of-spatial-association-lisas"></a>
 </h2>
 <p>Local indicators of spatial association (LISA) were introduced by <span class="citation">Anselin (<a href="#ref-anselin_1995" role="doc-biblioref">1995</a>)</span> for ESDA. The LISA is a class of <em>local</em> SA statistics. Every LISA is related to a global SA index, such as the MC and GR. <strong>geostan</strong> contains functions for calculating local Geary’s C and a local version of the MC, known as local Moran’s I.</p>
-<p>The idea of a <em>local</em> statistic is to index the amount and type of SA present at every discrete location on the map (e.g., for every county). The sum of all these LISA values is <em>proportionate</em> to its corresponding global SA index.</p>
+<p>The idea of a <em>local</em> statistic is to index the amount and type of SA present at every discrete location on the map (e.g., for every county). The sum of all these LISA values is proportionate to its corresponding global SA index.</p>
 <p>Local Moran’s I for the <span class="math inline">\(i^{th}\)</span> unit is <span class="math display">\[I_i = z_i \sum_j^n w_{ij} z_j\]</span> where <span class="math inline">\(z\)</span> is the original variable in deviation form (<span class="math inline">\(z_i = y_i - \overline{y}\)</span>), and <span class="math inline">\(W\)</span> is the spatial connectivity matrix. These values are related to the Moran scatter plot: positive <span class="math inline">\(I_i\)</span> values indicate positive SA, corresponding to quadrants I and III of the Moran scatter plot. Negative <span class="math inline">\(I_i\)</span> values indicate negative SA, which appear in quadrants II and IV of the Moran scatter plot.</p>
 <p>The local Geary statistic <span class="math inline">\(C_i\)</span> is the weighted sum of squared differences found in the numerator in the GR: <span class="math display">\[C_i = \sum_j^n w_{ij} (y_i - y_j)^2 \]</span></p>
 <p>The local Geary statistic is very sensitive to local outliers (negative SA), more so than local Moran’s I. This makes these two LISAs complementary: <span class="math inline">\(I_i\)</span> is most useful to visualizing clustering behavior, whereas <span class="math inline">\(C_i\)</span> is useful for visualizing local outliers. By default, <strong>geostan</strong> will first scale <span class="math inline">\(y\)</span> using <code>z &lt;- scale(y, center = TRUE, scale = TRUE)</code> before calculating either of these LISAs.</p>
@@ -259,7 +259,10 @@
 <span><span class="co">#&gt; 1 10        0     3</span></span>
 <span><span class="co">#&gt; Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span></span>
 <span><span class="co">#&gt; Running the chains for more iterations may help. See</span></span>
-<span><span class="co">#&gt; https://mc-stan.org/misc/warnings.html#bulk-ess</span></span></code></pre></div>
+<span><span class="co">#&gt; https://mc-stan.org/misc/warnings.html#bulk-ess</span></span>
+<span><span class="co">#&gt; Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span></span>
+<span><span class="co">#&gt; Running the chains for more iterations may help. See</span></span>
+<span><span class="co">#&gt; https://mc-stan.org/misc/warnings.html#tail-ess</span></span></code></pre></div>
 <p>For a summary of model results:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -269,8 +272,8 @@
 <span><span class="co">#&gt; Spatial method (outcome):  Exchangeable </span></span>
 <span><span class="co">#&gt; Likelihood function:  poisson </span></span>
 <span><span class="co">#&gt; Link function:  log </span></span>
-<span><span class="co">#&gt; Residual Moran Coefficient:  0.02300775 </span></span>
-<span><span class="co">#&gt; WAIC:  1319.95 </span></span>
+<span><span class="co">#&gt; Residual Moran Coefficient:  0.0226955 </span></span>
+<span><span class="co">#&gt; WAIC:  1320.03 </span></span>
 <span><span class="co">#&gt; Observations:  159 </span></span>
 <span><span class="co">#&gt; Data models (ME): none</span></span>
 <span><span class="co">#&gt; Inference for Stan model: foundation.</span></span>
@@ -278,10 +281,10 @@
 <span><span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff  Rhat</span></span>
-<span><span class="co">#&gt; intercept -4.179   0.001 0.021 -4.220 -4.197 -4.179 -4.161 -4.138   317 1.005</span></span>
-<span><span class="co">#&gt; alpha_tau  0.248   0.000 0.016  0.218  0.234  0.247  0.261  0.281  4394 1.000</span></span>
+<span><span class="co">#&gt; intercept -4.179   0.001 0.021 -4.222 -4.196 -4.179 -4.161 -4.140   286 1.015</span></span>
+<span><span class="co">#&gt; alpha_tau  0.247   0.000 0.016  0.219  0.234  0.247  0.260  0.279  4085 1.001</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Thu Apr  4 12:46:39 2024.</span></span>
+<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Wed May  8 09:43:34 2024.</span></span>
 <span><span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">#&gt; convergence, Rhat=1).</span></span></code></pre></div>

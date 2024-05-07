@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.1</span>
       </span>
     </div>
 
@@ -58,8 +58,40 @@
         </td>
         <td><p>The geostan R package.</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
-          <h2 id="spatial-analysis">Spatial analysis <a href="#spatial-analysis" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p><p>Functions for measuring and visualizing spatial autocorrelation and dispersion, including model diagnostics</p>
+          <h2 id="spatial-data">Spatial data <a href="#spatial-data" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="edges.html">edges()</a></code> </p>
+        </td>
+        <td><p>Edge list</p></td>
+      </tr><tr><td>
+          <p><code><a href="get_shp.html">get_shp()</a></code> </p>
+        </td>
+        <td><p>Download shapefiles</p></td>
+      </tr><tr><td>
+          <p><code><a href="make_EV.html">make_EV()</a></code> </p>
+        </td>
+        <td><p>Extract eigenfunctions of a connectivity matrix for spatial filtering</p></td>
+      </tr><tr><td>
+          <p><code><a href="n_nbs.html">n_nbs()</a></code> </p>
+        </td>
+        <td><p>Count neighbors in a connectivity matrix</p></td>
+      </tr><tr><td>
+          <p><code><a href="row_standardize.html">row_standardize()</a></code> </p>
+        </td>
+        <td><p>Row-standardize a matrix; safe for zero row-sums.</p></td>
+      </tr><tr><td>
+          <p><code><a href="shape2mat.html">shape2mat()</a></code> </p>
+        </td>
+        <td><p>Create spatial and space-time connectivity matrices</p></td>
+      </tr><tr><td>
+          <p><code><a href="sim_sar.html">sim_sar()</a></code> </p>
+        </td>
+        <td><p>Simulate spatially autocorrelated data</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="spatial-autocorrelation">Spatial autocorrelation <a href="#spatial-autocorrelation" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p><p>Functions for measuring and visualizing spatial autocorrelation</p>
         </th>
       </tr></tbody><tbody><tr><td>
           <p><code><a href="aple.html">aple()</a></code> </p>
@@ -86,10 +118,6 @@
         </td>
         <td><p>The Moran coefficient</p></td>
       </tr><tr><td>
-          <p><code><a href="me_diag.html">me_diag()</a></code> </p>
-        </td>
-        <td><p>Data model diagnostics</p></td>
-      </tr><tr><td>
           <p><code><a href="moran_plot.html">moran_plot()</a></code> </p>
         </td>
         <td><p>Moran plot</p></td>
@@ -101,87 +129,11 @@
           <p><code><a href="sp_diag.html">sp_diag()</a></code> </p>
         </td>
         <td><p>Spatial data diagnostics</p></td>
-      </tr><tr><td>
-          <p><code><a href="row_standardize.html">row_standardize()</a></code> </p>
-        </td>
-        <td><p>Row-standardize a matrix; safe for zero row-sums.</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="models">Models <a href="#models" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p><p>Model fitting functions and methods</p>
+          <p class="section-desc"></p><p>Models for spatial data</p>
         </th>
       </tr></tbody><tbody><tr><td>
-          <p><code><a href="stan_car.html">stan_car()</a></code> </p>
-        </td>
-        <td><p>Conditional autoregressive (CAR) models</p></td>
-      </tr><tr><td>
-          <p><code><a href="stan_esf.html">stan_esf()</a></code> </p>
-        </td>
-        <td><p>Spatial filtering</p></td>
-      </tr><tr><td>
-          <p><code><a href="stan_glm.html">stan_glm()</a></code> </p>
-        </td>
-        <td><p>Generalized linear models</p></td>
-      </tr><tr><td>
-          <p><code><a href="stan_icar.html">stan_icar()</a></code> </p>
-        </td>
-        <td><p>Intrinsic autoregressive models</p></td>
-      </tr><tr><td>
-          <p><code><a href="stan_sar.html">stan_sar()</a></code> </p>
-        </td>
-        <td><p>Simultaneous autoregressive (SAR) models</p></td>
-      </tr><tr><td>
-          <p><code><a href="predict.geostan_fit.html">predict(<i>&lt;geostan_fit&gt;</i>)</a></code> </p>
-        </td>
-        <td><p>Predict method for <code>geostan_fit</code> models</p></td>
-      </tr><tr><td>
-          <p><code><a href="print_geostan_fit.html">print(<i>&lt;geostan_fit&gt;</i>)</a></code> <code><a href="print_geostan_fit.html">plot(<i>&lt;geostan_fit&gt;</i>)</a></code> </p>
-        </td>
-        <td><p>print or plot a fitted geostan model</p></td>
-      </tr><tr><td>
-          <p><code><a href="resid_geostan_fit.html">residuals(<i>&lt;geostan_fit&gt;</i>)</a></code> <code><a href="resid_geostan_fit.html">fitted(<i>&lt;geostan_fit&gt;</i>)</a></code> <code><a href="resid_geostan_fit.html">spatial()</a></code> </p>
-        </td>
-        <td><p>Extract residuals, fitted values, or the spatial trend</p></td>
-      </tr><tr><td>
-          <p><code><a href="samples_geostan_fit.html">as.matrix(<i>&lt;geostan_fit&gt;</i>)</a></code> <code><a href="samples_geostan_fit.html">as.data.frame(<i>&lt;geostan_fit&gt;</i>)</a></code> <code><a href="samples_geostan_fit.html">as.array(<i>&lt;geostan_fit&gt;</i>)</a></code> </p>
-        </td>
-        <td><p>Extract samples from a fitted model</p></td>
-      </tr><tr><td>
-          <p><code><a href="sp_diag.html">sp_diag()</a></code> </p>
-        </td>
-        <td><p>Spatial data diagnostics</p></td>
-      </tr><tr><td>
-          <p><code><a href="posterior_predict.html">posterior_predict()</a></code> </p>
-        </td>
-        <td><p>Draw samples from the posterior predictive distribution</p></td>
-      </tr><tr><td>
-          <p><code><a href="priors.html">uniform()</a></code> <code><a href="priors.html">normal()</a></code> <code><a href="priors.html">student_t()</a></code> <code><a href="priors.html">gamma2()</a></code> <code><a href="priors.html">hs()</a></code> </p>
-        </td>
-        <td><p>Prior distributions</p></td>
-      </tr></tbody><tbody><tr><th colspan="2">
-          <h2 id="convenience-functions">Convenience functions <a href="#convenience-functions" class="anchor" aria-hidden="true"></a></h2>
-          <p class="section-desc"></p><p>Tools for working with spatial data and <strong>geostan</strong> models</p>
-        </th>
-      </tr></tbody><tbody><tr><td>
-          <p><code><a href="auto_gaussian.html">auto_gaussian()</a></code> </p>
-        </td>
-        <td><p>Auto-Gaussian family for CAR models</p></td>
-      </tr><tr><td>
-          <p><code><a href="edges.html">edges()</a></code> </p>
-        </td>
-        <td><p>Edge list</p></td>
-      </tr><tr><td>
-          <p><code><a href="eigen_grid.html">eigen_grid()</a></code> </p>
-        </td>
-        <td><p>Eigenvalues of a spatial weights matrix: raster analysis</p></td>
-      </tr><tr><td>
-          <p><code><a href="get_shp.html">get_shp()</a></code> </p>
-        </td>
-        <td><p>Download shapefiles</p></td>
-      </tr><tr><td>
-          <p><code><a href="make_EV.html">make_EV()</a></code> </p>
-        </td>
-        <td><p>Extract eigenfunctions of a connectivity matrix for spatial filtering</p></td>
-      </tr><tr><td>
           <p><code><a href="prep_car_data.html">prep_car_data()</a></code> </p>
         </td>
         <td><p>Prepare data for the CAR model</p></td>
@@ -206,17 +158,57 @@
         </td>
         <td><p>Prepare data for SAR model: raster analysis</p></td>
       </tr><tr><td>
-          <p><code><a href="se_log.html">se_log()</a></code> </p>
+          <p><code><a href="stan_car.html">stan_car()</a></code> </p>
         </td>
-        <td><p>Standard error of log(x)</p></td>
+        <td><p>Conditional autoregressive (CAR) models</p></td>
       </tr><tr><td>
-          <p><code><a href="shape2mat.html">shape2mat()</a></code> </p>
+          <p><code><a href="stan_esf.html">stan_esf()</a></code> </p>
         </td>
-        <td><p>Create spatial and space-time connectivity matrices</p></td>
+        <td><p>Spatial filtering</p></td>
       </tr><tr><td>
-          <p><code><a href="sim_sar.html">sim_sar()</a></code> </p>
+          <p><code><a href="stan_glm.html">stan_glm()</a></code> </p>
         </td>
-        <td><p>Simulate spatially autocorrelated data</p></td>
+        <td><p>Generalized linear models</p></td>
+      </tr><tr><td>
+          <p><code><a href="stan_icar.html">stan_icar()</a></code> </p>
+        </td>
+        <td><p>Intrinsic autoregressive models</p></td>
+      </tr><tr><td>
+          <p><code><a href="stan_sar.html">stan_sar()</a></code> </p>
+        </td>
+        <td><p>Simultaneous autoregressive (SAR) models</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="methods-and-diagnostics-for-spatial-models">Methods and diagnostics for spatial models <a href="#methods-and-diagnostics-for-spatial-models" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="predict.geostan_fit.html">predict(<i>&lt;geostan_fit&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Predict method for <code>geostan_fit</code> models</p></td>
+      </tr><tr><td>
+          <p><code><a href="print_geostan_fit.html">print(<i>&lt;geostan_fit&gt;</i>)</a></code> <code><a href="print_geostan_fit.html">plot(<i>&lt;geostan_fit&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>print or plot a fitted geostan model</p></td>
+      </tr><tr><td>
+          <p><code><a href="resid_geostan_fit.html">residuals(<i>&lt;geostan_fit&gt;</i>)</a></code> <code><a href="resid_geostan_fit.html">fitted(<i>&lt;geostan_fit&gt;</i>)</a></code> <code><a href="resid_geostan_fit.html">spatial()</a></code> </p>
+        </td>
+        <td><p>Extract residuals, fitted values, or the spatial trend</p></td>
+      </tr><tr><td>
+          <p><code><a href="samples_geostan_fit.html">as.matrix(<i>&lt;geostan_fit&gt;</i>)</a></code> <code><a href="samples_geostan_fit.html">as.data.frame(<i>&lt;geostan_fit&gt;</i>)</a></code> <code><a href="samples_geostan_fit.html">as.array(<i>&lt;geostan_fit&gt;</i>)</a></code> </p>
+        </td>
+        <td><p>Extract samples from a fitted model</p></td>
+      </tr><tr><td>
+          <p><code><a href="sp_diag.html">sp_diag()</a></code> </p>
+        </td>
+        <td><p>Spatial data diagnostics</p></td>
+      </tr><tr><td>
+          <p><code><a href="me_diag.html">me_diag()</a></code> </p>
+        </td>
+        <td><p>Data model diagnostics</p></td>
+      </tr><tr><td>
+          <p><code><a href="posterior_predict.html">posterior_predict()</a></code> </p>
+        </td>
+        <td><p>Draw samples from the posterior predictive distribution</p></td>
       </tr><tr><td>
           <p><code><a href="priors.html">uniform()</a></code> <code><a href="priors.html">normal()</a></code> <code><a href="priors.html">student_t()</a></code> <code><a href="priors.html">gamma2()</a></code> <code><a href="priors.html">hs()</a></code> </p>
         </td>
@@ -225,6 +217,22 @@
           <p><code><a href="waic.html">waic()</a></code> </p>
         </td>
         <td><p>Widely Applicable Information Criteria (WAIC)</p></td>
+      </tr></tbody><tbody><tr><th colspan="2">
+          <h2 id="miscellaneous">miscellaneous <a href="#miscellaneous" class="anchor" aria-hidden="true"></a></h2>
+          <p class="section-desc"></p>
+        </th>
+      </tr></tbody><tbody><tr><td>
+          <p><code><a href="auto_gaussian.html">auto_gaussian()</a></code> </p>
+        </td>
+        <td><p>Auto-Gaussian family for CAR models</p></td>
+      </tr><tr><td>
+          <p><code><a href="eigen_grid.html">eigen_grid()</a></code> </p>
+        </td>
+        <td><p>Eigenvalues of a spatial weights matrix: raster analysis</p></td>
+      </tr><tr><td>
+          <p><code><a href="se_log.html">se_log()</a></code> </p>
+        </td>
+        <td><p>Standard error of log(x)</p></td>
       </tr></tbody><tbody><tr><th colspan="2">
           <h2 id="data">Data <a href="#data" class="anchor" aria-hidden="true"></a></h2>
           <p class="section-desc"></p>

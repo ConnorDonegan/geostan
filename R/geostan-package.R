@@ -2,7 +2,7 @@
 #'
 #' @description Bayesian spatial modeling powered by Stan. **geostan** provides access to a variety of hierarchical spatial models using the R formula interface, supporting a complete spatial analysis workflow with a suite of spatial analysis tools. It is designed primarily for public health and social science research but is generally applicable to modeling areal data. Unique features of the package include its spatial measurement error model (for inference with small area estimates such as those from the American Community Survey), its fast proper conditional autoregressive (CAR) and simultaneous autoregressive (SAR) models, and its eigenvector spatial filtering (ESF) models. The package also supports spatial regression with raster layers.
 #'
-#' @docType _PACKAGE
+#' @docType package
 #' @name geostan-package
 #' @aliases geostan
 #' @useDynLib geostan, .registration = TRUE

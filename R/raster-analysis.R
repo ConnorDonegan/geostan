@@ -1,4 +1,4 @@
-#' Eigenvalues of a spatial weights matrix: raster analysis
+#' Eigenvalues of a spatial weights matrix: for spatial regression with raster data
 #' 
 #' @description Approximate eigenvalues for the row-standardized spatial connectivity matrix W of a regular tessellation, e.g., remotely sensed imagery.
 #' 

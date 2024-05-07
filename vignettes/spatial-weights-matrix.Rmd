@@ -1,0 +1,241 @@
+---
+title: "Spatial weights matrix"
+date: September 13, 2021
+output: 
+  rmarkdown::html_vignette:
+    toc: true 
+    toc_depth: 3  # upto three depths of headings (specified by #, ## and ###)
+    number_sections: true    
+header-includes:
+   - \usepackage{amsmath}
+vignette: >
+  %\VignetteIndexEntry{Spatial weights matrix}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This vignette explains what a spatial weights matrix is, how to create one using geostan, and how to edit one manually when needed. 
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.align = "center",
+  fig.width = 3.5,
+  fig.height = 3,
+  comment = "#>"
+)
+```
+
+## Getting started
+
+Beyond the visual examination of maps, spatial data analysis requires a way of representing spatial contiguity or spatial order. This is usually done by storing a list of which areas are neighbors to one another. That is, for each observation, we will have a list identifying the neighboring areas. We store this information in an N-by-N matrix, which is known as an adjacency matrix, spatial connectivity matrix, or spatial weights matrix. 
+
+Getting this information into convenient format allows us to create summary statistics that describe spatial features of the data. Just like we can measure the degree of correlation between two variables (and create scatter plots to visualize it), we can measure the degree to which a variable is correlated with its own values over space. This is known as spatial autocorrelation (SA), or map pattern.
+
+Our spatial weights matrix is going to enable us to measure and to visualize SA, and this means we have to be fairly thoughtful about how we create this matrix. However, there are only a small number of methods that are used very often, and simple techniques are often sufficient if not best.
+
+To get started, load the geostan and sf packages:
+
+```{r}
+library(geostan)
+library(sf)
+```
+
+## Contiguity
+
+We may say that two areas are contiguous, or neighbors of one another, if they share a stretch of border. This is known as the 'rook' contiguity condition. Alternatively, we could allow for any shared point to count as a shared border; that is known as the 'queen' contiguity condition. (This is an analogy to chess moves.)
+
+An example will illustrate the difference. Here is a simple grid:
+
+```{r}
+# create a regular grid
+row = col = 3
+sfc = st_sfc(st_polygon(list(rbind(c(0,0), c(col,0), c(col,row), c(0,0)))))
+grid <- st_make_grid(sfc, cellsize = 1, square = TRUE)
+grid <- st_as_sf(grid)
+
+par(mar = rep(0, 4))
+plot( grid )
+```
+
+Using the rook criteria, we would say that the center square has four neighbors, one on every side. If we use the queen criteria, then we also add the corner squares, so it will have eight neighbors.
+
+To create the spatial adjacency matrix for the grid, we pass it to the `geostan::shape2mat` function:
+
+```{r}
+A <- shape2mat(grid, method = 'rook')
+```
+
+Every spatial unit in our data will have its own row in the matrix; the first row in the matrix corresponds to the first row in the data. If the first observation is a neighbor to, say, the third one, then the element in the third column of the first row will be one; if they are not neighbors, the element will be zero.
+
+The object `A` is a sparse matrix - that means that you can treat it like a matrix in calculations, but it is more efficient than a standard matrix. You can learn more by reading up on the Matrix package. (Sometimes you will need to use methods provided by the Matrix package; for example, instead of `colSums(A)` you may need to use `Matrix::colSums(A)`.)
+
+The `geostan::n_nbs` function will tell us how many neighbors each area has (according to the adjacency matrix):
+
+```{r}
+n_nbs(A)
+summary( n_nbs(A) )
+```
+
+And for the queen condition:
+
+```{r}
+Aq <- shape2mat(grid, method = 'queen')
+n_nbs(Aq)
+```
+Now the minimum number is three and the maximum, for the center square, is eight.
+
+## Visualizing connectivity
+
+It is always a good idea to visualize your connectivity matrix. These matrices are also graph structures - each area in the grid is a node and the connections are called edges.
+
+The `geostan::edges` function converts a matrix to a data.frame which lists each pair of connected nodes. If we also provide `spatial = grid`, then it will return a simple features object that we can plot.
+
+This code gets those connections as a simple features object and lays it over the grid:
+
+```{r}
+# geometry of the grid
+geom <- st_geometry(grid)
+
+# geometry of the graph
+edges <- edges(A, shape = grid)
+graph <- st_geometry(edges)
+
+# plot overlay
+par(mar = rep(0, 4))
+plot(geom, lwd = .1)
+plot(graph, add = TRUE, type = 'b')
+```
+
+The units with the lowest number of neighbors are the corner squares (they have two neighbors each). The most connected unit is in the center, with 4 neighbors.
+
+Now here is what the grid looks like using the queen contiguity condition:
+
+```{r}
+Aq <- shape2mat(grid, method = 'queen')
+E <- edges(Aq, shape = grid)
+graph <- st_geometry(E)
+
+par(mar = rep(0, 4))
+plot(geom, lwd = .1)
+plot(graph, add = TRUE, type = 'b')
+```
+
+## K-nearest neighbors
+
+The queen and rook criteria are common when working with areal data (polygons). Another method, which also works for point data, is K nearest neighbors. If you use `k = 4`, then for each spatial unit, this method will identify the four nearest observations and classify them as neighbors to the first.
+
+```{r}
+A4 <- shape2mat(grid, method = 'knn', k = 4)
+n_nbs(A4)
+```
+
+When applied to polygons, the function will first convert each polygon to a single point - its centroid - and then calculate pairwise distances between those points.
+
+## Row-standardized matrix
+
+Thus far, all of the matrices have been binary - the elements are all zeroes and ones. A common alternative is to row-standardize this matrix. In that case, if the first spatial unit has four neighbors, then each of those ones will be converted to 1/4 or `0.25` - they will sum to one. If the second row has five neighbors, then each one will be converted to `0.2`.
+
+You can use the `geostan::row_standardize` function:
+
+```{r}
+W <- row_standardize(A)
+print( W )
+```
+
+Or you can use `style = 'W'` with `shape2mat`:
+
+```{r}
+W <- shape2mat(grid, 'W', method = 'rook')
+print( W )
+```
+
+## Editing the matrix
+
+You should always check your adjacency matrix. Why? Because you may find something unexpected. There may be slight imperfections in the spatial boundary data, or actual gaps between nearby areas, that cause 'neighboring' areas to be missed. Or, strange shapes may cause two substantively 'non-neighboring' areas to be joined as neighbors.
+
+To edit the matrix, you need to know the index position of the areas of interest (that is, which row corresponds to each polygon):
+
+```{r}
+# row number, index position 
+Id <- 1:nrow(grid)
+
+# centroid coordinates (x, y)
+coords <- st_centroid(grid)
+xy <- matrix(unlist(coords), byrow = T, ncol = 2)
+
+# map Ids
+par(mar = rep(0, 4))
+plot(geom, lwd = .15)
+text(x = xy[,1], y = xy[,2],
+     label = Id)
+```
+
+(You could adjust that code to plot the number of neighbors each polygon has, which is another useful way to visualize connectivity.)
+
+If, for whatever reason, we wanted to connect the second polygon to the fourth, we would need to change the elements of the fourth column in the second row, `A[2, 4]`, and the second column in the fourth row, `A[4, 2]`:
+
+```{r}
+A[2, 4] <- A[4, 2] <- TRUE # 1
+```
+
+If we wanted to remove the connection between the first and second polygon we would replace their ones with zeroes:
+
+```{r}
+A[1, 2] <- A[2, 1] <- FALSE # 0
+```
+
+## Using the matrix
+
+The matrix allows us to calculate the *spatial lag* of any observation - that is, a weighted sum of the neighboring values.
+
+We can illustrate with some data:
+
+```{r}
+# draw data from spatial autoregressive model
+set.seed(101010)
+y <- sim_sar(w = W, rho = .8)
+print( y )
+
+par(mar = rep(0, 4))
+grid$y <- y
+plot(grid['y'])
+```
+
+To calculate the spatial lag for the first unit, we would first get the weights from the first row of the matrix `A`:
+
+```{r}
+A <- shape2mat(grid, method = 'rook', quiet = TRUE)
+w1 = A[1,]
+print( w1 )
+```
+
+(Notice: R treats logical values the same as zeroes and ones.)
+
+To find the spatially lagged value of `y[1]`, we first multiple all `y` values by the appropriate weights, then sum:
+
+```{r}
+w1_y <- w1 * y
+sum( w1_y )
+```
+
+We can do this more quicly as a matrix-vector product:
+
+```{r}
+w1 %*% y
+```
+
+To get the spatial lag of each `y` value, we do the same for every row:
+
+```{r}
+A %*% y
+```
+
+To get the average surrounding value, we would use the row-standardized matrix:
+
+```{r}
+W %*% y
+```
+
+Spatial connectivity matrices and spatial lags are used in many geostan functions, including for exploratory spatial data analysis (ESDA) and spatial-statistical modeling. For more, you can see the ESDA vignette (find it by running `browseVignettes('geostan')`).
+

@@ -4,7 +4,7 @@
 \alias{edges}
 \title{Edge list}
 \usage{
-edges(C, unique_pairs_only = TRUE, spatial)
+edges(C, unique_pairs_only = TRUE, shape)
 }
 \arguments{
 \item{C}{A connectivity matrix where connection between two nodes is indicated by non-zero entries.}
@@ -36,7 +36,7 @@ head(Matrix::summary(shape2mat(georgia, "W")))
 
 ## add geometry for plotting
 library(sf)
-E <- edges(C, spatial = sentencing)
+E <- edges(C, shape = sentencing)
 g1 = st_geometry(E)
 g2 = st_geometry(sentencing)
 plot(g1, lwd = .2)

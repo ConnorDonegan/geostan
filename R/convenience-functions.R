@@ -128,7 +128,7 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
     return(x)
 }
 
-#' Spatial data diagnostics
+#' Visual displays of spatial data and spatial models
 #'
 #' @description Visual diagnostics for areal data and model residuals
 #' 
@@ -331,7 +331,7 @@ sp_diag.numeric <- function(y,
  }
 
 
-#' Data model diagnostics
+#' Measurement error model diagnostics
 #'
 #' @description Visual diagnostics for spatial measurement error models. 
 #' 
@@ -572,9 +572,15 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' 
 #' @param style What kind of coding scheme should be used to create the spatial connectivity matrix? Defaults to "B" for binary; use "W" for row-standardized weights.
 #'
-#' @param queen Passed to \code{\link[spdep]{poly2nb}} to set the contiguity condition. Defaults to \code{TRUE} so that a single shared boundary point (rather than a shared border/line) between polygons is sufficient for them to be considered neighbors.
+#' @param queen Deprecated: use the `method' argument instead. This option is passed to \code{\link[spdep]{poly2nb}} to set the contiguity condition. Defaults to \code{TRUE} so that a single shared boundary point (rather than a shared border/line) between polygons is sufficient for them to be considered neighbors.
+#'
+#' @param method Method for determining neighbors: queen, rook, or k-nearest neighbors. See Details for more information.
+#'
+#' @param k Number of neighbors to select for k-nearest neighbor method. Passed to `spdep::knearneigh`.
+#'
+#' @param longlat If longlat = TRUE, Great Circle (rather than Euclidean) distances are used; great circle circle distances account for curvature of the Earth.
 #' 
-#' @param snap Passed to \code{\link[spdep]{poly2nb}}; "boundary points less than ‘snap’ distance apart are considered to indicate contiguity."
+#' @param snap Passed to `spdep::poly2nb`; "boundary points less than ‘snap’ distance apart are considered to indicate contiguity."
 #' 
 #' @param t Number of time periods. Only the binary coding scheme is available for space-time connectivity matrices.
 #' 
@@ -587,6 +593,8 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' @seealso \code{\link[geostan]{edges}} \code{\link[geostan]{row_standardize}} \code{\link[geostan]{n_nbs}}
 #' 
 #' @details
+#'
+#' The method argument currently has three options. The queen contiguity condition defines neighbors as polygons that share at least one point with one another. The rook condition requires that they share a line or border with one another. K-nearest neighbors is based on distance between centroids. All methods are implemented using the spdep package and then converted to sparse matrix format.
 #'
 #' Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matrices (Ch. 4).
 #'
@@ -604,23 +612,23 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' data(georgia)
 #'
 #' ## binary adjacency matrix
-#' C <- shape2mat(georgia, "B")
+#' C <- shape2mat(georgia, "B", method = 'rook')
 #' 
 #' ## number of neighbors per observation
 #' summary( n_nbs(C) )
 #' head(Matrix::summary(C))
 #'
 #' ## row-standardized matrix 
-#' W <- shape2mat(georgia, "W")
+#' W <- shape2mat(georgia, "W", method = 'rook')
 #'
 #' ## summary of weights
 #' E <- edges(W, unique_pairs_only = FALSE)
 #' summary(E$weight)
-#' 
+#'
 #' ## space-time matricies 
 #' ## for eigenvector space-time filtering
-#' ## if you have multiple years with same neighbors,
-#' ## provide the geography (for a single year!) and number of years \code{t}
+#' ## if you have multiple years with same geometry/geography,
+#' ## provide the geometry (for a single year!) and number of years \code{t}
 #' Cst <- shape2mat(georgia, t = 5)
 #' dim(Cst)
 #' EVst <- make_EV(Cst)
@@ -632,22 +640,43 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #'
 shape2mat <- function(shape,
                       style = c("B", "W"),
-                      queen = TRUE,
+                      queen,
+                      method = c('queen', 'rook', 'knn'),
+                      k = 1,
+                      longlat = NULL,                      
                       snap = sqrt(.Machine$double.eps),
                       t = 1,
                       st.style = c("contemp", "lag"),
                       quiet = FALSE
                       )
 {
-    style <- match.arg(style)
+    style <- match.arg(style)    
+    method <- match.arg(method)
     st.style <- match.arg(st.style)
-    nb <- spdep::poly2nb(shape, queen = queen, snap = snap)
-    ids <- 1:nrow(shape)
-    dims <- rep(length(ids), 2)
-    Ni <- unlist(lapply(nb, count_neighbors))
-    i <- rep(ids, times = Ni)
-    j <- do.call("c", nb)
-    j <- j[j>0]
+    ## temporary: handle deprecation of queen
+    if (!missing(queen)) {
+        message("The 'queen' argument is deprecated. Use 'method' instead.")
+        if (queen == TRUE) method <- 'queen'
+        if (queen == FALSE) method <- 'rook'
+    } else {
+        queen <- ifelse(method == 'queen', TRUE, FALSE)
+    }
+    ##    
+    N <- nrow(shape)
+    ids <- 1:N
+    dims <- rep(N, 2)    
+    if (method == "knn") {
+        coords <- sf::st_centroid(sf::st_geometry(shape), of_largest_polygon=TRUE)
+        nb <- spdep::knearneigh(coords, k = k, longlat = longlat)$nn
+        i <- rep(ids, each = k)
+        j <- c(t(nb))        
+    } else {
+        nb <- spdep::poly2nb(shape, queen = queen, snap = snap)      
+        Ni <- unlist(lapply(nb, count_neighbors))
+        i <- rep(ids, times = Ni)
+        j <- do.call("c", nb)
+        j <- j[j>0]
+    }
     stopifnot(length(i) == length(j))
     C <- Matrix::sparseMatrix(i = i, j = j, dims = dims)
     if (style == "W") C <- row_standardize(C, warn = FALSE)    
@@ -666,8 +695,8 @@ shape2mat <- function(shape,
       }
     }
     if (!quiet) {
-        cond <- ifelse(queen == TRUE, "Queen", "Rook")
-        message(paste0("Contiguity condition: ", cond))
+        if (method == 'knn') method <- paste0('knn, k=', k)
+        message(paste0("Contiguity condition: ", method))
         Ni <- n_nbs(C)
         message("Number of neighbors per unit, summary:")
         print(summary(Ni))
@@ -770,8 +799,9 @@ waic <- function(fit, pointwise = FALSE, digits = 2) {
 #' @return A vector with the number of non-zero values in each row of `C`
 #'
 #' @examples
+#' 
 #' data(sentencing)
-#' C <- shape2mat(C)
+#' C <- shape2mat(sentencing)
 #' sentencing$Ni <- n_nbs(C)
 #'
 #' @export 
@@ -813,7 +843,7 @@ n_nbs <- function(C) {
 #'
 #' ## add geometry for plotting
 #' library(sf)
-#' E <- edges(C, spatial = sentencing)
+#' E <- edges(C, shape = sentencing)
 #' g1 = st_geometry(E)
 #' g2 = st_geometry(sentencing)
 #' plot(g1, lwd = .2)
@@ -824,7 +854,7 @@ n_nbs <- function(C) {
 #' @importFrom sf st_point_on_surface st_linestring st_sfc st_as_sf st_crs
 #' 
 #' @export
-edges <- function(C, unique_pairs_only = TRUE, spatial) {
+edges <- function(C, unique_pairs_only = TRUE, shape) {
     stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
     edges <- Matrix::summary(Matrix::Matrix(C))
     names(edges)[1:2] <- c("node1", "node2")
@@ -838,14 +868,14 @@ edges <- function(C, unique_pairs_only = TRUE, spatial) {
     if (unique_pairs_only) edges <- edges[which(edges$node1 < edges$node2),]
     rownames(edges) <- NULL
     class(edges) <- "data.frame"
-    if (missing(spatial)) return(edges)    
-    geos = suppressWarnings(sf::st_point_on_surface(sentencing)$geometry )
+    if (missing(shape)) return(edges)    
+    geos = suppressWarnings(sf::st_geometry(sf::st_point_on_surface(shape)) )
     lines <- lapply(1:nrow(edges), FUN = function(j) {
         sf::st_linestring( c(geos[[ edges$node1[j] ]], geos[[ edges$node2[j] ]]) )
     })
     geo_ls <- sf::st_sfc(lines)
     df <- cbind(edges, geo_ls)
-    nbs_st <- sf::st_as_sf(df, crs = sf::st_crs(spatial))
+    nbs_st <- sf::st_as_sf(df, crs = sf::st_crs(shape))
     return (nbs_st)
 }
 

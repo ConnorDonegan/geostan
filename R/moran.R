@@ -1,5 +1,5 @@
 
-#' The Moran coefficient
+#' The Moran coefficient (Moran's I)
 #'
 #' @description The Moran coefficient, a measure of spatial autocorrelation (also known as Global Moran's I)
 #' 
@@ -59,7 +59,7 @@ mc <- function(x, w, digits = 3, warn = TRUE, na.rm = FALSE) {
     return(round(mc, digits = digits))
 }
 
-#' Moran plot
+#' Moran scatter plot
 #'
 #' @description Plots a set of values against their spatially lagged values and gives the Moran coefficient as a measure of spatial autocorrelation.
 #' 

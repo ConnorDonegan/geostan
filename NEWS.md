@@ -1,7 +1,10 @@
 # geostan 0.6.1
 
- - Visualizing spatial neighbors: `geostan::edges` can now return a simple features object for plotting the connections in the spatial connectivity matrix.
- - 
+There are three updates, all related to spatial connectivity matrices:
+
+ - There is a new vignette on spatial connectivity matrices (see `browseVignettes('geostan')`), written for new users.
+ - Visualizing spatial neighbors: `geostan::edges` can now return a simple features object; this can be used to visualize (map) the graph structure of the spatial connectivity matrix.
+ - Changes to `geostan::shape2mat`: an option for k-nearest neighbors has been added, the `queen` argument is being replaced by `method`, and the function now prints a summary of the matrix to the console (using the new `geostasn::n_nbs` function)
 
 # geostan 0.6.0
 
