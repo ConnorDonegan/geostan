@@ -60,7 +60,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span></span>
 <span>  <span class="va">object</span>,</span>
 <span>  <span class="va">newdata</span>,</span>
-<span>  alpha <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">object</span>, pars <span class="op">=</span> <span class="st">"intercept"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">object</span>, pars <span class="op">=</span> <span class="st">"intercept"</span><span class="op">)</span>,</span>
 <span>  center <span class="op">=</span> <span class="va">object</span><span class="op">$</span><span class="va">x_center</span>,</span>
 <span>  summary <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"link"</span>, <span class="st">"response"</span><span class="op">)</span>,</span>
@@ -79,15 +79,15 @@
 
 
 <dt>alpha</dt>
-<dd><p>A single numeric value or a numeric vector with length equal to <code>nrow(newdata)</code>; <code>alpha</code> serves as the intercept in the linear predictor. The default is to use the posterior mean of the intercept. Even if <code>type = "response"</code>, this needs to be provided on the scale of the linear predictor.</p></dd>
+<dd><p>An N-by-1 matrix of MCMC samples for the intercept; this is provided by default. However, this argument might be used if there is a need to incorporate the spatial trend term, in which case it may be thought of as a spatially-varying intercept. If used, note that the intercept needs to be provided on the scale of the linear predictor.</p></dd>
 
 
 <dt>center</dt>
-<dd><p>May be a vector of numeric values or a logical scalar to pass to <code><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></code>. Defaults to using <code>object$x_center</code>. If the model was fit using <code>centerx = TRUE</code>, then covariates were centered and their mean values are stored in <code>object$x_center</code> and the <code>predict</code> method will use them to automatically center <code>newdata</code>; if the model was fit with <code>centerx = FALSE</code>, then <code>object$x_center = FALSE</code> and <code>newdata</code> will not be centered.</p></dd>
+<dd><p>Optional vector of numeric values or a logical scalar to pass to <code><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></code>. Defaults to using <code>object$x_center</code>. If the model was fit using <code>centerx = TRUE</code>, then covariates were centered and their mean values are stored in <code>object$x_center</code> and the <code>predict</code> method will use them to automatically center <code>newdata</code>; if the model was fit with <code>centerx = FALSE</code>, then <code>object$x_center = FALSE</code> and <code>newdata</code> will not be centered.</p></dd>
 
 
 <dt>summary</dt>
-<dd><p>Logical; should the values be summarized with the mean, standard deviation and quantiles (<code>probs = c(.025, .2, .5, .8, .975)</code>) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.</p></dd>
+<dd><p>If <code>FALSE</code>, a matrix containing samples from the posterior distribution at each observation is returned. The default, <code>TRUE</code>, will summarize results by providing an estimate (mean) and credible interval (formed by taking quantiles of the MCMC samples).</p></dd>
 
 
 <dt>type</dt>
@@ -106,9 +106,9 @@
     </div>
     <div id="details">
     <h2>Details</h2>
-    <p>The purpose of the predict method is to explore marginal effects of (combinations of) covariates. The method sets the intercept equal to its posterior mean (i.e., <code>alpha = mean(as.matrix(object, pars = "intercept"))</code>); the only source of uncertainty in the results is the posterior distribution of the coefficients, which can be obtained using <code>Beta = as.matrix(object, pars = "beta")</code>.</p>
-<p>The model formula will be taken from <code>object$formula</code>, and then a model matrix will be created by passing <code>newdata</code> to the <a href="https://rdrr.io/r/stats/model.frame.html" class="external-link">model.frame</a> function (as in: <code>model.frame(newdata, object$formula</code>).</p>
-<p>Be aware that in generalized linear models (such as Poisson and Binomial models) marginal effects of each covariate are sensitive to the level of other covariates in the model. If the model includes any spatially-lagged covariates (introduced using the <code>slx</code> argument) or a spatial autocorrelation term (for example, you used a spatial CAR, SAR, or ESF model), these terms will essentially be fixed at zero for the purposes of calculating marginal effects. If you want to change this, you can introduce spatial trend values by specifying a varying intercept using the <code>alpha</code> argument.</p>
+    <p>The purpose of the predict method is to explore marginal effects of (combinations of) covariates.</p>
+<p>The model formula will be taken from <code>object$formula</code>, and then a model matrix will be created by passing <code>newdata</code> to the <a href="https://rdrr.io/r/stats/model.frame.html" class="external-link">model.frame</a> function (as in: <code>model.frame(newdata, object$formula</code>). Parameters are taken from <code>as.matrix(object, pars = c("intercept", "beta"))</code>.</p>
+<p>Be aware that in generalized linear models (such as Poisson and Binomial models) marginal effects plots on the response scale may be sensitive to the level of other covariates in the model. If the model includes any spatially-lagged covariates (introduced using the <code>slx</code> argument) or a spatial autocorrelation term (for example, you used a spatial CAR, SAR, or ESF model), these terms will essentially be fixed at zero for the purposes of calculating marginal effects. If you want to change this, you can introduce spatial trend values by specifying a varying intercept using the <code>alpha</code> argument.</p>
     </div>
 
     <div id="ref-examples">

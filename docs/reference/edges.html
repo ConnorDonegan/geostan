@@ -56,7 +56,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">edges</span><span class="op">(</span><span class="va">C</span>, unique_pairs_only <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">spatial</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">edges</span><span class="op">(</span><span class="va">C</span>, unique_pairs_only <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">shape</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -104,7 +104,7 @@
 <span></span>
 <span><span class="co">## add geometry for plotting</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
-<span><span class="va">E</span> <span class="op">&lt;-</span> <span class="fu">edges</span><span class="op">(</span><span class="va">C</span>, spatial <span class="op">=</span> <span class="va">sentencing</span><span class="op">)</span></span>
+<span><span class="va">E</span> <span class="op">&lt;-</span> <span class="fu">edges</span><span class="op">(</span><span class="va">C</span>, shape <span class="op">=</span> <span class="va">sentencing</span><span class="op">)</span></span>
 <span><span class="va">g1</span> <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_geometry</a></span><span class="op">(</span><span class="va">E</span><span class="op">)</span></span>
 <span><span class="va">g2</span> <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_geometry</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">g1</span>, lwd <span class="op">=</span> <span class="fl">.2</span><span class="op">)</span></span>

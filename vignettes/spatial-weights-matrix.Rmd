@@ -185,6 +185,8 @@ If we wanted to remove the connection between the first and second polygon we wo
 A[1, 2] <- A[2, 1] <- FALSE # 0
 ```
 
+Notice that the above operations apply when the matrix is binary and symmetric. KNN is not symmetric. If you want or need to use row-standardization, be sure to finish editing the binary matrix and then row standardize it.
+
 ## Using the matrix
 
 The matrix allows us to calculate the *spatial lag* of any observation - that is, a weighted sum of the neighboring values.

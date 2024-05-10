@@ -1,10 +1,19 @@
 # geostan 0.6.1
 
-There are three updates, all related to spatial connectivity matrices:
+Two updates:
+
+1. Multiple changes related to spatial connectivity matricies, including a new vignette.
+2. A change to `geostan::predict`.
+
+There are three updates related to spatial connectivity matrices:
 
  - There is a new vignette on spatial connectivity matrices (see `browseVignettes('geostan')`), written for new users.
- - Visualizing spatial neighbors: `geostan::edges` can now return a simple features object; this can be used to visualize (map) the graph structure of the spatial connectivity matrix.
+ - Visualizing spatial neighbors: `geostan::edges` can now return a simple features object; this can be used to visualize (map) the graph structure of the spatial connectivity matrix. There is an example in the new vignette.
  - Changes to `geostan::shape2mat`: an option for k-nearest neighbors has been added, the `queen` argument is being replaced by `method`, and the function now prints a summary of the matrix to the console (using the new `geostasn::n_nbs` function)
+
+There was one change to the `geostan::predict` method:
+
+  - this method is for getting predicted values from a fitted model, given user-provided covariate values. Previously, the function used a point estimate of the intercept when calculating the predicted values. Now, the method uses samples from the posterior distribution of the intercept, just like it does for other parameters. The user (still) has the option to provide a matrix of samples for the intercept term; this is in case one wishes to incorporate the spatial trend term into the intercept (as a spatially-varying intercept).
 
 # geostan 0.6.0
 

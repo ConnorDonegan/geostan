@@ -281,6 +281,7 @@
 <p>If we wanted to remove the connection between the first and second polygon we would replace their ones with zeroes:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">A</span><span class="op">[</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span> <span class="co"># 0</span></span></code></pre></div>
+<p>Notice that the above operations apply when the matrix is binary and symmetric. KNN is not symmetric. If you want or need to use row-standardization, be sure to finish editing the binary matrix and then row standardize it.</p>
 </div>
 <div class="section level2">
 <h2 id="using-the-matrix">Using the matrix<a class="anchor" aria-label="anchor" href="#using-the-matrix"></a>
@@ -301,15 +302,7 @@
 <p><img src="spatial-weights-matrix_files/figure-html/unnamed-chunk-15-1.png" width="336" style="display: block; margin: auto;"></p>
 <p>To calculate the spatial lag for the first unit, we would first get the weights from the first row of the matrix <code>A</code>:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">grid</span>, method <span class="op">=</span> <span class="st">'rook'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Contiguity condition: rook</span></span>
-<span><span class="co">#&gt; Number of neighbors per unit, summary:</span></span>
-<span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
-<span><span class="co">#&gt;   2.000   2.000   3.000   2.667   3.000   4.000</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Spatial weights, summary:</span></span>
-<span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
-<span><span class="co">#&gt;       1       1       1       1       1       1</span></span>
+<code class="sourceCode R"><span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">grid</span>, method <span class="op">=</span> <span class="st">'rook'</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">w1</span> <span class="op">=</span> <span class="va">A</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span> <span class="va">w1</span> <span class="op">)</span></span>
 <span><span class="co">#&gt; [1] FALSE  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE</span></span></code></pre></div>
@@ -352,7 +345,7 @@
 <span><span class="co">#&gt;  [7,] 2.4098685</span></span>
 <span><span class="co">#&gt;  [8,] 1.6902142</span></span>
 <span><span class="co">#&gt;  [9,] 3.0138707</span></span></code></pre></div>
-<p>Spatial connectivity matrices are used in many geostan functions, including for exploratory spatial data analysis (ESDA) and spatial-statistical modeling. For more, you can see the ESDA vignette (find it by running <code>browseVignettes('geostan')</code>).</p>
+<p>Spatial connectivity matrices and spatial lags are used in many geostan functions, including for exploratory spatial data analysis (ESDA) and spatial-statistical modeling. For more, you can see the ESDA vignette (find it by running <code>browseVignettes('geostan')</code>).</p>
 </div>
   </div>
 

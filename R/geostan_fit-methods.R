@@ -343,11 +343,11 @@ as.array.geostan_fit <- function(x, ...){
 #' 
 #' @param newdata A data frame in which to look for variables with which to predict, presumably for the purpose of viewing marginal effects. Note that if the model formula includes an offset term, `newdata` must contain the offset. Note also that any spatially-lagged covariate terms will be ignored if they were provided using the `slx` argument. If covariates in the model were centered using the `centerx` argument, the `predict.geostan_fit` method will automatically center the predictors in `newdata` using the values stored in `object$x_center`. If `newdata` is missing, the fitted values of the model will be returned.
 #' 
-#' @param alpha A single numeric value or a numeric vector with length equal to `nrow(newdata)`; `alpha` serves as the intercept in the linear predictor. The default is to use the posterior mean of the intercept. Even if \code{type = "response"}, this needs to be provided on the scale of the linear predictor. 
+#' @param alpha An N-by-1 matrix of MCMC samples for the intercept; this is provided by default. However, this argument might be used if there is a need to incorporate the spatial trend term, in which case it may be thought of as a spatially-varying intercept. If used, note that the intercept needs to be provided on the scale of the linear predictor. 
 #'
-#' @param center May be a vector of numeric values or a logical scalar to pass to \code{\link[base]{scale}}. Defaults to using `object$x_center`. If the model was fit using `centerx = TRUE`, then covariates were centered and their mean values are stored in `object$x_center` and the `predict` method will use them to automatically center `newdata`; if the model was fit with `centerx = FALSE`, then `object$x_center = FALSE` and `newdata` will not be centered.
+#' @param center Optional vector of numeric values or a logical scalar to pass to \code{\link[base]{scale}}. Defaults to using `object$x_center`. If the model was fit using `centerx = TRUE`, then covariates were centered and their mean values are stored in `object$x_center` and the `predict` method will use them to automatically center `newdata`; if the model was fit with `centerx = FALSE`, then `object$x_center = FALSE` and `newdata` will not be centered.
 #'
-#' @param summary Logical; should the values be summarized with the mean, standard deviation and quantiles (\code{probs = c(.025, .2, .5, .8, .975)}) for each observation? Otherwise a matrix containing samples from the posterior distribution at each observation is returned.
+#' @param summary If `FALSE`, a matrix containing samples from the posterior distribution at each observation is returned. The default, `TRUE`, will summarize results by providing an estimate (mean) and credible interval (formed by taking quantiles of the MCMC samples).
 #' 
 #' @param type By default, results from `predict` are on the scale of the linear predictor (`type = "link")`). The alternative (`type = "response"`) is on the scale of the response variable. For example, the default return values for a Poisson model on the log scale, and using `type = "response"` will return the original scale of the outcome variable (by exponentiating the log values).
 #'
@@ -355,11 +355,11 @@ as.array.geostan_fit <- function(x, ...){
 #'
 #' @details
 #'
-#' The purpose of the predict method is to explore marginal effects of (combinations of) covariates. The method sets the intercept equal to its posterior mean (i.e., `alpha = mean(as.matrix(object, pars = "intercept"))`); the only source of uncertainty in the results is the posterior distribution of the coefficients, which can be obtained using `Beta = as.matrix(object, pars = "beta")`.
+#' The purpose of the predict method is to explore marginal effects of (combinations of) covariates. 
 #'
-#' The model formula will be taken from `object$formula`, and then a model matrix will be created by passing `newdata` to the \link[stats]{model.frame} function (as in: \code{model.frame(newdata, object$formula}). 
+#' The model formula will be taken from `object$formula`, and then a model matrix will be created by passing `newdata` to the \link[stats]{model.frame} function (as in: \code{model.frame(newdata, object$formula}). Parameters are taken from `as.matrix(object, pars = c("intercept", "beta"))`.
 #' 
-#' Be aware that in generalized linear models (such as Poisson and Binomial models) marginal effects of each covariate are sensitive to the level of other covariates in the model. If the model includes any spatially-lagged covariates (introduced using the `slx` argument) or a spatial autocorrelation term (for example, you used a spatial CAR, SAR, or ESF model), these terms will essentially be fixed at zero for the purposes of calculating marginal effects. If you want to change this, you can introduce spatial trend values by specifying a varying intercept using the `alpha` argument.
+#' Be aware that in generalized linear models (such as Poisson and Binomial models) marginal effects plots on the response scale may be sensitive to the level of other covariates in the model. If the model includes any spatially-lagged covariates (introduced using the `slx` argument) or a spatial autocorrelation term (for example, you used a spatial CAR, SAR, or ESF model), these terms will essentially be fixed at zero for the purposes of calculating marginal effects. If you want to change this, you can introduce spatial trend values by specifying a varying intercept using the `alpha` argument.
 #' 
 #' @return
 #'
@@ -403,30 +403,31 @@ as.array.geostan_fit <- function(x, ...){
 #' @export 
 predict.geostan_fit <- function(object,
                                 newdata,
-                                alpha = mean(as.matrix(object, pars = "intercept")),
+                                alpha = as.matrix(object, pars = "intercept"),
                                 center = object$x_center,
                                 summary = TRUE,
                                 type = c("link", "response"),
                                 ...) {
     type <- match.arg(type)
-    if (missing(newdata)) return (fitted(object, summary = summary, ...))
+    if (missing(newdata)) return (fitted(object, summary = summary, ...))    
     f <- object$formula[-2]
     X <- as.matrix(model.matrix(f, newdata)[,-1])    
     X <- scale(X, center = center, scale = FALSE)
     O <- model.offset( model.frame(f, newdata) )
     O <- ifelse(is.null(O), 0, O)
-    B <- as.matrix(object, pars = "beta") 
-    M <- nrow(B)
+    Beta <- as.matrix(object, pars = "beta") 
+    M <- nrow(Beta)
     N <- nrow(X)
     P <- matrix(NA, nrow = M, ncol = N)
-    for (m in 1:M) P[m,] <- O + alpha + X %*% B[m,] 
+    stopifnot(nrow(alpha) == nrow(Beta))
+    for (m in 1:M) P[m,] <- O + alpha[m,] + X %*% Beta[m,] 
     if (type == "response") {
         if (object$family$link == "log") P <- exp(P)
         if (object$family$link == "logit") P <- inv_logit(P)
     }
     if (summary) {
         P <- post_summary(P)
-        P <- cbind(newdata, alpha = alpha, P)
+        P <- cbind(newdata, P)
     }
     return (P)
 }

@@ -6,7 +6,8 @@ articles:
   measuring-sa: measuring-sa.html
   raster-regression: raster-regression.html
   spatial-me-models: spatial-me-models.html
-last_built: 2024-05-07T21:11Z
+  spatial-weights-matrix: spatial-weights-matrix.html
+last_built: 2024-05-10T21:05Z
 urls:
   reference: https://connordonegan.github.io/geostan/reference
   article: https://connordonegan.github.io/geostan/articles

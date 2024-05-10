@@ -21,7 +21,6 @@ reference:
 - contents:
   - edges
   - get_shp
-  - make_EV
   - n_nbs  
   - row_standardize  
   - shape2mat
@@ -39,7 +38,8 @@ reference:
   - sp_diag  
 - title: "Spatial models"
 - contents:
-  - starts_with("prep_")
+  - make_EV
+  - starts_with("prep_")  
   - starts_with("stan_")
 - title: "Methods and diagnostics for spatial models"
 - contents:

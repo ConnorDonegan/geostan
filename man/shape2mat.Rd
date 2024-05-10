@@ -46,7 +46,7 @@ shape2mat(
 \item{quiet}{If \code{TRUE}, messages will be silenced.}
 }
 \value{
-A spatial connectivity matrix
+A spatial connectivity matrix in sparse matrix format. Binary matrices are of class \code{ngCMatrix}, row-standardized are of class \code{dgCMatrix}, created by \code{\link[Matrix]{sparseMatrix}}.
 }
 \description{
 Creates sparse matrix representations of spatial connectivity structures

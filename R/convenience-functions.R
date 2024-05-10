@@ -588,7 +588,7 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #'
 #' @param quiet If `TRUE`, messages will be silenced.
 #' 
-#' @return A spatial connectivity matrix
+#' @return A spatial connectivity matrix in sparse matrix format. Binary matrices are of class `ngCMatrix`, row-standardized are of class `dgCMatrix`, created by \code{\link[Matrix]{sparseMatrix}}.
 #'
 #' @seealso \code{\link[geostan]{edges}} \code{\link[geostan]{row_standardize}} \code{\link[geostan]{n_nbs}}
 #' 

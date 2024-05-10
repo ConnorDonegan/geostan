@@ -52,11 +52,15 @@
 
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.6.1" id="geostan-061">geostan 0.6.1<a class="anchor" aria-label="anchor" href="#geostan-061"></a></h2>
-<p>There are three updates, all related to spatial connectivity matrices:</p>
+<p>Two updates:</p>
+<ol style="list-style-type: decimal"><li>Multiple changes related to spatial connectivity matricies, including a new vignette.</li>
+<li>A change to <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">geostan::predict</a></code>.</li>
+</ol><p>There are three updates related to spatial connectivity matrices:</p>
 <ul><li>There is a new vignette on spatial connectivity matrices (see <code>browseVignettes('geostan')</code>), written for new users.</li>
-<li>Visualizing spatial neighbors: <code><a href="../reference/edges.html">geostan::edges</a></code> can now return a simple features object; this can be used to visualize (map) the graph structure of the spatial connectivity matrix.</li>
+<li>Visualizing spatial neighbors: <code><a href="../reference/edges.html">geostan::edges</a></code> can now return a simple features object; this can be used to visualize (map) the graph structure of the spatial connectivity matrix. There is an example in the new vignette.</li>
 <li>Changes to <code><a href="../reference/shape2mat.html">geostan::shape2mat</a></code>: an option for k-nearest neighbors has been added, the <code>queen</code> argument is being replaced by <code>method</code>, and the function now prints a summary of the matrix to the console (using the new <code>geostasn::n_nbs</code> function)</li>
-</ul></div>
+</ul><p>There was one change to the <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">geostan::predict</a></code> method:</p>
+<ul><li>this method is for getting predicted values from a fitted model, given user-provided covariate values. Previously, the function used a point estimate of the intercept when calculating the predicted values. Now, the method uses samples from the posterior distribution of the intercept, just like it does for other parameters. The user (still) has the option to provide a matrix of samples for the intercept term; this is in case one wishes to incorporate the spatial trend term into the intercept (as a spatially-varying intercept).</li></ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.6.0" id="geostan-060">geostan 0.6.0<small>2024-04-16</small><a class="anchor" aria-label="anchor" href="#geostan-060"></a></h2>
 <p>Updates:</p>
