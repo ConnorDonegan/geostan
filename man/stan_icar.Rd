@@ -16,6 +16,8 @@ Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). Modeling commu
 
 Freni-Sterrantino, Anna, Massimo Ventrucci, and Håvard Rue (2018). A Note on Intrinsic Conditional Autoregressive Models for Disconnected Graphs. \emph{Spatial and Spatio-Temporal Epidemiology}, 26: 25–34.
 
+Morris, Mitzi (2017). Spatial Models in Stan: Intrinsic Auto-Regressive Models for Areal Data. \url{https://mc-stan.org/users/documentation/case-studies/icar_stan.html}
+
 Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A., & DiMaggio, C. (2019). Bayesian hierarchical spatial models: Implementing the Besag York Mollié model in stan. \emph{Spatial and spatio-temporal epidemiology}, 31, 100301.
 
 Riebler, A., Sorbye, S. H., Simpson, D., & Rue, H. (2016). An intuitive Bayesian spatial model for disease mapping that accounts for scaling. \emph{Statistical Methods in Medical Research}, 25(4), 1145-1165.
@@ -43,6 +45,7 @@ stan_icar(
   drop = NULL,
   pars = NULL,
   control = NULL,
+  quiet = FALSE,
   ...
 )
 }
@@ -117,6 +120,8 @@ If \code{slim = TRUE}, then \code{drop} will be ignored.}
 \item{pars}{Optional; specify any additional parameters you'd like stored from the Stan model.}
 
 \item{control}{A named list of parameters to control the sampler's behavior. See \code{\link[rstan]{stan}} for details.}
+
+\item{quiet}{Controls (most) automatic printing to the console. By default, any prior distributions that have not been assigned by the user are printed to the console. If \code{quiet = TRUE}, these will not be printed. Using \code{quiet = TRUE} will also force \code{refresh = 0}.}
 
 \item{...}{Other arguments passed to \link[rstan]{sampling}.}
 }
@@ -224,9 +229,7 @@ Note, the code above requires the \code{scale_c} function; it has package depend
 #' library(spdep)
 #' library(igraph)
 #'  
-#' @source
-#'
-#'   Morris, Mitzi (2017). Spatial Models in Stan: Intrinsic Auto-Regressive Models for Areal Data. <https://mc-stan.org/users/documentation/case-studies/icar_stan.html>
+#' @source  Morris (2017)
 #'
 scale_c <- function(C) \{
  geometric_mean <- function(x) exp(mean(log(x))) 

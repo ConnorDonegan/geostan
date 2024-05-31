@@ -62,6 +62,7 @@
 #' Using `drop = c('fitted', 'log_lik', 'alpha_re', 'x_true')` is equivalent to `slim = TRUE`. If `slim = TRUE`, then `drop` will be ignored.
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. 
 #' @param ... Other arguments passed to \link[rstan]{sampling}.
+#' @param quiet Controls (most) automatic printing to the console. By default, any prior distributions that have not been assigned by the user are printed to the console. If `quiet = TRUE`, these will not be printed. Using `quiet = TRUE` will also force `refresh = 0`.
 #' 
 #' @details
 #'
@@ -158,7 +159,9 @@
 #' For example, the US Centers for Disease Control and Prevention's CDC WONDER database censors all death counts between 0 and 9. To model CDC WONDER mortality data, you could provide `censor_point = 9` and then the likelihood statement for censored counts would equal the summation of the Poisson probability mass function over each integer ranging from zero through 9 (inclusive), conditional on the fitted values (i.e., all model parameters). See Donegan (2021) for additional discussion, references, and Stan code.
 #'
 #' 
-#' @return An object of class class \code{geostan_fit} (a list) containing: 
+#' @return
+#'
+#' An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
 #' \item{summary}{Summaries of the main parameters of interest; a data frame}
 #' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and mean residual spatial autocorrelation as measured by the Moran coefficient.}
@@ -233,11 +236,15 @@ stan_glm <- function(formula,
                      drop = NULL,
                      pars = NULL,
                      control = NULL,
+                     quiet = FALSE,
                      ...) {
     stopifnot(inherits(formula, "formula"))
     stopifnot(inherits(family, "family"))
     stopifnot(family$family %in% c("gaussian", "student_t", "poisson", "binomial"))
     stopifnot(!missing(data))
+    # silence?
+    if (quiet) refresh <- 0
+    # C    
     if (!missing(C)) {
         stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
         stopifnot(all(dim(C) == nrow(data)))
@@ -384,7 +391,7 @@ stan_glm <- function(formula,
     pars <- drop_params(pars = pars, drop_list = drop)
     priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
     if (me.list$has_me) priors_made_slim$ME_model <- ME$prior        
-    print_priors(prior, priors_made_slim)
+    if (!quiet) print_priors(prior, priors_made_slim)
     ## MCMC INITIAL VALUES ------------- 
     inits <- "random"
     if (censor_point > 0 | (standata$has_me == 1 && any(standata$use_logit == 1))) {

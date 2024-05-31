@@ -62,6 +62,8 @@
 #' @param control A named list of parameters to control the sampler's behavior. See \code{\link[rstan]{stan}} for details. 
 #' 
 #' @param ... Other arguments passed to \code{\link[rstan]{sampling}}.
+#'
+#' @param quiet Controls (most) automatic printing to the console. By default, any prior distributions that have not been assigned by the user are printed to the console. If `quiet = TRUE`, these will not be printed. Using `quiet = TRUE` will also force `refresh = 0`.
 #' 
 #' @details
 #'
@@ -242,6 +244,7 @@ stan_car <- function(formula,
                      drop = NULL,
                      pars = NULL,
                      control = NULL,
+                     quiet = FALSE,                     
                      ...
                      ) {
     stopifnot(inherits(formula, "formula"))
@@ -251,6 +254,9 @@ stan_car <- function(formula,
     stopifnot(!missing(data))
     check_car_parts(car_parts)
     stopifnot(car_parts$n == nrow(data))
+    # silence?
+    if (quiet) refresh <- 0
+    # C    
     if (!missing(C)) {
         stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
         stopifnot(all(dim(C) == nrow(data)))
@@ -423,7 +429,7 @@ stan_car <- function(formula,
     ## PARAMETERS TO KEEP, with CAR PARAMETERS [STOP] -------------
     if (me.list$has_me) priors_made_slim$ME_model <- ME$prior    
     ## PRINT PRIORS  -------------
-    print_priors(prior, priors_made_slim)
+    if (!quiet) print_priors(prior, priors_made_slim)
     ## MCMC INITIAL VALUES -------------
     inits <- "random"
     if (censor_point > 0 | (standata$has_me == 1 && any(standata$use_logit == 1))) {

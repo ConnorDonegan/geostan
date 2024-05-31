@@ -66,7 +66,10 @@
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
 #' @param control A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details. 
 #' 
-#' @param ... Other arguments passed to \link[rstan]{sampling}. 
+#' @param ... Other arguments passed to \link[rstan]{sampling}.
+#'
+#' @param quiet By default, any prior distributions that have not been assigned by the user are printed to the console. If `quiet = TRUE`, these will not be printed.
+#' 
 #' @details
 #'
 #' Eigenvector spatial filtering (ESF) is a method for spatial regression analysis. ESF is extensively covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), which uses Piironen and Vehtari's (2017) regularized horseshoe prior.
@@ -211,6 +214,7 @@ stan_esf <- function(formula,
                      drop = NULL,
                      pars = NULL,
                      control = NULL,
+                     quiet = FALSE,                     
                      ...) {
     stopifnot(inherits(formula, "formula"))
     stopifnot(inherits(family, "family"))
@@ -218,6 +222,8 @@ stan_esf <- function(formula,
     stopifnot(!missing(data))
     stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
     stopifnot(all(dim(C) == nrow(data)))
+    # silence?
+    if (quiet) refresh <- 0    
     ## ESF [START] -------------    
     stopifnot(nrow(EV) == nrow(data))
     dev <- ncol(EV)
@@ -370,7 +376,7 @@ stan_esf <- function(formula,
     pars <- drop_params(pars = pars, drop_list = drop)
     priors_made_slim <- priors_made[which(names(priors_made) %in% c(pars, "beta_ev"))]
     if (me.list$has_me) priors_made_slim$ME_model <- ME$prior
-    print_priors(prior, priors_made_slim)
+    if (!quiet) print_priors(prior, priors_made_slim)
     ## MCMC INITIAL VALUES ------------- 
     inits <- "random"
     if (censor_point > 0 | (standata$has_me == 1 && any(standata$use_logit == 1))) {

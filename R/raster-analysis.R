@@ -11,6 +11,10 @@
 #'
 #' The purpose is to calculate eigenvalues of the spatial weights matrix for the CAR and SAR models, enabling spatial regression with large raster data sets. This function is used internally by \code{\link[geostan]{prep_sar_data2}} and \code{\link[geostan]{prep_car_data2}}. For more details, see: \code{vignette("raster-regression", package = "geostan")}.
 #'
+#' @return
+#'
+#' Returns the eigenvalues of the row-standardized spatial weights matrix (a numeric vector length `row * col`).
+#'  
 #' @seealso
 #' \code{\link[geostan]{prep_sar_data2}}, \code{\link[geostan]{prep_car_data2}}
 #' 
@@ -40,12 +44,16 @@ eigen_grid <- function(row = 5, col = 5) {
 #'
 #' @param row Number of rows in the raster 
 #' @param col Number of columns in the raster
-#'
+#' @param quiet Controls printing behavior. By default, `quiet = FALSE` and the range of permissible values for the spatial dependence parameter is printed to the console.
+#' 
 #' @details
 #'
 #' Prepare input data for the CAR model when your dataset consists of observations on a regular (rectangular) tessellation, such as a raster layer or remotely sensed imagery. The rook criteria is used to determine adjacency. This function uses Equation 5 from Griffith (2000) to generate approximate eigenvalues for a row-standardized spatial weights matrix from a P-by-Q dimension regular tessellation.
 #'
 #' This function can accommodate very large numbers of observations for use with \code{\link[geostan]{stan_car}}; for large N data, it is also recommended to use `slim = TRUE` or the `drop` argument. For more details, see: \code{vignette("raster-regression", package = "geostan")}.
+#'
+#'
+#' @return A list containing all of the data elements required by the CAR model in \code{\link[geostan]{stan_car}}.
 #' 
 #' @source
 #'
@@ -62,7 +70,7 @@ eigen_grid <- function(row = 5, col = 5) {
 #'
 #' @export
 #' @md
-prep_car_data2 <- function(row = 100, col = 100) {
+prep_car_data2 <- function(row = 100, col = 100, quiet = FALSE) {
     stopifnot(row > 2 & col > 2)
     N <- row * col
     Idx <- 1:N
@@ -97,7 +105,14 @@ prep_car_data2 <- function(row = 100, col = 100) {
 
     # eigenvalues of the WCAR connectivity matrix
     car.dl$lambda <- eigen_grid(row = row, col = col)
-    cat ("Range of permissible rho values: ", 1 / range(car.dl$lambda), "\n")
+    
+    # limits of permissible/possible rho values
+    car.dl$rho_lims <- 1 / range(car.dl$lambda)
+    if (!quiet) {
+            r_rho_lims <- round( car.dl$rho_lims, 3)
+            message("Range of permissible rho values: ", r_rho_lims[1], ", ", r_rho_lims[2])
+    }
+    
     car.dl$style <- "WCAR"
     car.dl$C <- C
     return (car.dl)
@@ -109,6 +124,7 @@ prep_car_data2 <- function(row = 100, col = 100) {
 #'
 #' @param row Number of rows in the raster
 #' @param col Number of columns in the raster
+#' @param quiet Controls printing behavior. By default, `quiet = FALSE` and the range of permissible values for the spatial dependence parameter is printed to the console.
 #'
 #' @details
 #'
@@ -118,6 +134,8 @@ prep_car_data2 <- function(row = 100, col = 100) {
 #'
 #' @seealso
 #' \code{\link[geostan]{prep_car_data2}}, \code{\link[geostan]{prep_sar_data}}, \code{\link[geostan]{stan_sar}}.
+#'
+#' @return A list containing all of the data elements required by the SAR model in \code{\link[geostan]{stan_sar}}.
 #' 
 #' @source
 #'
@@ -130,7 +148,7 @@ prep_car_data2 <- function(row = 100, col = 100) {
 #' sar_dl <- prep_sar_data2(row = row, col = col)
 #'
 #' @export 
-prep_sar_data2 <- function(row, col) {
+prep_sar_data2 <- function(row, col, quiet = FALSE) {
     stopifnot(row > 2 & col > 2)
     N <- row * col
     Idx <- 1:N
@@ -170,8 +188,13 @@ prep_sar_data2 <- function(row, col) {
     sar.dl$nW <- length(sar.dl$Widx)
     sar.dl$eigenvalues_w <- eigen_grid(row = row, col = col)
     sar.dl$n <- N
+    
     rho_lims <- 1/range(sar.dl$eigenvalues_w)
-    cat("Range of permissible rho values: ", rho_lims, "\n")
+    if (!quiet) {
+            r_rho_lims <- round( rho_lims, 3)
+            message("Range of permissible rho values: ", r_rho_lims[1], ", ", r_rho_lims[2])
+    }
+    
     sar.dl$rho_min <- min(rho_lims)
     sar.dl$rho_max <- max(rho_lims)
     sar.dl$W <- W

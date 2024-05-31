@@ -40,7 +40,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2</span>
       </span>
     </div>
 
@@ -78,7 +78,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Spatial weights matrix</h1>
             
-            <h4 data-toc-skip class="date">September 13, 2021</h4>
+            <h4 data-toc-skip class="date">May 01, 2024</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/ConnorDonegan/geostan/blob/HEAD/vignettes/spatial-weights-matrix.Rmd" class="external-link"><code>vignettes/spatial-weights-matrix.Rmd</code></a></small>
       <div class="hidden name"><code>spatial-weights-matrix.Rmd</code></div>
@@ -113,12 +113,14 @@
 <span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_make_grid.html" class="external-link">st_make_grid</a></span><span class="op">(</span><span class="va">sfc</span>, cellsize <span class="op">=</span> <span class="fl">1</span>, square <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">grid</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ogpar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span> <span class="va">grid</span> <span class="op">)</span></span></code></pre></div>
 <p><img src="spatial-weights-matrix_files/figure-html/unnamed-chunk-3-1.png" width="336" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">ogpar</span><span class="op">)</span></span></code></pre></div>
 <p>Using the rook criteria, we would say that the center square has four neighbors, one on every side. If we use the queen criteria, then we also add the corner squares, so it will have eight neighbors.</p>
 <p>To create the spatial adjacency matrix for the grid, we pass it to the <code><a href="../reference/shape2mat.html">geostan::shape2mat</a></code> function:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">grid</span>, method <span class="op">=</span> <span class="st">'rook'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Contiguity condition: rook</span></span>
 <span><span class="co">#&gt; Number of neighbors per unit, summary:</span></span>
@@ -131,14 +133,14 @@
 <p>Every spatial unit in our data will have its own row in the matrix; the first row in the matrix corresponds to the first row in the data. If the first observation is a neighbor to, say, the third one, then the element in the third column of the first row will be one; if they are not neighbors, the element will be zero.</p>
 <p>The object <code>A</code> is a sparse matrix - that means that you can treat it like a matrix in calculations, but it is more efficient than a standard matrix. You can learn more by reading up on the Matrix package. (Sometimes you will need to use methods provided by the Matrix package; for example, instead of <code>colSums(A)</code> you may need to use <code>Matrix::colSums(A)</code>.)</p>
 <p>The <code><a href="../reference/n_nbs.html">geostan::n_nbs</a></code> function will tell us how many neighbors each area has (according to the adjacency matrix):</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/n_nbs.html">n_nbs</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 2 3 2 3 4 3 2 3 2</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span> <span class="fu"><a href="../reference/n_nbs.html">n_nbs</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span> <span class="op">)</span></span>
 <span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
 <span><span class="co">#&gt;   2.000   2.000   3.000   2.667   3.000   4.000</span></span></code></pre></div>
 <p>And for the queen condition:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Aq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">grid</span>, method <span class="op">=</span> <span class="st">'queen'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Contiguity condition: queen</span></span>
 <span><span class="co">#&gt; Number of neighbors per unit, summary:</span></span>
@@ -158,7 +160,7 @@
 <p>It is always a good idea to visualize your connectivity matrix. These matrices are also graph structures - each area in the grid is a node and the connections are called edges.</p>
 <p>The <code><a href="../reference/edges.html">geostan::edges</a></code> function converts a matrix to a data.frame which lists each pair of connected nodes. If we also provide <code>spatial = grid</code>, then it will return a simple features object that we can plot.</p>
 <p>This code gets those connections as a simple features object and lays it over the grid:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># geometry of the grid</span></span>
 <span><span class="va">geom</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_geometry</a></span><span class="op">(</span><span class="va">grid</span><span class="op">)</span></span>
 <span></span>
@@ -167,13 +169,15 @@
 <span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_geometry</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># plot overlay</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ogpar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">geom</span>, lwd <span class="op">=</span> <span class="fl">.1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">graph</span>, add <span class="op">=</span> <span class="cn">TRUE</span>, type <span class="op">=</span> <span class="st">'b'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="spatial-weights-matrix_files/figure-html/unnamed-chunk-7-1.png" width="336" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">ogpar</span><span class="op">)</span></span></code></pre></div>
 <p>The units with the lowest number of neighbors are the corner squares (they have two neighbors each). The most connected unit is in the center, with 4 neighbors.</p>
 <p>Now here is what the grid looks like using the queen contiguity condition:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">Aq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">grid</span>, method <span class="op">=</span> <span class="st">'queen'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Contiguity condition: queen</span></span>
 <span><span class="co">#&gt; Number of neighbors per unit, summary:</span></span>
@@ -186,16 +190,18 @@
 <span><span class="va">E</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/edges.html">edges</a></span><span class="op">(</span><span class="va">Aq</span>, shape <span class="op">=</span> <span class="va">grid</span><span class="op">)</span></span>
 <span><span class="va">graph</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_geometry</a></span><span class="op">(</span><span class="va">E</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ogpar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">geom</span>, lwd <span class="op">=</span> <span class="fl">.1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">graph</span>, add <span class="op">=</span> <span class="cn">TRUE</span>, type <span class="op">=</span> <span class="st">'b'</span><span class="op">)</span></span></code></pre></div>
 <p><img src="spatial-weights-matrix_files/figure-html/unnamed-chunk-8-1.png" width="336" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">ogpar</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="k-nearest-neighbors">K-nearest neighbors<a class="anchor" aria-label="anchor" href="#k-nearest-neighbors"></a>
 </h2>
 <p>The queen and rook criteria are common when working with areal data (polygons). Another method, which also works for point data, is K nearest neighbors. If you use <code>k = 4</code>, then for each spatial unit, this method will identify the four nearest observations and classify them as neighbors to the first.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">grid</span>, method <span class="op">=</span> <span class="st">'knn'</span>, k <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in spdep::knearneigh(coords, k = k, longlat = longlat): k greater than</span></span>
 <span><span class="co">#&gt; one-third of the number of data points</span></span>
@@ -216,7 +222,7 @@
 </h2>
 <p>Thus far, all of the matrices have been binary - the elements are all zeroes and ones. A common alternative is to row-standardize this matrix. In that case, if the first spatial unit has four neighbors, then each of those ones will be converted to 1/4 or <code>0.25</code> - they will sum to one. If the second row has five neighbors, then each one will be converted to <code>0.2</code>.</p>
 <p>You can use the <code><a href="../reference/row_standardize.html">geostan::row_standardize</a></code> function:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">W</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/row_standardize.html">row_standardize</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Row standardizing connectivity matrix</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span> <span class="va">W</span> <span class="op">)</span></span>
@@ -232,7 +238,7 @@
 <span><span class="co">#&gt;  [8,] .         .    .         .    0.3333333 .    0.3333333 .    0.3333333</span></span>
 <span><span class="co">#&gt;  [9,] .         .    .         .    .         0.50 .         0.50 .</span></span></code></pre></div>
 <p>Or you can use <code>style = 'W'</code> with <code>shape2mat</code>:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">W</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">grid</span>, <span class="st">'W'</span>, method <span class="op">=</span> <span class="st">'rook'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Contiguity condition: rook</span></span>
 <span><span class="co">#&gt; Number of neighbors per unit, summary:</span></span>
@@ -260,35 +266,38 @@
 </h2>
 <p>You should always check your adjacency matrix. Why? Because you may find something unexpected. There may be slight imperfections in the spatial boundary data, or actual gaps between nearby areas, that cause ‘neighboring’ areas to be missed. Or, strange shapes may cause two substantively ‘non-neighboring’ areas to be joined as neighbors.</p>
 <p>To edit the matrix, you need to know the index position of the areas of interest (that is, which row corresponds to each polygon):</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># row number, index position </span></span>
 <span><span class="va">Id</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">grid</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># centroid coordinates (x, y)</span></span>
-<span><span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_unary.html" class="external-link">st_centroid</a></span><span class="op">(</span><span class="va">grid</span><span class="op">)</span></span>
+<span><span class="va">centers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/geos_unary.html" class="external-link">st_centroid</a></span><span class="op">(</span><span class="va">grid</span><span class="op">)</span></span>
+<span><span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_geometry</a></span><span class="op">(</span><span class="va">centers</span><span class="op">)</span></span>
 <span><span class="va">xy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">coords</span><span class="op">)</span>, byrow <span class="op">=</span> <span class="cn">T</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># map Ids</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ogpar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">geom</span>, lwd <span class="op">=</span> <span class="fl">.15</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/text.html" class="external-link">text</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">xy</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>, y <span class="op">=</span> <span class="va">xy</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span>,</span>
 <span>     label <span class="op">=</span> <span class="va">Id</span><span class="op">)</span></span></code></pre></div>
 <p><img src="spatial-weights-matrix_files/figure-html/unnamed-chunk-12-1.png" width="336" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">ogpar</span><span class="op">)</span>     </span></code></pre></div>
 <p>(You could adjust that code to plot the number of neighbors each polygon has, which is another useful way to visualize connectivity.)</p>
 <p>If, for whatever reason, we wanted to connect the second polygon to the fourth, we would need to change the elements of the fourth column in the second row, <code>A[2, 4]</code>, and the second column in the fourth row, <code>A[4, 2]</code>:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A</span><span class="op">[</span><span class="fl">2</span>, <span class="fl">4</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">A</span><span class="op">[</span><span class="fl">4</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span> <span class="co"># 1</span></span></code></pre></div>
 <p>If we wanted to remove the connection between the first and second polygon we would replace their ones with zeroes:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">A</span><span class="op">[</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span> <span class="co"># 0</span></span></code></pre></div>
-<p>Notice that the above operations apply when the matrix is binary and symmetric. KNN is not symmetric. If you want or need to use row-standardization, be sure to finish editing the binary matrix and then row standardize it.</p>
+<p>Notice that the above operations apply when the matrix is binary and symmetric. KNN is not symmetric. If you want or need to use row-standardization, be sure to complete your edits using the binary matrix and then row standardize it.</p>
 </div>
 <div class="section level2">
 <h2 id="using-the-matrix">Using the matrix<a class="anchor" aria-label="anchor" href="#using-the-matrix"></a>
 </h2>
 <p>The matrix allows us to calculate the <em>spatial lag</em> of any observation - that is, a weighted sum of the neighboring values.</p>
 <p>We can illustrate with some data:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># draw data from spatial autoregressive model</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">101010</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>w <span class="op">=</span> <span class="va">W</span>, rho <span class="op">=</span> <span class="fl">.8</span><span class="op">)</span></span>
@@ -296,29 +305,31 @@
 <span><span class="co">#&gt; [1] -1.1320214  0.2577176  1.9462173  1.8134445  0.9640490  3.0214490  2.5213080</span></span>
 <span><span class="co">#&gt; [8]  3.0062925  1.5852854</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ogpar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">grid</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">y</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">grid</span><span class="op">[</span><span class="st">'y'</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <p><img src="spatial-weights-matrix_files/figure-html/unnamed-chunk-15-1.png" width="336" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">ogpar</span><span class="op">)</span></span></code></pre></div>
 <p>To calculate the spatial lag for the first unit, we would first get the weights from the first row of the matrix <code>A</code>:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">grid</span>, method <span class="op">=</span> <span class="st">'rook'</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">w1</span> <span class="op">=</span> <span class="va">A</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span> <span class="va">w1</span> <span class="op">)</span></span>
 <span><span class="co">#&gt; [1] FALSE  TRUE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE</span></span></code></pre></div>
 <p>(Notice: R treats logical values the same as zeroes and ones.)</p>
 <p>To find the spatially lagged value of <code>y[1]</code>, we first multiple all <code>y</code> values by the appropriate weights, then sum:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">w1_y</span> <span class="op">&lt;-</span> <span class="va">w1</span> <span class="op">*</span> <span class="va">y</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span> <span class="va">w1_y</span> <span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 2.071162</span></span></code></pre></div>
 <p>We can do this more quicly as a matrix-vector product:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">w1</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">y</span></span>
 <span><span class="co">#&gt;          [,1]</span></span>
 <span><span class="co">#&gt; [1,] 2.071162</span></span></code></pre></div>
 <p>To get the spatial lag of each <code>y</code> value, we do the same for every row:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">y</span></span>
 <span><span class="co">#&gt; 9 x 1 Matrix of class "dgeMatrix"</span></span>
 <span><span class="co">#&gt;           [,1]</span></span>
@@ -332,7 +343,7 @@
 <span><span class="co">#&gt;  [8,] 5.070642</span></span>
 <span><span class="co">#&gt;  [9,] 6.027741</span></span></code></pre></div>
 <p>To get the average surrounding value, we would use the row-standardized matrix:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">W</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">y</span></span>
 <span><span class="co">#&gt; 9 x 1 Matrix of class "dgeMatrix"</span></span>
 <span><span class="co">#&gt;            [,1]</span></span>
@@ -346,6 +357,10 @@
 <span><span class="co">#&gt;  [8,] 1.6902142</span></span>
 <span><span class="co">#&gt;  [9,] 3.0138707</span></span></code></pre></div>
 <p>Spatial connectivity matrices and spatial lags are used in many geostan functions, including for exploratory spatial data analysis (ESDA) and spatial-statistical modeling. For more, you can see the ESDA vignette (find it by running <code>browseVignettes('geostan')</code>).</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; null device </span></span>
+<span><span class="co">#&gt;           1</span></span></code></pre></div>
 </div>
   </div>
 

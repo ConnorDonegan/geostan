@@ -1,6 +1,6 @@
 ---
 title: "Spatial weights matrix"
-date: September 13, 2021
+date: May 01, 2024
 output: 
   rmarkdown::html_vignette:
     toc: true 
@@ -54,8 +54,9 @@ sfc = st_sfc(st_polygon(list(rbind(c(0,0), c(col,0), c(col,row), c(0,0)))))
 grid <- st_make_grid(sfc, cellsize = 1, square = TRUE)
 grid <- st_as_sf(grid)
 
-par(mar = rep(0, 4))
+ogpar <- par(mar = rep(0, 4))
 plot( grid )
+par(ogpar)
 ```
 
 Using the rook criteria, we would say that the center square has four neighbors, one on every side. If we use the queen criteria, then we also add the corner squares, so it will have eight neighbors.
@@ -102,9 +103,10 @@ edges <- edges(A, shape = grid)
 graph <- st_geometry(edges)
 
 # plot overlay
-par(mar = rep(0, 4))
+ogpar <- par(mar = rep(0, 4))
 plot(geom, lwd = .1)
 plot(graph, add = TRUE, type = 'b')
+par(ogpar)
 ```
 
 The units with the lowest number of neighbors are the corner squares (they have two neighbors each). The most connected unit is in the center, with 4 neighbors.
@@ -116,9 +118,10 @@ Aq <- shape2mat(grid, method = 'queen')
 E <- edges(Aq, shape = grid)
 graph <- st_geometry(E)
 
-par(mar = rep(0, 4))
+ogpar <- par(mar = rep(0, 4))
 plot(geom, lwd = .1)
 plot(graph, add = TRUE, type = 'b')
+par(ogpar)
 ```
 
 ## K-nearest neighbors
@@ -152,7 +155,7 @@ print( W )
 
 ## Editing the matrix
 
-You should always check your adjacency matrix. Why? Because you may find something unexpected. There may be slight imperfections in the spatial boundary data, or actual gaps between nearby areas, that cause 'neighboring' areas to be missed. Or, strange shapes may cause two substantively 'non-neighboring' areas to be joined as neighbors.
+You should always check your adjacency matrix. Why? Because you may find something unexpected. There may be slight imperfections in the spatial boundary data, or actual gaps between nearby areas, that cause 'neighboring' areas to be missed. Or, strange shapes may cause two substantively 'non-neighboring' areas to be joined as neighbors. 
 
 To edit the matrix, you need to know the index position of the areas of interest (that is, which row corresponds to each polygon):
 
@@ -161,14 +164,16 @@ To edit the matrix, you need to know the index position of the areas of interest
 Id <- 1:nrow(grid)
 
 # centroid coordinates (x, y)
-coords <- st_centroid(grid)
+centers <- st_centroid(grid)
+coords <- st_geometry(centers)
 xy <- matrix(unlist(coords), byrow = T, ncol = 2)
 
 # map Ids
-par(mar = rep(0, 4))
+ogpar <- par(mar = rep(0, 4))
 plot(geom, lwd = .15)
 text(x = xy[,1], y = xy[,2],
      label = Id)
+par(ogpar)     
 ```
 
 (You could adjust that code to plot the number of neighbors each polygon has, which is another useful way to visualize connectivity.)
@@ -185,7 +190,7 @@ If we wanted to remove the connection between the first and second polygon we wo
 A[1, 2] <- A[2, 1] <- FALSE # 0
 ```
 
-Notice that the above operations apply when the matrix is binary and symmetric. KNN is not symmetric. If you want or need to use row-standardization, be sure to finish editing the binary matrix and then row standardize it.
+Notice that the above operations apply when the matrix is binary and symmetric. KNN is not symmetric. If you want or need to use row-standardization, be sure to complete your edits using the binary matrix and then row standardize it.
 
 ## Using the matrix
 
@@ -199,9 +204,10 @@ set.seed(101010)
 y <- sim_sar(w = W, rho = .8)
 print( y )
 
-par(mar = rep(0, 4))
+ogpar <- par(mar = rep(0, 4))
 grid$y <- y
 plot(grid['y'])
+par(ogpar)
 ```
 
 To calculate the spatial lag for the first unit, we would first get the weights from the first row of the matrix `A`:
@@ -241,3 +247,6 @@ W %*% y
 
 Spatial connectivity matrices and spatial lags are used in many geostan functions, including for exploratory spatial data analysis (ESDA) and spatial-statistical modeling. For more, you can see the ESDA vignette (find it by running `browseVignettes('geostan')`).
 
+```{r}
+dev.off()
+```

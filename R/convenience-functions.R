@@ -119,11 +119,11 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
     check_sa_data(mu, w)
     stopifnot(all(round(Matrix::rowSums(w), 10) == 1))
     N <- nrow(w)
-    if (!inherits(rho, "numeric") || !length(rho) %in% c(1, N) || any(rho >= 1 || rho <= -1)) stop("rho must be numeric value within range (-1, 1), or a k-length numeric vector where K=nrow(W).")
+    if (!inherits(rho, "numeric") || !length(rho) %in% c(1, N)) stop("rho must be a single numeric value, or a k-length numeric vector where K=nrow(W).")
     if (!inherits(sigma, "numeric") || !length(sigma) %in% c(1, N) || !all(sigma > 0)) stop("sigma must be a positive numeric value, or k-length numeric vector, with K=nrow(W).")
     I <- diag(N)
     S <- sigma^2 * solve( (I - rho * Matrix::t(w)) %*% (I - rho * w) )
-##    S <- crossprod(solve(I - rho * w)) * sigma^2
+    # or: #  S <- crossprod(solve(I - rho * w)) * sigma^2
     x <- MASS::mvrnorm(n = m, mu = mu, Sigma = S, ...)
     return(x)
 }
@@ -154,13 +154,14 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' 
 #'
 #' @examples
-#' \donttest{
+#' 
 #' data(georgia)
 #' sp_diag(georgia$college, georgia)
 #'
 #' bin_fn <- function(y) mad(y, na.rm = TRUE)
 #' sp_diag(georgia$college, georgia, binwidth = bin_fn)
-#' 
+#'
+#' \donttest{
 #' fit <- stan_glm(log(rate.male) ~ log(income),
 #'                 data = georgia,
 #'                 chains = 2, iter = 800) # for speed only
@@ -368,23 +369,23 @@ sp_diag.numeric <- function(y,
 #' ## prepare data for the CAR model, using WCAR specification
 #' cars <- prep_car_data(A, style = "WCAR")
 #' ## provide list of data for the measurement error model
-#' ME <- prep_me_data(se = data.frame(ICE = georgia$ICE.se),
+#' ME <- prep_me_data(se = data.frame(college = georgia$college.se),
 #'                    car_parts = cars)
 #' ## sample from the prior probability model only, including the ME model
-#' fit <- stan_glm(log(rate.male) ~ ICE,
+#' fit <- stan_glm(log(rate.male) ~ college,
 #'                 ME = ME,
 #'                 data = georgia, 
 #'                 prior_only = TRUE,
-#'                 iter = 800, # for speed only
+#'                 iter = 1e3, # for speed only
 #'                 chains = 2, # for speed only
 #'                 refresh = 0 # silence some printing
 #'                 )
 #' 
 #' ## see ME diagnostics
-#' me_diag(fit, "ICE", georgia)
+#' me_diag(fit, "college", georgia)
 #' ## see index values for the largest (absolute) delta values
 #'  ## (differences between raw estimate and the posterior mean)
-#' me_diag(fit, "ICE", georgia, index = 3)
+#' me_diag(fit, "college", georgia, index = 3)
 #' }
 #' @export
 #' @md
@@ -655,7 +656,7 @@ shape2mat <- function(shape,
     st.style <- match.arg(st.style)
     ## temporary: handle deprecation of queen
     if (!missing(queen)) {
-        message("The 'queen' argument is deprecated. Use 'method' instead.")
+        warning("The 'queen' argument is deprecated. Use 'method' instead.")
         if (queen == TRUE) method <- 'queen'
         if (queen == FALSE) method <- 'rook'
     } else {
@@ -1036,6 +1037,8 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' @param cmat If `cmat = TRUE`, return the full matrix C (in sparse matrix format).
 #'
 #' @param stan_fn Two computational methods are available for CAR models using \code{\link[geostan]{stan_car}}: \code{car\_normal\_lpdf} and \code{wcar\_normal\_lpdf}. For WCAR models, either method will work but \code{wcar\_normal\_lpdf} is faster. To force use \code{car\_normal\_lpdf} when `style = 'WCAR'`, provide `stan_fn = "car_normal_lpdf"`. 
+#'
+#' @param quiet Controls printing behavior. By default, `quiet = FALSE` and the range of permissible values for the spatial dependence parameter is printed to the console.
 #' 
 #' @details
 #' The CAR model is:
@@ -1073,6 +1076,7 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' @return A list containing all of the data elements required by the CAR model in \code{\link[geostan]{stan_car}}.
 #'
 #' @examples
+#' 
 #' data(georgia)
 #'
 #' ## use a binary adjacency matrix
@@ -1090,6 +1094,7 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' D <- sf::st_distance(sf::st_centroid(georgia))
 #' A <- D * A
 #' cp <- prep_car_data(A, "DCAR", k = 1)
+#' 
 #' @export
 #' @md
 #' @importFrom rstan extract_sparse_parts
@@ -1100,7 +1105,8 @@ prep_car_data <- function(A,
                           gamma = 0,
                           lambda = TRUE,
                           cmat = TRUE,
-                          stan_fn = ifelse(style == "WCAR", "wcar_normal_lpdf", "car_normal_lpdf")
+                          stan_fn = ifelse(style == "WCAR", "wcar_normal_lpdf", "car_normal_lpdf"),
+                          quiet = FALSE
                           ) {
     style = match.arg(style)
     if (style != "WCAR" & stan_fn == "wcar_normal_lpdf") stop("wcar_normal_lpdf only works with style = 'WCAR'.")
@@ -1162,8 +1168,13 @@ prep_car_data <- function(A,
         MCM <- Matrix::Diagonal(x = 1 / sqrt(M_diag)) %*% C %*% Matrix::Diagonal(x = sqrt(M_diag))
         stopifnot(Matrix::isSymmetric(MCM, check.attributes = FALSE))
         lambda <- sort(eigen(MCM)$values)
-        cat ("Range of permissible rho values: ", 1 / range(lambda), "\n")
+        rho_lims <- 1 / range(lambda)
+        if (!quiet) {
+            r_rho_lims <- round( rho_lims, 3)
+            message("Range of permissible rho values: ", r_rho_lims[1], ", ", r_rho_lims[2])
+        }
         car.dl$lambda <- lambda
+        car.dl$rho_lims <- rho_lims
     }
     if (cmat) car.dl$C <- C
     return (car.dl)
@@ -1175,8 +1186,10 @@ prep_car_data <- function(A,
 #' @description Given a spatial weights matrix \eqn{W}, this function prepares data for the simultaneous autoregressive (SAR) model (a.k.a spatial error model (SEM)) in Stan. This is used internally by \code{\link[geostan]{stan_sar}}, and may also be used for building custom SAR models in Stan. 
 #' 
 #' @param W Spatial weights matrix, typically row-standardized.
+#'
+#' @param quiet Controls printing behavior. By default, `quiet = FALSE` and the range of permissible values for the spatial dependence parameter is printed to the console.
 #' 
-#' @return list of data to add to a Stan data list:
+#' @return Return's a list of data required as input for geostan's SAR models, as implemented in Stan. The list contains:
 #' 
 #' \describe{
 #' \item{ImW_w}{Numeric vector containing the non-zero elements of matrix \eqn{(I - W)}.}
@@ -1191,11 +1204,11 @@ prep_car_data <- function(A,
 #' \item{rho_min}{Minimum permissible value of \eqn{\rho} (`1/min(eigenvalues_w)`).}
 #' \item{rho_max}{Maximum permissible value of \eqn{\rho} (`1/max(eigenvalues_w)`.}
 #' }
-#' The function will also print the range of permissible \eqn{\rho} values to the console.
+#' The function will also print the range of permissible \eqn{\rho} values to the console (unless `quiet = TRUE`).
 #'
 #' @details
 #'
-#' This is used internally to prepare data for \code{\link[geostan]{stan_sar}} models. It can also be helpful for fitting custom SAR models in Stan (outside of \code{geostan}). 
+#' This is used internally to prepare data for \code{\link[geostan]{stan_sar}} models. It can also be helpful for fitting custom SAR models in Stan (outside of \code{geostan}), as described in the geostan vignette on custom spatial models.
 #' 
 #' @seealso \link[geostan]{shape2mat}, \link[geostan]{stan_sar}, \link[geostan]{prep_car_data}, \link[geostan]{prep_icar_data}
 #'
@@ -1207,7 +1220,7 @@ prep_car_data <- function(A,
 #' @export
 #' @importFrom Matrix rowSums
 #' @importFrom rstan extract_sparse_parts
-prep_sar_data <- function(W) {
+prep_sar_data <- function(W, quiet = FALSE) {
     stopifnot(inherits(W, "matrix") | inherits(W, "Matrix"))
     N <- nrow(W)
     sar.dl <- rstan::extract_sparse_parts(Matrix::Diagonal(N) - W)
@@ -1219,7 +1232,10 @@ prep_sar_data <- function(W) {
     sar.dl$n <- N
     sar.dl$W <- W
     rho_lims <- 1/range(sar.dl$eigenvalues_w)
-    cat("Range of permissible rho values: ", rho_lims, "\n")
+    if (!quiet) {
+        r_rho_lims <- round(rho_lims, 3)
+        message("Range of permissible rho values: ", r_rho_lims[1], ", ", r_rho_lims[2])
+    }
     sar.dl$rho_min <- min(rho_lims)
     sar.dl$rho_max <- max(rho_lims)    
     return( sar.dl )
@@ -1236,7 +1252,7 @@ prep_sar_data <- function(W) {
 #' @return A folder in your working directory with the shapefile; filepaths are printed to the console.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(sf)
 #' url <- "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_state_20m.zip"
 #' folder <- tempdir()

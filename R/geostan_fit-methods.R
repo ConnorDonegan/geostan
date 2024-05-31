@@ -12,6 +12,10 @@
 #' @param fill fill color for histograms and density plots.
 #'
 #' @param ... additional arguments to `rstan::plot` or `rstan::print.stanfit`.
+#'
+#' @return
+#'
+#' The print methods writes text to the console to summarize model results. The plot method resturns a `ggplot` (from `rstan::plot` for stanfit objects).
 #' 
 #' @examples
 #' data(georgia)
@@ -126,6 +130,12 @@ plot.geostan_fit <- function(x,
 #' 
 #' @param ... Not used
 #'
+#' @return
+#'
+#' By default, these methods return a `data.frame`. The column named `mean` is what most users will be looking for. These contain the fitted values (for the `fitted` method), the residuals (fitted values minus observed values, for the `resid` method), or the spatial trend (for the `spatial` method). The `mean` column is the posterior mean of each value, and the column `sd` contains the posterior standard deviation for each value. The posterior distributions are also summarized by select quantiles (including 2.5\% and 97.5\%). 
+#'
+#' If `summary = FALSE` then the method returns an S-by-N matrix of MCMC samples, where S is the number of MCMC samples and N is the number of observations in the data.
+#' 
 #' @details
 #'
 #' When \code{rates = FALSE} and the model is Poisson or Binomial, the fitted values returned by the \code{fitted} method are the expected value of the response variable. The \code{rates} argument is used to translate count outcomes to rates by dividing by the appropriate denominator. The behavior of the `rates` argument depends on the model specification. Consider a Poisson model of disease incidence, such as the following intercept-only case:

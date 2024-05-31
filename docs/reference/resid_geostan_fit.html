@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2</span>
       </span>
     </div>
 
@@ -94,6 +94,16 @@
 <dd><p>For auto-normal models (CAR and SAR models with Gaussian likelihood only); if <code>trend = TRUE</code>, the fitted values will include the implicit spatial trend term. The implicit spatial trend is <code>Trend = rho * C %*% (Y - Mu)</code> (see <a href="stan_car.html">stan_car</a> or <a href="stan_sar.html">stan_sar</a>). I.e., if <code>trend = TRUE</code>, <code>fitted = Mu + Trend</code>.</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>By default, these methods return a <code>data.frame</code>. The column named <code>mean</code> is what most users will be looking for. These contain the fitted values (for the <code>fitted</code> method), the residuals (fitted values minus observed values, for the <code>resid</code> method), or the spatial trend (for the <code>spatial</code> method). The <code>mean</code> column is the posterior mean of each value, and the column <code>sd</code> contains the posterior standard deviation for each value. The posterior distributions are also summarized by select quantiles (including 2.5\<!-- % and 97.5\\%). --></p>
+
+
+
+<p>If <code>summary = FALSE</code> then the method returns an S-by-N matrix of MCMC samples, where S is the number of MCMC samples and N is the number of observations in the data.</p>
+    </div>
     <div id="details">
     <h2>Details</h2>
     <p>When <code>rates = FALSE</code> and the model is Poisson or Binomial, the fitted values returned by the <code>fitted</code> method are the expected value of the response variable. The <code>rates</code> argument is used to translate count outcomes to rates by dividing by the appropriate denominator. The behavior of the <code>rates</code> argument depends on the model specification. Consider a Poisson model of disease incidence, such as the following intercept-only case:</p>

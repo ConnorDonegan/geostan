@@ -210,3 +210,4 @@ print.prior <- function(x, digits = 2, ...) {
     if (nm == "hs")        df <- as.data.frame(x[c('global_scale', 'slab_df', 'slab_scale')])
     print(df, digits = digits, ...)           
 }
+

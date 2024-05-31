@@ -44,6 +44,7 @@ stan_esf(
   drop = NULL,
   pars = NULL,
   control = NULL,
+  quiet = FALSE,
   ...
 )
 }
@@ -118,6 +119,8 @@ If \code{slim = TRUE}, then \code{drop} will be ignored.}
 \item{pars}{Optional; specify any additional parameters you'd like stored from the Stan model.}
 
 \item{control}{A named list of parameters to control the sampler's behavior. See \link[rstan]{stan} for details.}
+
+\item{quiet}{By default, any prior distributions that have not been assigned by the user are printed to the console. If \code{quiet = TRUE}, these will not be printed.}
 
 \item{...}{Other arguments passed to \link[rstan]{sampling}.}
 }

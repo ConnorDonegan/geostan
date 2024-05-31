@@ -72,6 +72,8 @@ lg <- function(x, w, digits = 3, scale = TRUE, na.rm = FALSE, warn = TRUE) {
 #' @param warn If `FALSE`, no warning will be printed to inform you when observations with `NA` values have been dropped, or if any observations without neighbors have been found.
 #' @param na.rm If `na.rm = TRUE`, observations with `NA` values will be dropped from both `x` and `w`.
 #'
+#' @return Returns the Geary ratio (a single numeric value).
+#' 
 #' @details
 #'
 #' The Geary Ratio is an index of spatial autocorrelation. The

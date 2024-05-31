@@ -64,6 +64,8 @@
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
 #' @param control A named list of parameters to control the sampler's behavior. See \code{\link[rstan]{stan}} for details. 
 #' @param ... Other arguments passed to \link[rstan]{sampling}.
+#' @param quiet Controls (most) automatic printing to the console. By default, any prior distributions that have not been assigned by the user are printed to the console. If `quiet = TRUE`, these will not be printed. Using `quiet = TRUE` will also force `refresh = 0`.
+#' 
 #' @details
 #' 
 #'  The intrinsic conditional autoregressive (ICAR) model for spatial data was introduced by Besag et al. (1991). The Stan code for the ICAR component of the model and the BYM2 option is from Morris et al. (2019) with adjustments to enable non-binary weights and disconnected graph structures (see Freni-Sterrantino (2018) and Donegan (2021)).
@@ -146,9 +148,7 @@
 #' #' library(spdep)
 #' #' library(igraph)
 #' #'  
-#' #' @source
-#' #'
-#' #'   Morris, Mitzi (2017). Spatial Models in Stan: Intrinsic Auto-Regressive Models for Areal Data. <https://mc-stan.org/users/documentation/case-studies/icar_stan.html>
+#' #' @source  Morris (2017)
 #' #'
 #' scale_c <- function(C) {
 #'  geometric_mean <- function(x) exp(mean(log(x))) 
@@ -198,6 +198,8 @@
 #' Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. *Int. J. Env. Res. and Public Health* 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: \url{https://github.com/ConnorDonegan/survey-HBM}.
 #' 
 #' Freni-Sterrantino, Anna, Massimo Ventrucci, and Håvard Rue (2018). A Note on Intrinsic Conditional Autoregressive Models for Disconnected Graphs. *Spatial and Spatio-Temporal Epidemiology*, 26: 25–34.
+#'
+#'  Morris, Mitzi (2017). Spatial Models in Stan: Intrinsic Auto-Regressive Models for Areal Data. <https://mc-stan.org/users/documentation/case-studies/icar_stan.html>
 #' 
 #' Morris, M., Wheeler-Martin, K., Simpson, D., Mooney, S. J., Gelman, A., & DiMaggio, C. (2019). Bayesian hierarchical spatial models: Implementing the Besag York Mollié model in stan. *Spatial and spatio-temporal epidemiology*, 31, 100301.
 #'
@@ -269,6 +271,7 @@ stan_icar <- function(formula,
                       drop = NULL,
                       pars = NULL,
                       control = NULL,
+                      quiet = FALSE,                      
                       ...) {
     stopifnot(inherits(formula, "formula"))
     stopifnot(inherits(family, "family"))
@@ -276,6 +279,8 @@ stan_icar <- function(formula,
     stopifnot(!missing(data))
     stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
     stopifnot(all(dim(C) == nrow(data)))
+    # silence?
+    if (quiet) refresh <- 0
     #### ICAR TYPE [START] --------
     type <- match.arg(type)
     #### ICAR TYPE [STOP] --------
@@ -416,7 +421,7 @@ stan_icar <- function(formula,
     pars <- drop_params(pars = pars, drop_list = drop)
     priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
     if (me.list$has_me) priors_made_slim$ME_model <- ME$prior        
-    print_priors(prior, priors_made_slim)    
+    if (!quiet) print_priors(prior, priors_made_slim)    
     ## PARAMETERS TO KEEP with ICAR [STOP] -------------
     ## MCMC INITIAL VALUES ------------- 
     inits <- "random"

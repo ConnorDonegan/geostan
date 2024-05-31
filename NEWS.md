@@ -1,3 +1,7 @@
+# geostan 0.6.2
+
+geostan was removed from CRAN for a moment due to an issue with the StanHeaders R package. This should be resolved now. This release puts geostan back on CRAN with only minimal internal changes to geostan. 
+
 # geostan 0.6.1
 
 Two updates:

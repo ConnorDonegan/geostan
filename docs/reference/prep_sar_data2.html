@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.2</span>
       </span>
     </div>
 
@@ -56,7 +56,7 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">prep_sar_data2</span><span class="op">(</span><span class="va">row</span>, <span class="va">col</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">prep_sar_data2</span><span class="op">(</span><span class="va">row</span>, <span class="va">col</span>, quiet <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="source">
@@ -73,7 +73,17 @@
 <dt>col</dt>
 <dd><p>Number of columns in the raster</p></dd>
 
+
+<dt>quiet</dt>
+<dd><p>Controls printing behavior. By default, <code>quiet = FALSE</code> and the range of permissible values for the spatial dependence parameter is printed to the console.</p></dd>
+
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A list containing all of the data elements required by the SAR model in <code><a href="stan_sar.html">stan_sar</a></code>.</p>
+    </div>
     <div id="details">
     <h2>Details</h2>
     <p>Prepare data for the SAR model when your raw dataset consists of observations on a regular tessellation, such as a raster layer or remotely sensed imagery. The rook criteria is used to determine adjacency. This function uses Equation 5 from Griffith (2000) to calculate the eigenvalues for a row-standardized spatial weights matrix of a P-by-Q dimension regular tessellation.</p>
