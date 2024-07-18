@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
 <script src="pkgdown.js"></script><meta property="og:title" content="Bayesian Spatial Analysis">
-<meta property="og:description" content="For Bayesian inference with spatial data, provides exploratory spatial analysis tools, multiple spatial model specifications, spatial model diagnostics, and special methods for inference with small area survey data (e.g., the America Community Survey (ACS)) and censored population health surveillance data. Models are pre-specified using the Stan programming language, a platform for Bayesian inference using Markov chain Monte Carlo (MCMC). References: Carpenter et al. (2017) &lt;doi:10.18637/jss.v076.i01&gt;; Donegan (2021) &lt;doi:10.31219/osf.io/3ey65&gt;; Donegan (2022) &lt;doi:10.21105/joss.04716&gt;; Donegan, Chun and Hughes (2020) &lt;doi:10.1016/j.spasta.2020.100450&gt;; Donegan, Chun and Griffith (2021) &lt;doi:10.3390/ijerph18136856&gt;; Morris et al. (2019) &lt;doi:10.1016/j.sste.2019.100301&gt;.">
+<meta property="og:description" content="For spatial data analysis; provides exploratory spatial analysis tools, spatial regression models, disease mapping models, model diagnostics, and special methods for inference with small area survey data (e.g., the America Community Survey (ACS)) and censored population health surveillance data. Models are pre-specified using the Stan programming language, a platform for Bayesian inference using Markov chain Monte Carlo (MCMC). References: Carpenter et al. (2017) &lt;doi:10.18637/jss.v076.i01&gt;; Donegan (2021) &lt;doi:10.31219/osf.io/3ey65&gt;; Donegan (2022) &lt;doi:10.21105/joss.04716&gt;; Donegan, Chun and Hughes (2020) &lt;doi:10.1016/j.spasta.2020.100450&gt;; Donegan, Chun and Griffith (2021) &lt;doi:10.3390/ijerph18136856&gt;; Morris et al. (2019) &lt;doi:10.1016/j.sste.2019.100301&gt;.">
 <meta property="og:image" content="https://connordonegan.github.io/geostan/logo.png">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
@@ -80,7 +80,7 @@
 <div class="section level2">
 <h2 id="geostan-bayesian-spatial-analysis">geostan: Bayesian spatial analysis<a class="anchor" aria-label="anchor" href="#geostan-bayesian-spatial-analysis"></a>
 </h2>
-<p>The <a href="https://connordonegan.github.io/geostan/"><strong>geostan</strong></a> R package supports a complete spatial analysis workflow with Bayesian models for areal data, including a suite of functions for visualizing spatial data and model results. <strong>geostan</strong> models were built using <a href="https://mc-stan.org" class="external-link"><strong>Stan</strong></a>, a state-of-the-art platform for Bayesian modeling. The package is designed partly for public health research with spatial data, for which it complements the <a href="https://connordonegan.github.io/surveil/" class="external-link"><strong>surveil</strong></a> R package for time series analysis of public health surveillance data.</p>
+<p>The <a href="https://connordonegan.github.io/geostan/">geostan</a> R package supports a complete spatial analysis workflow with Bayesian models for areal data, including a suite of functions for visualizing spatial data and model results. <code>geostan</code> models were built using <a href="https://mc-stan.org" class="external-link">Stan</a>, a state-of-the-art platform for Bayesian modeling.</p>
 <p>Features include:</p>
 <ul>
 <li>
@@ -89,22 +89,32 @@
 <strong>Spatial analysis tools</strong> Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics.<br>
 </li>
 <li>
-<strong>Observational uncertainty</strong> Incorporate information on data reliability, such as standard errors of American Community Survey estimates, into any <strong>geostan</strong> model.</li>
+<strong>Observational uncertainty</strong> Incorporate information on data reliability, such as standard errors of American Community Survey estimates, into any <code>geostan</code> model.</li>
 <li>
-<strong>Missing and Censored observations</strong> Vital statistics and disease surveillance systems like CDC Wonder censor case counts that fall below a threshold number; <strong>geostan</strong> can model disease or mortality risk for small areas with censored observations or with missing observations.</li>
+<strong>Missing and Censored observations</strong> Vital statistics and disease surveillance systems like CDC Wonder censor case counts that fall below a threshold number; <code>geostan</code> can model disease or mortality risk for small areas with censored observations or with missing observations.</li>
 <li>
 <strong>The RStan ecosystem</strong> Interfaces easily with many high-quality R packages for Bayesian modeling.</li>
 <li>
-<strong>Custom spatial models</strong> Tools for building custom spatial models in <a href="https://mc-stan.org/" class="external-link">Stan</a>.</li>
+<strong>Custom spatial models</strong> Tools for building custom spatial models in Stan.</li>
 </ul>
+<p>For public health research, complements the <a href="https://connordonegan.github.io/surveil/" class="external-link"><code>surveil</code></a> R package for time series analysis of public health surveillance data.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Using your R console, you can install <strong>geostan</strong> from CRAN:</p>
+<p>There are two ways to install `geostan: directly from the package github repository or from the Comprehensive R Archive Network (CRAN).</p>
+<div class="section level3">
+<h3 id="from-cran">From CRAN<a class="anchor" aria-label="anchor" href="#from-cran"></a>
+</h3>
+<p>Using your R console, you can install <code>geostan</code> from CRAN:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"geostan"</span><span class="op">)</span></span></code></pre></div>
-<p>Or, you can install the latest version from the package github repository:</p>
+<p>If that fails, you can install from github.</p>
+</div>
+<div class="section level3">
+<h3 id="from-github">From github<a class="anchor" aria-label="anchor" href="#from-github"></a>
+</h3>
+<p>You can install <code>geostan</code> from github:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://devtools.r-lib.org/" class="external-link">'devtools'</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">'devtools'</span><span class="op">)</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"connordonegan/geostan"</span><span class="op">)</span></span></code></pre></div>
@@ -116,6 +126,8 @@
 <li>After selecting the correct version, look for the “Install Rtools” section (just below the introductory text) and click on the “installer” to download it. For example, for Rtools43 (for R version 4.3), click on “<span style="color:blue">Rtools43 installer</span>.”</li>
 <li>Go to the <code>.exe</code> file you just downloaded and double-click to begin installation of Rtools.</li>
 </ol>
+<p>If you are using Mac and installing with <code>install_github</code> then you may need to install Xcode Command Line Tools first.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="support">Support<a class="anchor" aria-label="anchor" href="#support"></a>
@@ -129,12 +141,19 @@
 <p>Load the package and the <code>georgia</code> county mortality data set:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; This is geostan version 0.6.0</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span></code></pre></div>
 <p>This has county population and mortality data by sex for ages 55-64, and for the period 2014-2018. As is common for public access data, some of the observations missing because the CDC has censored them.</p>
 <p>The <code>sp_diag</code> function provides visual summaries of spatial data, including a histogram, Moran scatter plot, and map. Here is a visual summary of crude female mortality rates (as deaths per 10,000):</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Contiguity condition: queen</span></span>
+<span><span class="co">#&gt; Number of neighbors per unit, summary:</span></span>
+<span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
+<span><span class="co">#&gt;   1.000   4.000   5.000   5.409   6.000  10.000</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Spatial weights, summary:</span></span>
+<span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
+<span><span class="co">#&gt;       1       1       1       1       1       1</span></span>
 <span><span class="va">mortality_rate</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">rate.female</span> <span class="op">*</span> <span class="fl">10e3</span></span>
 <span><span class="fu"><a href="reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">mortality_rate</span>, <span class="va">georgia</span>, w <span class="op">=</span> <span class="va">A</span><span class="op">)</span></span>
 <span><span class="co">#&gt; 3 NA values found in x will be dropped from data x and matrix w</span></span>
@@ -144,7 +163,7 @@
 <p>The following code fits a spatial conditional autoregressive (CAR) model to female county mortality data. These models are used for estimating disease risk in small areas like counties, and for analyzing covariation of health outcomes with other area qualities. The R syntax for fitting the models is similar to using <code>lm</code> or <code>glm</code>. We provide the population at risk (the denominator for mortality rates) as an offset term, using the log-transform. In this case, three of the observations are missing because they have been censored; per CDC criteria, this means that there were 9 or fewer deaths in those counties. By using the <code>censor_point</code> argument and setting it to <code>censor_point = 9</code>, the model will account for the censoring process when providing estimates of the mortality rates:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cars</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Range of permissible rho values:  -1.661134 1</span></span>
+<span><span class="co">#&gt; Range of permissible rho values: -1.661, 1</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="va">deaths.female</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.female</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>                censor_point <span class="op">=</span> <span class="fl">9</span>,</span>
 <span>        data <span class="op">=</span> <span class="va">georgia</span>,</span>
@@ -174,8 +193,8 @@
 <code class="sourceCode R"><span><span class="fu"><a href="reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span>, w <span class="op">=</span> <span class="va">A</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.</span></span>
 <span><span class="co">#&gt; 3 NA values found in x will be dropped from data x and matrix w</span></span>
-<span><span class="co">#&gt; Warning: Removed 3 rows containing missing values or values outside the scale</span></span>
-<span><span class="co">#&gt; range (`geom_pointrange()`).</span></span></code></pre></div>
+<span><span class="co">#&gt; Warning: Removed 3 rows containing missing values or values outside the</span></span>
+<span><span class="co">#&gt; scale range (`geom_pointrange()`).</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;"></p>
 <p>The <code>print</code> method returns a summary of the probability distributions for model parameters, as well as Markov chain Monte Carlo (MCMC) diagnostics from Stan (Monte Carlo standard errors of the mean <code>se_mean</code>, effective sample size <code>n_eff</code>, and the R-hat statistic <code>Rhat</code>):</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -185,8 +204,8 @@
 <span><span class="co">#&gt; Spatial method (outcome):  CAR </span></span>
 <span><span class="co">#&gt; Likelihood function:  poisson </span></span>
 <span><span class="co">#&gt; Link function:  log </span></span>
-<span><span class="co">#&gt; Residual Moran Coefficient:  0.00123875 </span></span>
-<span><span class="co">#&gt; WAIC:  1228.29 </span></span>
+<span><span class="co">#&gt; Residual Moran Coefficient:  0.00254425 </span></span>
+<span><span class="co">#&gt; WAIC:  1228.19 </span></span>
 <span><span class="co">#&gt; Observations:  156 </span></span>
 <span><span class="co">#&gt; Data models (ME): none</span></span>
 <span><span class="co">#&gt; Inference for Stan model: foundation.</span></span>
@@ -194,11 +213,11 @@
 <span><span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff  Rhat</span></span>
-<span><span class="co">#&gt; intercept -4.666   0.007 0.143 -4.840 -4.729 -4.672 -4.616 -4.484   461 1.006</span></span>
-<span><span class="co">#&gt; car_rho    0.924   0.001 0.059  0.778  0.884  0.937  0.973  0.996  3086 1.001</span></span>
-<span><span class="co">#&gt; car_scale  0.456   0.001 0.036  0.390  0.427  0.454  0.485  0.533  3776 1.000</span></span>
+<span><span class="co">#&gt; intercept -4.679   0.003 0.092 -4.875 -4.731 -4.677 -4.622 -4.509  1154 1.005</span></span>
+<span><span class="co">#&gt; car_rho    0.923   0.001 0.059  0.777  0.880  0.937  0.973  0.995  3454 1.000</span></span>
+<span><span class="co">#&gt; car_scale  0.457   0.001 0.035  0.393  0.428  0.455  0.485  0.529  3604 1.000</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Tue Apr 16 08:52:52 2024.</span></span>
+<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Thu Jul 18 15:25:26 2024.</span></span>
 <span><span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">#&gt; convergence, Rhat=1).</span></span></code></pre></div>
@@ -208,26 +227,26 @@
 <span><span class="va">county_name</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">NAME</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">county_name</span>, <span class="va">mortality_est</span><span class="op">)</span> <span class="op">)</span></span>
 <span><span class="co">#&gt;           county_name      mean        sd      2.5%       20%       50%</span></span>
-<span><span class="co">#&gt; fitted[1]       Crisp 101.64998  9.384722  84.24670  93.71233 101.29406</span></span>
-<span><span class="co">#&gt; fitted[2]     Candler 137.17952 16.264992 107.11368 123.59204 136.39838</span></span>
-<span><span class="co">#&gt; fitted[3]      Barrow  94.22368  6.126884  82.75981  89.00941  94.11519</span></span>
-<span><span class="co">#&gt; fitted[4]      DeKalb  59.76170  1.595148  56.68882  58.40064  59.76835</span></span>
-<span><span class="co">#&gt; fitted[5]    Columbia  53.36728  3.265343  47.21909  50.61056  53.33728</span></span>
-<span><span class="co">#&gt; fitted[6]        Cobb  54.13621  1.545304  51.09988  52.81882  54.11181</span></span>
+<span><span class="co">#&gt; fitted[1]       Crisp 101.66755  9.446020  84.15801  93.87033 101.32171</span></span>
+<span><span class="co">#&gt; fitted[2]     Candler 137.34422 16.276718 107.19396 123.50607 136.72455</span></span>
+<span><span class="co">#&gt; fitted[3]      Barrow  94.32419  6.220854  82.48984  89.08894  94.07480</span></span>
+<span><span class="co">#&gt; fitted[4]      DeKalb  59.77663  1.533180  56.82430  58.46324  59.77815</span></span>
+<span><span class="co">#&gt; fitted[5]    Columbia  53.31888  3.185709  47.07027  50.63469  53.25520</span></span>
+<span><span class="co">#&gt; fitted[6]        Cobb  54.12128  1.491083  51.29880  52.85258  54.10095</span></span>
 <span><span class="co">#&gt;                 80%     97.5%</span></span>
-<span><span class="co">#&gt; fitted[1] 109.51372 120.80189</span></span>
-<span><span class="co">#&gt; fitted[2] 150.22007 171.23752</span></span>
-<span><span class="co">#&gt; fitted[3]  99.29052 106.43936</span></span>
-<span><span class="co">#&gt; fitted[4]  61.09047  62.90342</span></span>
-<span><span class="co">#&gt; fitted[5]  56.01686  60.00058</span></span>
-<span><span class="co">#&gt; fitted[6]  55.46060  57.14337</span></span></code></pre></div>
+<span><span class="co">#&gt; fitted[1] 109.39973 121.28989</span></span>
+<span><span class="co">#&gt; fitted[2] 150.79794 171.25541</span></span>
+<span><span class="co">#&gt; fitted[3]  99.54245 106.91977</span></span>
+<span><span class="co">#&gt; fitted[4]  61.10801  62.75864</span></span>
+<span><span class="co">#&gt; fitted[5]  55.98086  59.74880</span></span>
+<span><span class="co">#&gt; fitted[6]  55.40020  57.06597</span></span></code></pre></div>
 <p>The mortality estimates are stored in the column named “mean”, and the limits of the 95% credible interval are found in the columns “2.5%” and “97.5%”.</p>
 <p>Details and demonstrations can be found in the package <a href="https://connordonegan.github.io/geostan/reference/index.html">help pages</a> and <a href="https://connordonegan.github.io/geostan/articles/index.html">vignettes</a>.</p>
 </div>
 <div class="section level2">
 <h2 id="citing-geostan">Citing geostan<a class="anchor" aria-label="anchor" href="#citing-geostan"></a>
 </h2>
-<p>If you use geostan in published work, please include a citation.</p>
+<p>If you use <code>geostan</code> in published work, please include a citation.</p>
 <p>Donegan, Connor (2022) “geostan: An R package for Bayesian spatial analysis” <em>The Journal of Open Source Software</em>. 7, no. 79: 4716. <a href="https://doi.org/10.21105/joss.04716" class="external-link uri">https://doi.org/10.21105/joss.04716</a>.</p>
 <p><a href="https://doi.org/10.21105/joss.04716" class="external-link"><img src="https://joss.theoj.org/papers/10.21105/joss.04716/status.svg" alt="DOI"></a></p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a><span class="op">@</span>Article{,</span>
