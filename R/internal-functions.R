@@ -4,10 +4,11 @@
 #' @param x A model frame or matrix with or without an intercept
 #' @return The same model frame or matrix but without the intercept term 
 remove_intercept <- function(x) {
-  varnames <- dimnames(x)[[2]][-which(attributes(x)$assign == 0)]
-  xnew <- as.matrix(x[,which(attributes(x)$assign != 0)])
-  dimnames(xnew)[[2]] <- varnames
-  return(xnew)
+    nr <- nrow(x)
+    varnames <- dimnames(x)[[2]][-which(attributes(x)$assign == 0)]
+    xnew <- matrix(x[,which(attributes(x)$assign != 0)], nrow = nr)
+    dimnames(xnew)[[2]] <- varnames
+    return(xnew)
 }
 
 #' Convert family to integer
