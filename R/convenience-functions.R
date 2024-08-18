@@ -936,7 +936,7 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 5e3, bounds = c(0, I
 #' @param C Connectivity matrix
 #' @param scale_factor Optional vector of scale factors for each connected portion of the graph structure. If not provided by the user it will be fixed to a vector of ones. 
 #' 
-#' @importFrom spdep poly2nb n.comp.nb
+#' @importFrom spdep poly2nb n.comp.nb graph2nb
 #' 
 #' @return list of data to add to Stan data list:
 #' 
@@ -981,9 +981,13 @@ se_log <- function(x, se, method = c("mc", "delta"), nsim = 5e3, bounds = c(0, I
 prep_icar_data <- function(C, scale_factor = NULL) {
   n <- nrow(C)
   E <- edges(C, unique_pairs_only = TRUE)
-  G <- list(np = nrow(C), from = E$node1, to = E$node2, nedges = nrow(E))
+  G <- list(np = nrow(C), from = E$node1, to = E$node2, nedges = nrow(E))  
   class(G) <- "Graph"
-  nb2 <- spdep::n.comp.nb(spdep::graph2nb(G))
+  G1 <- spdep::graph2nb(G)
+  nb2 <- attr(G1, "ncomp")
+  if (is.null(nb2)) {
+      nb2 <- spdep::n.comp.nb(G1)
+  }     
   k = nb2$nc
   if (!inherits(scale_factor, "NULL")) {
       if (length(scale_factor) != k) stop("scale_factor is of wrong length. Must have one value per fully connected graph component. See the documentation for `geostan::stan_icar` to learn how to create the scale_factor.")
