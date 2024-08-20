@@ -1,3 +1,9 @@
+# geostan 0.6.3
+
+Minor changes:
+
+ - Adopted a change recommended by Roger Bivand to take advantage of an improvement in `spdep`'s creation of neighbors objects (https://github.com/ConnorDonegan/geostan/issues/19)
+
 # geostan 0.6.2
 
 geostan was removed from CRAN for a moment due to an issue with the StanHeaders R package. This should be resolved now. This release puts geostan back on CRAN with only minimal internal changes to geostan. 

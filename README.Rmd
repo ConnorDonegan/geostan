@@ -21,6 +21,8 @@ knitr::opts_chunk$set(
 
 The [geostan](https://connordonegan.github.io/geostan/) R package supports a complete spatial analysis workflow with Bayesian models for areal data, including a suite of functions for visualizing spatial data and model results. `geostan` models were built using [Stan](https://mc-stan.org), a state-of-the-art platform for Bayesian modeling. 
 
+Introductions to the software can be found at [r-spatial.org](https://r-spatial.org/r/2024/08/02/geostan-introduction.html) and in the package [vignettes](https://connordonegan.github.io/geostan/articles/index.html).
+
 Features include:
 
 * **Disease mapping and spatial regression** Statistical models for data recorded across areal units like states, counties, or census tracts.
@@ -30,7 +32,7 @@ Features include:
 * **The RStan ecosystem** Interfaces easily with many high-quality R packages for Bayesian modeling.
 * **Custom spatial models** Tools for building custom spatial models in Stan.
 
-For public health research,  complements the [`surveil`](https://connordonegan.github.io/surveil/) R package for time series analysis of public health surveillance data.
+For public health research, geostan complements the [surveil](https://connordonegan.github.io/surveil/) R package for the study of time trends in disease incidence or mortality data.
 
 ## Installation
 

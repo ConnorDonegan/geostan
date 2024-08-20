@@ -12,6 +12,11 @@ and model results. `geostan` models were built using
 [Stan](https://mc-stan.org), a state-of-the-art platform for Bayesian
 modeling.
 
+Introductions to the software can be found at
+[r-spatial.org](https://r-spatial.org/r/2024/08/02/geostan-introduction.html)
+and in the package
+[vignettes](https://connordonegan.github.io/geostan/articles/index.html).
+
 Features include:
 
   - **Disease mapping and spatial regression** Statistical models for
@@ -33,9 +38,9 @@ Features include:
   - **Custom spatial models** Tools for building custom spatial models
     in Stan.
 
-For public health research, complements the
-[`surveil`](https://connordonegan.github.io/surveil/) R package for time
-series analysis of public health surveillance data.
+For public health research, geostan complements the
+[surveil](https://connordonegan.github.io/surveil/) R package for the
+study of time trends in disease incidence or mortality data.
 
 ## Installation
 
@@ -102,6 +107,7 @@ Load the package and the `georgia` county mortality data set:
 
 ``` r
 library(geostan)
+#> This is geostan version 0.6.2
 data(georgia)
 ```
 
@@ -200,20 +206,20 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.00254425 
-#> WAIC:  1228.19 
+#> Residual Moran Coefficient:  0.0016665 
+#> WAIC:  1225.41 
 #> Observations:  156 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
 #> 4 chains, each with iter=2000; warmup=1000; thin=1; 
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
-#>             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff  Rhat
-#> intercept -4.679   0.003 0.092 -4.875 -4.731 -4.677 -4.622 -4.509  1154 1.005
-#> car_rho    0.923   0.001 0.059  0.777  0.880  0.937  0.973  0.995  3454 1.000
-#> car_scale  0.457   0.001 0.035  0.393  0.428  0.455  0.485  0.529  3604 1.000
+#>             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff Rhat
+#> intercept -4.672   0.002 0.088 -4.836 -4.728 -4.674 -4.618 -4.494  2497    1
+#> car_rho    0.924   0.001 0.057  0.785  0.883  0.936  0.971  0.995  3289    1
+#> car_scale  0.457   0.001 0.035  0.393  0.427  0.455  0.485  0.528  3657    1
 #> 
-#> Samples were drawn using NUTS(diag_e) at Thu Jul 18 15:25:26 2024.
+#> Samples were drawn using NUTS(diag_e) at Tue Aug 20 05:58:10 2024.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -229,19 +235,19 @@ mortality_est <- fitted(fit) * 10e3
 county_name <- georgia$NAME
 head( cbind(county_name, mortality_est) )
 #>           county_name      mean        sd      2.5%       20%       50%
-#> fitted[1]       Crisp 101.66755  9.446020  84.15801  93.87033 101.32171
-#> fitted[2]     Candler 137.34422 16.276718 107.19396 123.50607 136.72455
-#> fitted[3]      Barrow  94.32419  6.220854  82.48984  89.08894  94.07480
-#> fitted[4]      DeKalb  59.77663  1.533180  56.82430  58.46324  59.77815
-#> fitted[5]    Columbia  53.31888  3.185709  47.07027  50.63469  53.25520
-#> fitted[6]        Cobb  54.12128  1.491083  51.29880  52.85258  54.10095
+#> fitted[1]       Crisp 101.49822  9.422313  84.36103  93.25680 101.12252
+#> fitted[2]     Candler 137.25530 15.792946 108.87856 123.56765 136.61021
+#> fitted[3]      Barrow  94.26635  6.194287  82.31271  89.08029  94.15654
+#> fitted[4]      DeKalb  59.76593  1.560082  56.76403  58.42762  59.74499
+#> fitted[5]    Columbia  53.31762  3.271309  47.03397  50.46420  53.27029
+#> fitted[6]        Cobb  54.13543  1.506894  51.22763  52.89381  54.09214
 #>                 80%     97.5%
-#> fitted[1] 109.39973 121.28989
-#> fitted[2] 150.79794 171.25541
-#> fitted[3]  99.54245 106.91977
-#> fitted[4]  61.10801  62.75864
-#> fitted[5]  55.98086  59.74880
-#> fitted[6]  55.40020  57.06597
+#> fitted[1] 109.39261 120.59846
+#> fitted[2] 150.26569 169.52541
+#> fitted[3]  99.37990 106.98671
+#> fitted[4]  61.11074  62.79957
+#> fitted[5]  56.05511  59.77822
+#> fitted[6]  55.37597  57.19144
 ```
 
 The mortality estimates are stored in the column named “mean”, and the
