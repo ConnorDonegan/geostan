@@ -81,6 +81,7 @@
 <h2 id="geostan-bayesian-spatial-analysis">geostan: Bayesian spatial analysis<a class="anchor" aria-label="anchor" href="#geostan-bayesian-spatial-analysis"></a>
 </h2>
 <p>The <a href="https://connordonegan.github.io/geostan/">geostan</a> R package supports a complete spatial analysis workflow with Bayesian models for areal data, including a suite of functions for visualizing spatial data and model results. <code>geostan</code> models were built using <a href="https://mc-stan.org" class="external-link">Stan</a>, a state-of-the-art platform for Bayesian modeling.</p>
+<p>Introductions to the software can be found at <a href="https://r-spatial.org/r/2024/08/02/geostan-introduction.html" class="external-link">r-spatial.org</a> and in the package <a href="https://connordonegan.github.io/geostan/articles/index.html">vignettes</a>.</p>
 <p>Features include:</p>
 <ul>
 <li>
@@ -97,7 +98,7 @@
 <li>
 <strong>Custom spatial models</strong> Tools for building custom spatial models in Stan.</li>
 </ul>
-<p>For public health research, complements the <a href="https://connordonegan.github.io/surveil/" class="external-link"><code>surveil</code></a> R package for time series analysis of public health surveillance data.</p>
+<p>For public health research, geostan complements the <a href="https://connordonegan.github.io/surveil/" class="external-link">surveil</a> R package for the study of time trends in disease incidence or mortality data.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -141,6 +142,7 @@
 <p>Load the package and the <code>georgia</code> county mortality data set:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; This is geostan version 0.6.2</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span></code></pre></div>
 <p>This has county population and mortality data by sex for ages 55-64, and for the period 2014-2018. As is common for public access data, some of the observations missing because the CDC has censored them.</p>
 <p>The <code>sp_diag</code> function provides visual summaries of spatial data, including a histogram, Moran scatter plot, and map. Here is a visual summary of crude female mortality rates (as deaths per 10,000):</p>
@@ -204,20 +206,20 @@
 <span><span class="co">#&gt; Spatial method (outcome):  CAR </span></span>
 <span><span class="co">#&gt; Likelihood function:  poisson </span></span>
 <span><span class="co">#&gt; Link function:  log </span></span>
-<span><span class="co">#&gt; Residual Moran Coefficient:  0.00254425 </span></span>
-<span><span class="co">#&gt; WAIC:  1228.19 </span></span>
+<span><span class="co">#&gt; Residual Moran Coefficient:  0.0016665 </span></span>
+<span><span class="co">#&gt; WAIC:  1225.41 </span></span>
 <span><span class="co">#&gt; Observations:  156 </span></span>
 <span><span class="co">#&gt; Data models (ME): none</span></span>
 <span><span class="co">#&gt; Inference for Stan model: foundation.</span></span>
 <span><span class="co">#&gt; 4 chains, each with iter=2000; warmup=1000; thin=1; </span></span>
 <span><span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff  Rhat</span></span>
-<span><span class="co">#&gt; intercept -4.679   0.003 0.092 -4.875 -4.731 -4.677 -4.622 -4.509  1154 1.005</span></span>
-<span><span class="co">#&gt; car_rho    0.923   0.001 0.059  0.777  0.880  0.937  0.973  0.995  3454 1.000</span></span>
-<span><span class="co">#&gt; car_scale  0.457   0.001 0.035  0.393  0.428  0.455  0.485  0.529  3604 1.000</span></span>
+<span><span class="co">#&gt;             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff Rhat</span></span>
+<span><span class="co">#&gt; intercept -4.672   0.002 0.088 -4.836 -4.728 -4.674 -4.618 -4.494  2497    1</span></span>
+<span><span class="co">#&gt; car_rho    0.924   0.001 0.057  0.785  0.883  0.936  0.971  0.995  3289    1</span></span>
+<span><span class="co">#&gt; car_scale  0.457   0.001 0.035  0.393  0.427  0.455  0.485  0.528  3657    1</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Thu Jul 18 15:25:26 2024.</span></span>
+<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Tue Aug 20 05:58:10 2024.</span></span>
 <span><span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">#&gt; convergence, Rhat=1).</span></span></code></pre></div>
@@ -227,19 +229,19 @@
 <span><span class="va">county_name</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">NAME</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">county_name</span>, <span class="va">mortality_est</span><span class="op">)</span> <span class="op">)</span></span>
 <span><span class="co">#&gt;           county_name      mean        sd      2.5%       20%       50%</span></span>
-<span><span class="co">#&gt; fitted[1]       Crisp 101.66755  9.446020  84.15801  93.87033 101.32171</span></span>
-<span><span class="co">#&gt; fitted[2]     Candler 137.34422 16.276718 107.19396 123.50607 136.72455</span></span>
-<span><span class="co">#&gt; fitted[3]      Barrow  94.32419  6.220854  82.48984  89.08894  94.07480</span></span>
-<span><span class="co">#&gt; fitted[4]      DeKalb  59.77663  1.533180  56.82430  58.46324  59.77815</span></span>
-<span><span class="co">#&gt; fitted[5]    Columbia  53.31888  3.185709  47.07027  50.63469  53.25520</span></span>
-<span><span class="co">#&gt; fitted[6]        Cobb  54.12128  1.491083  51.29880  52.85258  54.10095</span></span>
+<span><span class="co">#&gt; fitted[1]       Crisp 101.49822  9.422313  84.36103  93.25680 101.12252</span></span>
+<span><span class="co">#&gt; fitted[2]     Candler 137.25530 15.792946 108.87856 123.56765 136.61021</span></span>
+<span><span class="co">#&gt; fitted[3]      Barrow  94.26635  6.194287  82.31271  89.08029  94.15654</span></span>
+<span><span class="co">#&gt; fitted[4]      DeKalb  59.76593  1.560082  56.76403  58.42762  59.74499</span></span>
+<span><span class="co">#&gt; fitted[5]    Columbia  53.31762  3.271309  47.03397  50.46420  53.27029</span></span>
+<span><span class="co">#&gt; fitted[6]        Cobb  54.13543  1.506894  51.22763  52.89381  54.09214</span></span>
 <span><span class="co">#&gt;                 80%     97.5%</span></span>
-<span><span class="co">#&gt; fitted[1] 109.39973 121.28989</span></span>
-<span><span class="co">#&gt; fitted[2] 150.79794 171.25541</span></span>
-<span><span class="co">#&gt; fitted[3]  99.54245 106.91977</span></span>
-<span><span class="co">#&gt; fitted[4]  61.10801  62.75864</span></span>
-<span><span class="co">#&gt; fitted[5]  55.98086  59.74880</span></span>
-<span><span class="co">#&gt; fitted[6]  55.40020  57.06597</span></span></code></pre></div>
+<span><span class="co">#&gt; fitted[1] 109.39261 120.59846</span></span>
+<span><span class="co">#&gt; fitted[2] 150.26569 169.52541</span></span>
+<span><span class="co">#&gt; fitted[3]  99.37990 106.98671</span></span>
+<span><span class="co">#&gt; fitted[4]  61.11074  62.79957</span></span>
+<span><span class="co">#&gt; fitted[5]  56.05511  59.77822</span></span>
+<span><span class="co">#&gt; fitted[6]  55.37597  57.19144</span></span></code></pre></div>
 <p>The mortality estimates are stored in the column named “mean”, and the limits of the 95% credible interval are found in the columns “2.5%” and “97.5%”.</p>
 <p>Details and demonstrations can be found in the package <a href="https://connordonegan.github.io/geostan/reference/index.html">help pages</a> and <a href="https://connordonegan.github.io/geostan/articles/index.html">vignettes</a>.</p>
 </div>
