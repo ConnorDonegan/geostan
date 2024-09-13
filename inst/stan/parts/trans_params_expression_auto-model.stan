@@ -2,9 +2,7 @@
     
     log_lambda_mu = rep_vector(intercept, n);
     
-    if (has_re) {
-      for (i in 1:n) log_lambda_mu[i] += alpha_re[id[i]];
-    }
+    if (has_re) log_lambda_mu += alpha_re[id];
 
     if (use_qr) {
       log_lambda_mu += Q_ast[ , 1:dx_obs] * beta_qr;

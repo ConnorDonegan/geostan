@@ -21,11 +21,7 @@ transformed parameters {
 #include parts/trans_params_expression_auto-model.stan
   if (car == 0 && sar == 0) {
     
-    if (has_re) {
-      for (i in 1:n) {
-	fitted[i] += alpha_re[id[i]];
-      }
-    }
+    if (has_re) fitted += alpha_re[id];
     
     if (use_qr) {      
       fitted += Q_ast[ , 1:dx_obs] * beta_qr;
