@@ -1,3 +1,11 @@
+# geostan 0.7.0
+
+This release includes various changes that increase the sampling speed of geostan models.
+
+ - The QR decomposition is now implemented for models with covariates; however, this cannot be used for measurement error models. The benefits of the QR decomposition are greatest when covariates are centered (which you can do using the `centerx` argument). 
+
+ - Adopted a change recommended by Roger Bivand to take advantage of an improvement in `spdep`'s creation of neighbors objects (https://github.com/ConnorDonegan/geostan/issues/19). This will speed up the `shape2mat` function in some cases.
+
 # geostan 0.6.2
 
 geostan was removed from CRAN for a moment due to an issue with the StanHeaders R package. This should be resolved now. This release puts geostan back on CRAN with only minimal internal changes to geostan. 

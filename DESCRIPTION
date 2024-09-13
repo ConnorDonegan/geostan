@@ -1,6 +1,6 @@
 Package: geostan
 Title: Bayesian Spatial Analysis
-Version: 0.6.2
+Version: 0.7.0
 Date: 2024-05-31
 URL: https://connordonegan.github.io/geostan/
 BugReports: https://github.com/ConnorDonegan/geostan/issues
