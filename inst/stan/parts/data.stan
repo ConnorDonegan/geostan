@@ -69,16 +69,17 @@
   real log_det_Delta_inv;
   vector[n] lambda;
 
-// non-spatial partial pooling 
+  // non-spatial partial pooling 
   int<lower=0,upper=1> has_re; // has varying intercept?
   int<lower=0> n_ids; // number of units
   array[n] int<lower=0,upper=n_ids> id; // identifier for the observational units associated with the varying intercepts
-// priors
+
+  // priors
   vector[2] prior_alpha; // prior on the intercept
   int<lower=0> dbeta_prior;
   vector[dbeta_prior] prior_beta_location; // coefficient priors, with any SLX terms listed first; 
   vector<lower=0>[dbeta_prior] prior_beta_scale;
-//row_vector[dbeta_prior] beta_prior[2]; 
+  //row_vector[dbeta_prior] beta_prior[2]; 
   vector[3] prior_alpha_tau; // prior on standard deviation of varying intercepts
   vector[2] prior_t_nu;
   vector[3] prior_sigma;
