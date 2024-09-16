@@ -1,4 +1,7 @@
-  if (is_auto_gaussian && car) {
+ // any other declarations in this block must be made *before* this included file
+  vector[is_auto_gaussian ? 1 : n_obs] log_lik;
+
+if (is_auto_gaussian && car) {
     log_lik[1] = auto_normal_lpdf(y |
 				  fitted, car_scale[1], car_rho[1],
 				  Ax_w, Ax_v, Ax_u,

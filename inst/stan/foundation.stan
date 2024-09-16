@@ -53,8 +53,4 @@ model {
 #include parts/model.stan
 }
 
-generated quantities {
-#include parts/gen_quants_declaration.stan
-#include parts/gen_quants_expression.stan
-}
 

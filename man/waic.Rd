@@ -2,15 +2,20 @@
 % Please edit documentation in R/convenience-functions.R
 \name{waic}
 \alias{waic}
-\title{Widely Applicable Information Criteria (WAIC)}
+\alias{dic}
+\title{Model comparison}
 \source{
+D. Spiegelhatler, N. G. Best, B. P. Carlin and G. Linde (2014) The Deviance Information Criterion: 12 Years on. J. Royal Statistical Society Series B: Stat Methodology. 76(3): 485-493.
+
 Watanabe, S. (2010). Asymptotic equivalence of Bayes cross validation and widely application information criterion in singular learning theory. Journal of Machine Learning Research 11, 3571-3594.
 }
 \usage{
-waic(fit, pointwise = FALSE, digits = 2)
+waic(object, pointwise = FALSE, digits = 2)
+
+dic(object, digits = 1)
 }
 \arguments{
-\item{fit}{An \code{geostan_fit} object or any Stan model with a parameter named "log_lik", the pointwise log likelihood of the observations.}
+\item{object}{A fitted \code{geostan} model}
 
 \item{pointwise}{Logical (defaults to \code{FALSE}), should a vector of values for each observation be returned?}
 
@@ -20,11 +25,20 @@ waic(fit, pointwise = FALSE, digits = 2)
 A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density \code{Lpd}. If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
 }
 \description{
-Widely Application Information Criteria (WAIC) for model comparison
+Deviance Information Criteria (DIC) and Widely Application Information Criteria (WAIC) for model comparison
+}
+\details{
+WAIC (widely applicable information criteria) and DIC (deviance information criteria) are used for model comparison. They are based on theories of out-of-sample predictive accuracy. The DIC is implemented with penalty term defined as 1/2 times the posterior variance of the deviance (Spiegelhatler et al. 2014).
+
+The limitations of these methods include that DIC is less robust than WAIC and that WAIC is not strictly valid for autocorrelated data (viz. geostan's spatial models).
 }
 \examples{
+
 data(georgia)
-fit <- stan_glm(log(rate.male) ~ 1, data = georgia,
-                chains = 2, iter = 800) # for speed only
+
+fit <- stan_glm(log(rate.male) ~ 1, data = georgia, iter=500)
+
+dic(fit)
 waic(fit)
+
 }

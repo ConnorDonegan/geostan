@@ -56,7 +56,7 @@
   ImrhoW[Widx] = rho * ImW[Widx];
   ImrhoWz = csr_matrix_times_vector(n, n, ImrhoW, ImW_v , ImW_u , z);
   zVz = tau * dot_self(ImrhoWz);
-  return  0.5 * (-n * log(2 * pi()) + ldet_V - zVz);		 
+  return  0.5 * ( -n * log(2 * pi()) + ldet_V - zVz );		 
  }    
 
 
@@ -85,17 +85,18 @@ real car_normal_lpdf(vector y, vector mu,
 		     int n) {
   vector[n] z = y - mu;
   vector[num_elements(ImC)] ImrhoC = ImC; // (I - rho C)
-  vector[n] zMinv = (1 / tau^2) * z .* D_inv; // z' * M-1
+  vector[n] zMinv = (1 / tau^2) * z .* D_inv; // z' * M^-1
   vector[n] ImrhoCz; // (I - rho * C) * z
-  vector[n] ldet_ImrhoC;
+  real ldet_ImrhoC;
   ImrhoC[Cidx] = rho * ImC[Cidx];
   ImrhoCz = csr_matrix_times_vector(n, n, ImrhoC, ImC_v, ImC_u, z);
-  for (i in 1:n) ldet_ImrhoC[i] = log1m(rho * lambda[i]);
+  ldet_ImrhoC = sum(log1m(rho * lambda));
+           //for (i in 1:n) ldet_ImrhoC[i] = log1m(rho * lambda[i]);
   return 0.5 * (
 		-n * log( 2 * pi() )
 		- 2 * n * log(tau)
 		+ log_det_D_inv
-		+ sum(ldet_ImrhoC)
+		+ ldet_ImrhoC            //sum(ldet_ImrhoC)
 		- dot_product(zMinv, ImrhoCz)
 		);
 }
@@ -126,15 +127,16 @@ real wcar_normal_lpdf(vector y, vector mu,
   vector[n] z = y - mu;
   real ztDz; // z transpose * D * z
   real ztAz; // z transpose * A * z
-  vector[n] ldet_ImrhoC;
+  real ldet_ImrhoC;
   ztDz = (z .* D_inv)' * z;
   ztAz = z' * csr_matrix_times_vector(n, n, A_w, A_v, A_u, z);
-  for (i in 1:n) ldet_ImrhoC[i] = log1m(rho * lambda[i]);
+  ldet_ImrhoC = sum(log1m(rho * lambda));
+     //for (i in 1:n) ldet_ImrhoC[i] = log1m(rho * lambda[i]);
   return 0.5 * (
 		-n * log( 2 * pi() )
 		-2 * n * log(tau)
 		+ log_det_D_inv
-		+ sum(ldet_ImrhoC)
+		+ ldet_ImrhoC         //sum(ldet_ImrhoC)
 		- (1 / tau^2) * (ztDz - rho * ztAz));
 }
 

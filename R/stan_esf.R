@@ -56,7 +56,6 @@
 #' @param drop Provide a vector of character strings to specify the names of any parameters that you do not want MCMC samples for. Dropping parameters in this way can improve sampling speed and reduce memory usage. The following parameter vectors can potentially be dropped from ESF models:
 #' \describe{
 #' \item{fitted}{The N-length vector of fitted values}
-#' \item{log_lik}{The N-length vector of pointwise log-likelihoods, which is used to calculate WAIC.}
 #' \item{alpha_re}{Vector of 'random effects'/varying intercepts.}
 #' \item{x_true}{N-length vector of 'latent'/modeled covariate values created for measurement error (ME) models.}
 #' \item{esf}{The N-length eigenvector spatial filter.}
@@ -358,7 +357,7 @@ stan_esf <- function(formula,
     me.list <- make_me_data(ME, xraw)
     standata <- c(standata, me.list)
     ## PARAMETERS TO KEEP -------------          
-    pars <- c(pars, 'intercept', 'esf', 'beta_ev', 'log_lik', 'fitted')
+    pars <- c(pars, 'intercept', 'esf', 'beta_ev', 'fitted')
     if (!intercept_only) pars <- c(pars, 'beta')
     if (dwx) pars <- c(pars, 'gamma')
     if (family$family %in% c("gaussian", "student_t")) pars <- c(pars, 'sigma')
@@ -372,7 +371,7 @@ stan_esf <- function(formula,
             pars <- c(pars, "nu_x_true")
         }
     }
-    if (slim == TRUE) drop <- c('fitted', 'log_lik', 'alpha_re', 'x_true', 'esf', 'beta_ev')
+    if (slim == TRUE) drop <- c('fitted', 'alpha_re', 'x_true', 'esf', 'beta_ev')
     pars <- drop_params(pars = pars, drop_list = drop)
     priors_made_slim <- priors_made[which(names(priors_made) %in% c(pars, "beta_ev"))]
     if (me.list$has_me) priors_made_slim$ME_model <- ME$prior
@@ -404,11 +403,19 @@ stan_esf <- function(formula,
     out$ME <- list(has_me = me.list$has_me, spatial_me = me.list$spatial_me)
     if (out$ME$has_me) out$ME <- c(out$ME, ME)
     out$spatial <- data.frame(par = "esf", method = "ESF")
-    if (!missing(C) && any(pars == 'fitted')) {    
+    out$N <- length( y_index_list$y_obs_idx )
+    out$missing <- y_index_list
+    out$diagnostic <- list()    
+    if (!missing(C) && any(pars == 'fitted')) {
+        C <- as(C, "sparseMatrix")        
         R <- resid(out, summary = FALSE)
-        out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )
-    }
-    out$N <- length( y_index_list$y_obs_idx )    
+        rmc <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )
+        out$diagnostic$Residual_MC <- rmc
+    }    
+    if (any(pars == 'fitted')) {
+        out$diagnostic$WAIC <- as.numeric(waic(out)[1])
+    }                                                        
+        
   return (out)
 }
 

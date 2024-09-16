@@ -54,7 +54,7 @@ print.geostan_fit <- function(x,
     cat("Partial pooling (varying intercept): ")
     print(x$re$formula)
     pars <- c(pars, "alpha_tau")
-  }
+  }  
   cat("Spatial method (outcome): ", as.character(x$spatial$method), "\n")
   if (x$spatial$method == "CAR") pars <- c(pars, "car_rho", "car_scale")
   if (x$spatial$method == "SAR") pars <- c(pars, "sar_rho", "sar_scale")  
@@ -63,8 +63,8 @@ print.geostan_fit <- function(x,
   if (x$spatial$method == "ICAR") pars <- c(pars, "spatial_scale")  
   cat("Likelihood function: ", x$family$family, "\n")
   cat("Link function: ", x$family$link, "\n")
-  cat("Residual Moran Coefficient: ", x$diagnostic["Residual_MC"], "\n")
-  if (!is.na(x$diagnostic["WAIC"])) cat("WAIC: ", x$diagnostic["WAIC"], "\n")
+  if (!is.null(x$diagnostic$Residual_MC)) cat("Residual Moran Coefficient: ", x$diagnostic$Residual_MC, "\n")
+  if (!is.null(x$diagnostic$WAIC)) cat("WAIC: ", x$diagnostic$WAIC, "\n")
   cat("Observations: ", x$N, "\n")  
   cat("Data models (ME): ")
   if (x$ME$has_me) {
@@ -440,6 +440,154 @@ predict.geostan_fit <- function(object,
         P <- cbind(newdata, P)
     }
     return (P)
+}
+
+
+
+#' @export
+log_lik <- function(object, ...) {
+        UseMethod("log_lik", object)
+    }
+
+
+#' @export
+#' @method log_lik geostan_fit
+#' @importFrom stats dt dnorm dpois
+log_lik.geostan_fit <- function(object, array = FALSE, ...) {
+    
+    M <- object$stanfit@sim$iter - object$stanfit@sim$warmup
+    K <- object$stanfit@sim$chains
+    N <- object$N
+    
+    mu <- as.array(object, pars = "fitted")
+    idx <- object$missing$y_obs_idx
+    fam <- object$family$family
+    
+    if (fam == "student_t") {
+        log_lik <- array(dim = c(M, K, N))
+        y <- object$data[,'y']        
+        sigma <- as.array(object, pars = "sigma")
+        nu <- as.array(object, pars = "nu")        
+        for (m in 1:M) {
+            for (k in 1:K) {                    
+                log_lik[m,k,] <- stats::dt(
+                    x = (y[idx] - mu[m,k,idx])/sigma[m,k,1],
+                    df = nu[m,k,1],
+                    log = TRUE) - log(sigma[m,k,1])                
+            }
+        }
+    }
+    
+    if (fam == "gaussian") {
+        log_lik <- array(dim = c(M, K, N))        
+        y <- object$data[,'y']        
+        sigma <- as.array(object, pars = "sigma")
+        for (m in 1:M) {
+            for (k in 1:K) {
+                log_lik[m,k,] <- dnorm(
+                    x = y[idx],
+                    mean = mu[m,k,idx],
+                    sd = sigma[m,k,1],
+                    log = TRUE)
+            }
+        }
+    }
+    
+    if (fam == "poisson") {
+        cp <- object$missing$censor_point
+        if (cp == FALSE) {            
+            log_lik <- array(dim = c(M, K, N))
+            y <- object$data[,'y']        
+            for (m in 1:M) {
+                for (k in 1:K) {                    
+                    log_lik[m,k,] <- dpois(
+                        x = y[idx],
+                        lambda = mu[m,k,idx],
+                        log = TRUE)
+                }
+            }                               
+        } else {
+            N <- object$missing$n_obs + object$missing$n_mis
+            log_lik <- array(dim = c(M, K, N))
+            y <- object$data[,'y']
+            mis_idx <- object$missing$y_mis_idx
+            for (m in 1:M) {
+                for (k in 1:K) {                    
+                    log_lik[m,k,idx] <- dpois(
+                        x = y[idx],
+                        lambda = mu[m,k,idx],
+                        log = TRUE)
+                    log_lik[m,k,mis_idx] <- ppois(q = cp,
+                                                  lambda = mu[m,k,mis_idx],
+                                                  log.p = TRUE)
+                }
+            }            
+        }       
+    }
+    
+    if (fam == "binomial") {
+        log_lik <- array(dim = c(M, K, N))
+        out = model.response(model.frame(object$formula, object$data, na.action = NULL))
+        y <- out[,1]
+        size <- y + out[,2]        
+        for (m in 1:M) {
+            for (k in 1:K) {                    
+                log_lik[m,k,] <- dbinom(
+                    x = y[idx],
+                    size = size[idx],
+                    p = mu[m,k,idx],
+                    log = TRUE)
+            }
+        }
+    }
+
+    if (fam == "auto_gaussian" & object$spatial$method == "CAR") {
+        log_lik <- array(dim = c(M, K, 1))
+        y <- object$data[,'y']
+        sigma <- as.array(object, pars = "car_scale")
+        rho <- as.array(object, pars = "car_rho")
+        parts <- object$car_parts
+        for (m in 1:M) {
+            for (k in 1:K) {
+                log_lik[m,k,1] <- car_normal_lpdf(
+                    y = y,
+                    mu = mu[m,k,],
+                    sigma = sigma[m,k,1],
+                    rho = rho[m,k,1],
+                    C = parts$C,
+                    D_inv = parts$Delta_inv,
+                    log_det_D_inv = parts$log_det_Delta_inv,
+                    lambda = parts$lambda,
+                    n = parts$n
+                )
+            }
+        }
+    }
+
+    if (fam == "auto_gaussian" & object$spatial$method == "SAR") {
+        log_lik <- array(dim = c(M, K, 1))
+        y <- object$data[,'y']
+        sigma <- as.array(object, pars = "sar_scale")
+        rho <- as.array(object, pars = "sar_rho")
+        parts <- object$sar_parts
+        for (m in 1:M) {
+            for (k in 1:K) {
+                log_lik[m,k,1] <- sar_normal_lpdf(
+                    y = y,
+                    mu = mu[m,k,],
+                    sigma = sigma[m,k,1],
+                    rho = rho[m,k,1],
+                    W = parts$W,
+                    lambda = parts$eigenvalues_w,
+                    n = parts$n
+                )
+            }
+        }
+    }
+
+    if (array == FALSE) log_lik <- matrix(log_lik, nrow = K * M, ncol = N)
+    
+    return (log_lik)
 }
 
 

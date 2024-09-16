@@ -54,12 +54,11 @@
 #' @param drop Provide a vector of character strings to specify the names of any parameters that you do not want MCMC samples for. Dropping parameters in this way can improve sampling speed and reduce memory usage. The following parameter vectors can potentially be dropped from SAR models:
 #' \describe{
 #' \item{fitted}{The N-length vector of fitted values}
-#' \item{log_lik}{The N-length vector of pointwise log-likelihoods, which is used to calculate WAIC.}
 #' \item{alpha_re}{Vector of 'random effects'/varying intercepts.}
 #' \item{log_lambda_mu}{Linear predictor inside the SAR model (for Poisson and binomial models)}
 #' \item{x_true}{N-length vector of 'latent'/modeled covariate values created for measurement error (ME) models.}
 #' }
-#' Using `drop = c('fitted', 'log_lik', 'alpha_re', 'x_true')` is equivalent to `slim = TRUE`. Note that if `slim = TRUE`, then `drop` will be ignored---so only use one or the other.
+#' Using `drop = c('fitted', 'alpha_re', 'x_true')` is equivalent to `slim = TRUE`. Note that if `slim = TRUE`, then `drop` will be ignored---so only use one or the other.
 #' @param control A named list of parameters to control the sampler's behavior. See \code{\link[rstan]{stan}} for details. 
 #' 
 #' @param ... Other arguments passed to \code{\link[rstan]{sampling}}.
@@ -396,7 +395,7 @@ stan_sar <- function(formula,
     me.list <- make_me_data(ME, xraw)
     standata <- c(standata, me.list)
     ## PARAMETERS TO KEEP, with SAR PARAMETERS [START] -------------            
-    pars <- c(pars, 'intercept', 'sar_scale', 'sar_rho', 'fitted', 'log_lik')
+    pars <- c(pars, 'intercept', 'sar_scale', 'sar_rho', 'fitted')
     if (family_int < 6) pars <- c(pars, 'log_lambda_mu') 
     if (!intercept_only) pars <- c(pars, 'beta')
     if (dwx) pars <- c(pars, 'gamma')
@@ -409,7 +408,7 @@ stan_sar <- function(formula,
             pars <- c(pars, "nu_x_true")
         }
     }
-    if (slim == TRUE) drop <- c('fitted', 'log_lik', 'alpha_re', 'x_true')
+    if (slim == TRUE) drop <- c('fitted', 'alpha_re', 'x_true')
     pars <- drop_params(pars = pars, drop_list = drop)
     priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
     ## PARAMETERS TO KEEP, with SAR PARAMETERS [STOP] -------------
@@ -444,12 +443,21 @@ stan_sar <- function(formula,
     } else {
         out$spatial <- data.frame(par = "phi", method = "SAR")
     }
-    if (any(pars == 'fitted')) {
-        out$C <- as(C, "sparseMatrix")
+    out$N <- length( y_index_list$y_obs_idx )
+    out$missing <- y_index_list
+    
+    out$sar_parts <- sar_parts    
+    out$diagnostic <- list()    
+    if (!missing(C) && any(pars == 'fitted')) {
+        C <- as(C, "sparseMatrix")        
         R <- resid(out, summary = FALSE)
-        out$diagnostic["Residual_MC"] <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )
-    }
-    out$N <- length( y_index_list$y_obs_idx )    
+        rmc <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )
+        out$diagnostic$Residual_MC <- rmc
+    }    
+    if (any(pars == 'fitted')) {
+        out$diagnostic$WAIC <- as.numeric(waic(out)[1])
+    }                                                            
+    
     return (out)
 }
 

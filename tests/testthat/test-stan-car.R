@@ -26,7 +26,8 @@ test_that("CAR accepts covariate ME", {
                         ME = prep_me_data(se = data.frame(insurance = georgia$insurance.se,
                                                           ICE = georgia$ICE.se)
                         ),
-                        car_parts = prep_car_data(shape2mat(georgia, "B")),                        
+                        car_parts = prep_car_data(shape2mat(georgia, "B")),
+                        centerx = TRUE,
                         chains = 1,
                         iter = iter,
                         refresh = refresh)

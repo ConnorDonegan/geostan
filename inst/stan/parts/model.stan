@@ -78,7 +78,7 @@
   // CAR
   if (car) {
     target += student_t_lpdf(car_scale[1] | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
-    if (is_auto_gaussian && !prior_only) {
+    if (is_auto_gaussian && prior_only == 0) {
       target += auto_normal_lpdf(y |
 				 fitted,
 				 car_scale[1],
@@ -88,7 +88,7 @@
 				 Delta_inv, log_det_Delta_inv,
 				 lambda, n, WCAR);
   }
-    if (!is_auto_gaussian) {
+    if (is_auto_gaussian == 0) {
       target += auto_normal_lpdf(log_lambda |
 				 log_lambda_mu, car_scale[1], car_rho[1],
 				 Ax_w, Ax_v, Ax_u,
@@ -101,7 +101,7 @@
  // SAR
 if (sar) {
   target += student_t_lpdf(sar_scale[1] | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
-  if (is_auto_gaussian && !prior_only) {
+  if (is_auto_gaussian && prior_only == 0) {
     target += sar_normal_lpdf(y |
 			      fitted,
 			      sar_scale[1],
