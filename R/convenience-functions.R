@@ -762,28 +762,44 @@ auto_gaussian <- function(type) {
     return(family)
 }
 
-#' Widely Applicable Information Criteria (WAIC)
+#' Model comparison
 #'
-#' @description Widely Application Information Criteria (WAIC) for model comparison
+#' @description Deviance Information Criteria (DIC) and Widely Application Information Criteria (WAIC) for model comparison
 #' 
-#' @param fit An \code{geostan_fit} object or any Stan model with a parameter named "log_lik", the pointwise log likelihood of the observations.
-#' @param pointwise Logical (defaults to `FALSE`), should a vector of values for each observation be returned? 
+#' @param object A fitted \code{geostan} model
+#' 
+#' @param pointwise Logical (defaults to `FALSE`), should a vector of values for each observation be returned?
+#' 
 #' @param digits Round results to this many digits.
 #' 
 #' @return A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density \code{Lpd}. If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
 #'
+#' @details
+#' 
+#' WAIC (widely applicable information criteria) and DIC (deviance information criteria) are used for model comparison. They are based on theories of out-of-sample predictive accuracy. The DIC is implemented with penalty term defined as 1/2 times the posterior variance of the deviance (Spiegelhatler et al. 2014).
+#'
+#' The limitations of these methods include that DIC is less robust than WAIC and that WAIC is not strictly valid for autocorrelated data (viz. geostan's spatial models). 
+#' 
 #' @examples
+#' 
 #' data(georgia)
-#' fit <- stan_glm(log(rate.male) ~ 1, data = georgia,
-#'                 chains = 2, iter = 800) # for speed only
+#' 
+#' fit <- stan_glm(log(rate.male) ~ 1, data = georgia, iter=500)
+#'
+#' dic(fit)
 #' waic(fit)
+#' 
 #' @source
 #'
-#' Watanabe, S. (2010). Asymptotic equivalence of Bayes cross validation and widely application information criterion in singular learning theory. Journal of Machine Learning Research 11, 3571-3594.
+#' D. Spiegelhatler, N. G. Best, B. P. Carlin and G. Linde (2014) The Deviance Information Criterion: 12 Years on. J. Royal Statistical Society Series B: Stat Methodology. 76(3): 485-493.
 #' 
+#' Watanabe, S. (2010). Asymptotic equivalence of Bayes cross validation and widely application information criterion in singular learning theory. Journal of Machine Learning Research 11, 3571-3594.
+#'
+#' @md 
 #' @export
-waic <- function(fit, pointwise = FALSE, digits = 2) {
-  ll <- as.matrix(fit, pars = "log_lik")
+#' @rdname waic
+waic <- function(object, pointwise = FALSE, digits = 2) {
+  ll <- log_lik(object, array = FALSE)
   nsamples <- nrow(ll)
   lpd <- apply(ll, 2, log_sum_exp) - log(nsamples)
   p_waic <- apply(ll, 2, var)
@@ -792,6 +808,32 @@ waic <- function(fit, pointwise = FALSE, digits = 2) {
   res <- c(WAIC = sum(waic), Eff_pars = sum(p_waic), Lpd = sum(lpd))
   return(round(res, digits))
 }
+
+
+#' @export
+#' @rdname waic
+dic <- function(object, digits = 1) {
+    
+    # get log-likelihood
+    ll <- log_lik(object, array = FALSE)
+
+    # calculate model deviance
+    dev <- -2 * apply(ll,  1, FUN = sum) 
+    dev_bar <- mean(dev)
+    
+    # calculate penalty term
+    penalty <- 0.5 * var(dev)
+    
+    # DIC
+    DIC <- dev_bar + penalty
+
+    # round digits
+    x = round(c(DIC = DIC, penalty = penalty), digits)
+
+    # return DIC and penalty term
+    return (x)
+}
+
 
 #' Count neighbors in a connectivity matrix
 #'
@@ -1037,8 +1079,6 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' @param gamma For `style = DCAR`, distances will be offset by `gamma` before raising to the `-k`th power.
 #' 
 #' @param lambda If TRUE, return eigenvalues required for calculating the log determinant of the precision matrix and for determining the range of permissible values of rho. These will also be printed with a message if lambda = TRUE.
-#' 
-#' @param cmat If `cmat = TRUE`, return the full matrix C (in sparse matrix format).
 #'
 #' @param stan_fn Two computational methods are available for CAR models using \code{\link[geostan]{stan_car}}: \code{car\_normal\_lpdf} and \code{wcar\_normal\_lpdf}. For WCAR models, either method will work but \code{wcar\_normal\_lpdf} is faster. To force use \code{car\_normal\_lpdf} when `style = 'WCAR'`, provide `stan_fn = "car_normal_lpdf"`. 
 #'
@@ -1058,8 +1098,6 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' The DCAR specification is inverse distance-based, and requires the user provide a (sparse) distance matrix instead of a binary adjacency matrix. (For `A`, provide a symmetric matrix of distances, not inverse distances!) Internally, non-zero elements of `A` will be converted to: `d_{ij} = (a_{ij} + gamma)^(-k)` (Cliff and Ord 1981, p. 144; Donegan 2021). Default values are `k=1` and `gamma=0`. Following Cressie (2015), these values will be scaled (divided) by their maximum value. For further details, see the DCAR_A specification in Donegan (2021).
 #'
 #' For inverse-distance weighting schemes, see Cliff and Ord (1981); for distance-based CAR specifications, see Cressie (2015 \[1993\]), Haining and Li (2020), and Donegan (2021).
-#'
-#' When using \code{\link[geostan]{stan_car}}, always use `cmat = TRUE` (the default).
 #'
 #' Details on CAR model specifications can be found in Table 1 of Donegan (2021).
 #'
@@ -1108,7 +1146,6 @@ prep_car_data <- function(A,
                           k = 1,
                           gamma = 0,
                           lambda = TRUE,
-                          cmat = TRUE,
                           stan_fn = ifelse(style == "WCAR", "wcar_normal_lpdf", "car_normal_lpdf"),
                           quiet = FALSE
                           ) {
@@ -1180,7 +1217,7 @@ prep_car_data <- function(A,
         car.dl$lambda <- lambda
         car.dl$rho_lims <- rho_lims
     }
-    if (cmat) car.dl$C <- C
+    car.dl$C <- C
     return (car.dl)
 }
 
