@@ -317,14 +317,15 @@ stan_sar <- function(formula,
           xrs <- Matrix::rowSums(W)
           if (!all(xrs == 1)) W <- row_standardize(W, msg =  "Row standardizing connectivity matrix to calculate spatially lagged covaraite(s)")
           # efficient transform to CRS representation for W.list (via Transpose)
-          Wij <- as(W, "TsparseMatrix")
-          Tw <- Matrix::sparseMatrix(i = Wij@j + 1, #intentional transpose of i,j#
-                                     j = Wij@i + 1,
-                                     x = Wij@x,
-                                     dims = dim(Wij))
-          W.list <- list(w = Tw@x,
-                         v = Tw@i + 1,
-                         u = Tw@p + 1)
+          # [in stan_sar: getting W list from sar_parts]
+          ## Wij <- as(W, "TsparseMatrix")
+          ## Tw <- Matrix::sparseMatrix(i = Wij@j + 1, #intentional transpose of i,j#
+          ##                            j = Wij@i + 1,
+          ##                            x = Wij@x,
+          ##                            dims = dim(Wij))
+          ## W.list <- list(w = Tw@x,
+          ##                v = Tw@i + 1,
+          ##                u = Tw@p + 1)
           Wx <- SLX(f = slx, DF = mod_frame, x = xraw, W = W)
           dwx <- ncol(Wx)
           wx_idx <- as.array( which(paste0("w.", colnames(xraw)) %in% colnames(Wx)), dim = dwx )
@@ -357,11 +358,12 @@ stan_sar <- function(formula,
         n_ids = n_ids,
         id = id_index$idx,
         center_x = centerx,    
-        ## slx data -------------    
-        W_w = as.array(W.list$w),
-        W_v = as.array(W.list$v),
-        W_u = as.array(W.list$u),
-        dw_nonzero = length(W.list$w),
+        ## slx data -------------
+        ## stan_sar: getting W list from sar_parts
+       # W_w = as.array(W.list$w),
+       # W_v = as.array(W.list$v),
+       # W_u = as.array(W.list$u),
+       # nW_w = length(W.list$w),        
         dwx = dwx,
         wx_idx = wx_idx
     )
@@ -446,18 +448,18 @@ stan_sar <- function(formula,
     out$N <- length( y_index_list$y_obs_idx )
     out$missing <- y_index_list
     
-    out$sar_parts <- sar_parts    
-    out$diagnostic <- list()    
-    if (!missing(C) && any(pars == 'fitted')) {
+    out$sar_parts <- sar_parts
+    out$C <- as(C, "sparseMatrix")
+    out$diagnostic <- list()
+    if (any(pars == 'fitted')) {
         C <- as(C, "sparseMatrix")        
         R <- resid(out, summary = FALSE)
         rmc <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )
         out$diagnostic$Residual_MC <- rmc
-    }    
+    }
     if (any(pars == 'fitted')) {
         out$diagnostic$WAIC <- as.numeric(waic(out)[1])
-    }                                                            
-    
+    }                                                                
     return (out)
 }
 

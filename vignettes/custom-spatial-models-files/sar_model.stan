@@ -11,12 +11,10 @@ data {
 
 
 // SAR
-  int nImW_w;
-  int nW;
-  vector[nImW_w] ImW_w;
-  array[nImW_w] int ImW_v;
-  array[n + 1] int ImW_u;
-  array[nW] int Widx;
+  int nW_w;
+  vector[nW_w] W_w;
+  array[nW_w] int W_v;
+  array[n + 1] int W_u;
   vector[n] eigenvalues_w;
 }
 
@@ -40,10 +38,9 @@ model{
   // Likelihood: Y ~ Normal(Mu, Sigma)
   target += sar_normal_lpdf(y |
                   mu, sigma, rho,
-                  ImW_w,
-                  ImW_v,
-                  ImW_u,
-                  Widx,
+                  W_w,
+                  W_v,
+                  W_u,
                   eigenvalues_w,
                   n);
 
@@ -56,4 +53,3 @@ model{
   // prior for intercept
   target += normal_lpdf(alpha | 0, 5);
 }
-

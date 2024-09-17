@@ -28,36 +28,31 @@
  * @param mu Mean vector
  * @param sigma Scale parameter
  * @param rho Spatial dependence parameter
- * @param ImW Sparse representation of (I - W): non-zero values only
- * @param ImW_v Column indices for values in ImW
- * @param ImW_u Row starting indices for values in ImW
- * @param Widx Indices for the off-diagonal elements in ImC
+ * @param W_w Sparse representation of W
+ * @param W_v Column indices for values in W
+ * @param W_u Row starting indices for values in W
  * @param lambda Eigenvalues of W
  * @param n Length of y
  *
  * @return Log probability density of SAR model up to additive constant
 */
-  real  sar_normal_lpdf(vector y,
-		      vector mu,
-		      real sigma,
-		      real rho,
-		      vector ImW,
-		      array[] int ImW_v,
-		      array[] int ImW_u,
-		      array[] int Widx,
-		      vector lambda,
-		      int n) {
-  vector[n] z = y - mu;
-  real tau = 1 / sigma^2;
-  vector[num_elements(ImW)] ImrhoW = ImW;  // (I - rho W)
-  vector[n] ImrhoWz;                       // (I - rho * W) * z
-  real zVz;
-  real ldet_V = 2 * sum(log1m(rho * lambda)) - 2 * n * log(sigma);
-  ImrhoW[Widx] = rho * ImW[Widx];
-  ImrhoWz = csr_matrix_times_vector(n, n, ImrhoW, ImW_v , ImW_u , z);
-  zVz = tau * dot_self(ImrhoWz);
-  return  0.5 * ( -n * log(2 * pi()) + ldet_V - zVz );		 
- }    
+  real sar_normal_lpdf(vector y,
+		       vector mu,
+		       real sigma,
+		       real rho,
+		       vector W_w,
+		       array[] int W_v,
+		       array[] int W_u,
+		       vector lambda,
+		       int n
+		       ){
+    vector[n] z = y - mu;
+    real tau = 1 / sigma^2;
+    vector[n] ImrhoWz = z - csr_matrix_times_vector(n, n, rho * W_w, W_v , W_u , z);
+    real zVz = tau * dot_self(ImrhoWz);
+    real ldet_V = 2 * sum(log1m(rho * lambda)) - 2 * n * log(sigma);
+    return  0.5 * ( -n * log(2 * pi()) + ldet_V - zVz );		 
+}
 
 
 /**
@@ -67,10 +62,9 @@
  * @param mu Mean vector
  * @param tau Scale parameter
  * @param rho Spatial dependence parameter
- * @param ImC Sparse representation of (I - C): non-zero values only
- * @param ImC_v Column indices for values in ImC
- * @param ImC_u Row starting indices for values in ImC
- * @param Cidx Indices for the off-diagonal elements in ImC
+ * @param C_w Sparse representation of C
+ * @param C_v Column indices for values in C
+ * @param C_u Row starting indices for values in C
  * @param D_inv Diagonal elements from the inverse of Delta, where M = Delta * tau^2 is a diagonal matrix containing the conditional variances.
  * @param log_det_D_inv Log determinant of Delta inverse
  * @param lambda Eigenvalues of C (or of the symmetric, scaled matrix Delta^{-1/2}*C*Delta^{1/2}).
@@ -80,23 +74,23 @@
 */
 real car_normal_lpdf(vector y, vector mu,
 		     real tau, real rho,
-		     vector ImC, array[] int ImC_v, array[] int ImC_u, array[] int Cidx,
-		     vector D_inv, real log_det_D_inv, vector lambda,
+		     vector C_w,
+		     array[] int C_v,
+		     array[] int C_u, 
+		     vector D_inv,
+		     real log_det_D_inv,
+		     vector lambda,
 		     int n) {
   vector[n] z = y - mu;
-  vector[num_elements(ImC)] ImrhoC = ImC; // (I - rho C)
   vector[n] zMinv = (1 / tau^2) * z .* D_inv; // z' * M^-1
-  vector[n] ImrhoCz; // (I - rho * C) * z
-  real ldet_ImrhoC;
-  ImrhoC[Cidx] = rho * ImC[Cidx];
-  ImrhoCz = csr_matrix_times_vector(n, n, ImrhoC, ImC_v, ImC_u, z);
-  ldet_ImrhoC = sum(log1m(rho * lambda));
-           //for (i in 1:n) ldet_ImrhoC[i] = log1m(rho * lambda[i]);
+  // (I-rho C)z  
+  vector[n] ImrhoCz = z - csr_matrix_times_vector(n, n, rho * C_w, C_v, C_u, z); 
+  real ldet_ImrhoC = sum(log1m(rho * lambda));
   return 0.5 * (
 		-n * log( 2 * pi() )
 		- 2 * n * log(tau)
 		+ log_det_D_inv
-		+ ldet_ImrhoC            //sum(ldet_ImrhoC)
+		+ ldet_ImrhoC        
 		- dot_product(zMinv, ImrhoCz)
 		);
 }
@@ -120,40 +114,47 @@ real car_normal_lpdf(vector y, vector mu,
  */
 real wcar_normal_lpdf(vector y, vector mu,
 		      real tau, real rho,
-		      vector A_w, array[] int A_v, array[] int A_u,
-		      vector D_inv, real log_det_D_inv,
+		      vector A_w,
+		      array[] int A_v,
+		      array[] int A_u,
+		      vector D_inv,
+		      real log_det_D_inv,
 		      vector lambda,
 		      int n) {
   vector[n] z = y - mu;
-  real ztDz; // z transpose * D * z
-  real ztAz; // z transpose * A * z
-  real ldet_ImrhoC;
-  ztDz = (z .* D_inv)' * z;
-  ztAz = z' * csr_matrix_times_vector(n, n, A_w, A_v, A_u, z);
-  ldet_ImrhoC = sum(log1m(rho * lambda));
-     //for (i in 1:n) ldet_ImrhoC[i] = log1m(rho * lambda[i]);
+  // z' * D * z
+  real ztDz = (z .* D_inv)' * z;
+  // z' * A * z
+  real ztAz = z' * csr_matrix_times_vector(n, n, A_w, A_v, A_u, z);
+  // determinant of (I - rho * C) 
+  real ldet_ImrhoC = sum(log1m(rho * lambda));  
   return 0.5 * (
 		-n * log( 2 * pi() )
 		-2 * n * log(tau)
 		+ log_det_D_inv
-		+ ldet_ImrhoC         //sum(ldet_ImrhoC)
+		+ ldet_ImrhoC
 		- (1 / tau^2) * (ztDz - rho * ztAz));
 }
 
 /** 
  * Conditional Autoregressive Model
  */
-real auto_normal_lpdf(vector y, vector mu,
-		      real tau, real rho,
-		      vector Ax_w, array[] int Ax_v, array[] int Ax_u,
-		      array[] int Cidx,
-		      vector D_inv, real log_det_D_inv,
+real auto_normal_lpdf(vector y,
+		      vector mu,
+		      real tau,
+		      real rho,
+		      vector A_w,
+		      array[] int A_v,
+		      array[] int A_u,
+		      vector D_inv,
+		      real log_det_D_inv,
 		      vector lambda,
-		      int n, int WCAR) {
+		      int n,
+		      int WCAR) {
   if (WCAR) {
-    return wcar_normal_lpdf(y | mu, tau, rho, Ax_w, Ax_v, Ax_u, D_inv, log_det_D_inv, lambda, n);
+    return wcar_normal_lpdf(y | mu, tau, rho, A_w, A_v, A_u, D_inv, log_det_D_inv, lambda, n);
   } else {
-    return car_normal_lpdf(y | mu, tau, rho, Ax_w, Ax_v, Ax_u, Cidx, D_inv, log_det_D_inv, lambda, n);
+    return car_normal_lpdf(y | mu, tau, rho, A_w, A_v, A_u, D_inv, log_det_D_inv, lambda, n);
       }
 }
 

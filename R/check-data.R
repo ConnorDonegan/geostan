@@ -29,13 +29,13 @@ check_me_prior <- function(prior) {
 
 check_car_parts <- function(car_parts) {
     if(!inherits(car_parts, "list")) stop("car_parts must be a list of data for the CAR model. See ?prep_car_data.")
-    if(!all(c("Ax_w", "Ax_v", "Ax_u", "nAx_w", "Cidx", "nC", "Delta_inv", "log_det_Delta_inv", "WCAR", "lambda", "C") %in% names(car_parts))) stop("car_parts is missing at least one required part. See ?prep_car_data. Did you use cmat = TRUE and lambda = TRUE?")
+    if(!all(c("A_w", "A_v", "A_u", "nA_w", "Delta_inv", "log_det_Delta_inv", "WCAR", "lambda", "C") %in% names(car_parts))) stop("car_parts is missing at least one required part. See ?prep_car_data. Did you use cmat = TRUE and lambda = TRUE?")
     stopifnot(inherits(car_parts$C, "Matrix") | inherits(car_parts$C, "matrix"))    
 }
 
 check_sar_parts <- function(sar_parts) {
     if(!inherits(sar_parts, "list")) stop("sar_parts must be a list of data for the SAR model. See ?prep_sar_data.")
-    if(!all(c("ImW_w", "ImW_v", "ImW_u", "nImW_w", "Widx", "nW", "eigenvalues_w", "n", "W", "rho_min", "rho_max") %in% names(sar_parts))) stop("sar_parts is missing at least one required part. See ?prep_sar_data.")
+    if(!all(c("W_w", "W_v", "W_u", "nW_w", "eigenvalues_w", "n", "W", "rho_min", "rho_max") %in% names(sar_parts))) stop("sar_parts is missing at least one required part. See ?prep_sar_data.")
     stopifnot(inherits(sar_parts$W, "Matrix") | inherits(sar_parts$W, "matrix"))    
 }
 

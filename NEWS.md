@@ -1,10 +1,14 @@
 # geostan 0.7.0
 
-This release includes various changes that increase the sampling speed of geostan models.
+Changes that increase sampling speed:
 
- - The QR decomposition is now implemented for models with covariates; however, this cannot be used for measurement error models. The benefits of the QR decomposition are greatest when covariates are centered (which you can do using the `centerx` argument). 
+ - Samples for the pointwise log likelihood are no longer collected in the Stan models. Instead, they are calculated in R when needed for calculating waic or dic. 
+ - The QR decomposition is now implemented (automatically) for models with covariates. (Note that this cannot be used for measurement error models.) The benefits of the QR decomposition in terms of sampling speed and efficiency are greatest when covariates are centered (which you can do using the `centerx` argument). 
+ - A change recommended by Roger Bivand takes advantage of an improvement in `spdep`'s creation of neighbors objects (https://github.com/ConnorDonegan/geostan/issues/19). This will speed up the `shape2mat` function in some cases.
 
- - Adopted a change recommended by Roger Bivand to take advantage of an improvement in `spdep`'s creation of neighbors objects (https://github.com/ConnorDonegan/geostan/issues/19). This will speed up the `shape2mat` function in some cases.
+Other changes:
+
+ - Stan code for the CAR and SAR models has been simplified a bit. The change is reflected in the vignette on custom spatial models.
 
 # geostan 0.6.2
 

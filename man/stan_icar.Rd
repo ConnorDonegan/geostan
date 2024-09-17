@@ -109,7 +109,6 @@ Before using this term, read the \code{Details} section and the \code{type} argu
 \item{drop}{Provide a vector of character strings to specify the names of any parameters that you do not want MCMC samples for. Dropping parameters in this way can improve sampling speed and reduce memory usage. The following parameter vectors can potentially be dropped from ICAR models:
 \describe{
 \item{fitted}{The N-length vector of fitted values}
-\item{log_lik}{The N-length vector of pointwise log-likelihoods, which is used to calculate WAIC.}
 \item{alpha_re}{Vector of 'random effects'/varying intercepts.}
 \item{x_true}{N-length vector of 'latent'/modeled covariate values created for measurement error (ME) models.}
 \item{phi}{The N-length vector of spatially-autocorrelated parameters (with the ICAR prior).}

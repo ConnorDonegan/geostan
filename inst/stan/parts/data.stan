@@ -23,16 +23,18 @@
 
 // offset
   vector[n] input_offset; 
-  
-// connectivity matrix: row-standardized for spatial lag of X 
+
+  // tells which of X are in SLX
   int<lower=0> dwx;
-  array[dwx ? dwx : 1] int wx_idx;
-  int<lower=0> dw_nonzero;
-  vector[dw_nonzero] W_w;
-  array[dw_nonzero] int W_v;
-  array[dwx ? n + 1 : 1] int W_u;
+  array[dwx ? dwx : 1] int wx_idx; 
+
+  // connectivity matrix: (row-standardized) for spatial lag of X or SAR
+  int<lower=0> nW_w;
+  vector[nW_w] W_w;
+  array[nW_w] int W_v;
+  array[nW_w > 1 ? n + 1 : 1] int W_u;
   
-// covariates and observational error information
+  // covariates and observational error information
     // lower, upper bounds for bounded data models
   array[2] real bounds;
     // no. columns
@@ -56,15 +58,14 @@
   vector[dx_me] prior_sigmax_true_location;
   vector[dx_me] prior_sigmax_true_scale;
   vector[2] prior_rhox_true;
-  // data for auto-Guassian [ME] models
+
+  // data for auto-normal [ME] models
   int<lower=0,upper=1> spatial_me;
   int<lower=0,upper=1> WCAR;
-  int nAx_w;
-  int nC;
-  vector[nAx_w] Ax_w;
-  array[nAx_w] int Ax_v;
-  array[n + 1] int Ax_u;
-  array[nC] int Cidx;
+  int nA_w;
+  vector[nA_w] A_w;
+  array[nA_w] int A_v;
+  array[n + 1] int A_u;
   vector[n] Delta_inv;
   real log_det_Delta_inv;
   vector[n] lambda;
@@ -109,13 +110,13 @@
   array[2] real car_rho_lims;
   int<lower=0,upper=1> car;
 
-  // SAR
-  int nImW_w;
-  int nW;
-  vector[nImW_w] ImW_w;
-  array[nImW_w] int ImW_v;
-  array[n + 1] int ImW_u;
-  array[nW] int Widx;
+  // SAR: use W matrix (as above: W_w, W_u, W_v)
+//  int nImW_w;
+//  int nW;
+//  vector[nImW_w] ImW_w;
+//  array[nImW_w] int ImW_v;
+//  array[n + 1] int ImW_u;
+//  array[nW] int Widx;
   vector[n] eigenvalues_w;
   array[2] real sar_rho_lims;
   int<lower=0,upper=1> sar;

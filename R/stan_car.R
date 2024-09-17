@@ -367,7 +367,7 @@ stan_car <- function(formula,
         W_w = as.array(W.list$w),
         W_v = as.array(W.list$v),
         W_u = as.array(W.list$u),
-        dw_nonzero = length(W.list$w),
+        nW_w = length(W.list$w),        
         dwx = dwx,
         wx_idx = wx_idx
     )
@@ -397,12 +397,14 @@ stan_car <- function(formula,
     standata <- append_priors(standata, priors_made)
     standata$car <- 1
     ## EMPTY PLACEHOLDERS
-    standata <- c(standata, empty_icar_data(n), empty_esf_data(n), empty_sar_data(n))    
+    empty_parts <- c(empty_icar_data(n), empty_esf_data(n), empty_sar_data(n))
+    empty_parts <- empty_parts[ which(!names(empty_parts) %in% names(standata)) ]
+    standata <- c(standata, empty_parts) 
     ## ME MODEL -------------
     me.list <- make_me_data(ME, xraw)
 
-    # remove ME-car parts: othwerise, they duplicate the car_parts argument
-    duplicates <- c("n", "nC", "nAx_w", "C", "Delta_inv", "log_det_Delta_inv", "Ax_w", "Ax_v", "Ax_u", "Cidx", "lambda", "WCAR")
+    # remove select ME-car parts: othwerise, they duplicate the car_parts argument
+    duplicates <- c("n", "nA_w", "C", "Delta_inv", "log_det_Delta_inv", "A_w", "A_v", "A_u", "lambda", "WCAR")
     me.list[which(names(me.list) %in% duplicates)] <- NULL
 
     # append me.list to standata

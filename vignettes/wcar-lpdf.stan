@@ -16,24 +16,26 @@
  * @return Log probability density of CAR prior up to additive constant
  */
 real wcar_normal_lpdf(vector y, vector mu,
-              real tau, real rho,
-              vector A_w, array[] int A_v, array[] int A_u,
-              vector D_inv, real log_det_D_inv,
-              vector lambda,
-              int n) {
+		      real tau, real rho,
+		      vector A_w,
+		      array[] int A_v,
+		      array[] int A_u,
+		      vector D_inv,
+		      real log_det_D_inv,
+		      vector lambda,
+		      int n) {
   vector[n] z = y - mu;
-  real ztDz; 
-  real ztAz; 
-  vector[n] ldet_ImrhoC;
-  ztDz = (z .* D_inv)' * z;
-  ztAz = z' * csr_matrix_times_vector(n, n, A_w, A_v, A_u, z);
-  for (i in 1:n) ldet_ImrhoC[i] = log1m(rho * lambda[i]);
+  // z' * D * z
+  real ztDz = (z .* D_inv)' * z;
+  // z' * A * z
+  real ztAz = z' * csr_matrix_times_vector(n, n, A_w, A_v, A_u, z);
+  // determinant of (I - rho * C) 
+  real ldet_ImrhoC = sum(log1m(rho * lambda));  
   return 0.5 * (
-        -n * log( 2 * pi() )
-        -2 * n * log(tau)
-        + log_det_D_inv
-        + sum(ldet_ImrhoC)
-        - (1 / tau^2) * (ztDz - rho * ztAz));
+		-n * log( 2 * pi() )
+		-2 * n * log(tau)
+		+ log_det_D_inv
+		+ ldet_ImrhoC
+		- (1 / tau^2) * (ztDz - rho * ztAz));
 }
-
 

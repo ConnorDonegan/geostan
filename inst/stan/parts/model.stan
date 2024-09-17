@@ -17,10 +17,14 @@
 				   mu_x_true_tmp,
 				   sigma_x_true[j],
 				   car_rho_x_true[j],
-				   Ax_w, Ax_v, Ax_u,
-				   Cidx,
-				   Delta_inv, log_det_Delta_inv,
-				   lambda, n, WCAR);
+				   A_w,
+				   A_v,
+				   A_u,
+				   Delta_inv,
+				   log_det_Delta_inv,
+				   lambda,
+				   n,
+				   WCAR);
       }
     } else {
       for (j in 1:dx_me) {
@@ -83,18 +87,28 @@
 				 fitted,
 				 car_scale[1],
 				 car_rho[1],
-				 Ax_w, Ax_v, Ax_u,
-				 Cidx,
-				 Delta_inv, log_det_Delta_inv,
-				 lambda, n, WCAR);
+				 A_w,
+				 A_v,
+				 A_u,
+				 Delta_inv,
+				 log_det_Delta_inv,
+				 lambda,
+				 n,
+				 WCAR);
   }
     if (is_auto_gaussian == 0) {
       target += auto_normal_lpdf(log_lambda |
-				 log_lambda_mu, car_scale[1], car_rho[1],
-				 Ax_w, Ax_v, Ax_u,
-				 Cidx,
-				 Delta_inv, log_det_Delta_inv,
-				 lambda, n, WCAR);
+				 log_lambda_mu,
+				 car_scale[1],
+				 car_rho[1],
+				 A_w,
+				 A_v,
+				 A_u,
+				 Delta_inv,
+				 log_det_Delta_inv,
+				 lambda,
+				 n,
+				 WCAR);
     }
   }
 
@@ -106,10 +120,9 @@ if (sar) {
 			      fitted,
 			      sar_scale[1],
 			      sar_rho[1],
-			      ImW_w,
-			      ImW_v,
-			      ImW_u,
-			      Widx,
+			      W_w,
+			      W_v,
+			      W_u,
 			      eigenvalues_w,
 			      n);
   }
@@ -118,10 +131,9 @@ if (sar) {
 			      log_lambda_mu,
 			      sar_scale[1],
 			      sar_rho[1],
-			      ImW_w,
-			      ImW_v,
-			      ImW_u,
-			      Widx,
+			      W_w,
+			      W_v,
+			      W_u,
 			      eigenvalues_w,
 			      n);			      
   }

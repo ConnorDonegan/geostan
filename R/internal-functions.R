@@ -337,19 +337,18 @@ a.n.zeros <- function(n) array(0, dim = c(0, n))
 vec.n.zeros <- function(n) rep(0, n)
 
 #' return empty car_parts list
+#' See R/make-me-data.R; used for ME list, including when ME is not used.
 #' @noRd
 #' @param n vector length
 car_parts_shell <- function(n) {
     list(
-      nC = 1,
-      nAx_w = 1,
+      nA_w = 1,
       C = array(1, dim = c(1, 1)),
       Delta_inv = vec.n.zeros(n),
       log_det_Delta_inv = 0,
-      Ax_w = a.zero(),
-      Ax_v = a.zero(),
-      Ax_u = vec.n.zeros(n+1), 
-      Cidx = a.zero(),
+      A_w = a.zero(),
+      A_v = a.zero(),
+      A_u = vec.n.zeros(n+1), 
       lambda = vec.n.zeros(n),
       WCAR = 0
     )
@@ -396,14 +395,12 @@ empty_car_data <- function() {
 #' @noRd
 empty_sar_data <- function(n) {
     list(
-        nImW_w = 1,
-        nW = 1,
-        ImW_w = a.zero(),
-        ImW_v = a.zero(),
-        ImW_u = rep(0, n+1),
+        nW_w = 1,
+        W_w = a.zero(),
+        W_v = a.zero(),
+        W_u = a.zero(), 
         eigenvalues_w = rep(0, n),
         sar_rho_lims = c(-1, 1),
-        Widx = a.zero(),
         sar = 0
     )
 }
@@ -419,7 +416,7 @@ drop_params <- function(pars, drop_list) {
     return( pars )
 }
 
-#' 
+
 car_normal_lpdf <- function(y,
                             mu,
                             sigma,
@@ -459,158 +456,3 @@ sar_normal_lpdf <- function(y,
     log_p = 0.5 * ( -n * log(2 * pi) + log_detV - zVz )
     return( log_p )
 }
-
-
-#' @export
-log_lik <- function(object, ...) {
-        UseMethod("log_lik", object)
-    }
-
-
-#' @export
-#' @method log_lik geostan_fit
-#' @importFrom stats dt dnorm dpois
-log_lik.geostan_fit <- function(object, array = FALSE, ...) {
-    
-    M <- object$stanfit@sim$iter - object$stanfit@sim$warmup
-    K <- object$stanfit@sim$chains
-    N <- object$N
-    
-    mu <- as.array(object, pars = "fitted")
-    idx <- object$missing$y_obs_idx
-    fam <- object$family$family
-    
-    if (fam == "student_t") {
-        log_lik <- array(dim = c(M, K, N))
-        y <- object$data[,'y']        
-        sigma <- as.array(object, pars = "sigma")
-        nu <- as.array(object, pars = "nu")        
-        for (m in 1:M) {
-            for (k in 1:K) {                    
-                log_lik[m,k,] <- stats::dt(
-                    x = (y[idx] - mu[m,k,idx])/sigma[m,k,1],
-                    df = nu[m,k,1],
-                    log = TRUE) - log(sigma[m,k,1])                
-            }
-        }
-        if (array == FALSE) log_lik <- matrix(log_lik, nrow = K * M, ncol = N)            
-    }
-    
-    if (fam == "gaussian") {
-        log_lik <- array(dim = c(M, K, N))        
-        y <- object$data[,'y']        
-        sigma <- as.array(object, pars = "sigma")
-        for (m in 1:M) {
-            for (k in 1:K) {
-                log_lik[m,k,] <- dnorm(
-                    x = y[idx],
-                    mean = mu[m,k,idx],
-                    sd = sigma[m,k,1],
-                    log = TRUE)
-            }
-        }
-        if (array == FALSE) log_lik <- matrix(log_lik, nrow = K * M, ncol = N)           
-    }
-    
-    if (fam == "poisson") {
-        cp <- object$missing$censor_point
-        if (cp == FALSE) {            
-            log_lik <- array(dim = c(M, K, N))
-            y <- object$data[,'y']        
-            for (m in 1:M) {
-                for (k in 1:K) {                    
-                    log_lik[m,k,] <- dpois(
-                        x = y[idx],
-                        lambda = mu[m,k,idx],
-                        log = TRUE)
-                }
-            }                               
-        } else {
-            N <- object$missing$n_obs + object$missing$n_mis
-            log_lik <- array(dim = c(M, K, N))
-            y <- object$data[,'y']
-            mis_idx <- object$missing$y_mis_idx
-            for (m in 1:M) {
-                for (k in 1:K) {                    
-                    log_lik[m,k,idx] <- dpois(
-                        x = y[idx],
-                        lambda = mu[m,k,idx],
-                        log = TRUE)
-                    log_lik[m,k,mis_idx] <- ppois(q = cp,
-                                                  lambda = mu[m,k,mis_idx],
-                                                  log.p = TRUE)
-                }
-            }            
-        }
-        if (array == FALSE) log_lik <- matrix(log_lik, nrow = K * M, ncol = N)            
-    }
-    
-    if (fam == "binomial") {
-        log_lik <- array(dim = c(M, K, N))
-        #out = model.response(model.frame(object$formula, object$data, na.action = NULL))
-        dat <- object$data
-        y <- dat[,1]
-        size <- y + dat[,2]        
-        for (m in 1:M) {
-            for (k in 1:K) {                    
-                log_lik[m,k,] <- dbinom(
-                    x = y[idx],
-                    size = size[idx],
-                    p = mu[m,k,idx],
-                    log = TRUE)
-            }
-        }
-        if (array == FALSE) log_lik <- matrix(log_lik, nrow = K * M, ncol = N)            
-    }
-
-    if (fam == "auto_gaussian" & object$spatial$method == "CAR") {
-        log_lik <- array(dim = c(M, K, 1))
-        y <- object$data[,'y']
-        sigma <- as.array(object, pars = "car_scale")
-        rho <- as.array(object, pars = "car_rho")
-        parts <- object$car_parts
-        for (m in 1:M) {
-            for (k in 1:K) {
-                log_lik[m,k,1] <- car_normal_lpdf(
-                    y = y,
-                    mu = mu[m,k,],
-                    sigma = sigma[m,k,1],
-                    rho = rho[m,k,1],
-                    C = parts$C,
-                    D_inv = parts$Delta_inv,
-                    log_det_D_inv = parts$log_det_Delta_inv,
-                    lambda = parts$lambda,
-                    n = parts$n
-                )
-            }
-        }
-        if (array == FALSE) log_lik <- matrix(log_lik, nrow = K * M, ncol = 1)            
-    }
-
-    if (fam == "auto_gaussian" & object$spatial$method == "SAR") {
-        log_lik <- array(dim = c(M, K, 1))
-        y <- object$data[,'y']
-        sigma <- as.array(object, pars = "sar_scale")
-        rho <- as.array(object, pars = "sar_rho")
-        parts <- object$sar_parts
-        for (m in 1:M) {
-            for (k in 1:K) {
-                log_lik[m,k,1] <- sar_normal_lpdf(
-                    y = y,
-                    mu = mu[m,k,],
-                    sigma = sigma[m,k,1],
-                    rho = rho[m,k,1],
-                    W = parts$W,
-                    lambda = parts$eigenvalues_w,
-                    n = parts$n
-                )
-            }
-        }
-        if (array == FALSE) log_lik <- matrix(log_lik, nrow = K * M, ncol = 1)            
-    }
-    
-    return (log_lik)
-}
-
-
-

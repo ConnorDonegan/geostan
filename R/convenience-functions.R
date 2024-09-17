@@ -762,79 +762,6 @@ auto_gaussian <- function(type) {
     return(family)
 }
 
-#' Model comparison
-#'
-#' @description Deviance Information Criteria (DIC) and Widely Application Information Criteria (WAIC) for model comparison
-#' 
-#' @param object A fitted \code{geostan} model
-#' 
-#' @param pointwise Logical (defaults to `FALSE`), should a vector of values for each observation be returned?
-#' 
-#' @param digits Round results to this many digits.
-#' 
-#' @return A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density \code{Lpd}. If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
-#'
-#' @details
-#' 
-#' WAIC (widely applicable information criteria) and DIC (deviance information criteria) are used for model comparison. They are based on theories of out-of-sample predictive accuracy. The DIC is implemented with penalty term defined as 1/2 times the posterior variance of the deviance (Spiegelhatler et al. 2014).
-#'
-#' The limitations of these methods include that DIC is less robust than WAIC and that WAIC is not strictly valid for autocorrelated data (viz. geostan's spatial models). 
-#' 
-#' @examples
-#' 
-#' data(georgia)
-#' 
-#' fit <- stan_glm(log(rate.male) ~ 1, data = georgia, iter=500)
-#'
-#' dic(fit)
-#' waic(fit)
-#' 
-#' @source
-#'
-#' D. Spiegelhatler, N. G. Best, B. P. Carlin and G. Linde (2014) The Deviance Information Criterion: 12 Years on. J. Royal Statistical Society Series B: Stat Methodology. 76(3): 485-493.
-#' 
-#' Watanabe, S. (2010). Asymptotic equivalence of Bayes cross validation and widely application information criterion in singular learning theory. Journal of Machine Learning Research 11, 3571-3594.
-#'
-#' @md 
-#' @export
-#' @rdname waic
-waic <- function(object, pointwise = FALSE, digits = 2) {
-  ll <- log_lik(object, array = FALSE)
-  nsamples <- nrow(ll)
-  lpd <- apply(ll, 2, log_sum_exp) - log(nsamples)
-  p_waic <- apply(ll, 2, var)
-  waic <- -2 * (lpd - p_waic)
-  if(pointwise) return(data.frame(waic = waic, eff_pars = p_waic, lpd = lpd))
-  res <- c(WAIC = sum(waic), Eff_pars = sum(p_waic), Lpd = sum(lpd))
-  return(round(res, digits))
-}
-
-
-#' @export
-#' @rdname waic
-dic <- function(object, digits = 1) {
-    
-    # get log-likelihood
-    ll <- log_lik(object, array = FALSE)
-
-    # calculate model deviance
-    dev <- -2 * apply(ll,  1, FUN = sum) 
-    dev_bar <- mean(dev)
-    
-    # calculate penalty term
-    penalty <- 0.5 * var(dev)
-    
-    # DIC
-    DIC <- dev_bar + penalty
-
-    # round digits
-    x = round(c(DIC = DIC, penalty = penalty), digits)
-
-    # return DIC and penalty term
-    return (x)
-}
-
-
 #' Count neighbors in a connectivity matrix
 #'
 #' @param C A connectivity matrix
@@ -1187,18 +1114,14 @@ prep_car_data <- function(A,
     if (stan_fn == "wcar_normal_lpdf") {       
         stopifnot( Matrix::isSymmetric(C %*% Matrix::Diagonal(x = M_diag), check.attributes = FALSE) )
         car.dl <- rstan::extract_sparse_parts(A)
-        names(car.dl) <- paste0("Ax_", names(car.dl))
-        car.dl$nAx_w <- length(car.dl$Ax_w)
-        car.dl$Cidx <- array(0, dim = 1)
-        car.dl$nC <- 1
+        names(car.dl) <- paste0("A_", names(car.dl))
+        car.dl$nA_w <- length(car.dl$A_w)
         car.dl$WCAR <- 1            
     } else {
         stopifnot( Matrix::isSymmetric(C %*% Matrix::Diagonal(x = M_diag), check.attributes = FALSE) )        
-        car.dl <- rstan::extract_sparse_parts(Matrix::Diagonal(n) - C)
-        names(car.dl) <- paste0("Ax_", names(car.dl))
-        car.dl$nAx_w <- length(car.dl$Ax_w)        
-        car.dl$Cidx <- which( car.dl$Ax_w != 1 )
-        car.dl$nC <- length(car.dl$Cidx)
+        car.dl <- rstan::extract_sparse_parts(C)
+        names(car.dl) <- paste0("A_", names(car.dl))
+        car.dl$nA_w <- length(car.dl$A_w)        
         car.dl$WCAR <- 0
     }
     car.dl$Delta_inv <- 1 / M_diag
@@ -1264,11 +1187,9 @@ prep_car_data <- function(A,
 prep_sar_data <- function(W, quiet = FALSE) {
     stopifnot(inherits(W, "matrix") | inherits(W, "Matrix"))
     N <- nrow(W)
-    sar.dl <- rstan::extract_sparse_parts(Matrix::Diagonal(N) - W)
-    names(sar.dl) <- paste0("ImW_", names(sar.dl))
-    sar.dl$nImW_w <- length(sar.dl$ImW_w)
-    sar.dl$Widx <- which(sar.dl$ImW_w != 1)
-    sar.dl$nW <- length(sar.dl$Widx)
+    sar.dl <- rstan::extract_sparse_parts(W)
+    names(sar.dl) <- paste0("W_", names(sar.dl))
+    sar.dl$nW_w <- length(sar.dl$W_w)
     sar.dl$eigenvalues_w <- sort(as.numeric( eigen(W)$values ))
     sar.dl$n <- N
     sar.dl$W <- W

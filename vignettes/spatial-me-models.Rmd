@@ -166,7 +166,7 @@ fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)) + insurance,
                 data = georgia, 
                 car_parts = cars,
                 iter = 650, # for demo speed 
-                refresh = 0, # minimizes printing
+                quiet = TRUE, # minimizes printing
                 )
 
 print(fit)

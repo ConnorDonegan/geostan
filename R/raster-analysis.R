@@ -71,6 +71,7 @@ eigen_grid <- function(row = 5, col = 5) {
 #' @export
 #' @md
 prep_car_data2 <- function(row = 100, col = 100, quiet = FALSE) {
+    
     stopifnot(row > 2 & col > 2)
     N <- row * col
     Idx <- 1:N
@@ -84,14 +85,12 @@ prep_car_data2 <- function(row = 100, col = 100, quiet = FALSE) {
                               dims = c(N, N))
 
     # CRS representation
-    car.dl <- list(Ax_w = C@x,
-                Ax_v = C@i + 1,
-                Ax_u = C@p + 1)
+    car.dl <- list(A_w = C@x,
+                A_v = C@i + 1,
+                A_u = C@p + 1)
 
     # for wcar_normal_lpdf (including placeholders)
-    car.dl$nAx_w <- length(car.dl$Ax_w)
-    car.dl$Cidx <- array(0, dim = 1) 
-    car.dl$nC <- 1
+    car.dl$nA_w <- length(car.dl$A_w)
     car.dl$WCAR <- 1
 
     # Number of neighbors per row
@@ -160,47 +159,28 @@ prep_sar_data2 <- function(row, col, quiet = FALSE) {
                               j = W_elements$J,
                               x = W_elements$x,
                               dims = c(N, N))
-    
-    ## create (I-W) matrix
-    # diagonal ones for identity matrix
-    I_diagonal <- J_diagonal <- 1:N
-    
-    I <- c(W_elements$I, I_diagonal)
-    J <- c(W_elements$J, J_diagonal)
-    x <- c(-W_elements$x, rep(1, times = N))
 
-    # check sizes
-    stopifnot(length(I) == length(J) & length(J) == length(x))
-    
-    # sparse matrix: Transpose of (I - W) [transpose to obtain CRS form]
-    ImW <- Matrix::sparseMatrix(i = J,
-                                j = I,
-                                x = x,
-                                dims = c(N, N))
+    # CRS representation for Stan
+    sar.dl <- rstan::extract_sparse_parts(W)
+    names(sar.dl) <- paste0("W_", names(sar.dl))
+    sar.dl$nW_w <- length(sar.dl$W_w)
 
-    # CRS representation
-    sar.dl <- list(ImW_w = ImW@x,
-                ImW_v = ImW@i + 1,
-                ImW_u = ImW@p + 1)
-    
-    sar.dl$nImW_w <- length(sar.dl$ImW_w)
-    sar.dl$Widx <- which(sar.dl$ImW_w != 1)
-    sar.dl$nW <- length(sar.dl$Widx)
+    # eigenvalues of Wx
     sar.dl$eigenvalues_w <- eigen_grid(row = row, col = col)
-    sar.dl$n <- N
-    
+
+    # N, rho limits
+    sar.dl$n <- N    
     rho_lims <- 1/range(sar.dl$eigenvalues_w)
     if (!quiet) {
             r_rho_lims <- round( rho_lims, 3)
             message("Range of permissible rho values: ", r_rho_lims[1], ", ", r_rho_lims[2])
-    }
-    
+    }    
     sar.dl$rho_min <- min(rho_lims)
     sar.dl$rho_max <- max(rho_lims)
     sar.dl$W <- W
-    return(sar.dl)   
-}
-
+    return(sar.dl)
+    }
+   
 
 #' Eigenvalues for W matrix for 1-dimensional connectivity, as in time series modeling.
 #' 
