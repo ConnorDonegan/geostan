@@ -103,10 +103,9 @@ make_me_priors <- function(ME, me.list) {
                                 "prior_rhox_true")
         for (i in 1:7) empty_priors[[i]] <- numeric(0)
         empty_priors[[8]] <- c(-1,1)
-        empty_priors$spatial_me <- FALSE
         return (empty_priors)
     }
-    pl <- list(spatial_me = me.list$spatial_me)    
+    pl <- list()
     pl$prior_mux_true_location   <- as.array(ME$prior$location$location)
     pl$prior_mux_true_scale      <- as.array(ME$prior$location$scale)
     pl$prior_sigmax_true_df       <- as.array(ME$prior$scale$df)
