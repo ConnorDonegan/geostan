@@ -1,6 +1,6 @@
 template:
   params:
-    bootswatch: sandstone 
+    bootswatch: united
 destination: docs
 url: https://connordonegan.github.io/geostan/
 home:
@@ -47,7 +47,7 @@ reference:
   - me_diag
   - spatial
   - posterior_predict
-  - priors
+  - priors  
   - waic
 - title: "Miscellaneous"
 - contents:

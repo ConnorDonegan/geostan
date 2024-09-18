@@ -16,23 +16,24 @@
 #' 
 #' @examples
 #' \donttest{
-#' # std. normal priors to k=2 covariates
+#' # normal priors for k=2 covariates
 #' data(georgia)
 #' prior <- list()
 #' k <- 2
 #' prior$beta <- normal(location = rep(0, times = k),
-#'                      scale = rep(1, times = k))
+#'                      scale = rep(2, times = k))
 #' prior$intercept <- normal(-5, 3)
 #' print(prior)
-#' fit <- stan_glm(deaths.male ~ offset(log(pop.at.risk.male)) + ICE + college,
+#' fit <- stan_glm(deaths.male ~ offset(log(pop.at.risk.male)) + log(income) + college,
 #'                 re = ~ GEOID,
+#'                 centerx = TRUE,
 #'                 data = georgia,
 #'                 family = poisson(),
 #'                 prior = prior,
-#'                 prior_only = TRUE,
 #'                 chains = 2, iter = 600) # for speed only
 #' plot(fit)
 #'
+#' # setting (hyper-) priors in ME models
 #' se <- data.frame(insurance = georgia$insurance.se)
 #' prior <- list()
 #' prior$df <- gamma2(3, 0.2)
@@ -42,8 +43,8 @@
 #' ME <- prep_me_data(se = se, prior = prior)
 #' fit <- stan_glm(log(rate.male) ~ insurance, 
 #'                 data = georgia,
+#'                 centerx = TRUE,
 #'                 ME = ME,
-#'                 prior_only = TRUE,
 #'                chains = 2, iter = 600) # for speed only
 #' }
 #' @name priors

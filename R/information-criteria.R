@@ -1,7 +1,7 @@
 
 #' Model comparison
 #'
-#' @description Deviance Information Criteria (DIC) and Widely Application Information Criteria (WAIC) for model comparison
+#' @description Deviance Information Criteria (DIC) and Widely Application Information Criteria (WAIC) for model comparison.
 #' 
 #' @param object A fitted \code{geostan} model
 #' 
@@ -9,23 +9,33 @@
 #' 
 #' @param digits Round results to this many digits.
 #' 
-#' @return A vector of length 3 with \code{WAIC}, a rough measure of the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density \code{Lpd}. If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
+#' @return
+#'
+#' WAIC returns a vector of length 3 with the \code{WAIC} value, a penalty term which measures the effective number of parameters estimated by the model \code{Eff_pars}, and log predictive density \code{Lpd}. If \code{pointwise = TRUE}, results are returned in a \code{data.frame}.
+#'
+#' DIC returns a vector of length 2: the DIC value and the penalty term (which is part of the DIC calculation).
 #'
 #' @details
 #' 
 #' WAIC (widely applicable information criteria) and DIC (deviance information criteria) are used for model comparison. They are based on theories of out-of-sample predictive accuracy. The DIC is implemented with penalty term defined as 1/2 times the posterior variance of the deviance (Spiegelhatler et al. 2014).
 #'
-#' The limitations of these methods include that DIC is less robust than WAIC and that WAIC is not strictly valid for autocorrelated data (viz. geostan's spatial models). 
+#' The limitations of these methods include that DIC is less robust than WAIC and that WAIC is not strictly valid for autocorrelated data (viz. geostan's spatial models).
+#'
+#' For both DIC and WAIC, lower values indicate better models. 
 #' 
 #' @examples
-#' 
 #' data(georgia)
 #' 
-#' fit <- stan_glm(log(rate.male) ~ 1, data = georgia, iter=500)
-#'
-#' dic(fit)
-#' waic(fit)
+#' fit <- stan_glm(log(rate.male) ~ 1, data = georgia,
+#'                 iter=600, chains = 2, quiet = TRUE)
+#' fit2 <- stan_glm(log(rate.male) ~ log(income), data = georgia,
+#'                 centerx = TRUE, iter=600, chains = 2, quiet = TRUE)
 #' 
+#' dic(fit)
+#' dic(fit2)
+#' 
+#' waic(fit)
+#' waic(fit2)
 #' @source
 #'
 #' D. Spiegelhatler, N. G. Best, B. P. Carlin and G. Linde (2014) The Deviance Information Criterion: 12 Years on. J. Royal Statistical Society Series B: Stat Methodology. 76(3): 485-493.

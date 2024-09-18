@@ -37,16 +37,10 @@
     <loc>https://connordonegan.github.io/geostan/news/index.html</loc>
   </url>
   <url>
-    <loc>https://connordonegan.github.io/geostan/reference/DAGW.html</loc>
-  </url>
-  <url>
     <loc>https://connordonegan.github.io/geostan/reference/aple.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/auto_gaussian.html</loc>
-  </url>
-  <url>
-    <loc>https://connordonegan.github.io/geostan/reference/dims_to_W_elements.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/edges.html</loc>
@@ -64,9 +58,6 @@
     <loc>https://connordonegan.github.io/geostan/reference/geostan-package.html</loc>
   </url>
   <url>
-    <loc>https://connordonegan.github.io/geostan/reference/geostan_fit.html</loc>
-  </url>
-  <url>
     <loc>https://connordonegan.github.io/geostan/reference/get_shp.html</loc>
   </url>
   <url>
@@ -80,6 +71,9 @@
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/lisa.html</loc>
+  </url>
+  <url>
+    <loc>https://connordonegan.github.io/geostan/reference/log_lik.html</loc>
   </url>
   <url>
     <loc>https://connordonegan.github.io/geostan/reference/make_EV.html</loc>

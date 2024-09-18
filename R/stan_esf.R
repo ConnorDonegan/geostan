@@ -130,8 +130,6 @@
 #' 
 #' Donegan, C., Y. Chun and A. E. Hughes (2020). Bayesian estimation of spatial filters with Moran’s Eigenvectors and hierarchical shrinkage priors. *Spatial Statistics*. \doi{10.1016/j.spasta.2020.100450} (open access: \doi{10.31219/osf.io/fah3z}).
 #'
-#' Donegan, Connor (2021). Building spatial conditional autoregressive (CAR) models in the Stan programming language. *OSF Preprints*. \doi{10.31219/osf.io/3ey65}.
-#'
 #' Griffith, Daniel A., and P. R. Peres-Neto (2006). Spatial modeling in ecology: the flexibility of eigenfunction spatial analyses. *Ecology* 87(10), 2603-2613.
 #' 
 #' Griffith, D., and Y. Chun (2014). Spatial autocorrelation and spatial filtering, Handbook of Regional Science. Fischer, MM and Nijkamp, P. eds.
@@ -144,10 +142,9 @@
 #' \donttest{
 #' data(sentencing)
 #' # spatial weights matrix with binary coding scheme
-#' C <- shape2mat(sentencing, style = "B")
+#' C <- shape2mat(sentencing, style = "B", quiet = TRUE)
 #'
-#' # log-expected number of sentences
-#' ## expected counts are based on county racial composition and mean sentencing rates
+#' # expected number of sentences
 #' log_e <- log(sentencing$expected_sents)
 #'
 #' # fit spatial Poisson model with ESF + unstructured 'random effects'
@@ -155,21 +152,18 @@
 #'                    re = ~ name,
 #'                    family = poisson(),
 #'                    data = sentencing,
-#'                    C = C,
+#'                    C = C, 
 #'                    chains = 2, iter = 800) # for speed only
 #' 
 #' # spatial diagnostics 
 #' sp_diag(fit.esf, sentencing)
-#' plot(fit.esf)
 #' 
 #' # plot marginal posterior distributions of beta_ev (eigenvector coefficients)
 #' plot(fit.esf, pars = "beta_ev")
 #'
-#' # plot the marginal posterior distributions of the spatial filter 
-#' plot(fit.esf, pars = "esf")
-#'
-#' # calculate log-standardized incidence ratios 
-#  # (observed/exected counts)
+#' # calculate log-standardized incidence ratios (SIR)
+#' #  # SIR = observed/exected number of cases
+#' # in this case, prison sentences
 #' library(ggplot2)
 #' library(sf)
 #' f <- fitted(fit.esf, rates = FALSE)$mean

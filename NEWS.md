@@ -1,14 +1,20 @@
 # geostan 0.7.0
 
-Changes that increase sampling speed:
+V0.7.0 includes various adjustments to speed things up, and the DIC is now provided for model comparison (in addition to WAIC).
 
- - Samples for the pointwise log likelihood are no longer collected in the Stan models. Instead, they are calculated in R when needed for calculating waic or dic. 
+New features:
+
+ - Deviance information criteria (DIC). WAIC is considered to be more robust than DIC, but DIC remains common in spatial statistics because (unlike WAIC) it does not assume independent observations.
+
+Changes in the background that should improve the user experience:
+
+ - Samples for the pointwise log likelihood are no longer collected in the Stan models. Instead, they are calculated in R when needed for calculating waic or dic. This should improve sampling speed and lower memory and storage use.
  - The QR decomposition is now implemented (automatically) for models with covariates. (Note that this cannot be used for measurement error models.) The benefits of the QR decomposition in terms of sampling speed and efficiency are greatest when covariates are centered (which you can do using the `centerx` argument). 
  - A change recommended by Roger Bivand takes advantage of an improvement in `spdep`'s creation of neighbors objects (https://github.com/ConnorDonegan/geostan/issues/19). This will speed up the `shape2mat` function in some cases.
 
 Other changes:
 
- - Stan code for the CAR and SAR models has been simplified a bit. The change is reflected in the vignette on custom spatial models.
+ - Stan code for the CAR and SAR models has been simplified a bit. The changes are reflected in the vignette on custom spatial models. The output of `prep_car_data` and `prep_sar_data` have changed somewhat, but the user workflow is the same.
 
 # geostan 0.6.2
 

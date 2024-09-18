@@ -156,10 +156,11 @@ plot.geostan_fit <- function(x,
 #' @examples
 #' \donttest{
 #' data(georgia)
-#' A <- shape2mat(georgia, "B")
+#' C <- shape2mat(georgia, "B")
 #' 
 #' fit <- stan_esf(deaths.male ~ offset(log(pop.at.risk.male)),
-#'                 C = A,
+#'                 C = C,
+#'                 re = ~ GEOID,
 #'                 data = georgia,
 #'                 family = poisson(),
 #'                 chains = 1, iter = 600) # for speed only
@@ -167,18 +168,18 @@ plot.geostan_fit <- function(x,
 #' 
 #' # Residuals
 #' r <- resid(fit)
-#' moran_plot(r$mean, A)
 #' head(r)
+#' moran_plot(r$mean, C)
 #' 
 #' # Fitted values
 #' f <- fitted(fit)
-#'
-#' # Fitted values, unstandardized
-#' f <- fitted(fit, rates = FALSE)
 #' head(f)
+#' 
+#' f2 <- fitted(fit, rates = FALSE)
+#' head(f2)
 #'
 #' # Spatial trend
-#' esf <- spatial(fit)
+#' esf  <- spatial(fit)
 #' head(esf)
 #' }
 #' @export

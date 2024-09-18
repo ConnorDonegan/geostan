@@ -23,6 +23,6 @@ Expected value for the Moran coefficient of model residuals under the null hypot
 \examples{
 data(georgia)
 C <- shape2mat(georgia)
-X <- model.matrix(~ ICE + college, georgia)
+X <- model.matrix(~ college, georgia)
 expected_mc(X, C)
 }

@@ -56,7 +56,7 @@ The method argument currently has three options. The queen contiguity condition 
 
 Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matrices (Ch. 4).
 
-The space-time connectivity matrix can be used for eigenvector space-time filtering (\code{\link[geostan]{stan_esf}}. The \verb{lagged' space-time structure connects each observation to its own past (one period lagged) value and the past value of its neighbors. The }contemporaneous' specification links each observation to its neighbors and to its own in situ past (one period lagged) value (Griffith 2012, p. 23).
+The space-time connectivity matrix can be used for eigenvector space-time filtering (\code{\link[geostan]{stan_esf}}. The 'lagged' space-time structure connects each observation to its own past (one period lagged) value and the past value of its neighbors. The 'contemporaneous' specification links each observation to its neighbors and to its own in situ past (one period lagged) value (Griffith 2012, p. 23).
 }
 \examples{
 data(georgia)

@@ -33,7 +33,7 @@ The formula for the Moran coefficient (MC) is
 \deqn{MC = \frac{n}{K}\frac{\sum_i \sum_j w_{ij} (y_i - \overline{y})(y_j - \overline{y})}{\sum_i (y_i - \overline{y})^2}}
 where \eqn{n} is the number of observations and \eqn{K} is the sum of all values in the spatial connectivity matrix \eqn{W}, i.e., the sum of all row-sums: \eqn{K = \sum_i \sum_j w_{ij}}.
 
-If any observations with no neighbors are found (i.e. \code{any(Matrix::rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped. The alternative is for those observations to have a spatial lage of zero---but zero is not a neutral value, see the Moran scatter plot.
+If any observations with no neighbors are found (i.e. \code{any(Matrix::rowSums(w) == 0)}) they will be dropped automatically and a message will print stating how many were dropped. (The alternative would be for those observations to have a spatial lage of zero, but zero is not a neutral value.)
 }
 \examples{
 library(sf)

@@ -44,7 +44,7 @@ n_eff <- function(n, rho) {
 #'
 #' @md
 #' 
-#' @description The approximate-profile likelihood estimator for the spatial autocorrelation parameter from a simultaneous autoregressive (SAR) model (Li et al. 2007). Note, the `APLE` approximation is not reliable when the number of observations is large.
+#' @description The approximate-profile likelihood estimator for the spatial autocorrelation parameter from a simultaneous autoregressive (SAR) model (Li et al. 2007). 
 #' 
 #' @param x Numeric vector of values, length `n`. This will be standardized internally with \code{scale(x)}.
 #' @param w An `n x n` row-standardized spatial connectivity matrix. See \link[geostan]{shape2mat}.
@@ -54,7 +54,7 @@ n_eff <- function(n, rho) {
 #'
 #' @seealso \link[geostan]{mc}, \link[geostan]{moran_plot}, \link[geostan]{lisa}, \link[geostan]{sim_sar}
 #'
-#' @details The \code{APLE} is an estimate of the spatial autocorrelation parameter one would obtain from fitting an intercept-only SAR model.
+#' @details The \code{APLE} is an estimate of the spatial autocorrelation parameter one would obtain from fitting an intercept-only SAR model. Note, the `APLE` approximation is not reliable when the number of observations is large.
 #'
 #' @source
 #'
@@ -100,7 +100,7 @@ aple <- function(x, w, digits = 3) {
 #'
 #' If \code{m = 1} a vector of the same length as \code{mu}, otherwise an \code{m x length(mu)} matrix with one sample in each row.
 #'
-#' @details Calls \code{MASS::mvrnorm} internally to draw from the multivariate normal distribution. The covariance matrix is specified following the simultaneous autoregressive (SAR) model. 
+#' @details Calls \code{MASS::mvrnorm} internally to draw from the multivariate normal distribution. The covariance matrix is specified following the simultaneous autoregressive (SAR, aka spatial error) model. 
 #'
 #' @seealso \code{\link[geostan]{aple}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{lisa}}, \code{\link[geostan]{shape2mat}}
 #' 
@@ -136,7 +136,7 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' 
 #' @param shape An object of class \code{sf} or another spatial object coercible to \code{sf} with \code{sf::st_as_sf} such as \code{SpatialPolygonsDataFrame}.
 #'
-#' @param ... Additional arguments passed to \code{\link[geostan]{residuals.geostan_fit}}. For binomial and Poisson models, this includes the option to view the outcome variable as a rate (the default) rather than a count; for \code{\link[geostan]{stan_car}} models with auto-Gaussian likelihood (`fit$family$family = "auto_gaussian"), the residuals will be detrended by default, but this can be changed using `detrend = FALSE`.
+#' @param ... Additional arguments passed to \code{\link[geostan]{residuals.geostan_fit}}. 
 #' 
 #' @return
 #'
@@ -146,9 +146,7 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' 
 #' When provided with a numeric vector, this function plots a histogram, Moran scatter plot, and map.
 #'
-#' When provided with a fitted `geostan` model, the function returns a point-interval plot of observed values against fitted values (mean and 95 percent credible interval), either a Moran scatter plot of residuals or a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals, and a map of the mean posterior residuals (means of the marginal distributions). 
-#'
-#' When `y` is a fitted CAR or SAR model with `family = auto_gaussian()`, the fitted values will include implicit spatial trend term, i.e. the call to \link[geostan]{fitted.geostan_fit} will use the default `trend = TRUE` and the call to \link[geostan]{residuals.geostan_fit} will use the default `detrend = TRUE`. (See \link[geostan]{stan_car} or \link[geostan]{stan_sar} for additional details on their implicit spatial trend components.) 
+#' When provided with a fitted `geostan` model, the function returns a point-interval plot of observed values against fitted values (mean and 95 percent credible interval), a Moran scatter plot for the model residuals, and a map of the mean posterior residuals (means of the marginal distributions). If if `mc_style = 'hist'`, the Moran scatter plot is replaced by a histogram of Moran coefficient values calculated from the joint posterior distribution of the residuals.
 #'
 #' @seealso \code{\link[geostan]{me_diag}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{aple}}
 #' 
@@ -164,7 +162,8 @@ sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
 #' \donttest{
 #' fit <- stan_glm(log(rate.male) ~ log(income),
 #'                 data = georgia,
-#'                 chains = 2, iter = 800) # for speed only
+#'                 centerx = TRUE,
+#'                 chains = 1, iter = 1e3) # for speed only
 #' sp_diag(fit, georgia)
 #' }
 #' @importFrom stats sd
@@ -403,7 +402,7 @@ me_diag <- function(fit,
                     size = 0.25,
                     index = 0,
                     style = c("W", "B"),
-                    w = shape2mat(shape, match.arg(style)),
+                    w = shape2mat(shape, match.arg(style), quiet = TRUE),
                     binwidth = function(x) 0.5 * sd(x)
                     ) {
     stopifnot(length(varname) == 1)    
@@ -599,7 +598,7 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #'
 #' Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matrices (Ch. 4).
 #'
-#' The space-time connectivity matrix can be used for eigenvector space-time filtering (\code{\link[geostan]{stan_esf}}. The `lagged' space-time structure connects each observation to its own past (one period lagged) value and the past value of its neighbors. The `contemporaneous' specification links each observation to its neighbors and to its own in situ past (one period lagged) value (Griffith 2012, p. 23).
+#' The space-time connectivity matrix can be used for eigenvector space-time filtering (\code{\link[geostan]{stan_esf}}. The 'lagged' space-time structure connects each observation to its own past (one period lagged) value and the past value of its neighbors. The 'contemporaneous' specification links each observation to its neighbors and to its own in situ past (one period lagged) value (Griffith 2012, p. 23).
 #' 
 #' @source
 #'

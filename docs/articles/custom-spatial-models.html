@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/sandstone/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/united/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
@@ -94,7 +94,8 @@
 <div class="section level2">
 <h2 id="car-models">CAR models<a class="anchor" aria-label="anchor" href="#car-models"></a>
 </h2>
-<p>The CAR model is a multivariate normal distribution with covariance matrix <span class="math display">\[\Sigma = (I - \rho \cdot C)^{-1} M,\]</span> where <span class="math inline">\(I\)</span> is the identity matrix, <span class="math inline">\(\rho\)</span> a spatial autocorrelation parameter which may be positive or negative, <span class="math inline">\(C\)</span> is a sparse connectivity matrix, and <span class="math inline">\(M\)</span> is a diagonal matrix with scale parameters <span class="math inline">\(\tau_i^2\)</span>. There is typically a single scale parameter <span class="math inline">\(\tau\)</span> multiplied by weights <span class="math inline">\(\delta_i\)</span>. The term <span class="math inline">\(\tau^2 \cdot \delta_i\)</span> is the conditional variance pertaining to <span class="math inline">\(y_i | y_{n(i)}\)</span> where <span class="math inline">\(n(i)\)</span> lists the areas that neighbor the <span class="math inline">\(i^{th}\)</span> one.</p>
+<p>The CAR model is a multivariate normal distribution with covariance matrix <span class="math display">\[\Sigma = (I - \rho \cdot C)^{-1} M,\]</span> where <span class="math inline">\(I\)</span> is the identity matrix, <span class="math inline">\(\rho\)</span> a spatial autocorrelation parameter which may be positive or negative, <span class="math inline">\(C\)</span> is a sparse connectivity matrix, and <span class="math inline">\(M\)</span> is a diagonal matrix with scale parameters <span class="math inline">\(\tau_i^2\)</span>. There is typically a single scale parameter <span class="math inline">\(\tau\)</span> multiplied by weights <span class="math inline">\(\delta_i\)</span>.</p>
+<p>The term <span class="math inline">\(\tau^2 \cdot \delta_i\)</span> is the conditional variance pertaining to <span class="math inline">\(y_i | y_{n(i)}\)</span> where <span class="math inline">\(n(i)\)</span> lists the areas that neighbor the <span class="math inline">\(i^{th}\)</span> one.</p>
 <p>The defining feature of the CAR model is that, similar to time-series autoregression, the expectation for the value at the <span class="math inline">\(i^{th}\)</span> site given any or all other values of <span class="math inline">\(y\)</span> besides <span class="math inline">\(i\)</span> (<span class="math inline">\(y_{-i}\)</span>) are known, is a function of the neighboring values: <span class="math display">\[\mathbb{E}[y_i | y_{-i}] = \mu_j + \sum_{j \in n(i)} \rho \cdot c_{ij} (y_j - \mu_j).\]</span></p>
 <p>The CAR function presented here is valid for what is sometimes called the WCAR specification. This is the most commonly employed CAR specification (see <span class="citation">Donegan (<a href="#ref-donegan_2022" role="doc-biblioref">2022</a>)</span> for CAR models without this restriction). The connectivity matrix is row-standardized. Let <span class="math inline">\(A\)</span> be a symmetric binary connectivity matrix where <span class="math inline">\(a_{ij}= 1\)</span> only if the <span class="math inline">\(i^{th}\)</span> and <span class="math inline">\(j^{th}\)</span> sites are neighbors, all other entries are zero (including the diagonal entries <span class="math inline">\(i=j\)</span>). The elements of <span class="math inline">\(C\)</span> are <span class="math display">\[c_{ij} = \frac{a_{ij}}{\sum_j^n a_{ij}} = \frac{a_{ij}}{|n(i)|}.\]</span></p>
 <p>The diagonal of matrix <span class="math inline">\(M\)</span> then is specified by the n-length vector of weights <span class="math inline">\(\delta_i = \tau^2 \cdot \frac{1}{|n(i)|}\)</span>.</p>
@@ -119,8 +120,7 @@ data {
   matrix[n, k] x;
 
     // CAR parts
-  int nAx_w;
-  int nC;
+  int nA_w;
   vector[nA_w] A_w;
   array[nA_w] int A_v;
   array[n + 1] int A_u;
@@ -185,21 +185,28 @@ model {
  */
 real wcar_normal_lpdf(vector y, vector mu,
               real tau, real rho,
-              vector A_w, array[] int A_v, array[] int A_u,
-              vector D_inv, real log_det_D_inv,
+              vector A_w,
+              array[] int A_v,
+              array[] int A_u,
+              vector D_inv,
+              real log_det_D_inv,
               vector lambda,
               int n) {
   vector[n] z = y - mu;
+  // z' * D * z
   real ztDz = (z .* D_inv)' * z;
+  // z' * A * z
   real ztAz = z' * csr_matrix_times_vector(n, n, A_w, A_v, A_u, z);
-  vector[n] ldet_ImrhoC = sum(log1m(rho * lambda));    
+  // determinant of (I - rho * C) 
+  real ldet_ImrhoC = sum(log1m(rho * lambda));  
   return 0.5 * (
         -n * log( 2 * pi() )
         -2 * n * log(tau)
         + log_det_D_inv
-        + sum(ldet_ImrhoC)
+        + ldet_ImrhoC
         - (1 / tau^2) * (ztDz - rho * ztAz));
-}</code></pre>
+}
+</code></pre>
 <p>From R, you can use the following code to prepare the input data (<span class="math inline">\(y\)</span>, <span class="math inline">\(x\)</span>, etc.). I use <code>prep_car_data</code> to get a list of parts for the CAR model, then I append the outcome data to the same list and pass it all to a Stan model to draw samples.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mc-stan.org/rstan/" class="external-link">rstan</a></span><span class="op">)</span></span>
@@ -211,11 +218,12 @@ real wcar_normal_lpdf(vector y, vector mu,
 <span></span>
 <span><span class="co"># add data</span></span>
 <span><span class="co">## (centering covariates improves sampling efficiency)</span></span>
-<span><span class="va">car_list</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span></span>
-<span><span class="va">car_list</span><span class="op">$</span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span>, center <span class="op">=</span> <span class="cn">TRUE</span>, scale <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">car_list</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span></span>
+<span><span class="va">car_list</span><span class="op">$</span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">population</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span>, center <span class="op">=</span> <span class="cn">TRUE</span>, scale <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">car_list</span><span class="op">$</span><span class="va">k</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">car_list</span><span class="op">$</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># compile Stan model from file</span></span>
+<span><span class="va">autonormal_file</span> <span class="op">&lt;-</span> <span class="st">"autonormal.stan"</span></span>
 <span><span class="va">car_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_model.html" class="external-link">stan_model</a></span><span class="op">(</span><span class="va">autonormal_file</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># sample from model</span></span>
@@ -333,10 +341,11 @@ model {
 <span><span class="co"># add data</span></span>
 <span><span class="va">car_list</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">deaths.male</span></span>
 <span><span class="va">car_list</span><span class="op">$</span><span class="va">const_offset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">pop.at.risk.male</span><span class="op">)</span></span>
-<span><span class="va">car_list</span><span class="op">$</span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span>, center <span class="op">=</span> <span class="cn">TRUE</span>, scale <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">car_list</span><span class="op">$</span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span>, center <span class="op">=</span> <span class="cn">TRUE</span>, scale <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">car_list</span><span class="op">$</span><span class="va">k</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">car_list</span><span class="op">$</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># compile Stan model from file</span></span>
+<span><span class="va">car_poisson_file</span> <span class="op">&lt;-</span> <span class="st">"car_poisson.stan"</span></span>
 <span><span class="va">car_poisson</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_model.html" class="external-link">stan_model</a></span><span class="op">(</span><span class="va">car_poisson_file</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># sample from model</span></span>
@@ -348,8 +357,12 @@ model {
 <code class="sourceCode R"><span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span></span>
 <span><span class="va">car_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span>, style <span class="op">=</span> <span class="st">"WCAR"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span>,</span>
-<span>    data <span class="op">=</span> <span class="va">georgia</span>, car <span class="op">=</span> <span class="va">car_list</span>, family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>, iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span>,</span>
+<span>    data <span class="op">=</span> <span class="va">georgia</span>, </span>
+<span>    car <span class="op">=</span> <span class="va">car_list</span>, </span>
+<span>    centerx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>, </span>
+<span>    iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -361,9 +374,9 @@ model {
     \epsilon \sim Normal(0, \sigma^2 \cdot I)
     \end{aligned}
 \end{equation}\]</span><br>
-where <span class="math inline">\(W\)</span> is a row-standardized spatial weights matrix, <span class="math inline">\(I\)</span> is the n-by-n identity matrix, and <span class="math inline">\(\rho\)</span> is a spatial autocorrelation parameter. This is also a multivariate normal distribution but with a different covariance matrix than the CAR model: <span class="math display">\[\begin{equation}
+where <span class="math inline">\(W\)</span> is a row-standardized spatial weights matrix, <span class="math inline">\(I\)</span> is the n-by-n identity matrix, and <span class="math inline">\(\rho\)</span> is a spatial autocorrelation parameter. (The spatial econometrics literature refers to this as the spatial error model.) This is also a multivariate normal distribution but with a different covariance matrix than the CAR model: <span class="math display">\[\begin{equation}
   \Sigma = \sigma^2 \cdot (I - \rho \cdot W)^{-1} (I - \rho \cdot W^T)^{-1},
-\end{equation}\]</span> where <span class="math inline">\(T\)</span> is the matrix transpose operator. The SA parameter <span class="math inline">\(\rho\)</span> for the SAR model has a more intuitive connection to the degree of SA than the CAR model (which is usually above .95 for moderately high SA).</p>
+\end{equation}\]</span> where <span class="math inline">\(T\)</span> is the matrix transpose operator. The SA parameter <span class="math inline">\(\rho\)</span> for the SAR model has a more intuitive connection to the degree of SA (it is more monotonic) than the CAR model.</p>
 <p>The Stan function that is used by <code><a href="../reference/stan_sar.html">geostan::stan_sar</a></code> is as follows (the R code below will assume that you have saved this as “sar-lpdf.stan”):</p>
 <pre class="stan"><code>/**
  * Log probability density of the simultaneous autoregressive (SAR) model (spatial error model)
@@ -465,11 +478,12 @@ model{
 <span><span class="va">sar_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep_sar_data.html">prep_sar_data</a></span><span class="op">(</span><span class="va">W</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># add data</span></span>
-<span><span class="va">sar_list</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span></span>
-<span><span class="va">sar_list</span><span class="op">$</span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">population</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span>, center <span class="op">=</span> <span class="cn">TRUE</span>, scale <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">sar_list</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span></span>
+<span><span class="va">sar_list</span><span class="op">$</span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">population</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span>, center <span class="op">=</span> <span class="cn">TRUE</span>, scale <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">sar_list</span><span class="op">$</span><span class="va">k</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">sar_list</span><span class="op">$</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># compile Stan model from file</span></span>
+<span><span class="va">sar_model_file</span> <span class="op">&lt;-</span> <span class="st">"sar_model.stan"</span></span>
 <span><span class="va">sar_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_model.html" class="external-link">stan_model</a></span><span class="op">(</span><span class="va">sar_model_file</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># sample from model</span></span>
@@ -477,9 +491,11 @@ model{
 <p>We can draw samples from the same model using <code><a href="../reference/stan_sar.html">geostan::stan_sar</a></code>:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">W</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"W"</span><span class="op">)</span></span>
-<span><span class="va">sar_dl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep_sar_data.html">prep_sar_data</a></span><span class="op">(</span><span class="va">W</span><span class="op">)</span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_sar.html">stan_sar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">population</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">georgia</span>,</span>
-<span>    sar_parts <span class="op">=</span> <span class="va">sar_dl</span>, iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_sar.html">stan_sar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">population</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span>, </span>
+<span>                data <span class="op">=</span> <span class="va">georgia</span>,</span>
+<span>                C <span class="op">=</span> <span class="va">W</span>, </span>
+<span>                centerx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
 <p>One can also use the SAR model as a prior distribution for a parameter vector, just as was done above with the CAR model.</p>
 </div>
 <div class="section level2">

@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/sandstone/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script><!-- Bootstrap --><link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.4.0/united/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="../bootstrap-toc.css">
 <script src="../bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
@@ -107,7 +107,7 @@
 <p>Confirmatory statistics consists of experimental design, significance testing, estimation, and prediction, whereas EDA is concerned mainly with the encouragement of hypothesis formulation. (284)</p>
 </blockquote>
 <p>EDA techniques include all sorts of visual methods (histograms, scatter plots, etc.) that take a set of data, extract a limited summary of it (suppressing most other information), and then return a visual depiction that brings certain dimensions of (non-) variation to the foreground. As <span class="citation">Good (<a href="#ref-good_1983" role="doc-biblioref">1983</a>)</span> continues, “techniques of descriptive statistics are designed to match the salient features of the data set to human cognitive abilities” (287). EDA is also iterative: given some model has been built (or a hypothesis is entertained), one starts the process again by examining residuals and other features of the model. EDA thus suggests a process for model criticism and improvement by way successive approximation <span class="citation">(see Gabry et al. <a href="#ref-gabry_2019" role="doc-biblioref">2019</a>)</span>.</p>
-<p>Exploratory spatial data analysis (ESDA) <span class="citation">(Koschinsky <a href="#ref-koschinsky_2020" role="doc-biblioref">2020</a>)</span> includes all of this but also involves techniques that are of particular importance for spatially referenced data. ESDA involves tools for visualizing (residual) spatial patterns, decomposing spatial patterns into different elements across the map, and measuring the extent of spatial patterning in the data. Helpful ESDA tools draw out different spatial patterns from the data and communicate them in ways that are comprehensible to the human mind. In some cases, ESDA can help to <em>contextualize</em> data points. If ESDA draws attention to certain data points—for example, select observations that are very different from surrounding values—then locating them geographically may help to understand them as specific cases, as opposed to quantitative abstractions.</p>
+<p>Exploratory spatial data analysis (ESDA) <span class="citation">(Koschinsky <a href="#ref-koschinsky_2020" role="doc-biblioref">2020</a>)</span> includes all of this but also involves techniques that are of particular importance for spatially referenced data. ESDA involves tools for visualizing (residual) spatial patterns, decomposing spatial patterns into different elements across the map, and measuring the extent of spatial patterning in the data. Helpful ESDA tools draw out different spatial patterns from the data and communicate them in ways that are comprehensible to the human mind. In some cases, ESDA can help to <em>contextualize</em> data points. If ESDA draws attention to certain data points—for example, select observations that are very different from surrounding values—then locating them geographically may help to understand them as specific cases and less as quantitative abstractions.</p>
 <p>Tukey’s <em>Exploratory Data Analysis</em> <span class="citation">(Tukey <a href="#ref-tukey_1993" role="doc-biblioref">1993</a>)</span> also offers principles for EDA and favors an approach to EDA that generally eschews hypothesis testing.</p>
 </div>
 <div class="section level2">
@@ -317,8 +317,8 @@
 <span><span class="co">#&gt; Spatial method (outcome):  Exchangeable </span></span>
 <span><span class="co">#&gt; Likelihood function:  poisson </span></span>
 <span><span class="co">#&gt; Link function:  log </span></span>
-<span><span class="co">#&gt; Residual Moran Coefficient:  0.02230875 </span></span>
-<span><span class="co">#&gt; WAIC:  1319.37 </span></span>
+<span><span class="co">#&gt; Residual Moran Coefficient:  0.02466675 </span></span>
+<span><span class="co">#&gt; WAIC:  1318.28 </span></span>
 <span><span class="co">#&gt; Observations:  159 </span></span>
 <span><span class="co">#&gt; Data models (ME): none</span></span>
 <span><span class="co">#&gt; Inference for Stan model: foundation.</span></span>
@@ -326,10 +326,10 @@
 <span><span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff  Rhat</span></span>
-<span><span class="co">#&gt; intercept -4.179   0.001 0.021 -4.219 -4.196 -4.179 -4.161 -4.136   369 1.015</span></span>
-<span><span class="co">#&gt; alpha_tau  0.248   0.000 0.016  0.218  0.234  0.247  0.261  0.281  4553 1.001</span></span>
+<span><span class="co">#&gt; intercept -4.181   0.001 0.022 -4.221 -4.199 -4.181 -4.163 -4.138   311 1.014</span></span>
+<span><span class="co">#&gt; alpha_tau  0.248   0.000 0.016  0.219  0.234  0.247  0.261  0.283  4023 1.000</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Mon Sep 16 15:53:33 2024.</span></span>
+<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Tue Sep 17 21:09:24 2024.</span></span>
 <span><span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">#&gt; convergence, Rhat=1).</span></span></code></pre></div>
@@ -339,7 +339,7 @@
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.</span></span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-14-1.png" width="768" style="display: block; margin: auto;"></p>
-<p>The point-interval plot on the left shows the raw mortality rates (the raw outcome data) on the x-axis, the fitted values on the y-axis, and a ‘perfect fit’ (slope = 1, intercept = 0) line for reference. We can see that a number of the fitted values have posterior means that deviate from the observations; but this “shrinkage” towards the mean is not necessarily a problem. In fact, it is often desirable insofar as it indicates that these are counties for which our data provide very little evidence as to what the risk of death is (i.e., the population is very small). (For discussions of information pooling and other topics as well, see <span class="citation">McElreath (<a href="#ref-mcelreath_2016" role="doc-biblioref">2016</a>)</span> and <span class="citation">Haining and Li (<a href="#ref-haining_2020" role="doc-biblioref">2020</a>)</span>).</p>
+<p>The point-interval plot on the left shows the raw mortality rates (the raw outcome data) on the x-axis, the fitted values on the y-axis, and a ‘perfect fit’ (slope = 1, intercept = 0) line for reference. We can see that a number of the fitted values have posterior means that deviate from the observations; but this “shrinkage” towards the mean is not necessarily a problem. It is often desirable insofar as it indicates that these are counties for which our data provide very little evidence as to what the risk of death is (i.e., the population is very small). (For discussions of information pooling and other topics as well, see <span class="citation">McElreath (<a href="#ref-mcelreath_2016" role="doc-biblioref">2016</a>)</span> and <span class="citation">Haining and Li (<a href="#ref-haining_2020" role="doc-biblioref">2020</a>)</span>).</p>
 <p>The middle panel is a Moran scatter plot of the model residuals, and the map shows the mean residual for each county.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></p>
 <p>In this case, there is a small amount of residual autocorrelation, and the map indicates that this derives from a slight north-south/metropolitan-rural trend. The trend in the residuals suggests that shrinking towards the mean mortality rate may be less than ideal in this case—and potentially biased (socially)—because it appears that county-level mortality risk may be somewhat higher in the southern half of the state than in the greater Atlanta metropolitan area.</p>
 <p>We could extend the model to address this concern by using one of <strong>geostan</strong>’s spatial models (e.g., <code>stan_car</code>), by adding one or more (substantively meaningful) covariates, or potentially both.</p>

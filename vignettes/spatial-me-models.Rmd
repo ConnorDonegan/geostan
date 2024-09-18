@@ -31,7 +31,7 @@ These models are designed for spatial models that use survey estimates as covari
 
 In a (spatial) regression analysis, measurement/sampling error in covariates can lead to model parameter estimates that are overly-confident and prone to bias. This can lead to under- or over-estimation of population risks and needs, mainly because the noisy survey-based covariate passes directly into predictive values. This may impact real communities and service providers [see @bazuin_2013]. Examining the standard errors or margins of error of small-area survey estimates is an important first step that can help one determine whether a measurement error model should be considered. 
 
-Spatial measurement error models allow us to incorporate knowledge of data quality and human geography into our analyses, so that the final model results may better reflect our state of knowledge than they otherwise would. These models account for sampling error, but cannot address other sources of bias and error that may be present in survey estimates.
+These models account for sampling error which does not include any potential sources of systematic bias or recording errors that may be present in survey estimates.
 
 ## Modeling errors of observation
 
@@ -41,26 +41,15 @@ The measurement error (ME) models implemented in **geostan** are hierarchical Ba
   2. Spatial autocorrelation and generic background knowledge on social variables.
   
 The model treats the true value $\boldsymbol x$ as an unknown parameter or a latent variable. The goal is to obtain a probability distribution for $\boldsymbol x$. That information can then be incorporated into any of **geostan**'s regression or disease mapping models.
-  
-To represent the general social and technical knowledge on which this model is premised, we write $\mathcal{M}$. This background knowledge includes, for example, that the data came from the valid small-area spatial sampling design. 
 
-The sampling distribution (a likelihood statement) states the following: if the true median income value is $x_i$, then the probability of obtaining survey estimate $z_i$ is
-$$ p(z_i | x_i , \mathcal{M}) = Gauss(z_i | x_i, s_i) $$
-where $s_i$ is the standard error of the estimate. This is saying, more directly, that the true value $x_i$ is probably within two standard errors of the estimate.
+The sampling distribution for the model states that the true value $x_i$ is probably within two standard errors of the estimate, or $$z_i = x_i + \epsilon_i, \epsilon_i \sim Normal(0, s_i^2),$$
+where $z_i$ is the estimate, $s_i$ is its standard error, and $x_i$ is the true value.
 
-Our background knowledge on $x$ is the second component of the model. This is simply the knowledge that social variables tend to be spatially patterned. Specifically, extreme values are not implausible, although they tend to be clustered together. 
+Our background knowledge on $x$ is the second component of the model. This is simply the knowledge that social variables tend to be spatially patterned: relatively extreme values are not implausible but they tend to be clustered together. This information is encoded into a prior probability distribution for the unknown values $\boldsymbol x$.   Our prior distribution is the spatial conditional autoregressive (CAR) model [see @donegan_2022 Table 1, WCAR specification].
 
-This information is encoded into a prior probability distribution for the unknown values $\boldsymbol x$, using the spatial conditional autoregressive (CAR) model:
-$$ p(\boldsymbol x | \mathcal{M}) = Gauss(\boldsymbol x | \mu \boldsymbol 1, \boldsymbol \Sigma) $$
-where the bold symbols are used to indicate an object is a column vector or matrix. 
+If $\boldsymbol x$ is a rate variable---e.g., the poverty rate---it can be important to use a logit-transformation before applying the CAR prior [@logan_2020]. 
 
-The equation above states that the unknown values $\boldsymbol x$ are spatially autocorrelated, with a mean value of $\mu$ and conditional autoregressive (CAR) covariance matrix $$\boldsymbol \Sigma = (I - \rho C)^{-1} M,$$
-where $\rho$ is a spatial autocorrelation parameter, $I$ is the $n \times n$ identity matrix, and $C$ is a spatial connectivity matrix. $M$ is an $n \times n$ diagonal matrix; its diagonal contains the row-sums of $C$ multiplied by a scale parameter $\tau$ [@donegan_2022, Table 1 WCAR specification].
-
-If $\boldsymbol x$ is a rate variable---e.g., the poverty rate---it can be important to use a logit-transformation [@logan_2020] as follows:
-$$ p(logit(\boldsymbol x) | \mathcal{M}) = Gauss(logit(\boldsymbol x) | \mu \boldsymbol 1, \boldsymbol \Sigma) $$
-
-The CAR parameters $\mu$, $\rho$, and $\tau$ all require prior probability distributions; **geostan** uses the following by default:
+The CAR model has three scalar parameters (mean $\mu$, spatial dependence $\rho$, and scale $\tau$) that require prior probability distributions; **geostan** uses the following by default:
 
 \begin{equation} 
 \begin{split}
@@ -70,17 +59,15 @@ The CAR parameters $\mu$, $\rho$, and $\tau$ all require prior probability distr
 \end{split}
 \end{equation}
 
-The default prior for $\rho$ is uniform across its entire support (determined by the extreme eigenvalues of $C$)
+The default prior for $\rho$ is uniform across its entire support (determined by the extreme eigenvalues of the spatial weights matrix).
 
 ### Discussion
 
 For a sense of how all of this information gets combined in the model, consider two hypothetical survey estimates. 
 
-The first has a small standard error---it is a reliable data point---and it is also similar to its surrounding counties. In that case, the probability distribution for $x_i$ is going to look similar to the raw estimate and its standard error. Now consider a second county, where the estimate has a large standard error---it is unreliable---and the estimate is also dissimilar from its neighbors. In this case, we ought to consider it quite probable that the estimate $x_i$ is far from the truth. This means that the probability distribution for $x_i$ that comes from our model may be quite different from the raw estimate. That shift is often referred to as "shrinkage," although the shift may be in either direction (up or down).
+The first has a small standard error---it is a reliable data point---and it is also similar to its surrounding counties. In that case, the probability distribution for $x_i$ is going to look similar to the raw estimate and its standard error. Now consider a second county, where the estimate has a large standard error---it is unreliable---and the estimate is also dissimilar from its neighbors. In this case, we ought to consider it quite probable that the estimate $x_i$ is far from the truth. This means that the probability distribution for $x_i$ that comes from our model may be quite different from the raw estimate. That shift is often referred to as "shrinkage," although the shift may be in either direction (up or down). 
 
-If a non-spatial prior model for $\boldsymbol x$ were used instead of the CAR model, then there would be a tendency for all survey estimates $z_i$ that are far from the mean to be shrunk towards the 'global mean', instead of the local area mean. This can lead to blatant social biases in ME models when they are applied to spatial data [@donegan_2021]. For that and other reasons, the spatial CAR model is often essential for spatial ME models, and it remains important to graphically evaluate results (see below).
-
-When we add a spatial ME model to a spatial regression model, the model results will automatically average over the uncertain inferences we make about $\boldsymbol x$. The inferential biases that follow from ignoring measurement/observational uncertainty will be addressed, meaning that the probability distributions for the parameters will reflect the information we have on data quality. It is important to understand that there may still be un-modeled forms of bias and error in the ACS estimates---due to response bias and other sources---beyond the amount that is attributed to sampling error. 
+When we add a spatial ME model to a spatial regression model, the model results will automatically average over the uncertain inferences we make about $\boldsymbol x$. The inferential biases that follow from ignoring measurement/observational uncertainty will be addressed, meaning that the probability distributions for the parameters will reflect the information we have on data quality.
 
 ## Getting started
 
@@ -107,13 +94,12 @@ It also has optional inputs:
   
 The default prior distributions are designed to be fairly vague relative to ACS variables (including percentages from 0-100), assuming that magnitudes such as income have been log-transformed already. 
 
-The logit-transformation is often required for skewed rates, such as the poverty rate. The user does *not* do this transformation on their own (i.e., before passing the data to the model), simply use the `logit` argument in `prep_me_data`. The logit transformation is also good to use for rates because it automatically enforces rates to remain within their zero-one bounds.
-
-(There is a third optional argument, `bounds`, but it is rarely needed. It will forces the values of the latent parameter vector to remain between the given bounds. For example, rates must be between 0 and 1, but this is enforced automatically by logit transform (which should be used in such cases). If it is needed for some reason, the `bounds` argument will apply to all of the modeled covariates.)
+The logit-transformation is often required for skewed rates, such as the poverty rate. The user does *not* do this transformation on their own (i.e., before passing the data to the model), simply use the `logit` argument in `prep_me_data`.^[There is a third optional argument, `bounds`, but it is rarely needed. It will forces the values of the latent parameter vector to remain between the given bounds. For example, rates must be between 0 and 1, but this is enforced automatically by logit transform (which should be used in such cases). If it is needed for some reason, the `bounds` argument will apply to all of the modeled covariates.]
 
 As an example, we will be using estimates of the percent covered by health insurance in Georgia counties. We are going to convert this to a rate so that we can use the logit transform:
 
 ```{r}
+data(georgia)
 georgia$insurance <- georgia$insurance / 100
 georgia$insurance.se <- georgia$insurance.se / 100
 ```
@@ -126,10 +112,10 @@ SE <- data.frame(insurance = georgia$insurance.se)
 
 If we intended to model additional survey-based covariates, we would simply add their standard errors to this data frame as another column.
 
-We create a binary spatial connectivity matrix, and then pass it to `prep_car_data` to prepare our list of data for the CAR model:
+We create a binary spatial connectivity matrix, and then pass it to `prep_car_data` to prepare it for the CAR model:
 
 ```{r}
-C <- shape2mat(georgia, "B")
+C <- shape2mat(georgia, "B", quiet = TRUE)
 cars <- prep_car_data(C)
 ```
 
@@ -166,7 +152,7 @@ fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)) + insurance,
                 data = georgia, 
                 car_parts = cars,
                 iter = 650, # for demo speed 
-                quiet = TRUE, # minimizes printing
+                quiet = TRUE, 
                 )
 
 print(fit)
@@ -174,20 +160,20 @@ print(fit)
 
 The CAR models in **geostan** can be highly efficient in terms of MCMC sampling, but the required number of iterations will depend on many characteristics of the model and data. Often the default `iter = 2000` is more than sufficient (with `cores = 4`). To speed up sampling with multi-core processing, use `cores = 4` (to sample 4 chains in parallel).
 
-In the following section, methods for examining MCMC samples of the modeled covariate values $\boldsymbol x$ will be illustrated. Note that the process of storing MCMC samples for $\boldsymbol x$ can become computationally burdensome if you have multiple covariates and moderately large N. If you do not need the samples of $\boldsymbol x$ you can use the `drop` or `slim` arguments, as in:
+In the following section, methods for examining MCMC samples of the modeled covariate values $\boldsymbol x$ will be illustrated. Note that the process of storing MCMC samples for $\boldsymbol x$ can become computationally burdensome if you have multiple covariates and moderately large N. If you do not need the samples of $\boldsymbol x$ you can use the `drop` argument, as in:
 
 ```{r eval = FALSE}
-fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)) + insurance,
+fit2 <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)) + insurance,
                 centerx = TRUE,
                 ME = ME_list,
-		slim = TRUE,
+		drop = 'x_true', 
                 family = poisson(),
                 data = georgia, 
                 car_parts = cars
                 )
 ```
 
-Using `slim = TRUE` may be faster (particularly for larger data sets), but will prevent the collection of MCMC samples for quantities of interest such as fitted values, pointwise log-likelihood values (required for WAIC), and modeled covariates $\boldsymbol x$. The `drop` argument to the model fitting functions (e.g., `stan_car`) provides more control over which parameters are saved.
+Using `slim = TRUE` may be faster (particularly for larger data sets), but will prevent the collection of MCMC samples for quantities of interest such as fitted values, pointwise log-likelihood values (required for WAIC), as well as modeled covariates $\boldsymbol x$. 
 
 ## Visual diagnostics
 
@@ -206,8 +192,6 @@ me_diag(fit, 'insurance', georgia)
 ```
 
 In this case, the results do not look too concerning insofar as there are no conspicuous patterns. However, a number of the credible intervals on the modeled values are large, which indicates low data reliability. The fact that some of the $\delta_i$ values are substantial also points to low data quality for those estimates.
-
-To see troubling
 
 It can be important to understand that the ME models are not independent from the rest of the model. When the modeled covariate $\boldsymbol x$ enters a regression relationship, that regression relationship can impact the probability distribution for $\boldsymbol x$ itself. (This is a feature of all Bayesian ME models). To examine the ME model in isolation, you can set the `prior_only` argument to `TRUE` (see `?stan_glm` or any of the spatial models).
 
@@ -243,23 +227,30 @@ head(x.mu)
 The vector `x.mu` contains estimates (posterior means) for $x_i$. We might want to use these to plot the residuals or fitted values against the predictor:
 
 ```{r fig.width = 4, fig.height = 4}
-rs <- resid(fit)$mean
-plot(x.mu, rs)
+res <- resid(fit)$mean
+plot(x.mu, res,
+     xlab = 'Insurance rate',
+     ylab = 'Residual',
+     type = 'n',
+     bty = 'n')
 abline(h = 0)
+points(x.mu, res,
+       col = 4,
+       pch = 20)
 ```
 
 ## Non-spatial ME models
 
 If the `ME` list doesn't have a slot with `car_parts`, **geostan** will automatically use a non-spatial Student's t model instead of the CAR model:
-$$ p(\boldsymbol x | \mathcal{M}) = Student(\boldsymbol x | \nu, \mu \boldsymbol 1, \sigma) $$
-
+$$ p( x | \mathcal{M}) = Student(\boldsymbol x | \nu, \mu, \sigma), $$
+with degrees of freedom $\nu$, mean $\mu$, and scale $\sigma$.
 
 ```{r eval = FALSE}
 ME_nsp <- prep_me_data(
   se = data.frame(insurance = georgia$insurance.se),
   logit = TRUE
 )
-fit_nsp <- stan_glm(log(rate.male) ~ insurance, data = georgia, ME = ME_nsp, prior_only = TRUE)
+fit_nsp <- stan_glm(log(rate.male) ~ insurance, data = georgia, ME = ME_nsp)
 ```
 
 ## Multiple covariates

@@ -8,7 +8,7 @@
 The [geostan](https://connordonegan.github.io/geostan/) R package
 supports a complete spatial analysis workflow with Bayesian models for
 areal data, including a suite of functions for visualizing spatial data
-and model results. `geostan` models were built using
+and model results. geostan models were built using
 [Stan](https://mc-stan.org), a state-of-the-art platform for Bayesian
 modeling.
 
@@ -27,10 +27,10 @@ Features include:
     and model diagnostics.  
   - **Observational uncertainty** Incorporate information on data
     reliability, such as standard errors of American Community Survey
-    estimates, into any `geostan` model.
+    estimates, into any geostan model.
   - **Missing and Censored observations** Vital statistics and disease
     surveillance systems like CDC Wonder censor case counts that fall
-    below a threshold number; `geostan` can model disease or mortality
+    below a threshold number; geostan can model disease or mortality
     risk for small areas with censored observations or with missing
     observations.
   - **The RStan ecosystem** Interfaces easily with many high-quality R
@@ -44,22 +44,20 @@ study of time trends in disease incidence or mortality data.
 
 ## Installation
 
-There are two ways to install \`geostan: directly from the package
-github repository or from the Comprehensive R Archive Network (CRAN).
+There are two ways to install geostan: directly from the package github
+repository or from the Comprehensive R Archive Network (CRAN).
 
 ### From CRAN
 
-Using your R console, you can install `geostan` from CRAN:
+Using your R console, you can install geostan from CRAN:
 
 ``` r
 install.packages("geostan")
 ```
 
-If that fails, you can install from github.
-
 ### From github
 
-You can install `geostan` from github:
+You can install geostan from github:
 
 ``` r
 if (!require('devtools')) install.packages('devtools')
@@ -107,7 +105,6 @@ Load the package and the `georgia` county mortality data set:
 
 ``` r
 library(geostan)
-#> This is geostan version 0.6.2
 data(georgia)
 ```
 
@@ -132,8 +129,8 @@ A <- shape2mat(georgia, style = "B")
 mortality_rate <- georgia$rate.female * 10e3
 sp_diag(mortality_rate, georgia, w = A)
 #> 3 NA values found in x will be dropped from data x and matrix w
-#> Warning: Removed 3 rows containing non-finite outside the scale range
-#> (`stat_bin()`).
+#> Warning: Removed 3 rows containing non-finite outside the scale
+#> range (`stat_bin()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
@@ -187,8 +184,8 @@ diagnostics for spatial models:
 sp_diag(fit, georgia, w = A)
 #> Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.
 #> 3 NA values found in x will be dropped from data x and matrix w
-#> Warning: Removed 3 rows containing missing values or values outside the
-#> scale range (`geom_pointrange()`).
+#> Warning: Removed 3 rows containing missing values or values
+#> outside the scale range (`geom_pointrange()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
@@ -206,20 +203,20 @@ print(fit)
 #> Spatial method (outcome):  CAR 
 #> Likelihood function:  poisson 
 #> Link function:  log 
-#> Residual Moran Coefficient:  0.0016665 
-#> WAIC:  1225.41 
+#> Residual Moran Coefficient:  0.0011525 
+#> WAIC:  1227.47 
 #> Observations:  156 
 #> Data models (ME): none
 #> Inference for Stan model: foundation.
 #> 4 chains, each with iter=2000; warmup=1000; thin=1; 
 #> post-warmup draws per chain=1000, total post-warmup draws=4000.
 #> 
-#>             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff Rhat
-#> intercept -4.672   0.002 0.088 -4.836 -4.728 -4.674 -4.618 -4.494  2497    1
-#> car_rho    0.924   0.001 0.057  0.785  0.883  0.936  0.971  0.995  3289    1
-#> car_scale  0.457   0.001 0.035  0.393  0.427  0.455  0.485  0.528  3657    1
+#>             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff  Rhat
+#> intercept -4.674   0.002 0.089 -4.849 -4.730 -4.674 -4.621 -4.505  2362 1.000
+#> car_rho    0.923   0.001 0.058  0.778  0.879  0.937  0.973  0.995  3319 1.000
+#> car_scale  0.458   0.001 0.036  0.395  0.428  0.456  0.488  0.534  3618 0.999
 #> 
-#> Samples were drawn using NUTS(diag_e) at Tue Aug 20 05:58:10 2024.
+#> Samples were drawn using NUTS(diag_e) at Tue Sep 17 16:44:56 2024.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -235,19 +232,19 @@ mortality_est <- fitted(fit) * 10e3
 county_name <- georgia$NAME
 head( cbind(county_name, mortality_est) )
 #>           county_name      mean        sd      2.5%       20%       50%
-#> fitted[1]       Crisp 101.49822  9.422313  84.36103  93.25680 101.12252
-#> fitted[2]     Candler 137.25530 15.792946 108.87856 123.56765 136.61021
-#> fitted[3]      Barrow  94.26635  6.194287  82.31271  89.08029  94.15654
-#> fitted[4]      DeKalb  59.76593  1.560082  56.76403  58.42762  59.74499
-#> fitted[5]    Columbia  53.31762  3.271309  47.03397  50.46420  53.27029
-#> fitted[6]        Cobb  54.13543  1.506894  51.22763  52.89381  54.09214
+#> fitted[1]       Crisp 101.48785  9.604829  83.99009  93.31163 101.17610
+#> fitted[2]     Candler 136.99885 15.905146 109.27395 123.11823 136.31355
+#> fitted[3]      Barrow  94.25470  6.071597  82.80270  89.20105  94.16678
+#> fitted[4]      DeKalb  59.76214  1.579194  56.72962  58.44624  59.75766
+#> fitted[5]    Columbia  53.33958  3.257549  47.19615  50.56654  53.28387
+#> fitted[6]        Cobb  54.12983  1.498260  51.24933  52.85101  54.10133
 #>                 80%     97.5%
-#> fitted[1] 109.39261 120.59846
-#> fitted[2] 150.26569 169.52541
-#> fitted[3]  99.37990 106.98671
-#> fitted[4]  61.11074  62.79957
-#> fitted[5]  56.05511  59.77822
-#> fitted[6]  55.37597  57.19144
+#> fitted[1] 109.30723 121.16598
+#> fitted[2] 150.17348 169.77611
+#> fitted[3]  99.19399 106.44508
+#> fitted[4]  61.07091  62.86805
+#> fitted[5]  56.08790  59.78086
+#> fitted[6]  55.42278  57.02966
 ```
 
 The mortality estimates are stored in the column named “mean”, and the
@@ -260,7 +257,7 @@ pages](https://connordonegan.github.io/geostan/reference/index.html) and
 
 ## Citing geostan
 
-If you use `geostan` in published work, please include a citation.
+If you use geostan in published work, please include a citation.
 
 Donegan, Connor (2022) “geostan: An R package for Bayesian spatial
 analysis” *The Journal of Open Source Software*. 7, no. 79: 4716.

@@ -193,8 +193,6 @@
 #' Donegan, Connor and Morris, Mitzi (2021). Flexible functions for ICAR, BYM, and BYM2 models in Stan. Code repository. <https://github.com/ConnorDonegan/Stan-IAR>
 #'
 #' Donegan, Connor (2021b). Building spatial conditional autoregressive (CAR) models in the Stan programming language. *OSF Preprints*. \doi{10.31219/osf.io/3ey65}.
-#'
-#' Donegan, Connor and Chun, Yongwan and Griffith, Daniel A. (2021). Modeling community health with areal data: Bayesian inference with survey standard errors and spatial structure. *Int. J. Env. Res. and Public Health* 18 (13): 6856. DOI: 10.3390/ijerph18136856 Data and code: \url{https://github.com/ConnorDonegan/survey-HBM}.
 #' 
 #' Freni-Sterrantino, Anna, Massimo Ventrucci, and Håvard Rue (2018). A Note on Intrinsic Conditional Autoregressive Models for Disconnected Graphs. *Spatial and Spatio-Temporal Epidemiology*, 26: 25–34.
 #'
@@ -239,7 +237,7 @@
 #'    low = "navy",
 #'    high = "darkred"
 #'   ) +
-#'   labs(title = "Log-standardized sentencing ratios",
+#'   labs(title = "Log-standardized incidence ratios",
 #'        subtitle = "log( Fitted/Expected), base 2") +
 #'   theme_void() +
 #'   theme(

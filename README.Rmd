@@ -19,16 +19,16 @@ knitr::opts_chunk$set(
 
 ## geostan: Bayesian spatial analysis
 
-The [geostan](https://connordonegan.github.io/geostan/) R package supports a complete spatial analysis workflow with Bayesian models for areal data, including a suite of functions for visualizing spatial data and model results. `geostan` models were built using [Stan](https://mc-stan.org), a state-of-the-art platform for Bayesian modeling. 
+The [geostan](https://connordonegan.github.io/geostan/) R package supports a complete spatial analysis workflow with Bayesian models for areal data, including a suite of functions for visualizing spatial data and model results. geostan models were built using [Stan](https://mc-stan.org), a state-of-the-art platform for Bayesian modeling. 
 
 Introductions to the software can be found at [r-spatial.org](https://r-spatial.org/r/2024/08/02/geostan-introduction.html) and in the package [vignettes](https://connordonegan.github.io/geostan/articles/index.html).
 
 Features include:
 
-* **Disease mapping and spatial regression** Statistical models for data recorded across areal units like states, counties, or census tracts.
+* **Spatial regression and disease mapping** Statistical models for data recorded across areal units like states, counties, or census tracts.
 * **Spatial analysis tools** Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics.  
-* **Observational uncertainty** Incorporate information on data reliability, such as standard errors of American Community Survey estimates, into any `geostan` model.
-* **Missing and Censored observations** Vital statistics and disease surveillance systems like CDC Wonder censor case counts that fall below a threshold number; `geostan` can model disease or mortality risk for small areas with censored observations or with missing observations.
+* **Observational uncertainty** Incorporate information on data reliability, such as standard errors of American Community Survey estimates, into any geostan model.
+* **Missing and Censored observations** Vital statistics and disease surveillance systems like CDC Wonder censor case counts that fall below a threshold number; geostan can model disease or mortality risk for small areas with censored observations or with missing observations.
 * **The RStan ecosystem** Interfaces easily with many high-quality R packages for Bayesian modeling.
 * **Custom spatial models** Tools for building custom spatial models in Stan.
 
@@ -36,21 +36,19 @@ For public health research, geostan complements the [surveil](https://connordone
 
 ## Installation
 
-There are two ways to install `geostan: directly from the package github repository or from the Comprehensive R Archive Network (CRAN). 
+There are two ways to install geostan: directly from the package github repository or from the Comprehensive R Archive Network (CRAN). 
  
 ### From CRAN
 
-Using your R console, you can install `geostan` from CRAN:
+Using your R console, you can install geostan from CRAN:
 
 ``` r
 install.packages("geostan")
 ```
 
-If that fails, you can install from github.
-
 ### From github
 
-You can install `geostan` from github:
+You can install geostan from github:
 
 ```r
 if (!require('devtools')) install.packages('devtools')
@@ -129,7 +127,7 @@ Details and demonstrations can be found in the package [help pages](https://conn
 
 ## Citing geostan
 
-If you use `geostan` in published work, please include a citation.
+If you use geostan in published work, please include a citation.
 
 Donegan, Connor (2022) "geostan: An R package for Bayesian spatial analysis" *The Journal of Open Source Software*. 7, no. 79: 4716. [https://doi.org/10.21105/joss.04716](https://doi.org/10.21105/joss.04716).
 
