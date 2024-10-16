@@ -71,3 +71,43 @@ test_that("Slim SAR works", {
                     drop = c('fitted'))
     expect_geostan(fit)    
 })
+
+test_that("Spatial lag of y works", {
+    row = 20
+    col = 26
+    N <- row * col
+    sdl <- prep_sar_data2(row = row, col = col)
+    x <- rnorm(n = N)
+    y <- .75 *x + rnorm(n = N, sd = .5)
+    df <- data.frame(y=y, x=x)
+    # SDLM
+    fit <- stan_sar(y ~ x,
+                    data = df,
+                    type = "SDLM",
+                    sar_parts = sdl,
+                    chains = 1,
+                    iter = iter,
+                    refresh = refresh,
+                    slim = TRUE)
+    expect_geostan(fit)
+    # SLM, manual slx
+    fit <- stan_sar(y ~ x,
+                    slx = ~ x,
+                    data = df,
+                    type = "SLM",
+                    sar_parts = sdl,
+                    chains = 1,
+                    iter = iter,
+                    refresh = refresh)
+    expect_geostan(fit)
+    # SLM, no slx
+    fit <- stan_sar(y ~ x,
+                    data = df,
+                    type = "SLM",
+                    sar_parts = sdl,
+                    chains = 1,
+                    iter = iter,
+                    refresh = refresh)
+    expect_geostan(fit)        
+})
+

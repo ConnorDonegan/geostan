@@ -113,7 +113,7 @@
   }
 
  // SAR
-if (sar) {
+if (sar > 0) {
   target += student_t_lpdf(sar_scale[1] | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
   if (is_auto_gaussian && prior_only == 0) {
     target += sar_normal_lpdf(y |
@@ -124,7 +124,8 @@ if (sar) {
 			      W_v,
 			      W_u,
 			      eigenvalues_w,
-			      n);
+			      n,
+			      sar);
   }
   if (!is_auto_gaussian) {
     target += sar_normal_lpdf(log_lambda |
@@ -135,7 +136,8 @@ if (sar) {
 			      W_v,
 			      W_u,
 			      eigenvalues_w,
-			      n);			      
+			      n,
+			      sar);			      
   }
 }
 

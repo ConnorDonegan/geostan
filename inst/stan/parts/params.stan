@@ -15,7 +15,7 @@
   vector[dev] z;
 
   // CAR/SAR
-  vector[(car||sar) && !is_auto_gaussian ? n : 0] log_lambda;
+  vector[(car > 0 || sar > 0) && !is_auto_gaussian ? n : 0] log_lambda;
   array[car ? 1 : 0] real<lower=0> car_scale;
   array[car ? 1 : 0] real<lower=car_rho_lims[1], upper=car_rho_lims[2]> car_rho;     
   array[sar ? 1 : 0] real<lower=0> sar_scale;

@@ -119,5 +119,5 @@
 //  array[nW] int Widx;
   vector[n] eigenvalues_w;
   array[2] real sar_rho_lims;
-  int<lower=0,upper=1> sar;
+  int<lower=0,upper=2> sar;
 

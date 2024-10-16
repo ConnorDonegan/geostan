@@ -1,4 +1,8 @@
-  if (car) {
+//
+// file not used
+//
+
+if (car) {
     log_lambda_mu = rep_vector(intercept, n);
     if (has_re) {
       for (i in 1:n) {

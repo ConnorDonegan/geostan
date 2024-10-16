@@ -8,7 +8,7 @@
   vector[type > 1 ? n : 0] theta;
 
   // CAR
-  vector[car||sar ? n : 0] log_lambda_mu;
+  vector[car > 0 || sar > 0 ? n : 0] log_lambda_mu;
 
   // GLM
   matrix[n, use_qr ? 0 : dx_all] x_all;

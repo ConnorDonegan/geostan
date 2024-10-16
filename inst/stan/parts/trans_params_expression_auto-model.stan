@@ -1,4 +1,4 @@
-  if (car || sar) {
+  if (car > 0 || sar > 0) {
     
     log_lambda_mu = rep_vector(intercept, n);
     

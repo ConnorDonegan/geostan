@@ -21,7 +21,8 @@
 #' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{auto_gaussian()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}; if `family = gaussian()` is provided, it will automatically be converted to `auto_gaussian()`.
 #'
-
+#' @param type Type of SAR model (character string): spatial error model ('SEM'), spatial Durbin error model ('SDEM'), spatial Durbin model ('SDM'), or spatial lag of y model ('Lag'). Note that regression coefficients for the two 'spatial lag of y' models ('SDM' and 'Lag') do not admit of the usual interpretation; see Details below.
+#'
 #' @param prior A named list of parameters for prior distributions (see \code{\link[geostan]{priors}}):
 #' \describe{
 #' 
@@ -69,20 +70,28 @@
 #'
 #' Discussions of SAR models may be found in Cliff and Ord (1981), Cressie (2015, Ch. 6), LeSage and Pace (2009), and LeSage (2014). The Stan implementation draws from Donegan (2021).
 #'
-#' The general scheme of the SAR model for numeric vector \eqn{y} is
+#' There are two SAR specification options which are commonly known as the spatial error ('SEM') and the spatial lag ('SLM') models. Additionally, it is common to include spatially-lagged covariates in these models; then the model is referred to as a spatial Durbin model ('spatial Durbin error model' or 'spatial Durbin lag model', SDEM/SDLM). You can also obtain the Durbin model by using either 'SEM' or 'SLM' and then adding all (or some) of your covariates to the \code{slx} (spatial lag of X) argument; in other words, the SDEM and SDLM options are simply for convenience. 
+#'
+#' The spatial error specification ('SEM') is
 #' \deqn{y = \mu + ( I - \rho W)^{-1} \epsilon}
-#' \deqn{\epsilon \sim Gauss(0, \sigma^2 I)}
-#' where \eqn{W} is the spatial weights matrix, \eqn{I} is the n-by-n identity matrix, and \eqn{\rho} is a spatial autocorrelation parameter. In words, the errors of the regression equation are spatially autocorrelated. 
+#' \deqn{\epsilon \sim Gauss(0, \sigma^2)}
+#' where \eqn{W} is the spatial weights matrix, \eqn{I} is the n-by-n identity matrix, and \eqn{\rho} is a spatial autocorrelation parameter. In words, the errors of the regression equation are spatially autocorrelated.
 #'
 #' Re-arranging terms, the model can also be written as follows:
 #' \deqn{y = \mu + \rho W (y - \mu)  + \epsilon}
-#' which perhaps shows more intuitively the implicit spatial trend component, \eqn{\rho W (y - \mu)}.
-#' 
-#' Most often, this model is applied directly to observations (referred to below as the auto-Gaussian model). The SAR model can also be applied to a vector of parameters inside a hierarchical model. The latter enables spatial autocorrelation to be modeled when the observations are discrete counts (e.g., disease incidence data).
+#' which perhaps shows more intuitively the implicit spatial trend component, \eqn{\rho W (y - \mu)}. 
 #'
-#' A note on terminology: the spatial statistics literature conceptualizes the simultaneously-specified spatial autoregressive model (SAR) in relation to the conditionally-specified spatial autoregressive model (CAR) (see \link[geostan]{stan_car}) (see Cliff and Ord 1981). The spatial econometrics literature, by contrast, refers to the simultaneously-specified spatial autoregressive (SAR) model as the spatial error model (SEM), and they contrast the SEM with the spatial lag model (which contains a spatially-lagged dependent variable on the right-hand-side of the regression equation) (see LeSage 2014). 
+#' The second SAR specification type is the 'spatial lag of y' ('SLM'). This model describes a diffusion or contagion process:
+#' \deqn{y = \rho W y + \mu + \epsilon}
+#' \deqn{\epsilon \sim Gauss(0, \sigma^2)}
+#' This is attractive for modeling actual contagion processes. Here the 'spatial trend' part is simply \eqn{\rho W y}.
+#'
+#' Beware that the mathematics and typical interpretation of the SLM is unusual. The equation specifies feedback between all units, such that changing the outcome in one location has a spill-over effect that can extend to all other locations (a ripple effect). These spill-overs have to be incorporated into your understanding of the regression coefficients: a unit change in of \code{X} in one place will 'directly' impact \code{y} in that same place and will 'indirectly' impact \code{y} elsewhere through the diffusion process. The 'total' impact of a unit change in \code{X} needs to account for both direct and indirect effects. 
 #' 
-#' ###  Auto-Gaussian
+#' Most often, the SAR model is applied directly to observations (referred to below as the auto-normal or auto-Gaussian model). The SAR model can also be applied to a vector of parameters inside a hierarchical model. The latter enables spatial autocorrelation to be modeled when the observations are discrete counts with a natural denominator (e.g., hierarchical models for disease incidence rates).
+#'
+#' 
+#' ###  Auto-normal
 #'
 #' When \code{family = auto_gaussian()}, the SAR model is specified as follows:
 #' 
@@ -169,6 +178,7 @@
 #' \item{spatial}{A data frame with the name of the spatial component parameter (either "phi" or, for auto Gaussian models, "trend") and method ("SAR")}
 #' \item{ME}{A list indicating if the object contains an ME model; if so, the user-provided ME list is also stored here.}
 #' \item{C}{Spatial weights matrix (in sparse matrix format).}
+#' \item{sar_type}{Type of SAR model: 'SEM', 'SDEM', 'SDLM', or 'SLM'.}
 #' }
 #'
 #' @author Connor Donegan, \email{connor.donegan@gmail.com}
@@ -225,8 +235,9 @@ stan_sar <- function(formula,
                      re,
                      data,
                      C,
-                     sar_parts = prep_sar_data(C),
+                     sar_parts = prep_sar_data(C, quiet = TRUE),
                      family = auto_gaussian(),
+                     type = c("SEM", "SDEM", "SDLM", "SLM"), 
                      prior = NULL,                      
                      ME = NULL,                     
                      centerx = FALSE,
@@ -252,6 +263,10 @@ stan_sar <- function(formula,
     stopifnot(sar_parts$n == nrow(data))
     # silence?
     if (quiet) refresh <- 0
+    #### SAR type ----
+    type <- match.arg(type)
+    Durbin <- grepl('SDEM|SDLM', type)
+    #### SAR type [stop]
     # C
     if (!missing(C)) {
         stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
@@ -293,8 +308,8 @@ stan_sar <- function(formula,
     x_mat_tmp <- model.matrix(formula, mod_frame)
     intercept_only <- ifelse(all(dimnames(x_mat_tmp)[[2]] == "(Intercept)"), 1, 0)
     if (intercept_only) {
-        if (!missing(slx)) {
-            stop("You provided a spatial lag of X (slx) term for an intercept only model. Did you intend to include a covariate?")
+        if (!missing(slx) | Durbin == TRUE) {
+            stop("You tried to provide a spatial lag of X (slx) or 'Durbin' term for an intercept only model. Did you intend to include a covariate?")
         }
         x_full <- xraw <- model.matrix(~ 0, data = mod_frame) 
         slx <- " "
@@ -304,34 +319,37 @@ stan_sar <- function(formula,
   } else {
       xraw <- model.matrix(formula, data = mod_frame)
       xraw <- remove_intercept(xraw)
-      if (missing(slx)) {
+      if (!Durbin & missing(slx)) {
           slx <- " "
           W.list <- list(w = 1, v = 1, u = 1)
           wx_idx = a.zero()
           dwx <- 0
           x_full <- xraw          
       } else {
-          stopifnot(inherits(slx, "formula")) 
+          ## SAR: Durbin options ----
+          if (Durbin == FALSE) stopifnot(inherits(slx, 'formula'))
+          if (Durbin == TRUE) {
+              if (!missing(slx)) {
+                  stop("You provided an slx formula and specified a Durbin model (SDEM or SDLM). To specify spatial lag of X (slx) terms manually via the 'slx' argument, the 'type' argument must be either SEM or SLM.")
+              }
+              slx = ~ 0
+          }
+
           W <- C
           if (!inherits(W, "sparseMatrix")) W <- as(W, "CsparseMatrix")
-          xrs <- Matrix::rowSums(W)
-          if (!all(xrs == 1)) W <- row_standardize(W, msg =  "Row standardizing connectivity matrix to calculate spatially lagged covaraite(s)")
-          # efficient transform to CRS representation for W.list (via Transpose)
-          # [in stan_sar: getting W list from sar_parts]
-          ## Wij <- as(W, "TsparseMatrix")
-          ## Tw <- Matrix::sparseMatrix(i = Wij@j + 1, #intentional transpose of i,j#
-          ##                            j = Wij@i + 1,
-          ##                            x = Wij@x,
-          ##                            dims = dim(Wij))
-          ## W.list <- list(w = Tw@x,
-          ##                v = Tw@i + 1,
-          ##                u = Tw@p + 1)
-          Wx <- SLX(f = slx, DF = mod_frame, x = xraw, W = W)
+          
+          ## xrs <- Matrix::rowSums(W)
+          ## if (!all(xrs == 1)) W <- row_standardize(W, msg =  "Row standardizing connectivity matrix to calculate spatially lagged covaraite(s)")
+          
+          # nb: in stan_sar, W is taken from sar_parts, not calculated here.
+          Wx <- SLX(f = slx, DF = mod_frame, x = xraw, W = W, Durbin = Durbin)
           dwx <- ncol(Wx)
           wx_idx <- as.array( which(paste0("w.", colnames(xraw)) %in% colnames(Wx)), dim = dwx )
           x_full <- cbind(Wx, xraw)
-      }
+          ## SAR: Durbin options [stop] ----
+      }      
   }
+    
     ModData <- make_data(mod_frame, x_full, y_index_list$y_mis_idx)
     if(missing(re)) {
         has_re <- n_ids <- id <- 0;
@@ -390,7 +408,10 @@ stan_sar <- function(formula,
     standata$sar_rho_lims = c(priors_made$sar_rho$lower, priors_made$sar_rho$upper)
     standata <- c(standata, sar_parts)
     standata <- append_priors(standata, priors_made)
-    standata$sar <- 1
+    
+     ## Error = 1; Lag = 2. ##
+    standata$sar <- grepl("SLM|SDLM", type) + 1
+                           
     ## EMPTY PLACEHOLDERS
     standata <- c(standata, empty_icar_data(n), empty_car_data(), empty_esf_data(n))    
     ## ME MODEL -------------
@@ -446,10 +467,10 @@ stan_sar <- function(formula,
         out$spatial <- data.frame(par = "phi", method = "SAR")
     }
     out$N <- length( y_index_list$y_obs_idx )
-    out$missing <- y_index_list
-    
+    out$missing <- y_index_list    
     out$sar_parts <- sar_parts
     out$C <- as(C, "sparseMatrix")
+    out$sar_type <- type
     out$diagnostic <- list()
     if (any(pars == 'fitted')) {
         C <- as(C, "sparseMatrix")        

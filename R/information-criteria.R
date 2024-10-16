@@ -227,6 +227,7 @@ log_lik.geostan_fit <- function(object, array = FALSE, ...) {
         sigma <- as.array(object, pars = "sar_scale")
         rho <- as.array(object, pars = "sar_rho")
         parts <- object$sar_parts
+        type <- grepl("SLM|SDLM", object$sar_type) + 1
         for (m in 1:M) {
             for (k in 1:K) {
                 log_lik[m,k,1] <- sar_normal_lpdf(
@@ -236,7 +237,8 @@ log_lik.geostan_fit <- function(object, array = FALSE, ...) {
                     rho = rho[m,k,1],
                     W = parts$W,
                     lambda = parts$eigenvalues_w,
-                    n = parts$n
+                    n = parts$n,
+                    type = type
                 )
             }
         }

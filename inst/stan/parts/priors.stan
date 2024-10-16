@@ -22,7 +22,59 @@
 
 
 /**
- * Log probability density of the simultaneous autoregressive (SAR) model (spatial error model)
+ * Log probability density of the simultaneous autoregressive (SAR) model 
+ *
+ * @param y Process to model
+ * @param mu Mean vector
+ * @param sigma Scale parameter
+ * @param rho Spatial dependence parameter
+ * @param W_w Sparse representation of W
+ * @param W_v Column indices for values in W
+ * @param W_u Row starting indices for values in W
+ * @param lambda Eigenvalues of W
+ * @param n Length of y
+ * @param type 1 for spatial error; 2 for spatial lag
+ *
+ * @return Log probability density of SAR model up to additive constant
+*/
+  real sar_normal_lpdf(vector y,
+		       vector mu,
+		       real sigma,
+		       real rho,
+		       vector W_w,
+		       array[] int W_v,
+		       array[] int W_u,
+		       vector lambda,
+		       int n,
+		       int type
+		       ){
+    if (type == 1) {
+      return spatial_error_lpdf(y |
+			      mu,
+			      sigma,
+			      rho,
+			      W_w,
+			      W_v,
+			      W_u,
+			      lambda,
+			      n
+			      );
+    }
+    return spatial_lag_lpdf(y |
+			    mu,
+			    sigma,
+			    rho,
+			    W_w,
+			    W_v,
+			    W_u,
+			    lambda,
+			    n
+			    );
+}
+
+
+/**
+ * Spatial error model: y = mu + (I - rho W)^-1 * e
  *
  * @param y Process to model
  * @param mu Mean vector
@@ -36,7 +88,7 @@
  *
  * @return Log probability density of SAR model up to additive constant
 */
-  real sar_normal_lpdf(vector y,
+  real spatial_error_lpdf(vector y,
 		       vector mu,
 		       real sigma,
 		       real rho,
@@ -50,6 +102,40 @@
     real tau = 1 / sigma^2;
     vector[n] ImrhoWz = z - csr_matrix_times_vector(n, n, rho * W_w, W_v , W_u , z);
     real zVz = tau * dot_self(ImrhoWz);
+    real ldet_V = 2 * sum(log1m(rho * lambda)) - 2 * n * log(sigma);
+    return  0.5 * ( -n * log(2 * pi()) + ldet_V - zVz );		 
+}
+
+
+/**
+ * Log probability density of the spatial lag model: y = rho*Wy + Xb + e
+ *
+ * @param y Process to model
+ * @param mu Mean vector
+ * @param sigma Scale parameter
+ * @param rho Spatial dependence parameter
+ * @param W_w Sparse representation of W
+ * @param W_v Column indices for values in W
+ * @param W_u Row starting indices for values in W
+ * @param lambda Eigenvalues of W
+ * @param n Length of y
+ *
+ * @return Log probability density of SAR model up to additive constant
+*/
+  real spatial_lag_lpdf(vector y,
+		       vector mu,
+		       real sigma,
+		       real rho,
+		       vector W_w,
+		       array[] int W_v,
+		       array[] int W_u,
+		       vector lambda,
+		       int n
+		       ){
+    // z = y - rho * Wy - mu = (I - rho * W) y - mu
+    vector[n] z = y - csr_matrix_times_vector(n, n, rho * W_w, W_v , W_u , y) - mu;
+    real tau = 1 / sigma^2;
+    real zVz = tau * dot_self(z);
     real ldet_V = 2 * sum(log1m(rho * lambda)) - 2 * n * log(sigma);
     return  0.5 * ( -n * log(2 * pi()) + ldet_V - zVz );		 
 }
@@ -83,7 +169,6 @@ real car_normal_lpdf(vector y, vector mu,
 		     int n) {
   vector[n] z = y - mu;
   vector[n] zMinv = (1 / tau^2) * z .* D_inv; // z' * M^-1
-  // (I-rho C)z  
   vector[n] ImrhoCz = z - csr_matrix_times_vector(n, n, rho * C_w, C_v, C_u, z); 
   real ldet_ImrhoC = sum(log1m(rho * lambda));
   return 0.5 * (
@@ -122,11 +207,8 @@ real wcar_normal_lpdf(vector y, vector mu,
 		      vector lambda,
 		      int n) {
   vector[n] z = y - mu;
-  // z' * D * z
   real ztDz = (z .* D_inv)' * z;
-  // z' * A * z
   real ztAz = z' * csr_matrix_times_vector(n, n, A_w, A_v, A_u, z);
-  // determinant of (I - rho * C) 
   real ldet_ImrhoC = sum(log1m(rho * lambda));  
   return 0.5 * (
 		-n * log( 2 * pi() )

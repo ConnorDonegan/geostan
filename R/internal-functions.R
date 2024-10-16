@@ -62,14 +62,20 @@ get_x_center <- function(standata, samples) {
 #' @param DF `as.data.frame(data)`
 #' @param x The possibly centered model matrix, no intercept
 #' @param W row-standardized spatial weights matrix
+#' @param Durbin Logical; if `TRUE`, add spatial lag for all x.
 #' 
 #' @noRd
 #' 
-SLX <- function(f, DF, x, W) {
-    z <- remove_intercept(model.matrix(f, DF))    
-    x_slx <- as.matrix(x[, colnames(z)])
-    Wx <- W %*% x_slx
-    colnames(Wx) <- paste0("w.", colnames(z))
+SLX <- function(f, DF, x, W, Durbin = 0) {
+    if (!Durbin) {
+        z <- remove_intercept(model.matrix(f, DF))    
+        x_slx <- as.matrix(x[, colnames(z)])
+        Wx <- W %*% x_slx
+        colnames(Wx) <- paste0("w.", colnames(z))
+    } else {
+        Wx <- W %*% x
+        colnames(Wx) <- paste0("w.", colnames(x))
+    }
     return (Wx)       
    }
 
@@ -442,6 +448,26 @@ car_normal_lpdf <- function(y,
 }
 
 sar_normal_lpdf <- function(y,
+    mu,
+    sigma,
+    rho,
+    W,
+    lambda,
+    n,
+    type
+    ) {   
+    
+    if (type == 1)
+        return ( spatial_error_lpdf(y, mu, sigma, rho, W, lambda, n) )
+    
+    if (type == 2)
+        return ( spatial_lag_lpdf(y, mu, sigma, rho, W, lambda, n) )
+    
+    stop("missing 'type' (1 for SEM/SDEM, 2 for SDEM/SLM)")
+}
+
+
+spatial_error_lpdf <- function(y,
                             mu,
                             sigma,
                             rho,
@@ -456,3 +482,19 @@ sar_normal_lpdf <- function(y,
     log_p = 0.5 * ( -n * log(2 * pi) + log_detV - zVz )
     return( log_p )
 }
+
+spatial_lag_lpdf <- function(y,
+                            mu,
+                            sigma,
+                            rho,
+                            W,
+                            lambda,
+                            n) {
+    ymrwy = y - rho * W %*% y - mu
+    tau = sigma^(-2)
+    log_detV = 2 * sum(log(1 - rho * lambda)) - 2 * n * log(sigma);
+    zVz = tau * sum(ymrwy * ymrwy)
+    log_p = 0.5 * ( -n * log(2 * pi) + log_detV - zVz )
+    return( log_p )
+}
+
