@@ -9,8 +9,6 @@
 #' @param summary Should the predictive distribution be summarized by its means and central quantile intervals? If \code{summary = FALSE}, an `S` x `N` matrix of samples will be returned. If \code{summary = TRUE}, then a `data.frame` with the means and `100*width` credible intervals is returned.
 #' 
 #' @param width Only used if \code{summary = TRUE}, to set the quantiles for the credible intervals. Defaults to `width = 0.95`.
-#'
-#' @param car_parts Data for CAR model specification; only required for \code{\link[geostan]{stan_car}} with `family = auto_gaussian()`. 
 #' 
 #' @param seed A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution. 
 #' 
@@ -33,56 +31,83 @@ posterior_predict <- function(object,
                 S,
                 summary = FALSE,
                 width = 0.95,
-                car_parts,
                 seed
                 ) {
     stopifnot(inherits(object, "geostan_fit"))
     family <- object$family$family    
     if (!missing(seed)) set.seed(seed)
+    
     mu <- as.matrix(object, pars = "fitted")
     M <- nrow(mu)                                      
-    if (missing(S)) S <- M
+    if (missing(S)) S <- M    
     if (S > M) {
         warning (paste0("Cannot draw more samples than were taken from the posterior. Using S = ", M))
         S <- M
-    }
+    }    
     idx <- sample(M, S)
-    mu <- as.matrix(object, pars = "fitted")[idx,] 
+    mu <- mu[idx,]
+    
     if (family == "auto_gaussian") {
-        stopifnot(!missing(car_parts))
-        rho <- as.matrix(object, "car_rho")[idx, ]
-        tau <- as.matrix(object, "car_scale")[idx, ]
-        preds <- .pp_auto_gaussian(mu, rho, tau, car_parts)
+
+        if (object$spatial$method == "CAR") {            
+            rho <- as.matrix(object, "car_rho")[idx, ]
+            tau <- as.matrix(object, "car_scale")[idx, ]
+            preds <- .pp_car_normal(mu, rho, tau, object$car_parts)
+        }
+
+        if (object$spatial$method == "SAR") {
+            rho <- as.matrix(object, "sar_rho")[idx, ]
+            tau <- as.matrix(object, "sar_scale")[idx, ]
+            preds <- .pp_sar_normal(mu, rho, tau, object$sar_parts$n, object$sar_parts$W)
+        }
+        
     }
+    
     if (family == "gaussian") {
         sigma <- as.matrix(object, pars = "sigma")[idx,]
         preds <- .pp_gaussian(mu, sigma)
     }
+    
     if (family == "student_t") {
         sigma <- as.matrix(object, pars = "sigma")[idx,]
         nu <- as.matrix(object, pars = "nu")[idx,]
         preds <- .pp_student(nu, mu, sigma)
     }
+    
     if (family == "poisson") preds <- .pp_poisson(mu)
+    
     if (family == "binomial") {
         trials <- object$data[,1] + object$data[,2]
         preds <- .pp_binomial(mu, trials)
     }
+    
     if (summary) {
         df <- .pp_summary(preds, width = width)
         return(df)
-    }    
+    }
+    
     return(preds)    
 }
 
-#' @importFrom Matrix Diagonal Matrix
-.pp_auto_gaussian <- function(mu, rho, tau, car_parts) {
+
+#' @importFrom Matrix Diagonal Matrix solve
+.pp_car_normal <- function(mu, rho, tau, car_parts) {
     I <- Matrix::Diagonal(car_parts$n)
     M <- Matrix::Diagonal(x = 1 / car_parts$Delta_inv)
     C <- Matrix::Matrix(car_parts$C)
     t(sapply(1:nrow(mu), function(s) {
-        Sigma <- solve(I - rho[s] * C) %*% M * tau[s]^2
+        Sigma <- Matrix::solve(I - rho[s] * C) %*% M * tau[s]^2
         MASS::mvrnorm(n = 1, mu = mu[s,], Sigma = Sigma)
+    }))        
+}
+
+#' @importFrom Matrix Diagonal Matrix solve
+.pp_sar_normal <- function(mu, rho, tau, N, W) {
+    I <- Matrix::Diagonal(N)
+    Wt <- Matrix::t(W)
+    t(sapply(1:nrow(mu), function(s) {        
+        Sigma <- Matrix::solve((I - rho[s] * Wt) %*% (I - rho[s] * W))
+        MASS::mvrnorm(n = 1, mu = mu[s,], Sigma = Sigma * tau[s]^2)
     }))        
 }
 
