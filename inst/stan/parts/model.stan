@@ -3,7 +3,7 @@
   x_true_transform = x_true;
   target += normal_lpdf(intercept | prior_alpha[1], prior_alpha[2]);
   if (dx_all) target += normal_lpdf(append_row(gamma, beta) | prior_beta_location, prior_beta_scale);
-  if (has_sigma) target += student_t_lpdf(sigma | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
+  if (has_sigma) target += student_t_lpdf(sigma | prior_sigma[1], prior_sigma[2], prior_sigma[3]) - student_t_lcdf(0 | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
   if (is_student) target += gamma_lpdf(nu[1] | prior_t_nu[1], prior_t_nu[2]);
 
 // data models (observational uncertainty)
@@ -35,16 +35,16 @@
       }
     }
       target += normal_lpdf(mu_x_true | prior_mux_true_location, prior_mux_true_scale);
-      target += student_t_lpdf(sigma_x_true | prior_sigmax_true_df, prior_sigmax_true_location, prior_sigmax_true_scale);
+      target += student_t_lpdf(sigma_x_true | prior_sigmax_true_df, prior_sigmax_true_location, prior_sigmax_true_scale) - dx_me * student_t_lcdf(0 | prior_sigmax_true_df, prior_sigmax_true_location, prior_sigmax_true_scale);
 }
 
 // partial pooling of observations across all groups/geographies (varying intercept)
   if (has_re) {
     target += normal_lpdf(alpha_re | 0, alpha_tau[has_re]);
-    target += student_t_lpdf(alpha_tau[has_re] | prior_alpha_tau[1], prior_alpha_tau[2], prior_alpha_tau[3]);
+    target += student_t_lpdf(alpha_tau[has_re] | prior_alpha_tau[1], prior_alpha_tau[2], prior_alpha_tau[3]) - student_t_lcdf(alpha_tau[has_re] | prior_alpha_tau[1], prior_alpha_tau[2], prior_alpha_tau[3]);
   }
 
-// process model (likelihood)
+  // process model (likelihood)
   if (!prior_only) {
     if (is_student)  target += student_t_lpdf(y[y_obs_idx] | nu[1], fitted[y_obs_idx], sigma[has_sigma]);
     if (is_gaussian) target += normal_lpdf(y[y_obs_idx] | fitted[y_obs_idx], sigma[has_sigma]);
@@ -63,6 +63,7 @@
       target += std_normal_lpdf(theta_tilde);
       if (type == 2) target += std_normal_lpdf(theta_scale[1]);
       // implicit uniform prior on rho:   if (type == 3) rho[1] ~ beta(1, 1);
+      // no -lcdf(theta_scale[1]) because the ICAR model is improper anyways.
     }
     target += std_normal_lpdf(spatial_scale[1]);
     phi_tilde ~ icar_normal(spatial_scale[1], node1, node2, k, group_size, group_idx, has_theta);
@@ -72,16 +73,16 @@
   // ESF
   if (dev) {
     target += std_normal_lpdf(z);
-    target += std_normal_lpdf(aux1_local);
+    target += std_normal_lpdf(aux1_local) - std_normal_lcdf(0);
     target += inv_gamma_lpdf(aux2_local | 0.5, 0.5); // .5 * nu_local, .5 * nu_local, nu_local = 1
-    target += std_normal_lpdf(aux1_global[1]);
+    target += std_normal_lpdf(aux1_global[1]) - std_normal_lcdf(0);
     target += inv_gamma_lpdf(aux2_global[1] | 0.5, 0.5); // .5 * nu_local, .5 * nu_global, both = 1
     target += inv_gamma_lpdf(caux[1] | 0.5*slab_df, 0.5*slab_df);
   }
 
   // CAR
   if (car) {
-    target += student_t_lpdf(car_scale[1] | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
+    target += student_t_lpdf(car_scale[1] | prior_sigma[1], prior_sigma[2], prior_sigma[3]) - student_t_lcdf(0 | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
     if (is_auto_gaussian && prior_only == 0) {
       target += auto_normal_lpdf(y |
 				 fitted,
@@ -114,7 +115,7 @@
 
  // SAR
 if (sar > 0) {
-  target += student_t_lpdf(sar_scale[1] | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
+  target += student_t_lpdf(sar_scale[1] | prior_sigma[1], prior_sigma[2], prior_sigma[3]) - student_t_lcdf(0 | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
   if (is_auto_gaussian && prior_only == 0) {
     target += sar_normal_lpdf(y |
 			      fitted,
