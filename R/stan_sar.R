@@ -330,9 +330,9 @@ stan_sar <- function(formula,
           if (Durbin == FALSE) stopifnot(inherits(slx, 'formula'))
           if (Durbin == TRUE) {
               if (!missing(slx)) {
-                  stop("You provided an slx formula and specified a Durbin model (SDEM or SDLM). To specify spatial lag of X (slx) terms manually via the 'slx' argument, the 'type' argument must be either SEM or SLM.")
+                  stop("You provided an slx formula and also specified a Durbin model (SDEM or SDLM). To specify spatial lag of X (slx) terms manually via the 'slx' argument, the 'type' argument must be either SEM or SLM.")
               }
-              slx = ~ 0
+              slx = formula[-2]
           }
 
           W <- C

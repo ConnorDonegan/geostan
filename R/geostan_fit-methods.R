@@ -54,8 +54,11 @@ print.geostan_fit <- function(x,
     cat("Partial pooling (varying intercept): ")
     print(x$re$formula)
     pars <- c(pars, "alpha_tau")
-  }  
-  cat("Spatial method (outcome): ", as.character(x$spatial$method), "\n")
+  }
+
+  meth <- x$spatial$method
+  if (meth == "SAR") meth <- paste0(meth, " (", x$sar_type, ")")  
+  cat("Spatial method (outcome): ", as.character(meth), "\n")
   if (x$spatial$method == "CAR") pars <- c(pars, "car_rho", "car_scale")
   if (x$spatial$method == "SAR") pars <- c(pars, "sar_rho", "sar_scale")  
   if (x$spatial$method == "BYM2") pars <- c(pars, "rho", "spatial_scale")
@@ -66,16 +69,14 @@ print.geostan_fit <- function(x,
   if (!is.null(x$diagnostic$Residual_MC)) cat("Residual Moran Coefficient: ", x$diagnostic$Residual_MC, "\n")
   if (!is.null(x$diagnostic$WAIC)) cat("WAIC: ", x$diagnostic$WAIC, "\n")
   cat("Observations: ", x$N, "\n")  
-  cat("Data models (ME): ")
   if (x$ME$has_me) {
+      cat("Data models (ME): ")
       cat(paste(names(x$ME$se), sep = ", ")) 
       if (x$ME$spatial_me) {
-          cat("\n Data model (ME prior): CAR (auto Gaussian)")
+          cat("\n Data model (ME prior): CAR (auto-normal)")
       } else {
           cat("\nData model (ME prior): Student's t")
       }
-  } else {
-      cat("none")
   }
   if (x$spatial$method == "HS") {
     cat("\nHorseshoe global shrinkage prior: ", round(x$priors$beta_ev$global_scale, 2), "\n")
@@ -393,21 +394,21 @@ as.array.geostan_fit <- function(x, ...){
 #'
 #' The primary purpose of the predict method is to explore marginal effects of covariates.
 #'
+#' The model formula will be taken from `object$formula`, and then a model matrix will be created by passing `newdata` to the \link[stats]{model.frame} function (as in: \code{model.frame(newdata, object$formula}). Parameters are taken from `as.matrix(object, pars = c("intercept", "beta"))`. If `add_slx = TRUE`, SLX coefficients will be taken from `as.matrix(object, pars = "gamma")`.
+#'
 #' Spatially-lagged covariates added via the `slx` argument ('spillover effects') will be included if `add_slx = TRUE` or if a spatial lag model is provided (a SAR model of type 'SLM' or 'SDLM'). In either of those cases, `newdata` must have the same number of rows as were used to fit the original data. For details on these 'spillover effects', see LeSage and Pace (2009) and LeSage (2014).
 #'
 #' Predictions for the spatial lag model (SAR models of type 'SLM') are equal to:
 #' \deqn{
 #'  (I - \rho W)^{-1} X \beta
 #' }
-#' where \eqn{X \beta} contains the intercept and covariates (if any). Predictions for the spatial Durbin lag model (SAR models of type 'SDLM') are equal to:
+#' where \eqn{X \beta} contains the intercept and covariates. (For intercept-only models, the above term is equal to the constant intercept.) Predictions for the spatial Durbin lag model (SAR models of type 'SDLM') are equal to:
 #' \deqn{
 #'  (I - \rho W)^{-1} (X \beta + WX \gamma)
 #' }
-#' where \eqn{WX \gamma} are spatially lagged covariates multiplied by their coefficients. 
+#' where \eqn{WX \gamma} are spatially lagged covariates multiplied by their coefficients. The SLM and SDLM differ from all other model types in that the spatial component of the model cannot be separated from the linear predictor and is, therefore, automatically incorporated into the predictions.
 #' 
-#' The model formula will be taken from `object$formula`, and then a model matrix will be created by passing `newdata` to the \link[stats]{model.frame} function (as in: \code{model.frame(newdata, object$formula}). Parameters are taken from `as.matrix(object, pars = c("intercept", "beta"))`. If `add_slx = TRUE`, SLX coefficients will be taken from `as.matrix(object, pars = "gamma")`.
-#' 
-#' Be aware that in generalized linear models (such as Poisson and Binomial models) marginal effects plots on the response scale may be sensitive to the level of other covariates in the model. If the model includes any spatially-lagged covariates (introduced using the `slx` argument) or a spatial autocorrelation term (for example, you used a spatial CAR, SAR, or ESF model), by default these terms will be fixed at zero for the purposes of calculating marginal effects. If you want to change this, you can introduce spatial trend values by specifying a varying intercept using the `alpha` argument.
+#' In generalized linear models (such as Poisson and Binomial models) marginal effects plots on the response scale may be sensitive to the level of other covariates in the model and to location. If the model includes a spatial autocorrelation component (for example, you used a spatial CAR, SAR (error model), or ESF model), by default these terms will be fixed at zero for the purposes of calculating marginal effects. If you want to change this, you can introduce spatial trend values by specifying a varying intercept using the `alpha` argument.
 #' 
 #' @return
 #'
@@ -486,37 +487,30 @@ predict.geostan_fit <- function(object,
         P[m,] <- O + alpha[m,] + X %*% Beta[m,]
     }
 
-    durbin <- FALSE
+    lag_y <- FALSE
     if (object$spatial$method == "SAR") {
-        if (grepl("SLM|SDLM", object$sar_type)) {
-            durbin <- add_slx <- TRUE;
-        }
+        add_slx <- grepl("SDEM|SDLM", object$sar_type)
+        lay_y <- grepl("SLM|SDLM", object$sar_type)
     }
     
     if (add_slx) {
         
-        if (!"gamma" %in% object$stanfit@model_pars) {
-            stop("No SLX coefficients found in model object.")
-        }
-        
-        stopifnot( nrow(newdata) == nrow(object$C) )
-        
+        stopifnot( nrow(newdata) == nrow(object$C) )        
         Gamma <- as.matrix(object, pars = "gamma")            
         gnames <- gsub("^w.", "", colnames(Gamma))
         xnames <- colnames(X)
         idx <- na.omit( match(xnames, gnames) )
         X_tmp <- as.matrix(X[, idx])
         if (length(idx) != ncol(Gamma)) stop("Mis-match of SLX coefficient names and X column names.")
-        WX <- W %*% X_tmp
-        
+        WX <- W %*% X_tmp        
         for (m in 1:M) P[m,] <- as.numeric( P[m,] + WX %*% as.matrix(Gamma[m,]) )
         
     }
     
-    if (durbin == TRUE) {
+    if (lag_y == TRUE) {
         
-        if( nrow(object$C) != N ) {
-            stop("Prediction with SLM and SDLM models requires that 'newdata' is the same size as your spatial weights matrix (N rows). See '?predict.geostan_fit'")
+        if ( nrow(object$C) != N ) {
+            stop("Prediction with SLM and SDLM models requires that 'newdata' is the same size as your spatial weights matrix (N rows).")
         }
         
         W <- object$C

@@ -61,7 +61,7 @@ get_x_center <- function(standata, samples) {
 #' @param f formula (from slx)
 #' @param DF `as.data.frame(data)`
 #' @param x The possibly centered model matrix, no intercept
-#' @param W row-standardized spatial weights matrix
+#' @param W spatial weights matrix (usually row-standardized)
 #' @param Durbin Logical; if `TRUE`, add spatial lag for all x.
 #' 
 #' @noRd

@@ -28,16 +28,17 @@
 #'  lines(density(sentencing$sents), col = 'darkred', lwd = 2)
 #' @export
 posterior_predict <- function(object, 
-                S,
-                summary = FALSE,
-                width = 0.95,
-                seed
-                ) {
+                              S,
+                              summary = FALSE,
+                              width = 0.95,
+                              seed
+                              ) {
     stopifnot(inherits(object, "geostan_fit"))
     family <- object$family$family    
     if (!missing(seed)) set.seed(seed)
     
     mu <- as.matrix(object, pars = "fitted")
+    
     M <- nrow(mu)                                      
     if (missing(S)) S <- M    
     if (S > M) {
@@ -55,10 +56,10 @@ posterior_predict <- function(object,
             preds <- .pp_car_normal(mu, rho, tau, object$car_parts)
         }
 
-        if (object$spatial$method == "SAR") {
+        if (object$spatial$method == "SAR") {            
             rho <- as.matrix(object, "sar_rho")[idx, ]
             tau <- as.matrix(object, "sar_scale")[idx, ]
-            preds <- .pp_sar_normal(mu, rho, tau, object$sar_parts$n, object$sar_parts$W)
+            preds <- .pp_sar_normal(mu, rho, tau, object$sar_parts$W)
         }
         
     }
@@ -102,7 +103,8 @@ posterior_predict <- function(object,
 }
 
 #' @importFrom Matrix Diagonal Matrix solve
-.pp_sar_normal <- function(mu, rho, tau, N, W) {
+.pp_sar_normal <- function(mu, rho, tau, W) {
+    N <- nrow(W)
     I <- Matrix::Diagonal(N)
     Wt <- Matrix::t(W)
     t(sapply(1:nrow(mu), function(s) {        

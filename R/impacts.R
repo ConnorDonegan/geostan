@@ -1,23 +1,32 @@
 
-
-spill <- function(b1, b2 = 0, W, rho, short = FALSE, K = 4) {
+#' @export
+#' @rdname impacts
+#' @md
+#' @importFrom Matrix solve rowSums diag
+#'
+#' @param beta Coefficient for covariates (numeric vector)
+#' @param gamma Coefficient for spatial lag of covariates (numeric vector)
+#' @param W Spatial weights matrix
+#' @param rho Estimate of spatial dependence parameter
+#' @param quick Use short-cut method to calculate inverse of matrix (I - rho * W)?
+#' @param K Degree of polynomial in the expansion to use for the 'quick' matrix inverse method.
+#'
+#' @details
+#' The `spill` function is for quickly calculating spillover effects given point estimates of parameters. This is used internally by `impacts`, and can be applied iteratively to a matrix of MCMC samples (for beta, gamma, and rho) to obtain MCMC samples for impacts.
+#' 
+spill <- function(beta, gamma = 0, W, rho, quick = FALSE, K = 15) {
     
     N <- nrow(W)
     I <- diag(rep(1, N))
 
-    if (short == TRUE) {
-        
-        warning('this does not return accurate results.')
+    if (short == TRUE) {        
 
         M_tmp <- I + rho * W
-        W_power <- W    
-        k <- 2
-        while (k >= K) {
-            rk <- rho^k
-            W_power <- W_power %*% W
-            M_tmp <- M_tmp + rk * W_power
-            k <- K + 1
-        }
+        W_k <- W    
+        for (j in 2:K) {
+            W_k <- W %*% W_k
+            M_tmp = M_tmp + rho^j * W_k
+        }        
         
     } else {
         
@@ -26,7 +35,7 @@ spill <- function(b1, b2 = 0, W, rho, short = FALSE, K = 4) {
         
     }
     
-    M <- M_tmp %*% (I * b1 + W * b2)
+    M <- M_tmp %*% (I * beta + W * gamma)
     dir = mean(Matrix::diag(M))
     total <- mean(Matrix::rowSums(M))
     indir <- total - dir
@@ -46,18 +55,17 @@ spill <- function(b1, b2 = 0, W, rho, short = FALSE, K = 4) {
 #'
 #' @param W Spatial weights matrix used to fit the model
 #'
-#' @param short Used short-cut matrix inverse? Not recommended currently.
+#' @param quick Used short-cut matrix inverse? 
 #'
-#' @param K For the short-cut method. Number of powers to use in the Taylor expansion for the short-cut matrix inverse.
+#' @param K For the 'quick' method. Number of powers to use in the Taylor expansion for the short-cut matrix inverse.
 #'
 #' @param samples Return MCMC samples together with summary in a list? If \code{FALSE}, only the summary is returned.
-#'
 #'
 #' @md
 #'
 #' @export
 #' 
-impacts <- function(object, W = object$C, short = FALSE, K = 4, samples = TRUE) {
+impacts <- function(object, W = object$C, quick = FALSE, K = 6, samples = TRUE) {
     
     stopifnot(object$spatial$method == "SAR")
     B <- as.matrix(object, "beta")
@@ -74,11 +82,11 @@ impacts <- function(object, W = object$C, short = FALSE, K = 4, samples = TRUE) 
             impax[[m]] <- rbind(
                 impax[[m]],
                 spill(
-                    B[i,m],
-                    G[i,Gidx[m]],
+                    beta = B[i,m],
+                    gamma = G[i,Gidx[m]],
                     W = W,
                     rho = rho[i],
-                    short = short,
+                    quick = quick,
                     K = K)
             )               
         }
