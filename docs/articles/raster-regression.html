@@ -88,19 +88,20 @@
 
     
     
-<p>This vignette provides a tutorial for fitting spatial regression models to raster data using <strong>geostan</strong>. The term “raster” is used here to refer to any regularly spaced set of observations such that the data can be represented spatially by a rectangular grid. Remotely sensed imagery is a common form of raster data.</p>
-<p><strong>geostan</strong> can be used for spatial regression with fairly large raster data layers, although the functionality of these models will often be limited to the estimation of regression coefficients and spatial autocorrelation parameters. Limited experience thus far finds that <strong>geostan</strong>’s spatial autoregressive models can be fit to raster layers with two hundred thousand observations using a laptop computer and fewer than ten minutes of sampling time.</p>
+<p>This vignette provides a tutorial for fitting spatial regression models to raster data using geostan. The term “raster” is used here to refer to any regularly spaced set of observations such that the data can be represented spatially by a rectangular grid or lattice. Remotely sensed imagery is a common form of raster data.</p>
+<p>For an irregular spatial lattice and moderately big N, the best one can do (for now) is to save the <code>sar_list</code> or <code>car_list</code> in a file (using <code>saveRDS(sar_list, "sar-parts.rds")</code> or similar) so that it only needs to be calculated once.</p>
 <div class="section level2">
 <h2 id="demonstration">Demonstration<a class="anchor" aria-label="anchor" href="#demonstration"></a>
 </h2>
-<p>Start by loading some necessary R packages.</p>
+<p>Start by loading the geostan and sf packages:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1127</span><span class="op">)</span></span></code></pre></div>
 <p>We will create a small raster data layer for the purpose of illustration.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">row</span> <span class="op">&lt;-</span> <span class="fl">40</span></span>
+<code class="sourceCode R"><span><span class="co"># creating a grid</span></span>
+<span><span class="va">row</span> <span class="op">&lt;-</span> <span class="fl">40</span></span>
 <span><span class="va">col</span> <span class="op">&lt;-</span> <span class="fl">30</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">N</span> <span class="op">&lt;-</span> <span class="va">row</span> <span class="op">*</span> <span class="va">col</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 1200</span></span></code></pre>
@@ -108,53 +109,51 @@
 <code class="sourceCode R"><span><span class="va">sfc</span> <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/sfc.html" class="external-link">st_sfc</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st.html" class="external-link">st_polygon</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">col</span>,<span class="fl">0</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">col</span>,<span class="va">row</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_make_grid.html" class="external-link">st_make_grid</a></span><span class="op">(</span><span class="va">sfc</span>, cellsize <span class="op">=</span> <span class="fl">1</span>, square <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_as_sf.html" class="external-link">st_as_sf</a></span><span class="op">(</span><span class="va">grid</span><span class="op">)</span></span>
-<span><span class="va">W</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">grid</span>, style <span class="op">=</span> <span class="st">"W"</span>, queen <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Warning in shape2mat(grid, style = "W", queen = FALSE): The 'queen' argument is</span></span>
-<span><span class="co">## deprecated. Use 'method' instead.</span></span></code></pre>
-<pre><code><span><span class="co">## Contiguity condition: rook</span></span></code></pre>
-<pre><code><span><span class="co">## Number of neighbors per unit, summary:</span></span></code></pre>
-<pre><code><span><span class="co">##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
-<span><span class="co">##   2.000   4.000   4.000   3.883   4.000   4.000</span></span></code></pre>
-<pre><code><span><span class="co">## </span></span>
-<span><span class="co">## Spatial weights, summary:</span></span></code></pre>
-<pre><code><span><span class="co">##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
-<span><span class="co">##  0.2500  0.2500  0.2500  0.2575  0.2500  0.5000</span></span></code></pre>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">grid</span><span class="op">$</span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>w <span class="op">=</span> <span class="va">W</span>, rho <span class="op">=</span> <span class="fl">0.9</span><span class="op">)</span></span>
-<span><span class="va">grid</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">0.5</span> <span class="op">*</span> <span class="va">grid</span><span class="op">$</span><span class="va">z</span> <span class="op">+</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>w <span class="op">=</span> <span class="va">W</span>, rho <span class="op">=</span> <span class="fl">.9</span>, sigma <span class="op">=</span> <span class="fl">.3</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">grid</span><span class="op">[</span>,<span class="st">'z'</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<span></span>
+<span><span class="co"># create connectivity matrix</span></span>
+<span><span class="va">W</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">grid</span>, style <span class="op">=</span> <span class="st">"W"</span>, method <span class="op">=</span> <span class="st">"rook"</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># draw data from a spatial autoregressive model</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span></span>
+<span><span class="va">grid</span><span class="op">$</span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>rho <span class="op">=</span> <span class="fl">0.8</span>, w <span class="op">=</span> <span class="va">W</span><span class="op">)</span></span>
+<span><span class="va">grid</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>mu <span class="op">=</span> <span class="op">-</span><span class="fl">0.5</span> <span class="op">*</span> <span class="va">grid</span><span class="op">$</span><span class="va">z</span>, rho <span class="op">=</span> <span class="fl">.9</span>, sigma <span class="op">=</span> <span class="fl">.3</span>, w <span class="op">=</span> <span class="va">W</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">grid</span><span class="op">[</span> , <span class="st">'y'</span> <span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <p><img src="raster-regression_files/figure-html/unnamed-chunk-2-1.png" width="312" style="display: block; margin: auto;"></p>
 <p>The following R code will fit a spatial autoregressive model to these data:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_sar.html">stan_sar</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">z</span>, data <span class="op">=</span> <span class="va">grid</span>, C <span class="op">=</span> <span class="va">W</span><span class="op">)</span></span></code></pre></div>
-<p>The <code>stan_sar</code> function will take the spatial weights matrix <code>W</code> and pass it through a function called <code>prep_sar_data</code> which will calculate the eigenvalues of the spatial weights matrix using <code><a href="https://rdrr.io/r/base/eigen.html" class="external-link">base::eigen</a></code>, as required for computational reasons. This step is prohibitive for large data sets (e.g., <span class="math inline">\(N = 100,000\)</span>).</p>
+<p>The <code>stan_sar</code> function will take the spatial weights matrix <code>W</code> and pass it through a function called <code>prep_sar_data</code> which will calculate the eigenvalues of the spatial weights matrix using <code><a href="https://rdrr.io/pkg/Matrix/man/Schur.html" class="external-link">Matrix::Schur</a></code>. This step can be prohibitive for large data sets (e.g., <span class="math inline">\(N = 100,000\)</span>).</p>
 <p>The following code would normally be used to fit a conditional autoregressive (CAR) model:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">grid</span>, style <span class="op">=</span> <span class="st">"B"</span>, queen <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">car_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">C</span>, <span class="st">"WCAR"</span><span class="op">)</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">z</span>, data <span class="op">=</span> <span class="va">grid</span>, car_parts <span class="op">=</span> <span class="va">car_list</span><span class="op">)</span></span></code></pre></div>
-<p>Here, the <code>prep_car_data</code> function calculates the eigenvalues of the spatial weights matrix using <code><a href="https://rdrr.io/r/base/eigen.html" class="external-link">base::eigen</a></code>, which is not feasible for large N.</p>
-<p>The <code>prep_sar_data2</code> and <code>prep_car_data2</code> functions are designed for raster layers. As input, they require the dimensions of the grid (number of rows and number of columns). The eigenvalues are produced very quickly using Equation 5 from <span class="citation">Griffith (<a href="#ref-griffith_2000" role="doc-biblioref">2000</a>)</span>. The methods have certain restrictions. First, this is only applicable to raster layers—regularly spaced, rectangular grids of observations. Second, to define which observations are adjacent to one another, the “rook” criteria is used (spatially, only observations that share an edge are defined as neighbors to one another). Third, the spatial adjacency matrix will be row-standardized. This is standard (and required) for SAR models, and it corresponds to the “WCAR” specification of the CAR model <span class="citation">(see Donegan <a href="#ref-donegan_2022" role="doc-biblioref">2022</a>)</span>.</p>
-<p>The following code will fit a SAR model to our <code>grid</code> data, and is suitable for much larger raster layers:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">sar_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep_sar_data2.html">prep_sar_data2</a></span><span class="op">(</span>row <span class="op">=</span> <span class="va">row</span>, col <span class="op">=</span> <span class="va">col</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Range of permissible rho values: -1, 1</span></span></code></pre>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_sar.html">stan_sar</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">z</span>, </span>
+<p>Here, the <code>prep_car_data</code> function calculates the eigenvalues of the spatial weights matrix using <code><a href="https://rdrr.io/pkg/Matrix/man/Schur.html" class="external-link">Matrix::Schur</a></code>, which is not feasible for large N.</p>
+<p>The <code>prep_sar_data2</code> and <code>prep_car_data2</code> functions are designed for large raster layers. As input, they require the dimensions of the grid (number of rows and number of columns). The eigenvalues are produced very quickly using Equation 5 from <span class="citation">Griffith (<a href="#ref-griffith_2000" role="doc-biblioref">2000</a>)</span>. The methods have certain restrictions. First, this is only applicable to raster layers—regularly spaced, rectangular grids of observations. Second, to define which observations are adjacent to one another, the “rook” criteria is used (spatially, only observations that share an edge are defined as neighbors to one another). Third, the spatial adjacency matrix will be row-standardized. This is common anyways for SAR and CAR models (it corresponds to the “WCAR” specification of the CAR model <span class="citation">(see Donegan <a href="#ref-donegan_2022" role="doc-biblioref">2022</a>)</span>).</p>
+<p>The following code will fit a SAR model to our grid data (without any use of <code>shape2mat</code>) and is suitable for larger raster layers:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># create connectivity matrix and its eigenvalues</span></span>
+<span><span class="va">sars</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep_sar_data2.html">prep_sar_data2</a></span><span class="op">(</span>row <span class="op">=</span> <span class="va">row</span>, col <span class="op">=</span> <span class="va">col</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># if you want the matrix</span></span>
+<span><span class="va">W</span> <span class="op">&lt;-</span> <span class="va">sars</span><span class="op">$</span><span class="va">W</span></span>
+<span></span>
+<span><span class="co"># fit model</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_sar.html">stan_sar</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">z</span>, </span>
 <span>      data <span class="op">=</span> <span class="va">grid</span>,</span>
-<span>          centerx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>          sar_parts <span class="op">=</span> <span class="va">sar_list</span>,</span>
-<span>          iter <span class="op">=</span> <span class="fl">500</span>,</span>
-<span>          chains <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>          slim <span class="op">=</span> <span class="cn">TRUE</span> <span class="co">#,</span></span>
-<span>          <span class="co"># cores = 4, # for multi-core processing</span></span>
-<span>        <span class="op">)</span></span></code></pre></div>
+<span>      centerx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>      sar_parts <span class="op">=</span> <span class="va">sars</span>,</span>
+<span>      iter <span class="op">=</span> <span class="fl">500</span>,</span>
+<span>      chains <span class="op">=</span> <span class="fl">2</span>, <span class="co"># for demo speed</span></span>
+<span>      <span class="co"># cores = 4, # multi-core processing    </span></span>
+<span>      slim <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>        <span class="op">)</span>   </span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## *Setting prior parameters for intercept</span></span></code></pre>
 <pre><code><span><span class="co">## Distribution: normal</span></span></code></pre>
 <pre><code><span><span class="co">##   location scale</span></span>
-<span><span class="co">## 1    0.035     5</span></span></code></pre>
+<span><span class="co">## 1     0.18     5</span></span></code></pre>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## *Setting prior parameters for beta</span></span>
 <span><span class="co">## Distribution: normal</span></span></code></pre>
@@ -173,8 +172,8 @@
 <span><span class="co">## </span></span>
 <span><span class="co">## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).</span></span>
 <span><span class="co">## Chain 1: </span></span>
-<span><span class="co">## Chain 1: Gradient evaluation took 0.003847 seconds</span></span>
-<span><span class="co">## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 38.47 seconds.</span></span>
+<span><span class="co">## Chain 1: Gradient evaluation took 0.002153 seconds</span></span>
+<span><span class="co">## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 21.53 seconds.</span></span>
 <span><span class="co">## Chain 1: Adjust your expectations accordingly!</span></span>
 <span><span class="co">## Chain 1: </span></span>
 <span><span class="co">## Chain 1: </span></span>
@@ -182,15 +181,15 @@
 <span><span class="co">## Chain 1: Iteration: 251 / 500 [ 50%]  (Sampling)</span></span>
 <span><span class="co">## Chain 1: Iteration: 500 / 500 [100%]  (Sampling)</span></span>
 <span><span class="co">## Chain 1: </span></span>
-<span><span class="co">## Chain 1:  Elapsed Time: 2.749 seconds (Warm-up)</span></span>
-<span><span class="co">## Chain 1:                1.958 seconds (Sampling)</span></span>
-<span><span class="co">## Chain 1:                4.707 seconds (Total)</span></span>
+<span><span class="co">## Chain 1:  Elapsed Time: 3.107 seconds (Warm-up)</span></span>
+<span><span class="co">## Chain 1:                2.082 seconds (Sampling)</span></span>
+<span><span class="co">## Chain 1:                5.189 seconds (Total)</span></span>
 <span><span class="co">## Chain 1: </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 2).</span></span>
 <span><span class="co">## Chain 2: </span></span>
-<span><span class="co">## Chain 2: Gradient evaluation took 0.001092 seconds</span></span>
-<span><span class="co">## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 10.92 seconds.</span></span>
+<span><span class="co">## Chain 2: Gradient evaluation took 0.001209 seconds</span></span>
+<span><span class="co">## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 12.09 seconds.</span></span>
 <span><span class="co">## Chain 2: Adjust your expectations accordingly!</span></span>
 <span><span class="co">## Chain 2: </span></span>
 <span><span class="co">## Chain 2: </span></span>
@@ -198,44 +197,15 @@
 <span><span class="co">## Chain 2: Iteration: 251 / 500 [ 50%]  (Sampling)</span></span>
 <span><span class="co">## Chain 2: Iteration: 500 / 500 [100%]  (Sampling)</span></span>
 <span><span class="co">## Chain 2: </span></span>
-<span><span class="co">## Chain 2:  Elapsed Time: 2.375 seconds (Warm-up)</span></span>
-<span><span class="co">## Chain 2:                1.965 seconds (Sampling)</span></span>
-<span><span class="co">## Chain 2:                4.34 seconds (Total)</span></span>
-<span><span class="co">## Chain 2: </span></span>
-<span><span class="co">## </span></span>
-<span><span class="co">## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 3).</span></span>
-<span><span class="co">## Chain 3: </span></span>
-<span><span class="co">## Chain 3: Gradient evaluation took 0.001192 seconds</span></span>
-<span><span class="co">## Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 11.92 seconds.</span></span>
-<span><span class="co">## Chain 3: Adjust your expectations accordingly!</span></span>
-<span><span class="co">## Chain 3: </span></span>
-<span><span class="co">## Chain 3: </span></span>
-<span><span class="co">## Chain 3: Iteration:   1 / 500 [  0%]  (Warmup)</span></span>
-<span><span class="co">## Chain 3: Iteration: 251 / 500 [ 50%]  (Sampling)</span></span>
-<span><span class="co">## Chain 3: Iteration: 500 / 500 [100%]  (Sampling)</span></span>
-<span><span class="co">## Chain 3: </span></span>
-<span><span class="co">## Chain 3:  Elapsed Time: 2.396 seconds (Warm-up)</span></span>
-<span><span class="co">## Chain 3:                1.556 seconds (Sampling)</span></span>
-<span><span class="co">## Chain 3:                3.952 seconds (Total)</span></span>
-<span><span class="co">## Chain 3: </span></span>
-<span><span class="co">## </span></span>
-<span><span class="co">## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 4).</span></span>
-<span><span class="co">## Chain 4: </span></span>
-<span><span class="co">## Chain 4: Gradient evaluation took 0.00098 seconds</span></span>
-<span><span class="co">## Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 9.8 seconds.</span></span>
-<span><span class="co">## Chain 4: Adjust your expectations accordingly!</span></span>
-<span><span class="co">## Chain 4: </span></span>
-<span><span class="co">## Chain 4: </span></span>
-<span><span class="co">## Chain 4: Iteration:   1 / 500 [  0%]  (Warmup)</span></span>
-<span><span class="co">## Chain 4: Iteration: 251 / 500 [ 50%]  (Sampling)</span></span>
-<span><span class="co">## Chain 4: Iteration: 500 / 500 [100%]  (Sampling)</span></span>
-<span><span class="co">## Chain 4: </span></span>
-<span><span class="co">## Chain 4:  Elapsed Time: 2.569 seconds (Warm-up)</span></span>
-<span><span class="co">## Chain 4:                1.491 seconds (Sampling)</span></span>
-<span><span class="co">## Chain 4:                4.06 seconds (Total)</span></span>
-<span><span class="co">## Chain 4:</span></span></code></pre>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>      </span></code></pre></div>
+<span><span class="co">## Chain 2:  Elapsed Time: 3.389 seconds (Warm-up)</span></span>
+<span><span class="co">## Chain 2:                2.063 seconds (Sampling)</span></span>
+<span><span class="co">## Chain 2:                5.452 seconds (Total)</span></span>
+<span><span class="co">## Chain 2:</span></span></code></pre>
+<pre><code><span><span class="co">## Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span></span>
+<span><span class="co">## Running the chains for more iterations may help. See</span></span>
+<span><span class="co">## https://mc-stan.org/misc/warnings.html#bulk-ess</span></span></code></pre>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Spatial Model Results </span></span>
 <span><span class="co">## Formula: y ~ z</span></span>
 <span><span class="co">## Spatial method (outcome):  SAR </span></span>
@@ -244,23 +214,40 @@
 <span><span class="co">## Observations:  1200 </span></span>
 <span><span class="co">## Data models (ME): none</span></span>
 <span><span class="co">## Inference for Stan model: foundation.</span></span>
-<span><span class="co">## 4 chains, each with iter=500; warmup=250; thin=1; </span></span>
-<span><span class="co">## post-warmup draws per chain=250, total post-warmup draws=1000.</span></span>
+<span><span class="co">## 2 chains, each with iter=500; warmup=250; thin=1; </span></span>
+<span><span class="co">## post-warmup draws per chain=250, total post-warmup draws=500.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff  Rhat</span></span>
-<span><span class="co">## intercept  0.034   0.003 0.078 -0.121 -0.031  0.033  0.101  0.181   709 0.998</span></span>
-<span><span class="co">## z         -0.510   0.000 0.009 -0.527 -0.518 -0.510 -0.502 -0.490  1129 0.998</span></span>
-<span><span class="co">## sar_rho    0.874   0.001 0.016  0.843  0.859  0.873  0.887  0.904   758 0.998</span></span>
-<span><span class="co">## sar_scale  0.312   0.000 0.007  0.298  0.306  0.312  0.317  0.326   955 0.999</span></span>
+<span><span class="co">## intercept  0.185   0.004 0.078  0.028  0.117  0.187  0.247  0.341   419 1.002</span></span>
+<span><span class="co">## z         -0.501   0.000 0.008 -0.517 -0.508 -0.501 -0.494 -0.484   478 0.997</span></span>
+<span><span class="co">## sar_rho    0.888   0.001 0.013  0.862  0.877  0.890  0.900  0.914   495 0.998</span></span>
+<span><span class="co">## sar_scale  0.306   0.000 0.006  0.295  0.301  0.306  0.311  0.319   595 0.999</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Samples were drawn using NUTS(diag_e) at Tue Sep 17 21:10:00 2024.</span></span>
+<span><span class="co">## Samples were drawn using NUTS(diag_e) at Wed Oct 30 13:33:12 2024.</span></span>
 <span><span class="co">## For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">## and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">## convergence, Rhat=1).</span></span></code></pre>
 <p>The user first creates the data list using <code>prep_sar_data2</code> and then passes it to <code>stan_sar</code> using the <code>sar_parts</code> argument. Also, <code>slim = TRUE</code> is invoked to prevent the model from collecting N-length parameter vectors and quantities of interest (such as fitted values and log-likelihoods).</p>
-<p>For large data sets and complex models, <code>slim = TRUE</code> can bring about computational improvements at the cost of losing some functionality (including the loss of convenience functions like <code>sp_diag</code>, <code>me_diag</code>, <code>spatial</code>, <code>resid</code>, and <code>fitted</code>). Many quantities of interest, such as fitted values and spatial trend terms, can still be calculated manually using the data and parameter estimates (intercept, coefficients, and spatial autocorrelation parameters).</p>
-<p>The favorable MCMC diagnostics for this model (sufficiently large effective sample sizes <code>n_eff</code>, and <code>Rhat</code> values very near to 1), based on just 250 post-warmup iterations per chain with four MCMC chains, provides some indication as to how computationally efficient these spatial autoregressive models can be.</p>
-<p>Also, note that Stan usually samples more efficiently when variables have been mean-centered. Using the <code>centerx = TRUE</code> argument in <code>stan_sar</code> (or any other model-fitting function in <strong>geostan</strong>) can be very helpful in this respect. Also note that the SAR models in <strong>geostan</strong> are (generally) no less computationally-efficient than the CAR models, and may even be slightly more efficient.</p>
+</div>
+<div class="section level2">
+<h2 id="discussion">Discussion<a class="anchor" aria-label="anchor" href="#discussion"></a>
+</h2>
+<p>For large data sets and complex models, <code>slim = TRUE</code> can bring about computational improvements at the cost of losing access to some convenience functions (such as <code>sp_diag</code>, <code>me_diag</code>, <code>spatial</code>, <code>resid</code>, and <code>fitted</code>). Many quantities of interest, such as fitted values and spatial trend terms, can still be calculated manually using the data and parameter estimates (intercept, coefficients, and spatial autocorrelation parameters).</p>
+<p>The favorable MCMC diagnostics for the above model based on just 200 post-warmup iterations per chain (sufficiently large effective sample sizes <code>n_eff</code>, and <code>Rhat</code> values very near to 1) provides some indication as to the computational efficiency of the models. The point is that the basic spatial autoregressive models can work well for larger data because you only need a modest number of MCMC samples.</p>
+<p>Also, note that Stan usually samples more efficiently when variables have been mean-centered. Using the <code>centerx = TRUE</code> argument in <code>stan_sar</code> (or any other model-fitting function in geostan) can be very helpful in this respect. Also note that the SAR models in geostan are (generally) no less computationally-efficient than the CAR models, and may even be slightly more efficient.</p>
+</div>
+<div class="section level2">
+<h2 id="simulating-spatial-data">Simulating spatial data<a class="anchor" aria-label="anchor" href="#simulating-spatial-data"></a>
+</h2>
+<p>To simulate spatially-autocorrelated data on a regular grid use the <code>quick = TRUE</code> argument in <code>sim_sar</code>:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">row</span> <span class="op">=</span> <span class="fl">100</span></span>
+<span><span class="va">col</span> <span class="op">=</span> <span class="fl">100</span></span>
+<span><span class="va">sar_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep_sar_data2.html">prep_sar_data2</a></span><span class="op">(</span>row <span class="op">=</span> <span class="va">row</span>, col <span class="op">=</span> <span class="va">col</span><span class="op">)</span></span>
+<span><span class="va">W</span> <span class="op">&lt;-</span> <span class="va">sar_list</span><span class="op">$</span><span class="va">W</span></span>
+<span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>rho <span class="op">=</span> <span class="fl">.8</span>, w <span class="op">=</span> <span class="va">W</span>, quick <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>mu <span class="op">=</span> <span class="op">-</span><span class="fl">.5</span> <span class="op">*</span> <span class="va">z</span>, rho <span class="op">=</span> <span class="fl">.9</span>, w <span class="op">=</span> <span class="va">W</span>, quick <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">z</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

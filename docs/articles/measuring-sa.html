@@ -304,10 +304,7 @@
 <span><span class="co">#&gt; *Setting prior parameters for alpha_tau</span></span>
 <span><span class="co">#&gt; Distribution: student_t</span></span>
 <span><span class="co">#&gt;   df location scale</span></span>
-<span><span class="co">#&gt; 1 10        0     3</span></span>
-<span><span class="co">#&gt; Warning: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.</span></span>
-<span><span class="co">#&gt; Running the chains for more iterations may help. See</span></span>
-<span><span class="co">#&gt; https://mc-stan.org/misc/warnings.html#bulk-ess</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 10        0     3</span></span></code></pre></div>
 <p>For a summary of model results:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
@@ -317,8 +314,8 @@
 <span><span class="co">#&gt; Spatial method (outcome):  Exchangeable </span></span>
 <span><span class="co">#&gt; Likelihood function:  poisson </span></span>
 <span><span class="co">#&gt; Link function:  log </span></span>
-<span><span class="co">#&gt; Residual Moran Coefficient:  0.02466675 </span></span>
-<span><span class="co">#&gt; WAIC:  1318.28 </span></span>
+<span><span class="co">#&gt; Residual Moran Coefficient:  0.020665 </span></span>
+<span><span class="co">#&gt; WAIC:  1319.67 </span></span>
 <span><span class="co">#&gt; Observations:  159 </span></span>
 <span><span class="co">#&gt; Data models (ME): none</span></span>
 <span><span class="co">#&gt; Inference for Stan model: foundation.</span></span>
@@ -326,10 +323,10 @@
 <span><span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff  Rhat</span></span>
-<span><span class="co">#&gt; intercept -4.181   0.001 0.022 -4.221 -4.199 -4.181 -4.163 -4.138   311 1.014</span></span>
-<span><span class="co">#&gt; alpha_tau  0.248   0.000 0.016  0.219  0.234  0.247  0.261  0.283  4023 1.000</span></span>
+<span><span class="co">#&gt; intercept -4.178   0.001 0.020 -4.219 -4.195 -4.178 -4.161 -4.137   411 1.009</span></span>
+<span><span class="co">#&gt; alpha_tau  0.248   0.000 0.016  0.219  0.234  0.247  0.260  0.280  5234 0.999</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Tue Sep 17 21:09:24 2024.</span></span>
+<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Tue Oct 29 10:05:44 2024.</span></span>
 <span><span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">#&gt; convergence, Rhat=1).</span></span></code></pre></div>

@@ -150,7 +150,7 @@
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
 #' \item{summary}{Summaries of the main parameters of interest; a data frame.}
-#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and mean residual spatial autocorrelation as measured by the Moran coefficient.}
+#' \item{diagnostic}{Residual spatial autocorrelation as measured by the Moran coefficient.}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' \item{data}{a data frame containing the model data}
 #' \item{family}{the user-provided or default \code{family} argument used to fit the model}
@@ -183,38 +183,56 @@
 #' 
 #'
 #' @examples
+#'
+#' ##
+#' ## model mortality risk
+#' ##
+#'
+#' # simple spatial model for log rates
 #' 
-#' # model mortality risk
 #' data(georgia)
 #' C <- shape2mat(georgia, style = "B")
-#' cp <- prep_car_data(C)
-#' 
+#' cars <- prep_car_data(C)
+#'
+#' fit <- stan_car(log(rate.male) ~ 1, data = georgia,
+#'           car_parts = cars, iter = 400, quiet = TRUE)
+#'
+#' # model diagnostics
+#' sp_diag(fit, georgia)
+#'
+#' # A more appropriate model for mortality rates:
+#' # hierarchical spatial Poisson model
 #' fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)),
-#'                 car_parts = cp,
+#'                 car_parts = cars,
 #'                 data = georgia,
 #'                 family = poisson(),
-#'                 iter = 800, chains = 1 # for example speed only
-#'                  )
-#' rstan::stan_rhat(fit$stanfit)
-#' rstan::stan_mcse(fit$stanfit)
-#' print(fit)
+#'                 iter = 400, quiet = TRUE)
+#'
+#' # model diagnostics
 #' sp_diag(fit, georgia)
 #'
 #' \donttest{
-#' ## DCAR specification (inverse-distance based)
+#' 
+#' ##
+#' ## Distance-based weights matrix:
+#' ##   the 'DCAR' model
+#' ##
+#' 
 #' library(sf)
 #' A <- shape2mat(georgia, "B")
 #' D <- sf::st_distance(sf::st_centroid(georgia))
-#' A <- D * A
-#' cp <- prep_car_data(A, "DCAR", k = 1)
+#' D <- D * A
+#' dcars <- prep_car_data(D, "DCAR", k = 1)
 #' 
-#' fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)),
+#' Dfit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)),
 #'                data = georgia,
-#'                car = cp,
+#'                car = dcars,
 #'                family = poisson(),
-#'                iter = 800, chains = 1 # for example speed only 
-#' )
-#' print(fit)
+#'                iter = 400, quiet = TRUE)
+#'
+#' sp_diag(Dfit, georgia, dcars$C)
+#' dic(Dfit); dic(fit)
+#' 
 #' }
 #' 
 #' @export
@@ -259,9 +277,9 @@ stan_car <- function(formula,
         stopifnot(all(dim(C) == nrow(data)))
     } else {
         C <- car_parts$C
-        if (car_parts$WCAR == 0) {
-            message("Since you did not provide C, calculation of residual SA and any spatial-lag of X terms will use the matrix found in car_parts$C.")
-        }
+   #     if (car_parts$WCAR == 0) {
+   #         message("Since you did not provide C, calculation of residual SA and any spatial-lag of X terms will use the matrix found in car_parts$C.")
+  #      }
     }
     tmpdf <- as.data.frame(data)
     n <- nrow(tmpdf)    
@@ -319,7 +337,7 @@ stan_car <- function(formula,
           W <- C
           if (!inherits(W, "sparseMatrix")) W <- as(W, "CsparseMatrix")
           xrs <- Matrix::rowSums(W)
-          if (!all(xrs == 1)) W <- row_standardize(W, msg =  "Row standardizing connectivity matrix to calculate spatially lagged covaraite(s)")
+          if (!all(xrs == 1)) W <- row_standardize(W, warn = !quiet, msg = "Row standardizing matrix C for spatial lag of X calculations.")
           # efficient transform to CRS representation for W.list (via transpose)
           Wij <- as(W, "TsparseMatrix")
           Tw <- Matrix::sparseMatrix(i = Wij@j + 1,
@@ -468,9 +486,6 @@ stan_car <- function(formula,
         R <- resid(out, summary = FALSE)
         rmc <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )
         out$diagnostic$Residual_MC <- rmc
-    }    
-    if (any(pars == 'fitted')) {
-        out$diagnostic$WAIC <- as.numeric(waic(out)[1])
     }    
     
     return (out)

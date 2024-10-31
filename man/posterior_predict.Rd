@@ -2,9 +2,18 @@
 % Please edit documentation in R/posterior_predict.R
 \name{posterior_predict}
 \alias{posterior_predict}
-\title{Draw samples from the posterior predictive distribution}
+\title{Sample from the posterior predictive distribution}
 \usage{
-posterior_predict(object, S, summary = FALSE, width = 0.95, car_parts, seed)
+posterior_predict(
+  object,
+  S,
+  summary = FALSE,
+  width = 0.95,
+  quick = TRUE,
+  K = 20,
+  preserve_order = FALSE,
+  seed
+)
 }
 \arguments{
 \item{object}{A \code{geostan_fit} object.}
@@ -15,7 +24,11 @@ posterior_predict(object, S, summary = FALSE, width = 0.95, car_parts, seed)
 
 \item{width}{Only used if \code{summary = TRUE}, to set the quantiles for the credible intervals. Defaults to \code{width = 0.95}.}
 
-\item{car_parts}{Data for CAR model specification; only required for \code{\link[geostan]{stan_car}} with \code{family = auto_gaussian()}.}
+\item{quick}{For SAR models only; \code{quick = TRUE} uses an approximation method for the inverse of matrix \code{(I - rho * W)}.}
+
+\item{K}{For SAR models only; number of matrix powers to for the matrix inverse approximation.}
+
+\item{preserve_order}{If \code{TRUE}, the order of posterior draws will remain fixed; the default is to permute the MCMC samples so that (with small sample size \code{S}) each successive call to \code{posterior_predict} will return a different sample from the posterior probability distribution.}
 
 \item{seed}{A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution.}
 }
@@ -25,15 +38,29 @@ A matrix of size S x N containing samples from the posterior predictive distribu
 \description{
 Draw samples from the posterior predictive distribution of a fitted \code{geostan} model.
 }
+\details{
+The \code{quick = FALSE} method requires a call to \code{Matrix::solve(I - rho * W)} for each MCMC sample; the \code{quick = TRUE} method uses an approximation based on matrix powers (LeSage and Pace 2009).
+}
 \examples{
- fit <- stan_glm(sents ~ offset(log(expected_sents)),
+E <- sentencing$expected_sents
+sentencing$log_E <- log(E)
+ fit <- stan_glm(sents ~ offset(log_E),
                   re = ~ name,
                   data = sentencing,
                   family = poisson(),
                   chains = 2, iter = 600) # for speed only
 
+
  yrep <- posterior_predict(fit, S = 65)
- plot(density(yrep[1,]))
- for (i in 2:nrow(yrep)) lines(density(yrep[i,]), col = 'gray30')
- lines(density(sentencing$sents), col = 'darkred', lwd = 2)
+ plot(density(yrep[1,] / E ))
+ for (i in 2:nrow(yrep)) lines(density(yrep[i,] / E), col = 'gray30')
+ lines(density(sentencing$sents / E), col = 'darkred', lwd = 2)
+
+sars <- prep_sar_data2(row = 9, col = 9)
+W <- sars$W
+y <- sim_sar(rho = .9, w = W)
+fit <- stan_sar(y ~ 1, data = data.frame(y=y), sar = sars,
+                iter = 650, quiet = TRUE)
+yrep <- posterior_predict(fit, S = 15)
+
 }

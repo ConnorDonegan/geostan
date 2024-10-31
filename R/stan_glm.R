@@ -163,7 +163,7 @@
 #' An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
 #' \item{summary}{Summaries of the main parameters of interest; a data frame}
-#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and mean residual spatial autocorrelation as measured by the Moran coefficient.}
+#' \item{diagnostic}{Residual spatial autocorrelation as measured by the Moran coefficient.}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' \item{data}{a data frame containing the model data}
 #' \item{family}{the user-provided or default \code{family} argument used to fit the model}
@@ -187,15 +187,67 @@
 #' Donegan, Connor (2021). Building spatial conditional autoregressive (CAR) models in the Stan programming language. *OSF Preprints*. \doi{10.31219/osf.io/3ey65}.
 #' 
 #' @examples
+#' ##
+#' ## Linear regression model
+#' ##
+#' 
+#' N = 100
+#' x <- rnorm(N)
+#' y <- .5 * x + rnorm(N)
+#' dat <- cbind(y, x)
+#'
+#' # no. of MCMC samples
+#' iter = 600
+#'
+#' # fit model
+#' fit <- stan_glm(y ~ x, data = dat, iter = iter, quiet = TRUE)
+#'
+#' # see results with MCMC diagnostics
+#' print(fit)
+#' 
+#' ##
+#' ## Custom prior distributions
+#' ##
+#'
+#' PL <- list(
+#'       intercept = normal(0, 1),
+#'       beta = normal(0, 1),
+#'       sigma = student_t(10, 0, 2)
+#' )
+#'
+#' fit2 <- stan_glm(y ~ x, data = dat, prior = PL, iter = iter,
+#'                 quiet = TRUE)
+#'
+#' print(fit2)
+#' 
+#' ##
+#' ## Poisson model for count data
+#' ## with county 'random effects' 
+#' ##
+#'
 #' data(sentencing)
 #'
+#' # note: 'name' is county identifier
+#' head(sentencing)
+#' 
+#' # denominator in standardized rate Y/E
+#' # (observed count Y over expected count E)
+#' # (use the log-denominator as the offest term)
 #' sentencing$log_e <- log(sentencing$expected_sents)
+#'
+#' # fit model
 #' fit.pois <- stan_glm(sents ~ offset(log_e),
 #'                      re = ~ name,
 #'                      family = poisson(),
-#'                      data = sentencing,
-#'                     chains = 2, iter = 800) # for speed only
+#'                      data = sentencing,                    
+#'                     iter = iter, quiet = TRUE) 
 #'
+#' # Spatial autocorrelation/residual diagnostics
+#' sp_diag(fit.pois, sentencing)
+#'
+#' # summary of results with MCMC diagnostics
+#' print(fit.pois)
+#' 
 #' # MCMC diagnostics plot: Rhat values should all by very near 1
 #' rstan::stan_rhat(fit.pois$stanfit)
 #' 
@@ -206,15 +258,51 @@
 #' # or for a particular parameter
 #' rstan::stan_ess(fit.pois$stanfit, "alpha_re")
 #'
-#' # Spatial autocorrelation/residual diagnostics
-#' sp_diag(fit.pois, sentencing)
-#' 
-#' ## Posterior predictive distribution                                       
+#' ##
+#' ## Visualize the posterior predictive distribution
+#' ##
+#'
+#' # plot observed values and model replicate values
 #' yrep <- posterior_predict(fit.pois, S = 65)
 #' y <- sentencing$sents
-#' plot(density(yrep[1,]))
-#' for (i in 2:nrow(yrep)) lines(density(yrep[i,]), col = "gray30")
+#' ltgray <- rgb(0.3, 0.3, 0.3, 0.5)
+#' 
+#' plot(density(yrep[1,]), col = ltgray,
+#'      ylim = c(0, 0.014), xlim = c(0, 700),
+#'      bty = 'L', xlab = NA, main = NA)
+#' 
+#' for (i in 2:nrow(yrep)) lines(density(yrep[i,]), col = ltgray)
+#' 
 #' lines(density(sentencing$sents), col = "darkred", lwd = 2)
+#' 
+#' legend("topright", legend = c('Y-observed', 'Y-replicate'),
+#'        col = c('darkred', ltgray), lwd = c(1.5, 1.5))
+#'
+#' # plot replicates of Y/E
+#'E <- sentencing$expected_sents
+#'
+#' # set plot margins
+#' old_pars <- par(mar=c(2.5, 3.5, 1, 1))
+#'
+#' # plot yrep
+#' plot(density(yrep[1,] / E), col = ltgray,
+#'	    ylim = c(0, 0.9), xlim = c(0, 7),
+#'     bty = 'L', xlab = NA, ylab = NA, main = NA)
+#'
+#' for (i in 2:nrow(yrep)) lines(density(yrep[i,] / E), col = ltgray)
+#'
+#' # overlay y
+#' lines(density(sentencing$sents / E), col = "darkred", lwd = 2)
+#'
+#' # legend, y-axis label
+#' legend("topright", legend = c('Y-observed', 'Y-replicate'),
+#'       col = c('darkred', ltgray), lwd = c(1.5, 1.5))
+#'
+#' mtext(side = 2, text = "Density", line = 2.5)
+#'
+#' # return margins to previous settings
+#' par(old_pars)
+#' 
 #' @importFrom rstan extract_sparse_parts
 stan_glm <- function(formula,
                      slx,
@@ -305,7 +393,7 @@ stan_glm <- function(formula,
           W <- C
           if (!inherits(W, "sparseMatrix")) W <- as(W, "CsparseMatrix")
           xrs <- Matrix::rowSums(W)
-          if (!all(xrs == 1)) W <- row_standardize(W, msg =  "Row standardizing connectivity matrix to calculate spatially lagged covaraite(s)")
+          if (!all(xrs == 1)) W <- row_standardize(W, warn = !quiet, msg = "Row standardizing matrix C for spatial lag of X calculations.")
           # efficient transform to CRS representation for W.list (via transpose)
           Wij <- as(W, "TsparseMatrix")
           Tw <- Matrix::sparseMatrix(i = Wij@j + 1,
@@ -433,9 +521,6 @@ stan_glm <- function(formula,
         rmc <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )
         out$diagnostic$Residual_MC <- rmc
     }    
-    if (any(pars == 'fitted')) {
-        out$diagnostic$WAIC <- as.numeric(waic(out)[1])
-    }                                                        
 
     return(out)
     

@@ -25,7 +25,7 @@ Introductions to the software can be found at [r-spatial.org](https://r-spatial.
 
 Features include:
 
-* **Spatial regression and disease mapping** Statistical models for data recorded across areal units like states, counties, or census tracts.
+* **Spatial regression and disease mapping** Statistical models for data recorded across areal units (states, counties, or census tracts) or networks, including spatial econometric models.
 * **Spatial analysis tools** Tools for visualizing and measuring spatial autocorrelation and map patterns, for exploratory analysis and model diagnostics.  
 * **Observational uncertainty** Incorporate information on data reliability, such as standard errors of American Community Survey estimates, into any geostan model.
 * **Missing and Censored observations** Vital statistics and disease surveillance systems like CDC Wonder censor case counts that fall below a threshold number; geostan can model disease or mortality risk for small areas with censored observations or with missing observations.

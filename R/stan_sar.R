@@ -1,6 +1,6 @@
 #' Simultaneous autoregressive (SAR) models
 #'
-#' @description Fit data to an spatial Gaussian SAR (spatial error) model, or model a vector of spatially-autocorrelated parameters using a SAR prior model.
+#' @description Fit data to a simultaneous spatial autoregressive (SAR) model, or use the SAR model as the prior model for a parameter vector in a hierarchical model.
 #'
 #' @param formula A model formula, following the R \code{\link[stats]{formula}} syntax. Binomial models can be specified by setting the left hand side of the equation to a data frame of successes and failures, as in \code{cbind(successes, failures) ~ x}.
 #' 
@@ -15,13 +15,13 @@
 #'
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #'
-#' @param C Spatial weights matrix (conventionally referred to as \eqn{W} in the SAR model). Typically, this will be created using `geostan::shape2mat(shape, style = "W")`. This will be passed internally to \code{\link[geostan]{prep_sar_data}}, and will also be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will automatically be row-standardized before calculating \code{slx} terms. See \code{\link[geostan]{shape2mat}}.
+#' @param C Spatial weights matrix (conventionally referred to as \eqn{W} in the SAR model). Typically, this will be created using `geostan::shape2mat(shape, style = "W")`. This will be passed internally to \code{\link[geostan]{prep_sar_data}}, and will also be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms. See \code{\link[geostan]{shape2mat}}.
 #'
-#' @param sar_parts Optional. If not provided, then \code{\link[geostan]{prep_sar_data}} will be used automatically to create `sar_parts` using the user-provided spatial weights matrix. 
+#' @param sar_parts List of data constructed by \code{\link[geostan]{prep_sar_data}}. If not provided, then `C` will automatically be passed to \code{\link[geostan]{prep_sar_data}} to create `sar_parts`.
 #' 
-#' @param family The likelihood function for the outcome variable. Current options are \code{auto_gaussian()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}; if `family = gaussian()` is provided, it will automatically be converted to `auto_gaussian()`.
+#' @param family The likelihood function for the outcome variable. Current options are \code{auto_gaussian()}, \code{binomial()} (with logit link function) and \code{poisson()} (with log link function); if `family = gaussian()` is provided, it will automatically be converted to `auto_gaussian()`.
 #'
-#' @param type Type of SAR model (character string): spatial error model ('SEM'), spatial Durbin error model ('SDEM'), spatial Durbin model ('SDM'), or spatial lag of y model ('Lag'). Note that regression coefficients for the two 'spatial lag of y' models ('SDM' and 'Lag') do not admit of the usual interpretation; see Details below.
+#' @param type Type of SAR model (character string): spatial error model ('SEM'), spatial Durbin error model ('SDEM'), spatial Durbin lag model ('SDLM'), or spatial lag model ('SLM'). see Details below.
 #'
 #' @param prior A named list of parameters for prior distributions (see \code{\link[geostan]{priors}}):
 #' \describe{
@@ -39,19 +39,19 @@
 #' 
 #' }
 #'
-#' @param ME To model observational uncertainty (i.e. measurement or sampling error) in any or all of the covariates, provide a list of data as constructed by the \code{\link[geostan]{prep_me_data}} function. 
+#' @param ME To model observational uncertainty in any or all of the covariates (i.e. measurement or sampling error), provide a list of data constructed by the \code{\link[geostan]{prep_me_data}} function. 
 #'
-#' @param centerx To center predictors on their mean values, use `centerx = TRUE`. If the ME argument is used, the modeled covariate (i.e., latent variable), rather than the raw observations, will be centered. When using the ME argument, this is the recommended method for centering the covariates.
+#' @param centerx To center predictors on their mean values, use `centerx = TRUE`. This increases sampling speed. If the ME argument is used, the modeled covariate (i.e., the latent variable), rather than the raw observations, will be centered. 
 #'
-#' @param censor_point Integer value indicating the maximum censored value; this argument is for modeling censored (suppressed) outcome data, typically disease case counts or deaths. 
+#' @param censor_point Integer value indicating the maximum censored value; this argument is for modeling censored (suppressed) outcome data, typically disease case counts or deaths which are left-censored to protect confidentiality when case counts are very low.
 #' 
 #' @param prior_only Logical value; if \code{TRUE}, draw samples only from the prior distributions of parameters.
 #' @param chains Number of MCMC chains to use. 
-#' @param iter Number of samples per chain. 
+#' @param iter Number of MCMC samples per chain. 
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Set \code{refresh=0} to silence this.
-#' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
-#' @param keep_all  If `keep_all = TRUE` then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors and the `bridgesampling` package.
-#' @param slim If `slim = TRUE`, then the Stan model will not collect the most memory-intensive parameters (including n-length vectors of fitted values, log-likelihoods, and ME-modeled covariate values). This will disable many convenience functions that are otherwise available for fitted \code{geostan} models, such as the extraction of residuals, fitted values, and spatial trends, WAIC, and spatial diagnostics, and ME diagnostics; many quantities of interest, such as fitted values and spatial trends, can still be calculated manually using given parameter estimates. The "slim" option is designed for data-intensive routines, such as regression with raster data, Monte Carlo studies, and measurement error models. For more control over which parameters are kept or dropped, use the `drop` argument instead of `slim`.
+#' @param pars Specify any additional parameters you'd like stored from the Stan model.
+#' @param keep_all  If `keep_all = TRUE` then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors using the `bridgesampling` package.
+#' @param slim If `slim = TRUE`, then the Stan model will not save the most memory-intensive parameters (including n-length vectors of fitted values, other 'random effects', and ME-modeled covariate values). This will disable some convenience functions that are otherwise available for fitted \code{geostan} models, such as the extraction of residuals, fitted values, and spatial trends, spatial diagnostics, and ME diagnostics. The "slim" option is designed for data-intensive routines, such as regression with raster data, Monte Carlo studies, and measurement error models. 
 #' @param drop Provide a vector of character strings to specify the names of any parameters that you do not want MCMC samples for. Dropping parameters in this way can improve sampling speed and reduce memory usage. The following parameter vectors can potentially be dropped from SAR models:
 #' \describe{
 #' \item{fitted}{The N-length vector of fitted values}
@@ -59,57 +59,64 @@
 #' \item{log_lambda_mu}{Linear predictor inside the SAR model (for Poisson and binomial models)}
 #' \item{x_true}{N-length vector of 'latent'/modeled covariate values created for measurement error (ME) models.}
 #' }
-#' Using `drop = c('fitted', 'alpha_re', 'x_true')` is equivalent to `slim = TRUE`. Note that if `slim = TRUE`, then `drop` will be ignored---so only use one or the other.
+#' Using `drop = c('fitted', 'alpha_re', 'x_true', 'log_lambda_mu')` is equivalent to `slim = TRUE`. Note that if `slim = TRUE`, then `drop` will be ignored---so only use one or the other.
 #' @param control A named list of parameters to control the sampler's behavior. See \code{\link[rstan]{stan}} for details. 
 #' 
 #' @param ... Other arguments passed to \code{\link[rstan]{sampling}}.
 #'
-#' @param quiet Controls (most) automatic printing to the console. By default, any prior distributions that have not been assigned by the user are printed to the console. If `quiet = TRUE`, these will not be printed. Using `quiet = TRUE` will also force `refresh = 0`.
+#' @param quiet Controls (most) automatic printing to the console. By default, any prior distributions that have not been assigned by the user are printed to the console; if `quiet = TRUE`, these will not be printed. Using `quiet = TRUE` will also force `refresh = 0`.
 #' 
 #' @details
 #'
 #' Discussions of SAR models may be found in Cliff and Ord (1981), Cressie (2015, Ch. 6), LeSage and Pace (2009), and LeSage (2014). The Stan implementation draws from Donegan (2021).
 #'
-#' There are two SAR specification options which are commonly known as the spatial error ('SEM') and the spatial lag ('SLM') models. Additionally, it is common to include spatially-lagged covariates in these models; then the model is referred to as a spatial Durbin model ('spatial Durbin error model' or 'spatial Durbin lag model', SDEM/SDLM). You can also obtain the Durbin model by using either 'SEM' or 'SLM' and then adding all (or some) of your covariates to the \code{slx} (spatial lag of X) argument; in other words, the SDEM and SDLM options are simply for convenience. 
+#' There are two SAR specification options which are commonly known as the spatial error ('SEM') and the spatial lag ('SLM') models. When the spatial-lag of the covariates are included, then the model is referred to as a spatial Durbin model; depending on the model type, it becomes a spatial Durbin error model ('SDEM') or a spatial Durbin lag model ('SDLM').
+#'
+#' The mathematics and typical interpretation of the SLM/SDLM is unusual and the conventional interpretation of regression coefficients does not apply! Use the \link[geostan]{impacts} method to interpret results from the SLM and SDLM models (that is, granted that this model form is at least plausible for the application).
+#'
+#' Use of the 'SDEM' and 'SDLM' options are for convenience only: you can also obtain the Durbin models using the \code{slx} (spatial lag of X) argument. The \code{slx} argument allows control over which covariates will be added in spatial-lag form; the Durbin options include the spatial lag of all covariates.
 #'
 #' The spatial error specification ('SEM') is
-#' \deqn{y = \mu + ( I - \rho W)^{-1} \epsilon}
+#' \deqn{y = \mu + ( I - \rho C)^{-1} \epsilon}
 #' \deqn{\epsilon \sim Gauss(0, \sigma^2)}
-#' where \eqn{W} is the spatial weights matrix, \eqn{I} is the n-by-n identity matrix, and \eqn{\rho} is a spatial autocorrelation parameter. In words, the errors of the regression equation are spatially autocorrelated.
+#' where \eqn{C} is the spatial connectivity matrix, \eqn{I} is the n-by-n identity matrix, and \eqn{\rho} is a spatial autocorrelation parameter. In words, the errors of the regression equation are spatially autocorrelated.
 #'
 #' Re-arranging terms, the model can also be written as follows:
-#' \deqn{y = \mu + \rho W (y - \mu)  + \epsilon}
-#' which perhaps shows more intuitively the implicit spatial trend component, \eqn{\rho W (y - \mu)}. 
+#' \deqn{y = \mu + \rho C (y - \mu)  + \epsilon}
+#' which perhaps shows more intuitively the implicit spatial trend component, \eqn{\rho C (y - \mu)}. 
 #'
 #' The second SAR specification type is the 'spatial lag of y' ('SLM'). This model describes a diffusion or contagion process:
-#' \deqn{y = \rho W y + \mu + \epsilon}
+#' \deqn{y = \rho C y + \mu + \epsilon}
 #' \deqn{\epsilon \sim Gauss(0, \sigma^2)}
-#' This is attractive for modeling actual contagion processes. Here the 'spatial trend' part is simply \eqn{\rho W y}.
+#' This is attractive for modeling actual contagion processes. Here the 'spatial trend' part is simply \eqn{\rho C y}.
 #'
-#' Beware that the mathematics and typical interpretation of the SLM is unusual. The equation specifies feedback between all units, such that changing the outcome in one location has a spill-over effect that can extend to all other locations (a ripple effect). These spill-overs have to be incorporated into your understanding of the regression coefficients: a unit change in of \code{X} in one place will 'directly' impact \code{y} in that same place and will 'indirectly' impact \code{y} elsewhere through the diffusion process. The 'total' impact of a unit change in \code{X} needs to account for both direct and indirect effects. 
+#' Both model types have a covariance matrix of:
 #' 
-#' Most often, the SAR model is applied directly to observations (referred to below as the auto-normal or auto-Gaussian model). The SAR model can also be applied to a vector of parameters inside a hierarchical model. The latter enables spatial autocorrelation to be modeled when the observations are discrete counts with a natural denominator (e.g., hierarchical models for disease incidence rates).
+#' \deqn{\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}.}
 #'
+#' But the expected values of the models differ. The expected value for the SEM is the usual \eqn{\mu} (the intercept plus \code{X*beta}); the expected value of the SLM is \eqn{(I - rho C)^{-1} \mu}. 
+#' 
+#' Most often, the SAR model is applied directly to observations (referred to below as the auto-normal or auto-Gaussian model). The SAR model can also be applied to a vector of parameters inside a hierarchical model. The latter enables spatial or network autocorrelation to be modeled when the observations are discrete counts (e.g., hierarchical models for disease incidence rates). 
 #' 
 #' ###  Auto-normal
 #'
 #' When \code{family = auto_gaussian()}, the SAR model is specified as follows:
 #' 
 #' \deqn{y \sim Gauss(\mu, \Sigma)}
-#' \deqn{\Sigma = \sigma^2 (I - \rho W)^{-1}(I - \rho W')^{-1}}
+#' \deqn{\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}}
 # 
-#' where \eqn{\mu} is the mean vector (with intercept, covariates, etc.), \eqn{W} is a spatial weights matrix (usually row-standardized), and \eqn{\sigma} is a scale parameter.
+#' where \eqn{\mu} is the mean vector (with intercept, covariates, etc.), \eqn{C} is a spatial weights or connectivity matrix (usually row-standardized), and \eqn{\sigma} is a scale parameter.
 #'
 #' The SAR model contains an implicit spatial trend (i.e., spatial autocorrelation) component \eqn{\phi} which is calculated as follows:
 #' \deqn{
-#' \phi = \rho W (y - \mu)
+#' \phi = \rho C (y - \mu)
 #' }
 #' 
 #' This term can be extracted from a fitted auto-Gaussian model using the \link[geostan]{spatial} method.
 #'
 #' When applied to a fitted auto-Gaussian model, the \link[geostan]{residuals.geostan_fit} method returns 'de-trended' residuals \eqn{R} by default. That is,
 #' \deqn{
-#' R = y - \mu - \rho W (y - \mu).
+#' R = y - \mu - \rho C (y - \mu).
 #' }
 #' To obtain "raw" residuals (\eqn{y - \mu}), use `residuals(fit, detrend = FALSE)`. Similarly, the fitted values obtained from the \link[geostan]{fitted.geostan_fit} will include the spatial trend term by default.
 #'
@@ -119,21 +126,21 @@
 #'
 #' \deqn{y \sim Poisson(e^{O + \lambda})}
 #' \deqn{\lambda \sim Gauss(\mu, \Sigma)}
-#' \deqn{\Sigma = \sigma^2 (I - \rho W)^{-1}(I - \rho W')^{-1}.}
+#' \deqn{\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}.}
 #' 
-#' If the raw outcome consists of a rate \eqn{\frac{y}{p}} with observed counts \eqn{y} and denominator \eqn{p} (often this will be the size of the population at risk), then the offset term \eqn{O=log(p)} is the log of the denominator.
+#' `O` is a constant/offset term. If the raw outcome consists of a rate \eqn{\frac{y}{p}} with observed counts \eqn{y} and denominator \eqn{p} (often this will be the size of the population at risk), then the offset term \eqn{O=log(p)} is the log of the denominator.
 #' 
 #' This is often written (equivalently) as:
 #' 
 #' \deqn{y \sim Poisson(e^{O + \mu + \phi})}
 #' \deqn{ \phi \sim Gauss(0, \Sigma) }
-#' \deqn{ \Sigma = \sigma^2 (I - \rho W)^{-1}(I - \rho W')^{-1}.}
+#' \deqn{ \Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}.}
 #'
 #' For Poisson models, the \link[geostan]{spatial} method returns the parameter vector \eqn{\phi}.
 #'
-#' In the Poisson SAR model, \eqn{\phi} contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \eqn{\phi}, you can do so by calculating:
+#' In the Poisson SAR model, \eqn{\phi} contains a latent (smooth) spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \eqn{\phi}, you can do so by calculating:
 #' \deqn{
-#'  \rho W \phi.
+#'  \rho C \phi.
 #' }
 #' 
 #' ### Binomial
@@ -142,7 +149,7 @@
 #' 
 #' \deqn{y \sim Binomial(N, \lambda) }
 #' \deqn{logit(\lambda) \sim Gauss(\mu, \Sigma) }
-#' \deqn{\Sigma = \sigma^2 (I - \rho W)^{-1}(I - \rho W')^{-1}.}
+#' \deqn{\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}.}
 #' 
 #' where outcome data \eqn{y} are counts, \eqn{N} is the number of trials, and \eqn{\lambda} is the rate of 'success'. Note that the model formula should be structured as: `cbind(sucesses, failures) ~ 1` (for an intercept-only model), such that `trials = successes + failures`.
 #' 
@@ -152,7 +159,7 @@
 #' 
 #' As is also the case for the Poisson model, \eqn{\phi} contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \eqn{\phi}, you can do so by calculating:
 #' \deqn{
-#' \rho W \phi.
+#' \rho C \phi.
 #' }
 #'
 #' ## Additional functionality
@@ -163,7 +170,7 @@
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
 #' \item{summary}{Summaries of the main parameters of interest; a data frame.}
-#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and mean residual spatial autocorrelation as measured by the Moran coefficient.}
+#' \item{diagnostic}{Residual spatial autocorrelation as measured by the Moran coefficient.}
 #' \item{stanfit}{an object of class \code{stanfit} returned by \code{rstan::stan}}
 #' \item{data}{a data frame containing the model data}
 #' \item{family}{the user-provided or default \code{family} argument used to fit the model}
@@ -198,32 +205,97 @@
 #' LeSage, James, & Pace, Robert Kelley (2009). *Introduction to Spatial Econometrics*. Chapman and Hall/CRC.
 #'
 #' @examples
-#' # model mortality risk
+#'
+#' ##
+#' ## simulate SAR data on a regular grid
+#' ##
+#' 
+#' sars <- prep_sar_data2(row = 10, col = 10, quiet = TRUE)
+#' w <- sars$W
+#' 
+#' # draw x
+#' x <- sim_sar(w = w, rho = 0.5)
+#'
+#' # draw y = mu + rho*W*(y - mu) + epsilon
+#' # beta = 0.5, rho = 0.5
+#' y <- sim_sar(w = w, rho = .5, mu = 0.5 * x)
+#' dat <- data.frame(y = y, x = x)
+#'
+#' ##
+#' ## fit SEM
+#' ##
+#' 
+#' fit_sem <- stan_sar(y ~ x, data = dat, sar = sars,
+#'                     chains = 1, iter = 800)
+#' print(fit_sem)
+#'
+#' ##
+#' ## data for SDEM
+#' ##
+#' 
+#' # mu = x*beta + wx*gamma; beta=1, gamma=-0.25
+#' x <- sim_sar(w = w, rho = 0.5)
+#' mu <- 1 * x - 0.25 * (w %*% x)[,1]
+#' y <- sim_sar(w = w, rho = .5, mu = mu)
+#' # or for SDLM:
+#' # y <- sim_sar(w = w, rho = 0.5, mu = mu, type = "SLM")
+#' dat <- data.frame(y=y, x=x)
+#'
+#' #
+#' ## fit models
+#' ##
+#'
+#' # DSEM
+#' # y = mu + rho*W*(y - mu) + epsilon
+#' # mu = beta*x + gamma*Wx
+#' fit_sdem <- stan_sar(y ~ x, data = dat,
+#'                     sar_parts = sars, type = "SDEM",
+#'                     iter = 800, chains = 1,
+#'                     quiet = TRUE)
+#'
+#' # SDLM
+#' # y = rho*Wy + beta*x + gamma*Wx + epsilon
+#' fit_sdlm <- stan_sar(y ~ x, data = dat,
+#'                     sar_parts = sars,
+#'                     type = "SDLM",
+#'                     iter = 800,
+#'                     chains = 1,
+#'                     quiet = TRUE)
+#'
+#' # compare by DIC
+#' dic(fit_sdem)
+#' dic(fit_sdlm)
+#' 
+#' \donttest{
+#' ##
+#' ## Modeling mortality rates
+#' ##
+#'
+#' # simple spatial regression
 #' data(georgia)
 #' W <- shape2mat(georgia, style = "W")
 #' 
 #' fit <- stan_sar(log(rate.male) ~ 1,
 #'                 C = W,
 #'                 data = georgia,
-#'                 chains = 1, # for ex. speed only
-#'                 iter = 700 
+#'                 iter = 900
 #'                 )
 #' 
-#' rstan::stan_rhat(fit$stanfit)
-#' rstan::stan_mcse(fit$stanfit)
-#' print(fit)
-#' plot(fit)
+#' # view fitted vs. observed, etc.
 #' sp_diag(fit, georgia)
 #'
-#' \donttest{
-#'  # a more appropriate model for count data:
+#' # A more appropriate model for count data:
+#' # hierarchical spatial poisson model
 #' fit2 <- stan_sar(deaths.male ~ offset(log(pop.at.risk.male)),
 #'                 C = W,
 #'                 data = georgia,
 #'                 family = poisson(),
 #'                 chains = 1, # for ex. speed only
-#'                 iter = 700 
+#'                 iter = 900,
+#'                 quiet = TRUE
 #'                  )
+#' 
+#' # view fitted vs. observed, etc.
 #' sp_diag(fit2, georgia)
 #' }
 #' @export
@@ -338,8 +410,8 @@ stan_sar <- function(formula,
           W <- C
           if (!inherits(W, "sparseMatrix")) W <- as(W, "CsparseMatrix")
           
-          ## xrs <- Matrix::rowSums(W)
-          ## if (!all(xrs == 1)) W <- row_standardize(W, msg =  "Row standardizing connectivity matrix to calculate spatially lagged covaraite(s)")
+          xrs <- Matrix::rowSums(W)
+          if (!all(xrs == 1)) W <- row_standardize(W, warn = !quiet, msg = "Row standardizing matrix C for spatial lag of X calculations.")
           
           # nb: in stan_sar, W is taken from sar_parts, not calculated here.
           Wx <- SLX(f = slx, DF = mod_frame, x = xraw, W = W, Durbin = Durbin)
@@ -478,9 +550,7 @@ stan_sar <- function(formula,
         rmc <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )
         out$diagnostic$Residual_MC <- rmc
     }
-    if (any(pars == 'fitted')) {
-        out$diagnostic$WAIC <- as.numeric(waic(out)[1])
-    }                                                                
+
     return (out)
 }
 

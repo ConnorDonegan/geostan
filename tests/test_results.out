@@ -1,0 +1,417 @@
+        DIC penalty
+[1,] 1519.1     4.2
+[2,] 1519.5     4.4
+        WAIC Eff_pars     Lpd
+[1,] 1517.69     2.10 -756.74
+[2,] 1518.05     2.18 -756.84
+Iteration: 1
+Iteration: 2
+Iteration: 3
+Iteration: 4
+Iteration: 5
+Iteration: 6
+Iteration: 1
+Iteration: 2
+Iteration: 3
+Iteration: 4
+Iteration: 5
+Iteration: 6
+Iteration: 7
+post_prob (SDLM, SDEM):
+ 0.3036661 0.6963339 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     -4.8     5
+  df location scale
+1 10        0     3
+  lower upper
+1  -1.7     1
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     -1.4     5
+  location scale
+1     -4.7     5
+  location scale
+1     -1.4   [?2004l[?2004l
+Save workspace image? [y/n/c]: [?2004l[?2004l   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     -1.4     5
+  location scale
+1        0     5
+  global_scale slab_df slab_scale
+1            1      15       0.63
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  2.000   3.500   4.000   4.426   5.000   8.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     0.11     5
+  df location scale
+1 10        0     3
+  lower upper
+1  -1.8     1
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     -4.2     5
+  location scale
+1        0     5
+2        0     5
+  df location scale
+1 10        0     3
+  lower upper
+1  -1.7     1
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     -4.2     5
+  location scale
+1        0    57
+2        0     5
+  df location scale
+1 10        0     3
+  lower upper
+1  -1.7     1
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     -4.2     5
+  location scale
+1        0   5.0
+2        0   5.6
+3        0   5.0
+4        0   5.0
+  df location scale
+1 10        0     3
+  lower upper
+1  -1.7     1
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     -4.2     5
+  location scale
+1        0     5
+  df location scale
+1 10        0     3
+  lower upper
+1 -0.68  0.35
+
+SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).
+Chain 1: 
+Chain 1: Gradient evaluation took 9.2e-05 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.92 seconds.
+Chain 1: Adjust your expectations accordingly!
+Chain 1: 
+Chain 1: 
+Chain 1: WARNING: No variance estimation is
+Chain 1:          performed for num_warmup < 20
+Chain 1: 
+Chain 1: Iteration: 1 / 10 [ 10%]  (Warmup)
+Chain 1: Iteration: 6 / 10 [ 60%]  (Sampling)
+Chain 1: Iteration: 10 / 10 [100%]  (Sampling)
+Chain 1: 
+Chain 1:  Elapsed Time: 0.001 seconds (Warm-up)
+Chain 1:                0 seconds (Sampling)
+Chain 1:                0.001 seconds (Total)
+Chain 1: 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     -4.7     5
+  location scale
+1        0     5
+2        0     5
+  df location scale
+1 10        0     3
+  lower upper
+1  -1.7     1
+  location scale
+1    0.059     5
+  location scale
+1        0     5
+2        0     5
+  df location scale
+1 10        0     3
+  lower upper
+1    -1     1
+  location scale
+1    0.059     5
+  location scale
+1        0     5
+2        0     5
+  df location scale
+1 10        0     3
+  lower upper
+1    -1     1
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  2.000   3.500   4.000   4.426   5.000   8.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     0.11     5
+  global_scale slab_df slab_scale
+1            1      15          2
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  2.000   3.500   4.000   4.426   5.000   8.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     0.11     5
+  global_scale slab_df slab_scale
+1            1      15          2
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  df location scale
+1 10        0     3
+  global_scale slab_df slab_scale
+1            1      15        1.6
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     -4.7     5
+  location scale
+1        0     5
+  df location scale
+1 10        0     3
+  global_scale slab_df slab_scale
+1            1      15        1.7
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     -4.7     5
+  location scale
+1        0     5
+  df location scale
+1 10        0     3
+  global_scale slab_df slab_scale
+1            1      15        1.7
+  location scale
+1     -4.7     5
+  location scale
+1        0     5
+  df location scale
+1 10        0     3
+  global_scale slab_df slab_scale
+1            1      15        1.7
+  location scale
+1     0.11     5
+  location scale
+1     0.11     5
+  df location scale
+1 10        0     3
+  location scale
+1     -4.2     5
+  location scale
+1        0     5
+2        0     5
+  location scale
+1     -4.2     5
+  location scale
+1        0     5
+  df location scale
+1 10        0     3
+  location scale
+1     -4.2     5
+  location scale
+1        0     5
+  df location scale
+1 10        0     3
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     -4.2     5
+  location scale
+1        0     5
+  df location scale
+1 10        0     3
+  location scale
+1     -4.2     5
+  location scale
+1        0     5
+  df location scale
+1 10        0     3
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     -4.2     5
+  location scale
+1        0     5
+2        0     5
+  df location scale
+1 10        0     3
+  location scale
+1     -4.2     5
+  location scale
+1        0    15
+  df location scale
+1 10        0     3
+  location scale
+1     -4.2     5
+  location scale
+1        0    15
+2        0     5
+  df location scale
+1 10        0     3
+  location scale
+1   0.0097     5
+  location scale
+1        0     5
+  df location scale
+1 10        0     3
+  location scale
+1   0.0097     5
+  location scale
+1        0     5
+  df location scale
+1 10        0     3
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  2.000   3.500   4.000   4.426   5.000   8.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     0.11     5
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  2.000   3.500   4.000   4.426   5.000   8.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     0.11     5
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  2.000   3.500   4.000   4.426   5.000   8.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     0.11     5
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  2.000   3.500   4.000   4.426   5.000   8.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     -4.7     5
+  df location scale
+1 10        0     3
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     -4.7     5
+  df location scale
+1 10        0     3
+  location scale
+1     -4.7     5
+  df location scale
+1 10        0     3
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  2.000   3.500   4.000   4.426   5.000   8.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.1250  0.1667  0.2000  0.2260  0.2500  0.5000 
+  location scale
+1     0.11     5
+  df location scale
+1 10        0     3
+  lower upper
+1  -1.8     1
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   4.000   5.000   5.409   6.000  10.000 
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1       1       1       1 
+  location scale
+1     -4.2     5
+  location scale
+1        0    57
+2        0     5
+  df location scale
+1 10        0     3
+  lower upper
+1  -1.7     1
+  location scale
+1    0.045     5
+  location scale
+1        0     5
+2        0     5
+  df location scale
+1 10        0     3
+  lower upper
+1    -1     1
+  location scale
+1    0.045     5
+  location scale
+1        0     5
+2        0     5
+  df location scale
+1 10        0     3
+  lower upper
+1    -1     1
+  location scale
+1   -0.017     5
+  location scale
+1        0     5
+  df location scale
+1 10        0     3
+  lower upper
+1    -1     1
+[ [38;2;255;165;0mFAIL[39m 1 | [35mWARN[39m 8 | [34mSKIP[39m 3 | PASS 50 ]
+
+══ Skipped tests (3) ═══════════════════════════════════════════════════════════
+• On CRAN (1): [34mtest-sa-fns.R:4:5[39m
+• Run interactively to avoid crashing R session (1): [34mtest-for-bias.R:1:1[39m
+• Run interactively to avoid crashing R session. (1):
+  [34mtest-rstan-conformity.R:2:1[39m
+
+══ Failed tests ════════════════════════════════════════════════════════════════
+── [1m[38;2;255;165;0mError[39m ([34mtest-stan-sar.R:84:5[39m): Spatial lag of y works[22m ────────────────────────
+Error: passing unknown arguments: type.
+[1mBacktrace:[22m
+[90m    [39m▆
+[90m 1. [39m└─[1mgeostan[22m::stan_sar(...)[90m at test-stan-sar.R:84:5[39m
+[90m 2. [39m  ├─[1mrstan[22m::sampling(...)
+[90m 3. [39m  └─rstan::sampling(...)
+[90m 4. [39m    └─rstan (local) .local(object, ...)
+[90m 5. [39m      └─rstan:::is_arg_recognizable(...)
+
+[ [38;2;255;165;0mFAIL[39m 1 | [35mWARN[39m 8 | [34mSKIP[39m 3 | PASS 50 ]

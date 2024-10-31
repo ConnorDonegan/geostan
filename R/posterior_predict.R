@@ -1,4 +1,4 @@
-#' Draw samples from the posterior predictive distribution
+#' Sample from the posterior predictive distribution
 #'
 #' @description Draw samples from the posterior predictive distribution of a fitted \code{geostan} model. 
 #' 
@@ -9,43 +9,75 @@
 #' @param summary Should the predictive distribution be summarized by its means and central quantile intervals? If \code{summary = FALSE}, an `S` x `N` matrix of samples will be returned. If \code{summary = TRUE}, then a `data.frame` with the means and `100*width` credible intervals is returned.
 #' 
 #' @param width Only used if \code{summary = TRUE}, to set the quantiles for the credible intervals. Defaults to `width = 0.95`.
+#'
+#' @param quick For SAR models only; `quick = TRUE` uses an approximation method for the inverse of matrix `(I - rho * W)`.
+#'
+#' @param K For SAR models only; number of matrix powers to for the matrix inverse approximation.
+#'
+#' @param preserve_order If `TRUE`, the order of posterior draws will remain fixed; the default is to permute the MCMC samples so that (with small sample size `S`) each successive call to `posterior_predict` will return a different sample from the posterior probability distribution. 
 #' 
 #' @param seed A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution. 
 #' 
 #' @return A matrix of size S x N containing samples from the posterior predictive distribution, where S is the number of samples drawn and N is the number of observations. If `summary = TRUE`, a `data.frame` with N rows and 3 columns is returned (with column names `mu`, `lwr`, and `upr`).
 #'
+#' @details
+#' 
+#' The `quick = FALSE` method requires a call to `Matrix::solve(I - rho * W)` for each MCMC sample; the `quick = TRUE` method uses an approximation based on matrix powers (LeSage and Pace 2009).
 #' 
 #' @examples
-#'  fit <- stan_glm(sents ~ offset(log(expected_sents)),
+#' E <- sentencing$expected_sents
+#' sentencing$log_E <- log(E)
+#'  fit <- stan_glm(sents ~ offset(log_E),
 #'                   re = ~ name,
 #'                   data = sentencing,
 #'                   family = poisson(),
 #'                   chains = 2, iter = 600) # for speed only
+#'
 #' 
 #'  yrep <- posterior_predict(fit, S = 65)
-#'  plot(density(yrep[1,]))
-#'  for (i in 2:nrow(yrep)) lines(density(yrep[i,]), col = 'gray30')
-#'  lines(density(sentencing$sents), col = 'darkred', lwd = 2)
+#'  plot(density(yrep[1,] / E ))
+#'  for (i in 2:nrow(yrep)) lines(density(yrep[i,] / E), col = 'gray30')
+#'  lines(density(sentencing$sents / E), col = 'darkred', lwd = 2)
+#'
+#' sars <- prep_sar_data2(row = 9, col = 9)
+#' W <- sars$W
+#' y <- sim_sar(rho = .9, w = W)
+#' fit <- stan_sar(y ~ 1, data = data.frame(y=y), sar = sars,
+#'                 iter = 650, quiet = TRUE)
+#' yrep <- posterior_predict(fit, S = 15)
+#' 
 #' @export
 posterior_predict <- function(object, 
                               S,
                               summary = FALSE,
                               width = 0.95,
+                              quick = TRUE,
+                              K = 20,
+                              preserve_order = FALSE,
                               seed
                               ) {
     stopifnot(inherits(object, "geostan_fit"))
     family <- object$family$family    
     if (!missing(seed)) set.seed(seed)
     
-    mu <- as.matrix(object, pars = "fitted")
+    mu <- as.matrix(object, pars = "fitted")    
+    M <- nrow(mu)
     
-    M <- nrow(mu)                                      
-    if (missing(S)) S <- M    
+    if (missing(S)) {
+        S <- M
+    }
+    
     if (S > M) {
         warning (paste0("Cannot draw more samples than were taken from the posterior. Using S = ", M))
-        S <- M
-    }    
-    idx <- sample(M, S)
+            S <- M
+    }
+
+    if (preserve_order) {
+        idx <- seq(S)
+    } else {
+        idx <- sample(M, S)
+    }
+
     mu <- mu[idx,]
     
     if (family == "auto_gaussian") {
@@ -59,7 +91,7 @@ posterior_predict <- function(object,
         if (object$spatial$method == "SAR") {            
             rho <- as.matrix(object, "sar_rho")[idx, ]
             tau <- as.matrix(object, "sar_scale")[idx, ]
-            preds <- .pp_sar_normal(mu, rho, tau, object$sar_parts$W)
+            preds <- .pp_sar_normal(mu, rho, tau, object$sar_parts$W, quick = quick, K = K)
         }
         
     }
@@ -97,21 +129,76 @@ posterior_predict <- function(object,
     M <- Matrix::Diagonal(x = 1 / car_parts$Delta_inv)
     C <- Matrix::Matrix(car_parts$C)
     t(sapply(1:nrow(mu), function(s) {
-        Sigma <- Matrix::solve(I - rho[s] * C) %*% M * tau[s]^2
-        MASS::mvrnorm(n = 1, mu = mu[s,], Sigma = Sigma)
+        Sigma <- Matrix::solve(I - rho[ s ] * C) %*% M * tau[ s ]^2
+        MASS::mvrnorm(n = 1, mu = mu[ s, ], Sigma = Sigma)
     }))        
 }
 
-#' @importFrom Matrix Diagonal Matrix solve
-.pp_sar_normal <- function(mu, rho, tau, W) {
+
+.pp_sar_normal <- function(mu, rho, sigma, W, quick, K) {
+
+    if (!quick) {
+        Draws <- sapply(1:nrow(mu), function(s) {
+            sim_sar(mu =     mu[ s, ],
+                    rho =   rho[ s  ],
+                    sigma = sigma[ s  ],
+                    w = W,
+                    type = "SEM", # Always SEM.
+                    quick = FALSE)
+        }) |>
+            t()
+        
+    return (Draws)
+    }
+    
     N <- nrow(W)
-    I <- Matrix::Diagonal(N)
-    Wt <- Matrix::t(W)
-    t(sapply(1:nrow(mu), function(s) {        
-        Sigma <- Matrix::solve((I - rho[s] * Wt) %*% (I - rho[s] * W))
-        MASS::mvrnorm(n = 1, mu = mu[s,], Sigma = Sigma * tau[s]^2)
-    }))        
+    S <- nrow(mu)
+    Q <- K + 1
+    P = 0:K
+    I <- Matrix::diag(N)
+    M <- list()
+    M[[1]] <- I
+    M[[2]] <- W
+    W_k <- W    
+    for (q in 3:Q) {
+        W_k <- W %*% W_k
+        M[[q]] <- W_k
+    }        
+
+    .rsem <- function(s) {
+        eps <- rnorm(N, mean = 0, sd = sigma[ S ])
+        rho_powers <- rho[ s ]^P
+        Mpowers <- lapply(seq(Q), function(j) M[[j]] * rho_powers[j])
+        Multiplier <- Reduce(`+`, Mpowers)
+        res <- mu[ s, ] + (Multiplier %*% eps)[,1]
+        return (res)
+    }
+
+    Draws <- sapply(1:S, .rsem) |>
+        t()
+    
+    return (Draws)
 }
+
+
+
+## #' @importFrom Matrix Diagonal Matrix solve
+## .pp_sar_normal <- function(mu, rho, tau, W, quick, K) {
+##     ## N <- nrow(W)
+##     ## I <- Matrix::Diagonal(N)
+##     ## Wt <- Matrix::t(W)
+##     t(sapply(1:nrow(mu), function(s) {
+##         sim_sar(mu = mu[ s, ],
+##                 rho = rho[ s ],
+##                 sigma = tau[ s ],
+##                 w = W,
+##                 type = "SEM", # Always SEM.
+##                 quick = quick, # change to FALSE when done with .sar2
+##                 K = k)
+##         #Sigma <- Matrix::solve((I - rho[s] * Wt) %*% (I - rho[s] * W))
+##         #MASS::mvrnorm(n = 1, mu = mu[s,], Sigma = Sigma * tau[s]^2)
+##     }))        
+## }
 
 .pp_gaussian <- function(mu, sigma) {
   t(sapply(1:nrow(mu), function(s) {

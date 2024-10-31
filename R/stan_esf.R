@@ -104,7 +104,7 @@
 #' @return An object of class class \code{geostan_fit} (a list) containing: 
 #' \describe{
 #' \item{summary}{Summaries of the main parameters of interest; a data frame}
-#' \item{diagnostic}{Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (\code{eff_pars}) and mean log pointwise predictive density (\code{lpd}), and mean residual spatial autocorrelation as measured by the Moran coefficient.}
+#' \item{diagnostic}{Residual spatial autocorrelation as measured by the Moran coefficient.}
 #' \item{data}{a data frame containing the model data}
 #' \item{EV}{A matrix of eigenvectors created with \code{w} and \code{geostan::make_EV}}
 #' \item{C}{The spatial weights matrix used to construct EV}
@@ -273,7 +273,7 @@ stan_esf <- function(formula,
           x_full <- xraw          
       } else {
           stopifnot(inherits(slx, "formula"))
-          W <- row_standardize(C, msg =  "Row standardizing connectivity matrix to calculate spatially lagged covaraite(s)")
+          W <- row_standardize(C, warn = !quiet, msg = "Row standardizing matrix C for spatial lag of X calculations.")
           W.list <- rstan::extract_sparse_parts(W)
           Wx <- SLX(f = slx, DF = mod_frame, x = xraw, W = W)
           dwx <- ncol(Wx)
@@ -407,11 +407,8 @@ stan_esf <- function(formula,
         R <- resid(out, summary = FALSE)
         rmc <- mean( apply(R, 1, mc, w = C, warn = FALSE, na.rm = TRUE) )
         out$diagnostic$Residual_MC <- rmc
-    }    
-    if (any(pars == 'fitted')) {
-        out$diagnostic$WAIC <- as.numeric(waic(out)[1])
-    }                                                        
-        
+    }
+    
   return (out)
 }
 

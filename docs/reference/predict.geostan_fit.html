@@ -64,10 +64,17 @@
 <span>  center <span class="op">=</span> <span class="va">object</span><span class="op">$</span><span class="va">x_center</span>,</span>
 <span>  summary <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"link"</span>, <span class="st">"response"</span><span class="op">)</span>,</span>
+<span>  add_slx <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
+    <div id="source">
+    <h2>Source</h2>
+    <p>Goulard, Michael, Thibault Laurent, and Christine Thomas-Agnan (2017). About predictions in spatial autoregressive models: optimal and almost optimal strategies. <em>Spatial Economic Analysis</em> 12 (2-3): 304-325.</p>
+<p>LeSage, James (2014). What Regional Scientists Need to Know about Spatial Econometrics. <em>The Review of Regional Science</em> 44: 13-32 (2014 Southern Regional Science Association Fellows Address).</p>
+<p>LeSage, James, &amp; Robert kelley Pace (2009). <em>Introduction to Spatial Econometrics</em>. Chapman and Hall/CRC.</p>
+    </div>
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>object</dt>
@@ -75,15 +82,15 @@
 
 
 <dt>newdata</dt>
-<dd><p>A data frame in which to look for variables with which to predict, presumably for the purpose of viewing marginal effects. Note that if the model formula includes an offset term, <code>newdata</code> must contain the offset. Note also that any spatially-lagged covariate terms will be ignored if they were provided using the <code>slx</code> argument. If covariates in the model were centered using the <code>centerx</code> argument, the <code>predict.geostan_fit</code> method will automatically center the predictors in <code>newdata</code> using the values stored in <code>object$x_center</code>. If <code>newdata</code> is missing, the fitted values of the model will be returned.</p></dd>
+<dd><p>A data frame in which to look for variables with which to predict. Note that if the model formula includes an offset term, <code>newdata</code> must contain the offset column (see examples below). If covariates in the model were centered using the <code>centerx</code> argument, the <code>predict.geostan_fit</code> method will automatically center the predictors in <code>newdata</code> using the values stored in <code>object$x_center</code>. If <code>newdata</code> is missing, the fitted values of the model will be returned.</p></dd>
 
 
 <dt>alpha</dt>
-<dd><p>An N-by-1 matrix of MCMC samples for the intercept; this is provided by default. However, this argument might be used if there is a need to incorporate the spatial trend term, in which case it may be thought of as a spatially-varying intercept. If used, note that the intercept needs to be provided on the scale of the linear predictor.</p></dd>
+<dd><p>An N-by-1 matrix of MCMC samples for the intercept; this is provided by default. If used, note that the intercept needs to be provided on the scale of the linear predictor. This argument might be used if there is a need to incorporate the spatial trend term (as a spatially-varying intercept).</p></dd>
 
 
 <dt>center</dt>
-<dd><p>Optional vector of numeric values or a logical scalar to pass to <code><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></code>. Defaults to using <code>object$x_center</code>. If the model was fit using <code>centerx = TRUE</code>, then covariates were centered and their mean values are stored in <code>object$x_center</code> and the <code>predict</code> method will use them to automatically center <code>newdata</code>; if the model was fit with <code>centerx = FALSE</code>, then <code>object$x_center = FALSE</code> and <code>newdata</code> will not be centered.</p></dd>
+<dd><p>Optional vector of numeric values or a logical scalar to pass to <code><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></code>. Defaults to using <code>object$x_center</code>. If the model was fit using <code>centerx = TRUE</code>, then covariates were centered and their mean values are stored in <code>object$x_center</code> and the <code>predict</code> method will use them automatically to center <code>newdata</code>; if the model was fit with <code>centerx = FALSE</code>, then <code>object$x_center = FALSE</code> and <code>newdata</code> will not be centered.</p></dd>
 
 
 <dt>summary</dt>
@@ -92,6 +99,10 @@
 
 <dt>type</dt>
 <dd><p>By default, results from <code>predict</code> are on the scale of the linear predictor (<code>type = "link")</code>). The alternative (<code>type = "response"</code>) is on the scale of the response variable. For example, the default return values for a Poisson model on the log scale, and using <code>type = "response"</code> will return the original scale of the outcome variable (by exponentiating the log values).</p></dd>
+
+
+<dt>add_slx</dt>
+<dd><p>Logical. If <code>add_slx = TRUE</code>, any spatially-lagged covariates that were specified through the 'slx' argument (of the model fitting function, e.g., <code>stan_glm</code>) will be added to the linear predictor. The spatial lag terms will be calculated internally using <code>object$C</code>, the spatial weights matrix used to fit the model. Hence, <code>newdata</code> must have <code>N = object$N</code> rows. Predictions from spatial lag models (SAR models of type 'SLM' and 'SDLM') always include the SLX terms (i.e., any value passed to <code>add_slx</code> will be overwritten with <code>TRUE</code>).</p></dd>
 
 
 <dt>...</dt>
@@ -106,9 +117,19 @@
     </div>
     <div id="details">
     <h2>Details</h2>
-    <p>The purpose of the predict method is to explore marginal effects of (combinations of) covariates.</p>
-<p>The model formula will be taken from <code>object$formula</code>, and then a model matrix will be created by passing <code>newdata</code> to the <a href="https://rdrr.io/r/stats/model.frame.html" class="external-link">model.frame</a> function (as in: <code>model.frame(newdata, object$formula</code>). Parameters are taken from <code>as.matrix(object, pars = c("intercept", "beta"))</code>.</p>
-<p>Be aware that in generalized linear models (such as Poisson and Binomial models) marginal effects plots on the response scale may be sensitive to the level of other covariates in the model. If the model includes any spatially-lagged covariates (introduced using the <code>slx</code> argument) or a spatial autocorrelation term (for example, you used a spatial CAR, SAR, or ESF model), these terms will essentially be fixed at zero for the purposes of calculating marginal effects. If you want to change this, you can introduce spatial trend values by specifying a varying intercept using the <code>alpha</code> argument.</p>
+    <p>The primary purpose of the predict method is to explore marginal effects of covariates.</p>
+<p>The model formula will be taken from <code>object$formula</code>, and then a model matrix will be created by passing <code>newdata</code> to the <a href="https://rdrr.io/r/stats/model.frame.html" class="external-link">model.frame</a> function (as in: <code>model.frame(newdata, object$formula</code>). Parameters are taken from <code>as.matrix(object, pars = c("intercept", "beta"))</code>. If <code>add_slx = TRUE</code>, SLX coefficients will be taken from <code>as.matrix(object, pars = "gamma")</code>.</p>
+<p>Spatially-lagged covariates added via the <code>slx</code> argument ('spillover effects') will be included if <code>add_slx = TRUE</code> or if a spatial lag model is provided (a SAR model of type 'SLM' or 'SDLM'). In either of those cases, <code>newdata</code> must have the same number of rows as were used to fit the original data. For details on these 'spillover effects', see LeSage and Pace (2009) and LeSage (2014).</p>
+<p>Predictions for the spatial lag model (SAR models of type 'SLM') are equal to:
+$$
+ (I - \rho W)^{-1} X \beta
+$$
+where \(X \beta\) contains the intercept and covariates. (For intercept-only models, the above term is equal to the constant intercept.) Predictions for the spatial Durbin lag model (SAR models of type 'SDLM') are equal to:
+$$
+ (I - \rho W)^{-1} (X \beta + WX \gamma)
+$$
+where \(WX \gamma\) are spatially lagged covariates multiplied by their coefficients. The SLM and SDLM differ from all other model types in that the spatial component of the model cannot be separated from the linear predictor and is, therefore, automatically incorporated into the predictions.</p>
+<p>In generalized linear models (such as Poisson and Binomial models) marginal effects plots on the response scale may be sensitive to the level of other covariates in the model and to location. If the model includes a spatial autocorrelation component (for example, you used a spatial CAR, SAR (error model), or ESF model), by default these terms will be fixed at zero for the purposes of calculating marginal effects. If you want to change this, you can introduce spatial trend values by specifying a varying intercept using the <code>alpha</code> argument.</p>
     </div>
 
     <div id="ref-examples">
@@ -146,7 +167,8 @@
 <span>    <span class="va">preds</span><span class="op">$</span><span class="va">mean</span>,</span>
 <span>    type <span class="op">=</span> <span class="st">"l"</span>,</span>
 <span>    ylab <span class="op">=</span> <span class="st">"Deaths per 10,000"</span>,</span>
-<span>    xlab <span class="op">=</span> <span class="st">"Income ($1,000s)"</span><span class="op">)</span></span></code></pre></div>
+<span>    xlab <span class="op">=</span> <span class="st">"Income ($1,000s)"</span><span class="op">)</span></span>
+<span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

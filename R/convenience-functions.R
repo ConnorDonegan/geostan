@@ -89,44 +89,153 @@ aple <- function(x, w, digits = 3) {
 #'
 #' @md
 #' 
-#' @param m The number of samples required. Defaults to \code{m=1} to return an \code{n}-length vector; if \code{m>1}, an \code{m x n} matrix is returned (i.e. each row will contain a sample of correlated values).
+#' @param m The number of samples required. Defaults to \code{m=1} to return an \code{n}-length vector; if \code{m>1}, an \code{m x n} matrix is returned (i.e. each row will contain a sample of auto-correlated values).
+#' 
 #' @param mu An \code{n}-length vector of mean values. Defaults to a vector of zeros with length equal to \code{nrow(w)}.
-#' @param w Row-standardized \code{n x n} spatial weights matrix.
-#' @param rho Spatial autocorrelation parameter in the range (-1, 1). Typically a scalar value; otherwise an n-length numeric vector.
-#' @param sigma Scale parameter (standard deviation). Defaults to \code{sigma = 1}. Typically a scalar value; otherwise an n-length numeric vector.
+#' 
+#' @param rho Spatial autocorrelation parameter in the range (-1, 1). A single numeric value.
+#' 
+#' @param sigma Scale parameter (standard deviation). Defaults to \code{sigma = 1}. A single numeric value.
+#'
+#' @param w \code{n x n} spatial weights matrix; typically row-standardized.
+#' 
+#' @param type Type of SAR model: spatial error model ("SEM") or spatial lag model ("SLM").
+#' 
+#' @param quick Use power of matrix W to approximate the inverse term?
+#' 
+#' @param K Number of matrix powers to use if `quick = TRUE`.
+#' 
 #' @param ... further arguments passed to \code{MASS::mvrnorm}.
 #' 
 #' @return
 #'
-#' If \code{m = 1} a vector of the same length as \code{mu}, otherwise an \code{m x length(mu)} matrix with one sample in each row.
+#' If \code{m = 1} then `sim_sar` returns a vector of the same length as \code{mu}, otherwise an \code{m x length(mu)} matrix with one sample in each row.
 #'
-#' @details Calls \code{MASS::mvrnorm} internally to draw from the multivariate normal distribution. The covariance matrix is specified following the simultaneous autoregressive (SAR, aka spatial error) model. 
+#' @details
+#'
+#' This function takes `n = nrow(w)` draws from the normal distribution using `rnorm` to obtain vector `x`; if `type = 'SEM', it then pre-multiplies `x` by the inverse of the matrix `(I - rho * W)` to obtain spatially autocorrelated values. For `type = 'SLM', the multiplier matrix is applied to `x + mu` to produce the desired values.
+#'
+#' The `quick` method approximates the matrix inversion using the method described by LeSage and Pace (2009, p. 40).
 #'
 #' @seealso \code{\link[geostan]{aple}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{lisa}}, \code{\link[geostan]{shape2mat}}
 #' 
 #' @examples
-#' data(georgia)
-#' w <- shape2mat(georgia, "W")
-#' x <- sim_sar(w = w, rho = 0.5)
-#' aple(x, w)
-#'
-#' x <- sim_sar(w = w, rho = 0.7, m = 10)
+#' # spatially autocorrelated data on a regular grid
+#' library(sf)
+#' row = 10
+#' col = 10
+#' sar_parts <- prep_sar_data2(row = row, col = col)
+#' w <- sar_parts$W
+#' x <- sim_sar(rho = 0.65, w = w)
+#' dat <- data.frame(x = x)
+#' 
+#' # create grid 
+#' sfc = st_sfc(st_polygon(list(rbind(c(0,0), c(col,0), c(col,row), c(0,0)))))
+#' grid <- st_make_grid(sfc, cellsize = 1, square = TRUE)
+#' st_geometry(dat) <- grid
+#' plot(dat)
+#' 
+#' # draw form SAR (SEM) model
+#' z <- sim_sar(rho = 0.9, w = w)
+#' moran_plot(z, w)
+#' grid$z <- z
+#' 
+#' # multiple sets of observations
+#' # each row is one N-length draw from the SAR model
+#' x <- sim_sar(rho = 0.7, w = w, m = 4)
+#' nrow(w)
 #' dim(x)
 #' apply(x, 1, aple, w = w)
-#' @importFrom MASS mvrnorm
+#' apply(x, 1, mc, w = w)
+#'
+#' # Spatial lag model (SLM): y = rho*Wy + beta*x + epsilon
+#' x <- sim_sar(rho = 0.5, w = w)
+#' y <- sim_sar(mu = x, rho = 0.7, w = w, type = "SLM")
 #' 
-sim_sar <- function(m = 1, mu = rep(0, nrow(w)), w, rho, sigma = 1, ...) {
+#' # Spatial Durbin lag model (SLM with spatial lag of x)
+#' # SDLM: y = rho*Wy + beta*x + gamma*Wx + epsilon
+#' x = sim_sar(w = w, rho = 0.5)
+#' mu <- -0.5*x + 0.5*(w %*% x)[,1]
+#' y <- sim_sar(mu = mu, w = w, rho = 0.6, type = "SLM")
+#' 
+#' 
+#' @source
+#'
+#' LeSage, J. and Pace, R. K. (2009). *An Introduction to Spatial Econometrics*. CRC Press.
+#' 
+#' @importFrom Matrix solve 
+sim_sar <- function(m = 1,
+                    mu = rep(0, nrow(w)),
+                    rho,
+                    sigma = 1,
+                    w,                    
+                    type = c("SEM", "SLM"),
+                    quick = FALSE,
+                    K = 20,
+                    ...) {
     check_sa_data(mu, w)
-    stopifnot(all(round(Matrix::rowSums(w), 10) == 1))
+    type <- match.arg(type)
+    SLM <- grepl("SLM", type)
     N <- nrow(w)
-    if (!inherits(rho, "numeric") || !length(rho) %in% c(1, N)) stop("rho must be a single numeric value, or a k-length numeric vector where K=nrow(W).")
-    if (!inherits(sigma, "numeric") || !length(sigma) %in% c(1, N) || !all(sigma > 0)) stop("sigma must be a positive numeric value, or k-length numeric vector, with K=nrow(W).")
-    I <- diag(N)
-    S <- sigma^2 * solve( (I - rho * Matrix::t(w)) %*% (I - rho * w) )
-    # or: #  S <- crossprod(solve(I - rho * w)) * sigma^2
-    x <- MASS::mvrnorm(n = m, mu = mu, Sigma = S, ...)
-    return(x)
+    stopifnot(inherits(rho, "numeric") & length(rho) == 1)
+    if (!inherits(sigma, "numeric") || length(sigma) != 1 || !all(sigma > 0)) stop("sigma must be a positive numeric value.")
+    
+    I <- Matrix::diag(N)
+    W <- as(w, "dMatrix")
+    
+    if (quick) {
+        # matrix powers to approximate the inverse
+        Multip <- I + rho * W
+        W_k <- W    
+        for (j in 2:K) {
+            W_k <- W %*% W_k
+            Multip = Multip + rho^j * W_k
+        }
+    } else {
+        # matrix inverse
+        Multip <- Matrix::solve(I - rho * W)
+    }
+
+    x <- t(sapply(1:m, function(s) {
+        rnorm(N, mean = 0, sd = sigma)
+        }))
+
+    if (rho == 0) return (x)
+    
+    .rsem <- function(s) {
+        mu + (Multip %*% x[s,])[,1]
+    }
+    
+    .rslm <- function(s) {
+        z <- mu + x[s,]
+        (Multip %*% z)[,1]
+    }    
+
+    if (SLM == TRUE) {
+        res <- t(sapply(1:m, .rslm)) 
+    } else {
+        res <- t(sapply(1:m, .rsem)) 
+    }
+    
+    if (m == 1) res <- res[1,]
+    
+    return (res)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #' Visual displays of spatial data and spatial models
 #'
@@ -717,9 +826,13 @@ count_neighbors <- function(z) {
 #' Row-standardize a matrix; safe for zero row-sums.
 #'
 #' @param C A matrix
-#' @param warn Print `msg` if `warn = TRUE`.
-#' @param msg A warning message to print.
+#' 
+#' @param warn Print message `msg` if `warn = TRUE`.
+#'
+#' @param msg A warning message; used internally by geostan.
+#' 
 #' @return A row-standardized matrix, W (i.e., all row sums equal 1, or zero).
+#' 
 #' @examples
 #' A <- shape2mat(georgia)
 #' head(Matrix::summary(A))
@@ -728,10 +841,12 @@ count_neighbors <- function(z) {
 #' W <- row_standardize(A)
 #' head(Matrix::summary(W))
 #' Matrix::rowSums(W)
+#' 
 #' @importFrom Matrix rowSums
+#' 
 #' @export
-row_standardize <- function(C, warn = TRUE, msg = "Row standardizing connectivity matrix") {
-    stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
+row_standardize <- function(C, warn = FALSE, msg = "Row standardizing connectivity matrix") {
+    stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))    
     if (warn) message(msg)    
     Ni <- Matrix::rowSums(C)
     Ni[Ni == 0] <- 1
@@ -1066,7 +1181,7 @@ prep_icar_data <- function(C, scale_factor = NULL) {
 #' @export
 #' @md
 #' @importFrom rstan extract_sparse_parts
-#' @importFrom Matrix isSymmetric Matrix rowSums summary
+#' @importFrom Matrix isSymmetric Matrix rowSums summary Schur
 prep_car_data <- function(A,
                           style = c("WCAR", "ACAR", "DCAR"),
                           k = 1,
@@ -1110,27 +1225,32 @@ prep_car_data <- function(A,
         C <- A / Ni
         M_diag <- 1 / Ni
     }
+    
+    stopifnot( Matrix::isSymmetric(C %*% Matrix::Diagonal(x = M_diag), check.attributes = FALSE) )
+    
     if (stan_fn == "wcar_normal_lpdf") {       
-        stopifnot( Matrix::isSymmetric(C %*% Matrix::Diagonal(x = M_diag), check.attributes = FALSE) )
         car.dl <- rstan::extract_sparse_parts(A)
         names(car.dl) <- paste0("A_", names(car.dl))
         car.dl$nA_w <- length(car.dl$A_w)
         car.dl$WCAR <- 1            
     } else {
-        stopifnot( Matrix::isSymmetric(C %*% Matrix::Diagonal(x = M_diag), check.attributes = FALSE) )        
         car.dl <- rstan::extract_sparse_parts(C)
         names(car.dl) <- paste0("A_", names(car.dl))
         car.dl$nA_w <- length(car.dl$A_w)        
         car.dl$WCAR <- 0
     }
+    
     car.dl$Delta_inv <- 1 / M_diag
     car.dl$style <- style
     car.dl$log_det_Delta_inv = base::determinant(diag(car.dl$Delta_inv), log = TRUE)$modulus
     car.dl$n <- n
+    
     if (lambda) {
         MCM <- Matrix::Diagonal(x = 1 / sqrt(M_diag)) %*% C %*% Matrix::Diagonal(x = sqrt(M_diag))
         stopifnot(Matrix::isSymmetric(MCM, check.attributes = FALSE))
-        lambda <- sort(eigen(MCM)$values)
+        ##lambda <- sort(eigen(MCM)$values)
+        lambda <- Matrix::Schur(MCM, vectors = FALSE)$EValues
+        lambda <- sort(Re(lambda))
         rho_lims <- 1 / range(lambda)
         if (!quiet) {
             r_rho_lims <- round( rho_lims, 3)
@@ -1189,10 +1309,17 @@ prep_sar_data <- function(W, quiet = FALSE) {
     sar.dl <- rstan::extract_sparse_parts(W)
     names(sar.dl) <- paste0("W_", names(sar.dl))
     sar.dl$nW_w <- length(sar.dl$W_w)
-    sar.dl$eigenvalues_w <- sort(as.numeric( eigen(W)$values ))
+    #if (quiet == TRUE) {
+        #evw <- suppressWarnings(eigen(W)$values)
+    #} else {
+        #evw <- eigen(W)$values
+    #}
+    evw <- Matrix::Schur(W, vectors = FALSE)$EValues
+    evw <- sort(Re(evw))
+    sar.dl$eigenvalues_w <- evw
     sar.dl$n <- N
     sar.dl$W <- W
-    rho_lims <- 1/range(sar.dl$eigenvalues_w)
+    rho_lims <- 1/range(evw)
     if (!quiet) {
         r_rho_lims <- round(rho_lims, 3)
         message("Range of permissible rho values: ", r_rho_lims[1], ", ", r_rho_lims[2])

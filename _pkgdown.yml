@@ -8,6 +8,7 @@ home:
 articles:
 - title: "Package vignettes"
   contents:
+  - spatial-analysis
   - spatial-weights-matrix
   - measuring-sa
   - raster-regression  
@@ -35,15 +36,19 @@ reference:
   - mc
   - moran_plot
   - n_eff
-  - sp_diag  
-- title: "Spatial models"
+  - sp_diag
+- title: "Model prep"
 - contents:
   - make_EV
-  - starts_with("prep_")  
+  - starts_with("prep_")
+- title: "Spatial models"
+- contents:  
   - starts_with("stan_")
-- title: "Methods and diagnostics for spatial models"
+- title: "Methods and diagnostics"
 - contents:
   - matches("geostan_fit")
+  - impacts
+  - spill
   - me_diag
   - spatial
   - posterior_predict

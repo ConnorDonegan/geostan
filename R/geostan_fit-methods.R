@@ -67,7 +67,6 @@ print.geostan_fit <- function(x,
   cat("Likelihood function: ", x$family$family, "\n")
   cat("Link function: ", x$family$link, "\n")
   if (!is.null(x$diagnostic$Residual_MC)) cat("Residual Moran Coefficient: ", x$diagnostic$Residual_MC, "\n")
-  if (!is.null(x$diagnostic$WAIC)) cat("WAIC: ", x$diagnostic$WAIC, "\n")
   cat("Observations: ", x$N, "\n")  
   if (x$ME$has_me) {
       cat("Data models (ME): ")

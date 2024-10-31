@@ -213,7 +213,7 @@
 <dd><p>Summaries of the main parameters of interest; a data frame</p></dd>
 
 <dt>diagnostic</dt>
-<dd><p>Widely Applicable Information Criteria (WAIC) with a measure of effective number of parameters (<code>eff_pars</code>) and mean log pointwise predictive density (<code>lpd</code>), and mean residual spatial autocorrelation as measured by the Moran coefficient.</p></dd>
+<dd><p>Residual spatial autocorrelation as measured by the Moran coefficient.</p></dd>
 
 <dt>stanfit</dt>
 <dd><p>an object of class <code>stanfit</code> returned by <code><a href="https://mc-stan.org/rstan/reference/stan.html" class="external-link">rstan::stan</a></code></p></dd>
@@ -348,14 +348,66 @@ where \(M\) is the censor point and \(\mu_i\) again is the fitted value for the 
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co">##</span></span>
+<span><span class="co">## Linear regression model</span></span>
+<span><span class="co">##</span></span>
 <span></span>
+<span><span class="va">N</span> <span class="op">=</span> <span class="fl">100</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">N</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fl">.5</span> <span class="op">*</span> <span class="va">x</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">N</span><span class="op">)</span></span>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">x</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># no. of MCMC samples</span></span>
+<span><span class="va">iter</span> <span class="op">=</span> <span class="fl">600</span></span>
+<span></span>
+<span><span class="co"># fit model</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">stan_glm</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">dat</span>, iter <span class="op">=</span> <span class="va">iter</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># see results with MCMC diagnostics</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">##</span></span>
+<span><span class="co">## Custom prior distributions</span></span>
+<span><span class="co">##</span></span>
+<span></span>
+<span><span class="va">PL</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>      intercept <span class="op">=</span> <span class="fu"><a href="priors.html">normal</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>      beta <span class="op">=</span> <span class="fu"><a href="priors.html">normal</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>      sigma <span class="op">=</span> <span class="fu"><a href="priors.html">student_t</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">0</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu">stan_glm</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">dat</span>, prior <span class="op">=</span> <span class="va">PL</span>, iter <span class="op">=</span> <span class="va">iter</span>,</span>
+<span>                quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">##</span></span>
+<span><span class="co">## Poisson model for count data</span></span>
+<span><span class="co">## with county 'random effects' </span></span>
+<span><span class="co">##</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># note: 'name' is county identifier</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># denominator in standardized rate Y/E</span></span>
+<span><span class="co"># (observed count Y over expected count E)</span></span>
+<span><span class="co"># (use the log-denominator as the offest term)</span></span>
 <span><span class="va">sentencing</span><span class="op">$</span><span class="va">log_e</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">$</span><span class="va">expected_sents</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># fit model</span></span>
 <span><span class="va">fit.pois</span> <span class="op">&lt;-</span> <span class="fu">stan_glm</span><span class="op">(</span><span class="va">sents</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="va">log_e</span><span class="op">)</span>,</span>
 <span>                     re <span class="op">=</span> <span class="op">~</span> <span class="va">name</span>,</span>
 <span>                     family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>                     data <span class="op">=</span> <span class="va">sentencing</span>,</span>
-<span>                    chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">800</span><span class="op">)</span> <span class="co"># for speed only</span></span>
+<span>                     data <span class="op">=</span> <span class="va">sentencing</span>,                    </span>
+<span>                    iter <span class="op">=</span> <span class="va">iter</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> </span>
+<span></span>
+<span><span class="co"># Spatial autocorrelation/residual diagnostics</span></span>
+<span><span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit.pois</span>, <span class="va">sentencing</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># summary of results with MCMC diagnostics</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit.pois</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># MCMC diagnostics plot: Rhat values should all by very near 1</span></span>
 <span><span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_rhat</a></span><span class="op">(</span><span class="va">fit.pois</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span></span>
@@ -367,15 +419,51 @@ where \(M\) is the censor point and \(\mu_i\) again is the fitted value for the 
 <span><span class="co"># or for a particular parameter</span></span>
 <span><span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_ess</a></span><span class="op">(</span><span class="va">fit.pois</span><span class="op">$</span><span class="va">stanfit</span>, <span class="st">"alpha_re"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Spatial autocorrelation/residual diagnostics</span></span>
-<span><span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit.pois</span>, <span class="va">sentencing</span><span class="op">)</span></span>
+<span><span class="co">##</span></span>
+<span><span class="co">## Visualize the posterior predictive distribution</span></span>
+<span><span class="co">##</span></span>
 <span></span>
-<span><span class="co">## Posterior predictive distribution                                       </span></span>
+<span><span class="co"># plot observed values and model replicate values</span></span>
 <span><span class="va">yrep</span> <span class="op">&lt;-</span> <span class="fu"><a href="posterior_predict.html">posterior_predict</a></span><span class="op">(</span><span class="va">fit.pois</span>, S <span class="op">=</span> <span class="fl">65</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">sentencing</span><span class="op">$</span><span class="va">sents</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html" class="external-link">density</a></span><span class="op">(</span><span class="va">yrep</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">yrep</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html" class="external-link">density</a></span><span class="op">(</span><span class="va">yrep</span><span class="op">[</span><span class="va">i</span>,<span class="op">]</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"gray30"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html" class="external-link">density</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">$</span><span class="va">sents</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"darkred"</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">ltgray</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/rgb.html" class="external-link">rgb</a></span><span class="op">(</span><span class="fl">0.3</span>, <span class="fl">0.3</span>, <span class="fl">0.3</span>, <span class="fl">0.5</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html" class="external-link">density</a></span><span class="op">(</span><span class="va">yrep</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span><span class="op">)</span>, col <span class="op">=</span> <span class="va">ltgray</span>,</span>
+<span>     ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.014</span><span class="op">)</span>, xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">700</span><span class="op">)</span>,</span>
+<span>     bty <span class="op">=</span> <span class="st">'L'</span>, xlab <span class="op">=</span> <span class="cn">NA</span>, main <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">yrep</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html" class="external-link">density</a></span><span class="op">(</span><span class="va">yrep</span><span class="op">[</span><span class="va">i</span>,<span class="op">]</span><span class="op">)</span>, col <span class="op">=</span> <span class="va">ltgray</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html" class="external-link">density</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">$</span><span class="va">sents</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"darkred"</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"topright"</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Y-observed'</span>, <span class="st">'Y-replicate'</span><span class="op">)</span>,</span>
+<span>       col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'darkred'</span>, <span class="va">ltgray</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">1.5</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot replicates of Y/E</span></span>
+<span><span class="va">E</span> <span class="op">&lt;-</span> <span class="va">sentencing</span><span class="op">$</span><span class="va">expected_sents</span></span>
+<span></span>
+<span><span class="co"># set plot margins</span></span>
+<span><span class="va">old_pars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2.5</span>, <span class="fl">3.5</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot yrep</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html" class="external-link">density</a></span><span class="op">(</span><span class="va">yrep</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span> <span class="op">/</span> <span class="va">E</span><span class="op">)</span>, col <span class="op">=</span> <span class="va">ltgray</span>,</span>
+<span>    ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.9</span><span class="op">)</span>, xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">7</span><span class="op">)</span>,</span>
+<span>    bty <span class="op">=</span> <span class="st">'L'</span>, xlab <span class="op">=</span> <span class="cn">NA</span>, ylab <span class="op">=</span> <span class="cn">NA</span>, main <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">2</span><span class="op">:</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">yrep</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html" class="external-link">density</a></span><span class="op">(</span><span class="va">yrep</span><span class="op">[</span><span class="va">i</span>,<span class="op">]</span> <span class="op">/</span> <span class="va">E</span><span class="op">)</span>, col <span class="op">=</span> <span class="va">ltgray</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># overlay y</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/density.html" class="external-link">density</a></span><span class="op">(</span><span class="va">sentencing</span><span class="op">$</span><span class="va">sents</span> <span class="op">/</span> <span class="va">E</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"darkred"</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># legend, y-axis label</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"topright"</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Y-observed'</span>, <span class="st">'Y-replicate'</span><span class="op">)</span>,</span>
+<span>      col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'darkred'</span>, <span class="va">ltgray</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">1.5</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/mtext.html" class="external-link">mtext</a></span><span class="op">(</span>side <span class="op">=</span> <span class="fl">2</span>, text <span class="op">=</span> <span class="st">"Density"</span>, line <span class="op">=</span> <span class="fl">2.5</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># return margins to previous settings</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">old_pars</span><span class="op">)</span></span>
+<span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
