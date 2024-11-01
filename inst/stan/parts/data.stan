@@ -110,6 +110,9 @@
   array[2] real car_rho_lims;
   int<lower=0,upper=1> car;
 
+  // CAR or SAR: zero-mean parameterized
+  int<lower=0, upper=1> ZMP;
+
   // SAR: use W matrix (as above: W_w, W_u, W_v)
 //  int nImW_w;
 //  int nW;

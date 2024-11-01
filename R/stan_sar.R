@@ -231,7 +231,8 @@ stan_sar <- function(formula,
                      ME = NULL,                     
                      centerx = FALSE,
                      prior_only = FALSE,
-                     censor_point,                     
+                     censor_point,
+                     zmp,
                      chains = 4,
                      iter = 2e3,
                      refresh = 500,
@@ -259,6 +260,13 @@ stan_sar <- function(formula,
     } else {
         C <- sar_parts$W
     }
+
+    # zero-mean constraint parameterization
+    sar_parts$ZMP <- ifelse(missing(zmp), 0, zmp)
+    if (family$family == 'auto_gaussian') sar_parts$ZMP <- 0
+    # //!!//
+
+    
     tmpdf <- as.data.frame(data)
     n <- nrow(tmpdf)    
     family_int <- family_2_int(family)
@@ -391,8 +399,11 @@ stan_sar <- function(formula,
     standata <- c(standata, sar_parts)
     standata <- append_priors(standata, priors_made)
     standata$sar <- 1
+    
     ## EMPTY PLACEHOLDERS
-    standata <- c(standata, empty_icar_data(n), empty_car_data(), empty_esf_data(n))    
+    standata <- add_missing_parts(standata)
+    ##standata <- c(standata, empty_icar_data(n), empty_car_data(), empty_esf_data(n))
+    
     ## ME MODEL -------------
     me.list <- make_me_data(ME, xraw)
     standata <- c(standata, me.list)

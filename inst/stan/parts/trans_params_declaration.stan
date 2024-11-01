@@ -7,8 +7,8 @@
   vector[type ? n : 0] phi;
   vector[type > 1 ? n : 0] theta;
 
-  // CAR
-  vector[car||sar ? n : 0] log_lambda_mu;
+  // Hierarchical CAR model with modeled mean (i.e., not constrained to have mean of zero)
+  vector[(car||sar) && is_auto_gaussian == 0 && ZMP == 0 ? n : 0] log_lambda_mu;
 
   // GLM
   matrix[n, use_qr ? 0 : dx_all] x_all;
@@ -20,6 +20,5 @@
     if (dx_me) for (j in 1:dx_me) x_all[ ,x_me_idx[j]] = x_true[j];
     if (center_x) for (j in 1:dx_all) x_all[,j] = x_all[,j] - mean(x_all[,j]);
   }
-  if (!car) fitted = input_offset + intercept;  
 
 

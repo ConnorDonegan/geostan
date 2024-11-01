@@ -4,7 +4,7 @@
 \alias{posterior_predict}
 \title{Draw samples from the posterior predictive distribution}
 \usage{
-posterior_predict(object, S, summary = FALSE, width = 0.95, car_parts, seed)
+posterior_predict(object, S, summary = FALSE, width = 0.95, seed)
 }
 \arguments{
 \item{object}{A \code{geostan_fit} object.}
@@ -14,8 +14,6 @@ posterior_predict(object, S, summary = FALSE, width = 0.95, car_parts, seed)
 \item{summary}{Should the predictive distribution be summarized by its means and central quantile intervals? If \code{summary = FALSE}, an \code{S} x \code{N} matrix of samples will be returned. If \code{summary = TRUE}, then a \code{data.frame} with the means and \code{100*width} credible intervals is returned.}
 
 \item{width}{Only used if \code{summary = TRUE}, to set the quantiles for the credible intervals. Defaults to \code{width = 0.95}.}
-
-\item{car_parts}{Data for CAR model specification; only required for \code{\link[geostan]{stan_car}} with \code{family = auto_gaussian()}.}
 
 \item{seed}{A single integer value to be used in a call to \code{\link[base]{set.seed}} before taking samples from the posterior distribution.}
 }

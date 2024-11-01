@@ -232,7 +232,8 @@ stan_car <- function(formula,
                      ME = NULL,                     
                      centerx = FALSE,
                      prior_only = FALSE,
-                     censor_point,                     
+                     censor_point,
+                     zmp,
                      chains = 4,
                      iter = 2e3,
                      refresh = 500,
@@ -263,6 +264,12 @@ stan_car <- function(formula,
             message("Since you did not provide C, calculation of residual SA and any spatial-lag of X terms will use the matrix found in car_parts$C.")
         }
     }
+    
+    # zero-mean constraint parameterization
+    car_parts$ZMP <- ifelse(missing(zmp), 0, zmp)
+    if (family$family == 'auto_gaussian') car_parts$ZMP <- 0
+    # //!!//
+
     tmpdf <- as.data.frame(data)
     n <- nrow(tmpdf)    
     family_int <- family_2_int(family)        
@@ -394,16 +401,19 @@ stan_car <- function(formula,
     standata <- c(standata, car_parts)
     standata <- append_priors(standata, priors_made)
     standata$car <- 1
+    
     ## EMPTY PLACEHOLDERS
-    empty_parts <- c(empty_icar_data(n), empty_esf_data(n), empty_sar_data(n))
-    empty_parts <- empty_parts[ which(!names(empty_parts) %in% names(standata)) ]
-    standata <- c(standata, empty_parts) 
+    standata <- add_missing_parts(standata)    
+    ##empty_parts <- c(empty_icar_data(n), empty_esf_data(n), empty_sar_data(n))
+    ##empty_parts <- empty_parts[ which(!names(empty_parts) %in% names(standata)) ]
+    ##standata <- c(standata, empty_parts)
+    
     ## ME MODEL -------------
     me.list <- make_me_data(ME, xraw)
 
     # remove select ME-car parts: othwerise, they duplicate the car_parts argument
-    duplicates <- c("n", "nA_w", "C", "Delta_inv", "log_det_Delta_inv", "A_w", "A_v", "A_u", "lambda", "WCAR")
-    me.list[which(names(me.list) %in% duplicates)] <- NULL
+    ##duplicates <- c("n", "nA_w", "C", "Delta_inv", "log_det_Delta_inv", "A_w", "A_v", "A_u", "lambda", "WCAR", "zmp") # I.e., over-ride ME$car_parts with the 'primary' car_parts list.
+    me.list[which( names(me.list) %in% names(standata) )] <- NULL
 
     # append me.list to standata
     standata <- c(standata, me.list)

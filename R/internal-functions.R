@@ -337,7 +337,7 @@ a.n.zeros <- function(n) array(0, dim = c(0, n))
 vec.n.zeros <- function(n) rep(0, n)
 
 #' return empty car_parts list
-#' See R/make-me-data.R; used for ME list, including when ME is not used.
+#' See R/make-me-data.R; this is used for making the ME list, including when ME is not used.
 #' @noRd
 #' @param n vector length
 car_parts_shell <- function(n) {
@@ -354,7 +354,6 @@ car_parts_shell <- function(n) {
     )
 }
 
-#' @noRd
 empty_icar_data <- function(n) {
     dl <- list(
         type = 0,
@@ -373,7 +372,6 @@ empty_icar_data <- function(n) {
     return (dl)
 }
 
-#' @noRd
 empty_esf_data <- function(n) {
     list(
         dev = 0,
@@ -384,7 +382,6 @@ empty_esf_data <- function(n) {
     )
 }
 
-#' @noRd
 empty_car_data <- function() {
     list(
         car = 0,
@@ -392,7 +389,7 @@ empty_car_data <- function() {
     )
 }
 
-#' @noRd
+
 empty_sar_data <- function(n) {
     list(
         nW_w = 1,
@@ -406,7 +403,6 @@ empty_sar_data <- function(n) {
 }
 
 
-#' @noRd
 drop_params <- function(pars, drop_list) {
     if (!is.null(drop_list)) {
         drop <- paste0("^", drop_list, "$", collapse = "|")
@@ -414,6 +410,24 @@ drop_params <- function(pars, drop_list) {
         pars <- pars[keep_idx]
     }        
     return( pars )
+}
+
+#' add missing Stan data elements to stan_data list (in model fitting functions)
+#'
+#' this will avoid the introduction of duplicate parts
+#' @noRd
+add_missing_parts <- function(current_list) {
+    n <- current_list$n
+    full_list <- c(empty_car_data(),
+                  empty_esf_data(n),
+                  empty_icar_data(n),
+                  empty_sar_data(n),
+                  ZMP = 0                  
+                  )
+    add_idx <- !names(full_list) %in% names(current_list)
+    add_list <- full_list[ add_idx ]
+    return_list <- c(current_list, add_list)
+    return (return_list)
 }
 
 

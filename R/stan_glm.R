@@ -366,10 +366,13 @@ stan_glm <- function(formula,
                                link = family$link,
                                offset = offset[y_index_list$y_obs_idx])    
     standata <- append_priors(standata, priors_made)
+    
     ## EMPTY PLACEHOLDERS
-    empty_parts <- c(empty_icar_data(n), empty_esf_data(n), empty_car_data(), empty_sar_data(n))
-    empty_parts <- empty_parts[ which(!names(empty_parts) %in% names(standata)) ]
-    standata <- c(standata, empty_parts)
+    standata <- add_missing_parts(standata)    
+    ##empty_parts <- c(empty_icar_data(n), empty_esf_data(n), empty_car_data(), empty_sar_data(n))
+    ##empty_parts <- empty_parts[ which(!names(empty_parts) %in% names(standata)) ]
+    ##standata <- c(standata, empty_parts)
+    
     ## ME MODEL -------------  
     me.list <- make_me_data(ME, xraw)
     standata <- c(standata, me.list)  

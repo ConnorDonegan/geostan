@@ -31,7 +31,7 @@
   // for partial pooling across groups/geographies
   vector[n_ids] alpha_re;
   array[has_re] real<lower=0> alpha_tau;
-  // observational error models //
+  // observational error models (error in X) //
   array[dx_me] vector<lower=bounds[1],upper=bounds[2]>[n] x_true;
   vector[dx_me] mu_x_true;
   vector<lower=0>[dx_me] sigma_x_true;

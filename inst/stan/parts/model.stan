@@ -39,23 +39,23 @@
 }
 
 // partial pooling of observations across all groups/geographies (varying intercept)
-  if (has_re) {
-    target += normal_lpdf(alpha_re | 0, alpha_tau[has_re]);
-    target += student_t_lpdf(alpha_tau[has_re] | prior_alpha_tau[1], prior_alpha_tau[2], prior_alpha_tau[3]) - student_t_lcdf(alpha_tau[has_re] | prior_alpha_tau[1], prior_alpha_tau[2], prior_alpha_tau[3]);
-  }
+if (has_re) {
+  target += normal_lpdf(alpha_re | 0, alpha_tau[has_re]);
+  target += student_t_lpdf(alpha_tau[has_re] | prior_alpha_tau[1], prior_alpha_tau[2], prior_alpha_tau[3]) - student_t_lcdf(alpha_tau[has_re] | prior_alpha_tau[1], prior_alpha_tau[2], prior_alpha_tau[3]);
+ }
 
-  // process model (likelihood)
-  if (!prior_only) {
-    if (is_student)  target += student_t_lpdf(y[y_obs_idx] | nu[1], fitted[y_obs_idx], sigma[has_sigma]);
-    if (is_gaussian) target += normal_lpdf(y[y_obs_idx] | fitted[y_obs_idx], sigma[has_sigma]);
-    if (is_poisson) {
-      target += poisson_lpmf(y_int[y_obs_idx] | fitted[y_obs_idx]);
-      if (censor_point > 0) target += poisson_lcdf(censor_point | fitted[y_mis_idx]);
-    }
-    if (is_binomial) {
-      target += binomial_lpmf(y_int[y_obs_idx] | trials[y_obs_idx], fitted[y_obs_idx]);
-    }   
-}
+// process model (likelihood)
+if (!prior_only) {
+  if (is_student)  target += student_t_lpdf(y[y_obs_idx] | nu[1], fitted[y_obs_idx], sigma[has_sigma]);
+  if (is_gaussian) target += normal_lpdf(y[y_obs_idx] | fitted[y_obs_idx], sigma[has_sigma]);
+  if (is_poisson) {
+    target += poisson_lpmf(y_int[y_obs_idx] | fitted[y_obs_idx]);
+    if (censor_point > 0) target += poisson_lcdf(censor_point | fitted[y_mis_idx]);
+  }
+  if (is_binomial) {
+    target += binomial_lpmf(y_int[y_obs_idx] | trials[y_obs_idx], fitted[y_obs_idx]);
+  }   
+ }
 
   // ICAR
   if (type) {
@@ -81,37 +81,61 @@
   }
 
   // CAR
-  if (car) {
-    target += student_t_lpdf(car_scale[1] | prior_sigma[1], prior_sigma[2], prior_sigma[3]) - student_t_lcdf(0 | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
-    if (is_auto_gaussian && prior_only == 0) {
-      target += auto_normal_lpdf(y |
-				 fitted,
-				 car_scale[1],
-				 car_rho[1],
-				 A_w,
-				 A_v,
-				 A_u,
-				 Delta_inv,
-				 log_det_Delta_inv,
-				 lambda,
-				 n,
-				 WCAR);
+if (car) {
+    
+  target += student_t_lpdf(car_scale[1] | prior_sigma[1], prior_sigma[2], prior_sigma[3]) - student_t_lcdf(0 | prior_sigma[1], prior_sigma[2], prior_sigma[3]);
+  
+  if (is_auto_gaussian && prior_only == 0) {
+    target += auto_normal_lpdf(y |
+			       fitted,
+			       car_scale[1],
+			       car_rho[1],
+			       A_w,
+			       A_v,
+			       A_u,
+			       Delta_inv,
+			       log_det_Delta_inv,
+			       lambda,
+			       n,
+			       WCAR);
   }
-    if (is_auto_gaussian == 0) {
-      target += auto_normal_lpdf(log_lambda |
-				 log_lambda_mu,
-				 car_scale[1],
-				 car_rho[1],
-				 A_w,
-				 A_v,
-				 A_u,
-				 Delta_inv,
-				 log_det_Delta_inv,
-				 lambda,
-				 n,
-				 WCAR);
+  
+  if (!is_auto_gaussian) {
+
+    if (ZMP) {
+      // zero-mean constrained/parameterized CAR model (hierarchical)
+      	target += auto_normal_lpdf(log_lambda |
+				   zero_vec,
+				   1, // scale
+				   car_rho[1],
+				   A_w,
+				   A_v,
+				   A_u,
+				   Delta_inv,
+				   log_det_Delta_inv,
+				   lambda,
+				   n,
+				   WCAR);
+      
+    } else {
+
+      // classic (modeled mean) hierarchical CAR model 
+      	target += auto_normal_lpdf(log_lambda |
+				   log_lambda_mu,
+				   car_scale[1],
+				   car_rho[1],
+				   A_w,
+				   A_v,
+				   A_u,
+				   Delta_inv,
+				   log_det_Delta_inv,
+				   lambda,
+				   n,
+				   WCAR);
     }
   }
+    
+ }
 
  // SAR
 if (sar) {
@@ -127,7 +151,23 @@ if (sar) {
 			      eigenvalues_w,
 			      n);
   }
+  
   if (!is_auto_gaussian) {
+
+    if (ZMP) {
+    
+      target += sar_normal_lpdf(log_lambda |
+				zero_vec,
+				1, //scale
+				sar_rho[1],
+				W_w,
+				W_v,
+				W_u,
+				eigenvalues_w,
+				n);			      
+    
+    } else {
+    
     target += sar_normal_lpdf(log_lambda |
 			      log_lambda_mu,
 			      sar_scale[1],
@@ -137,6 +177,7 @@ if (sar) {
 			      W_u,
 			      eigenvalues_w,
 			      n);			      
+    }  
   }
-}
+ }
 
