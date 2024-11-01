@@ -42,14 +42,19 @@
 #' @param centerx To center predictors on their mean values, use `centerx = TRUE`. If the ME argument is used, the modeled covariate (i.e., latent variable), rather than the raw observations, will be centered. When using the ME argument, this is the recommended method for centering the covariates.
 #'
 #' @param censor_point Integer value indicating the maximum censored value; this argument is for modeling censored (suppressed) outcome data, typically disease case counts or deaths. 
+#'
+#' @param zmp Use zero-mean parameterization for the CAR model? Only relevant for Poisson and binomial outcome models (i.e., hierarchical models). See details below; this can sometimes improve MCMC sampling when the data is sparse, but does not alter the model specification.
 #' 
 #' @param prior_only Logical value; if \code{TRUE}, draw samples only from the prior distributions of parameters.
 #' @param chains Number of MCMC chains to use. 
 #' @param iter Number of samples per chain. 
 #' @param refresh Stan will print the progress of the sampler every \code{refresh} number of samples. Set \code{refresh=0} to silence this.
+#' 
 #' @param pars Optional; specify any additional parameters you'd like stored from the Stan model.
 #' @param keep_all  If `keep_all = TRUE` then samples for all parameters in the Stan model will be kept; this is necessary if you want to do model comparison with Bayes factors and the `bridgesampling` package.
+#' 
 #' @param slim If `slim = TRUE`, then the Stan model will not collect the most memory-intensive parameters (including n-length vectors of fitted values, log-likelihoods, and ME-modeled covariate values). This will disable many convenience functions that are otherwise available for fitted \code{geostan} models, such as the extraction of residuals, fitted values, and spatial trends, WAIC, and spatial diagnostics, and ME diagnostics; many quantities of interest, such as fitted values and spatial trends, can still be calculated manually using given parameter estimates. The "slim" option is designed for data-intensive routines, such as regression with raster data, Monte Carlo studies, and measurement error models. For more control over which parameters are kept or dropped, use the `drop` argument instead of `slim`.
+#' 
 #' @param drop Provide a vector of character strings to specify the names of any parameters that you do not want MCMC samples for. Dropping parameters in this way can improve sampling speed and reduce memory usage. The following parameter vectors can potentially be dropped from CAR models:
 #' \describe{
 #' \item{fitted}{The N-length vector of fitted values}
@@ -58,6 +63,7 @@
 #' \item{x_true}{N-length vector of 'latent'/modeled covariate values created for measurement error (ME) models.}
 #' }
 #' If `slim = TRUE`, then `drop` will be ignored.
+#' 
 #' @param control A named list of parameters to control the sampler's behavior. See \code{\link[rstan]{stan}} for details. 
 #' 
 #' @param ... Other arguments passed to \code{\link[rstan]{sampling}}.
@@ -68,29 +74,25 @@
 #'
 #' CAR models are discussed in Cressie and Wikle (2011, p. 184-88), Cressie (2015, Ch. 6-7), and Haining and Li (2020, p. 249-51). It is often used for areal or lattice data.
 #'
-#' Details for the Stan code for this implementation of the CAR model can be found in Donegan (2021).
+#' Details for the Stan code for this implementation of the CAR model can be found in Donegan (2021) and the geostan vignette 'Custom spatial models with Rstan and geostan'.
 #'
-#' The general scheme for the CAR model is as follows:
+#' For outcome variable \eqn{y} and N-by-N connectivity matrix \eqn{C}, a standard spatial CAR model may be written as
+#' \deqn{
+#'  y = \mu + \rho C (y - \mu) + \epsilon
+#' }
+#' where \eqn{\rho} is a spatial dependence or autocorrelation parameter. The models accounts for autocorrelated errors in the regression.
+#' 
+#' The model is defined by its covariance matrix. The general scheme for the CAR model is as follows:
 #' \deqn{
 #'  y \sim Gauss( \mu, ( I - \rho C)^{-1} M),
 #' }
-#' where \eqn{I} is the identity matrix, \eqn{\rho} is a spatial dependence parameter, \eqn{C} is a spatial connectivity matrix, and \eqn{M} is a diagonal matrix of variance terms. The diagonal of \eqn{M} contains a scale parameter \eqn{\tau} multiplied by a vector of weights (often set to be proportional to the inverse of the number of neighbors assigned to each site). The CAR model owes its name to the fact that this joint distribution corresponds to a set of conditional distributions that relate the expected value of each observation to a function of neighboring values, i.e., the Markov condition holds:
-#' \deqn{
-#' E(y_i | y_1, y_2, \dots, y_{i-1}, y_{i+1}, \dots, y_n) = \mu_i + \rho \sum_{j=1}^n c_{i,j} (y_j - \mu_j),
-#' }
-#' where entries of \eqn{c_{i,j}} are non-zero only if \eqn{j \in N(i)} and \eqn{N(i)} indexes the sites that are neighbors of the \eqn{i^{th}} site.
-#' 
-#' With the Gaussian probability distribution,
-#' \deqn{
-#'  y_i | y_j: j \neq i \sim Gauss(\mu_i + \rho \sum_{j=1}^n c_{i,j} (y_j - \mu_j), \tau_i^2)
-#' }
-#' where \eqn{\tau_i} is a scale parameter and \eqn{\mu_i} may contain covariates or simply the intercept.
+#' where \eqn{I} is the identity matrix, \eqn{\rho} is a spatial dependence parameter, \eqn{C} is a spatial connectivity matrix, and \eqn{M} is a diagonal matrix of variance terms. The diagonal of \eqn{M} contains a scale parameter \eqn{\tau} multiplied by a vector of weights (often set to be proportional to the inverse of the number of neighbors assigned to each site). 
 #'
 #' The covariance matrix of the CAR model contains two parameters: \eqn{\rho} (\code{car_rho}) which controls the kind (positive or negative) and degree of spatial autocorrelation, and the scale parameter \eqn{\tau} (\code{car_scale}). The range of permissible values for \eqn{\rho} depends on the specification of \eqn{\boldsymbol C} and \eqn{\boldsymbol M}; for specification options, see \link[geostan]{prep_car_data} and Cressie and Wikle (2011, pp. 184-188) or Donegan (2021).
 #' 
 #' Further details of the models and results depend on the \code{family} argument, as well as on the particular CAR specification chosen (from \link[geostan]{prep_car_data}).
 #'
-#' ###  Auto-Gaussian
+#' ###  Auto-Normal
 #'
 #' When \code{family = auto_gaussian()} (the default), the CAR model is applied directly to the data as follows:
 #' \deqn{
@@ -117,12 +119,15 @@
 #' \deqn{\lambda \sim Gauss(\mu, (I - \rho C)^{-1} \boldsymbol M).}
 #' If the raw outcome consists of a rate \eqn{\frac{y}{p}} with observed counts \eqn{y} and denominator \eqn{p} (often this will be the size of the population at risk), then the offset term \eqn{O=log(p)} is the log of the denominator.
 #'
-#' This is often written (equivalently) as:
+#' The same model can also be described or specified such that \eqn{\phi} has a mean of zero:
 #' \deqn{y \sim Poisson(e^{O + \mu + \phi})}
 #' \deqn{\phi \sim Gauss(0, (I - \rho C)^{-1} \boldsymbol M).}
-#' For Poisson models, the \link[geostan]{spatial} method returns the parameter vector \eqn{\phi}.
-#' 
-#' In the Poisson CAR model, \eqn{\phi} contains a latent spatial trend as well as additional variation around it: \eqn{\phi_i = \rho \sum_{i=1}^n c_{ij} \phi_j + \epsilon_i}, where \eqn{\epsilon_i \sim Gauss(0, \tau_i^2)}. If you would like to extract the latent/implicit spatial trend from \eqn{\phi}, you can do so by calculating (following Cressie 2015, p. 564):
+#'
+#' This is the zero-mean parameterization (ZMP) of the CAR model; although the non-ZMP is typically better for MCMC sampling, use of the ZMP can greatly improve MCMC sampling *when the data is sparse*. Use `zmp = TRUE` in `stan_car` to apply this specification. (See the geostan vignette on 'custom spatial models' for full details on implementation of the ZMP.) 
+#'
+#' For all CAR Poisson models, the \link[geostan]{spatial} method returns the (zero-mean) parameter vector \eqn{\phi}. When `zmp = FALSE` (the default), \eqn{phi} is obtained by subtraction: \eqn{\phi = \lambda - \mu}.
+#'
+#' In the Poisson CAR model, \eqn{\phi} contains a latent spatial trend as well as additional variation around it: \eqn{\phi_i = \rho \sum_{i=1}^n c_{ij} \phi_j + \epsilon_i}, where \eqn{\epsilon_i \sim Gauss(0, \tau_i^2)}. If for some reason you would like to extract the smoother latent/implicit spatial trend from \eqn{\phi}, you can do so by calculating (following Cressie 2015, p. 564):
 #' \deqn{\rho  C  \phi.}
 #' 
 #' ### Binomial
@@ -131,18 +136,14 @@
 #'\deqn{y \sim Binomial(N, \lambda)}
 #' \deqn{logit(\lambda) \sim Gauss(\mu, (I - \rho C)^{-1} \boldsymbol M).}
 #' where outcome data \eqn{y} are counts, \eqn{N} is the number of trials, \eqn{\lambda} is the 'success' rate, and \eqn{\mu} contains the intercept and possibly covariates. Note that the model formula should be structured as: `cbind(sucesses, failures) ~ x`, such that `trials = successes + failures`.
-#'
-#' This is often written (equivalently) as:
-#' \deqn{y \sim Binomial(N, \lambda)}
-#' \deqn{logit(\lambda) = \mu + \phi}
-#' \deqn{\phi \sim Gauss(0, (I - \rho C)^{-1} \boldsymbol M).}
-#' For fitted Binomial models, the \link[geostan]{spatial} method will return the parameter vector \code{phi}.
 #' 
 #' As is also the case for the Poisson model, \eqn{\phi} contains a latent spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \eqn{\phi}, you can do so by calculating:
 #' \deqn{
 #' \rho C \phi.
 #' }
 #'
+#' The zero-mean parameterization (ZMP) of the CAR model can also be applied here (see the Poisson model for details); ZMP provides an equivalent model specification that can improve MCMC sampling when data is sparse.
+#' 
 #' ## Additional functionality
 #'
 #' The CAR models can also incorporate spatially-lagged covariates, measurement/sampling error in covariates (particularly when using small area survey estimates as covariates), missing outcome data, and censored outcomes (such as arise when a disease surveillance system suppresses data for privacy reasons). For details on these options, please see the Details section in the documentation for \link[geostan]{stan_glm}.
@@ -211,6 +212,12 @@
 #' # model diagnostics
 #' sp_diag(fit, georgia)
 #'
+#' # county mortality rates
+#' eta = fitted(fit)
+#'
+#' # spatial trend component
+#' phi = spatial(fit)
+#'
 #' \donttest{
 #' 
 #' ##
@@ -243,14 +250,15 @@ stan_car <- function(formula,
                      slx,
                      re,
                      data,
-                     car_parts,
                      C,
+                     car_parts = prep_car_data(C, "WCAR"),                     
                      family = gaussian(),
                      prior = NULL,                      
                      ME = NULL,                     
                      centerx = FALSE,
                      prior_only = FALSE,
-                     censor_point,                     
+                     censor_point,
+                     zmp,
                      chains = 4,
                      iter = 2e3,
                      refresh = 500,
@@ -269,9 +277,7 @@ stan_car <- function(formula,
     stopifnot(!missing(data))
     check_car_parts(car_parts)
     stopifnot(car_parts$n == nrow(data))
-    # silence?
     if (quiet) refresh <- 0
-    # C    
     if (!missing(C)) {
         stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
         stopifnot(all(dim(C) == nrow(data)))
@@ -281,6 +287,12 @@ stan_car <- function(formula,
    #         message("Since you did not provide C, calculation of residual SA and any spatial-lag of X terms will use the matrix found in car_parts$C.")
   #      }
     }
+    
+    # zero-mean constraint parameterization
+    car_parts$ZMP <- ifelse(missing(zmp), 0, zmp)
+    if (family$family == 'auto_gaussian') car_parts$ZMP <- 0
+    # //
+
     tmpdf <- as.data.frame(data)
     n <- nrow(tmpdf)    
     family_int <- family_2_int(family)        
@@ -412,23 +424,27 @@ stan_car <- function(formula,
     standata <- c(standata, car_parts)
     standata <- append_priors(standata, priors_made)
     standata$car <- 1
+    
     ## EMPTY PLACEHOLDERS
-    empty_parts <- c(empty_icar_data(n), empty_esf_data(n), empty_sar_data(n))
-    empty_parts <- empty_parts[ which(!names(empty_parts) %in% names(standata)) ]
-    standata <- c(standata, empty_parts) 
+    standata <- add_missing_parts(standata)    
+    ##empty_parts <- c(empty_icar_data(n), empty_esf_data(n), empty_sar_data(n))
+    ##empty_parts <- empty_parts[ which(!names(empty_parts) %in% names(standata)) ]
+    ##standata <- c(standata, empty_parts)
+    
     ## ME MODEL -------------
     me.list <- make_me_data(ME, xraw)
 
     # remove select ME-car parts: othwerise, they duplicate the car_parts argument
-    duplicates <- c("n", "nA_w", "C", "Delta_inv", "log_det_Delta_inv", "A_w", "A_v", "A_u", "lambda", "WCAR")
-    me.list[which(names(me.list) %in% duplicates)] <- NULL
+    ##duplicates <- c("n", "nA_w", "C", "Delta_inv", "log_det_Delta_inv", "A_w", "A_v", "A_u", "lambda", "WCAR", "zmp") # I.e., over-ride ME$car_parts with the 'primary' car_parts list.
+    me.list[which( names(me.list) %in% names(standata) )] <- NULL
 
     # append me.list to standata
     standata <- c(standata, me.list)
         
     ## PARAMETERS TO KEEP, with CAR PARAMETERS [START] -------------            
     pars <- c(pars, 'intercept', 'car_scale', 'car_rho', 'fitted')
-    if (family_int < 5) pars <- c(pars, 'log_lambda_mu') 
+    if (family_int < 5 & car_parts$ZMP == 0) pars <- c(pars, 'log_lambda_mu')
+    if (car_parts$ZMP == 1) pars <- c(pars, "log_lambda")          
     if (!intercept_only) pars <- c(pars, 'beta')
     if (dwx) pars <- c(pars, 'gamma')
     if (has_re) pars <- c(pars, "alpha_re", "alpha_tau")
@@ -440,7 +456,7 @@ stan_car <- function(formula,
             pars <- c(pars, "nu_x_true")
         }
     }
-    if (slim == TRUE) drop <- c('fitted', 'log_lambda_mu', 'alpha_re', 'x_true')
+    if (slim == TRUE) drop <- c('fitted', 'log_lambda', 'log_lambda_mu', 'alpha_re', 'x_true')
     pars <- drop_params(pars = pars, drop_list = drop)
     priors_made_slim <- priors_made[which(names(priors_made) %in% pars)]
     ## PARAMETERS TO KEEP, with CAR PARAMETERS [STOP] -------------

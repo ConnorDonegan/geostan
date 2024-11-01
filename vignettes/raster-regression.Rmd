@@ -73,7 +73,11 @@ fit <- stan_car(y ~ z, data = grid, car_parts = car_list)
 
 Here, the `prep_car_data` function calculates the eigenvalues of the spatial weights matrix using `Matrix::Schur`, which is not feasible for large N.
 
-The `prep_sar_data2` and `prep_car_data2` functions are designed for large raster layers. As input, they require the dimensions of the grid (number of rows and number of columns). The eigenvalues are produced very quickly using Equation 5 from @griffith_2000. The methods have certain restrictions. First, this is only applicable to raster layers---regularly spaced, rectangular grids of observations. Second, to define which observations are adjacent to one another, the "rook" criteria is used (spatially, only observations that share an edge are defined as neighbors to one another). Third, the spatial adjacency matrix will be row-standardized. This is common anyways for SAR and CAR models (it corresponds to the "WCAR" specification of the CAR model [see @donegan_2022]).
+The `prep_sar_data2` and `prep_car_data2` functions are designed for large raster layers. As input, they require the dimensions of the grid (number of rows and number of columns). The eigenvalues are produced very quickly using Equation 5 from @griffith_2000. The methods have some restrictions:
+
+ - This is only applicable to raster layers---regularly spaced, rectangular grids of observations.
+ - To define which observations are adjacent to one another, the "rook" criteria is used (spatially, only observations that share an edge are defined as neighbors to one another).
+ - The spatial adjacency matrix will be row-standardized. This is common anyways for SAR and CAR models (it corresponds to the "WCAR" specification of the CAR model [see @donegan_2022]).
 
 The following code will fit a SAR model to our grid data (without any use of `shape2mat`) and is suitable for larger raster layers:
 
@@ -109,13 +113,14 @@ Also, note that Stan usually samples more efficiently when variables have been m
 
 ## Simulating spatial data
 
-To simulate spatially-autocorrelated data on a regular grid use the `quick = TRUE` argument in `sim_sar`:
+To simulate spatially-autocorrelated data with larger numbers of observations use the `quick = TRUE` argument in `sim_sar`:
 
 ```{r eval = FALSE}
 row = 100
 col = 100
 sar_list <- prep_sar_data2(row = row, col = col)
 W <- sar_list$W
+
 z <- sim_sar(rho = .8, w = W, quick = TRUE)
 y <- sim_sar(mu = -.5 * z, rho = .9, w = W, quick = TRUE)
 dat <- cbind(y, z)

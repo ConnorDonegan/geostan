@@ -25,7 +25,7 @@ knitr::opts_chunk$set(echo = TRUE,
                       )
 ```
 
-This vignette introduces users to the spatial measurement error (ME) models implemented in the **geostan** package [@donegan_2021]. Variations on this methodology have been examined previously by multiple authors [@bernadinelli_1997;@kang_2009;@logan_2020;@xia_1998].
+This vignette introduces users to the spatial measurement error (ME) models implemented in the geostan package [@donegan_2021]. Variations on this methodology have been examined previously by multiple authors [@bernadinelli_1997;@kang_2009;@logan_2020;@xia_1998].
 
 These models are designed for spatial models that use survey estimates as covariates. They are designed for use with American Community Survey (ACS) data and other large, government-backed surveys, although other data types may be appropriate as well. A premise of this methodology is that the survey includes a systematic spatial sampling design (i.e., the sampling procedure was stratified by the areal unit of interest, whether they be block groups, counties, or states). 
 
@@ -35,27 +35,61 @@ These models account for sampling error which does not include any potential sou
 
 ## Modeling errors of observation
 
-The measurement error (ME) models implemented in **geostan** are hierarchical Bayesian models (HBMs) that incorporate two sources of information: 
+The measurement error (ME) models implemented in geostan are hierarchical Bayesian models (HBMs) that incorporate two sources of information: 
 
   1. A sampling distribution for the survey estimates.
   2. Spatial autocorrelation and generic background knowledge on social variables.
   
-The model treats the true value $\boldsymbol x$ as an unknown parameter or a latent variable. The goal is to obtain a probability distribution for $\boldsymbol x$. That information can then be incorporated into any of **geostan**'s regression or disease mapping models.
+The model treats the true value $\boldsymbol x$ as an unknown parameter or a latent variable. The goal is to obtain a probability distribution for $\boldsymbol x$. That information can then be incorporated into any of geostan's regression or disease mapping models.
 
-The sampling distribution for the model states that the true value $x_i$ is probably within two standard errors of the estimate, or $$z_i = x_i + \epsilon_i, \epsilon_i \sim Normal(0, s_i^2),$$
+The sampling distribution for the model states that the true value $x_i$ is probably within two standard errors of the estimate, or $$z_i = x_i + e_i, e_i \sim Normal(0, s_i^2),$$
 where $z_i$ is the estimate, $s_i$ is its standard error, and $x_i$ is the true value.
 
 Our background knowledge on $x$ is the second component of the model. This is simply the knowledge that social variables tend to be spatially patterned: relatively extreme values are not implausible but they tend to be clustered together. This information is encoded into a prior probability distribution for the unknown values $\boldsymbol x$.   Our prior distribution is the spatial conditional autoregressive (CAR) model [see @donegan_2022 Table 1, WCAR specification].
 
-If $\boldsymbol x$ is a rate variable---e.g., the poverty rate---it can be important to use a logit-transformation before applying the CAR prior [@logan_2020]. 
+If your initial model for the outcome variable $y$ is an ordinary linear model with some covariate $x$, as in
+$$y = \alpha + \beta * x + \epsilon,$$
+then adding our spatial ME model would result in the following specification:
+\begin{equation}
+\begin{split}
+y &= \alpha + \beta * x + \epsilon \\
+z &= x + e \\
+e &\sim Normal(0, s^2) \\
+x &\sim Normal(\mu_x, \Sigma)
+\end{split}	 
+\end{equation}
 
-The CAR model has three scalar parameters (mean $\mu$, spatial dependence $\rho$, and scale $\tau$) that require prior probability distributions; **geostan** uses the following by default:
+In this model $x$ is unobserved, $z$ is our survey estimate of $x$, $s$ is the standard error of the estimate, and the prior for $x$ is a spatial CAR model. If we were to apply the spatial ME model to a covariate within a hierarchical Poisson model then we would write:
+
+\begin{equation}
+\begin{split}
+  y &\sim Poisson(\mu) \\
+\mu &= \text{offset} +\alpha + \beta * x + u \\
+ z &= x + e \\
+ e &\sim Normal(0, s^2) \\
+ x &\sim Normal(\mu_x, \Sigma)
+\end{split}	 
+\end{equation}
+
+where $u$ is some kind of spatial component or 'random effects' vector.
+
+If $\boldsymbol x$ is a rate variable---e.g., the poverty rate---it can be important to use a logit-transformation before applying the CAR prior [@logan_2020] as follows:
+
+\begin{equation}
+\begin{split}
+z &= x + e \\
+e &\sim Normal(0, s^2) \\
+logit(x) &\sim Normal(\mu_x, \Sigma)
+\end{split}	 
+\end{equation}
+
+The CAR model has three scalar parameters (mean $\mu$, spatial dependence $\rho$, and scale $\tau$) that require prior probability distributions; geostan uses the following by default:
 
 \begin{equation} 
 \begin{split}
-\mu &\sim Gauss(0, 100) \\
-\tau &\sim Student_t(10, 0, 40) \\
-\rho &\sim Uniform(\text{lower_bound}, \text{upper_bound})
+\mu_x &\sim Gauss(0, 100) \\
+\tau_x &\sim Student_t(10, 0, 40) \\
+\rho_x &\sim Uniform(\text{lower_bound}, \text{upper_bound})
 \end{split}
 \end{equation}
 
@@ -71,18 +105,18 @@ When we add a spatial ME model to a spatial regression model, the model results 
 
 ## Getting started
 
-From the R console, load the **geostan** package.
+From the R console, load the geostan package.
 
 ```{r message = FALSE, warning = FALSE}
 library(geostan)
 data(georgia)
 ```
 
-The line `data(georgia)` loads the `georgia` data set from the **geostan** package into your working environment. You can learn more about the data by entering `?georgia` to the R console.
+The line `data(georgia)` loads the `georgia` data set from the geostan package into your working environment. You can learn more about the data by entering `?georgia` to the R console.
 
 ## Preparing the data
 
-Users can add a spatial ME model to any **geostan** model. A list of data for the ME models can be prepared using the `prep_me_data` function. The function requires at least two inputs from the user:
+Users can add a spatial ME model to any geostan model. A list of data for the ME models can be prepared using the `prep_me_data` function. The function requires at least two inputs from the user:
 
   1. `se` A data frame with survey standard errors.
   2. `car_parts` A list of data created by the `prep_car_data` function.
@@ -158,7 +192,7 @@ fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)) + insurance,
 print(fit)
 ```
 
-The CAR models in **geostan** can be highly efficient in terms of MCMC sampling, but the required number of iterations will depend on many characteristics of the model and data. Often the default `iter = 2000` is more than sufficient (with `cores = 4`). To speed up sampling with multi-core processing, use `cores = 4` (to sample 4 chains in parallel).
+The CAR models in geostan can be highly efficient in terms of MCMC sampling, but the required number of iterations will depend on many characteristics of the model and data. Often the default `iter = 2000` is more than sufficient (with `cores = 4`). To speed up sampling with multi-core processing, use `cores = 4` (to sample 4 chains in parallel).
 
 In the following section, methods for examining MCMC samples of the modeled covariate values $\boldsymbol x$ will be illustrated. Note that the process of storing MCMC samples for $\boldsymbol x$ can become computationally burdensome if you have multiple covariates and moderately large N. If you do not need the samples of $\boldsymbol x$ you can use the `drop` argument, as in:
 
@@ -197,7 +231,7 @@ It can be important to understand that the ME models are not independent from th
 
 ### Working with MCMC samples from ME models
 
-**geostan** consists of pre-compiled Stan models, and users can always access the Markov chain Monte Carlo (MCMC) samples returned by Stan. When extracted as a matrix of samples (as below), each row of the matrix represents a draw from the joint probability distribution for all model parameters, and each column consists of samples from the marginal distribution of each parameter.
+geostan consists of pre-compiled Stan models, and users can always access the Markov chain Monte Carlo (MCMC) samples returned by Stan. When extracted as a matrix of samples (as below), each row of the matrix represents a draw from the joint probability distribution for all model parameters, and each column consists of samples from the marginal distribution of each parameter.
 
 The ME models return samples for $x_i$ as well as the model parameters $\mu$ ("mu_x_true"), $\rho$ ("car_rho_x_true"), and $\tau$ ("sigma_x_true"). We can access these using `as.matrix` (also `as.array` and `as.data.frame`). 
 ```{r}
@@ -232,7 +266,7 @@ plot(x.mu, res,
      xlab = 'Insurance rate',
      ylab = 'Residual',
      type = 'n',
-     bty = 'n')
+     bty = 'L')
 abline(h = 0)
 points(x.mu, res,
        col = 4,
@@ -241,7 +275,7 @@ points(x.mu, res,
 
 ## Non-spatial ME models
 
-If the `ME` list doesn't have a slot with `car_parts`, **geostan** will automatically use a non-spatial Student's t model instead of the CAR model:
+If the `ME` list doesn't have a slot with `car_parts`, geostan will automatically use a non-spatial Student's t model instead of the CAR model:
 $$ p( x | \mathcal{M}) = Student(\boldsymbol x | \nu, \mu, \sigma), $$
 with degrees of freedom $\nu$, mean $\mu$, and scale $\sigma$.
 

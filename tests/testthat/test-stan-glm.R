@@ -70,7 +70,7 @@ test_that("GLM works with covariate ME: spatial data model", {
     ME <- prep_me_data(
         se = data.frame(ICE = georgia$ICE.se),
         car_parts = prep_car_data(A)
-        )
+    )
     SW(
         fit <- stan_glm(log(rate.male) ~ ICE,
                     ME = ME,                        

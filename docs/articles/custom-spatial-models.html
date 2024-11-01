@@ -40,7 +40,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.7.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.0</span>
       </span>
     </div>
 
@@ -89,26 +89,46 @@
     
     
 <p>The spatial models in geostan use custom Stan functions that are far more efficient than using built-in functions, including the conditional (CAR) and simultaneous spatial autoregressive (SAR) models (both are particular specifications of the multivariate normal distribution). This vignette shows how you can use those functions together with some R functions in geostan to start building custom spatial models.</p>
-<p>This tutorial is written with the assumption that the reader is already familiar with <a href="https://mc-stan.org/users/documentation/" class="external-link">RStan</a>. Users are expected to make adjustments to the code as needed, including to prior distributions. For more details and an explanation of the computational approach, see <span class="citation">Donegan (<a href="#ref-donegan_2022" role="doc-biblioref">2022</a>)</span>. For more background on spatial modeling see <span class="citation">Haining and Li (<a href="#ref-haining_2020" role="doc-biblioref">2020</a>)</span>.</p>
-<p>(Note: the code here has been adjusted slightly following geostan 0.7.0.)</p>
+<p>This tutorial is written with the assumption that the reader is already familiar with <a href="https://mc-stan.org/users/documentation/" class="external-link">RStan</a>. Users are expected to make adjustments to the code as needed, including to prior distributions. For more details, other options, and an explanation of the computational approach, see <span class="citation">Donegan (<a href="#ref-donegan_2022" role="doc-biblioref">2022</a>)</span>. For more background on spatial modeling see <span class="citation">Haining and Li (<a href="#ref-haining_2020" role="doc-biblioref">2020</a>)</span>.</p>
 <div class="section level2">
 <h2 id="car-models">CAR models<a class="anchor" aria-label="anchor" href="#car-models"></a>
 </h2>
-<p>The CAR model is a multivariate normal distribution with covariance matrix <span class="math display">\[\Sigma = (I - \rho \cdot C)^{-1} M,\]</span> where <span class="math inline">\(I\)</span> is the identity matrix, <span class="math inline">\(\rho\)</span> a spatial autocorrelation parameter which may be positive or negative, <span class="math inline">\(C\)</span> is a sparse connectivity matrix, and <span class="math inline">\(M\)</span> is a diagonal matrix with scale parameters <span class="math inline">\(\tau_i^2\)</span>. There is typically a single scale parameter <span class="math inline">\(\tau\)</span> multiplied by weights <span class="math inline">\(\delta_i\)</span>.</p>
+<p>The basic scheme for the car model is like this: <span class="math display">\[y = \mu + \rho * C( y - \mu) + \epsilon\]</span> with <span class="math inline">\(y\)</span> being the response variable, <span class="math inline">\(\mu\)</span> contains a constant intercept and possibly covariates <span class="math inline">\(X \beta\)</span>, and <span class="math inline">\(\epsilon\)</span> is an error term.</p>
+<p>The CAR model is defined by its covariance matrix <span class="math display">\[\Sigma = (I - \rho \cdot C)^{-1} M,\]</span> where <span class="math inline">\(I\)</span> is the identity matrix, <span class="math inline">\(\rho\)</span> a spatial autocorrelation parameter which may be positive or negative, <span class="math inline">\(C\)</span> is a sparse connectivity matrix, and <span class="math inline">\(M\)</span> is a diagonal matrix with scale parameters <span class="math inline">\(\tau_i^2\)</span>. There is typically a single scale parameter <span class="math inline">\(\tau\)</span> multiplied by weights <span class="math inline">\(\delta_i\)</span>, as in <span class="math inline">\(\tau_i^2 = \tau^2 * \delta_i\)</span>.</p>
 <p>The term <span class="math inline">\(\tau^2 \cdot \delta_i\)</span> is the conditional variance pertaining to <span class="math inline">\(y_i | y_{n(i)}\)</span> where <span class="math inline">\(n(i)\)</span> lists the areas that neighbor the <span class="math inline">\(i^{th}\)</span> one.</p>
-<p>The defining feature of the CAR model is that, similar to time-series autoregression, the expectation for the value at the <span class="math inline">\(i^{th}\)</span> site given any or all other values of <span class="math inline">\(y\)</span> besides <span class="math inline">\(i\)</span> (<span class="math inline">\(y_{-i}\)</span>) are known, is a function of the neighboring values: <span class="math display">\[\mathbb{E}[y_i | y_{-i}] = \mu_j + \sum_{j \in n(i)} \rho \cdot c_{ij} (y_j - \mu_j).\]</span></p>
-<p>The CAR function presented here is valid for what is sometimes called the WCAR specification. This is the most commonly employed CAR specification (see <span class="citation">Donegan (<a href="#ref-donegan_2022" role="doc-biblioref">2022</a>)</span> for CAR models without this restriction). The connectivity matrix is row-standardized. Let <span class="math inline">\(A\)</span> be a symmetric binary connectivity matrix where <span class="math inline">\(a_{ij}= 1\)</span> only if the <span class="math inline">\(i^{th}\)</span> and <span class="math inline">\(j^{th}\)</span> sites are neighbors, all other entries are zero (including the diagonal entries <span class="math inline">\(i=j\)</span>). The elements of <span class="math inline">\(C\)</span> are <span class="math display">\[c_{ij} = \frac{a_{ij}}{\sum_j^n a_{ij}} = \frac{a_{ij}}{|n(i)|}.\]</span></p>
-<p>The diagonal of matrix <span class="math inline">\(M\)</span> then is specified by the n-length vector of weights <span class="math inline">\(\delta_i = \tau^2 \cdot \frac{1}{|n(i)|}\)</span>.</p>
-<p>The <code><a href="../reference/prep_car_data.html">geostan::prep_car_data</a></code> function will complete all of this for you. The user passes in a binary connectivity matrix <span class="math inline">\(A\)</span> and and specifies <code>style = "WCAR"</code>, then the function returns a list of data inputs for the Stan model.</p>
+<p>The CAR function presented here is valid for what is sometimes called the WCAR specification. This is the most commonly employed CAR specification. Let <span class="math inline">\(A\)</span> be a symmetric binary connectivity matrix where <span class="math inline">\(a_{ij}= 1\)</span> only if the <span class="math inline">\(i^{th}\)</span> and <span class="math inline">\(j^{th}\)</span> sites are neighbors, all other entries are zero (including the diagonal entries <span class="math inline">\(i=j\)</span>). Our matrix <span class="math inline">\(C\)</span> is then the row-standardized version of <span class="math inline">\(A\)</span> (the rows of <span class="math inline">\(C\)</span> sum to one; the elements of <span class="math inline">\(A\)</span> have been divided by their row-sums). This WCAR specification is also valid if <span class="math inline">\(A\)</span> is a (sparse) matrix of inverse-distances.</p>
+<p>The <code><a href="../reference/prep_car_data.html">geostan::prep_car_data</a></code> function will prepare all of the required inputs for you. The user passes in a binary connectivity matrix <span class="math inline">\(A\)</span> and and specifies <code>style = "WCAR"</code>, then the function returns a list of data inputs for the Stan model. (This method also works if a sparse matrix of inverse-distances is provided instead of the binary adjacency matrix.)</p>
+<p>In addition to being used as a model for observations (as specified above by <span class="math inline">\(y\)</span>), the CAR model can be applied as a prior distribution to parameters within a hierarchical model. We will examine both of these options starting with the former.</p>
 <div class="section level3">
 <h3 id="autonormal-model">Autonormal model<a class="anchor" aria-label="anchor" href="#autonormal-model"></a>
 </h3>
-<p>This first example is an autonormal model: <span class="math display">\[y \sim Normal(\alpha + x \beta, \Sigma).\]</span> Here you have <span class="math inline">\(n\)</span> observations of a continuously measured outcome <span class="math inline">\(y\)</span>, possibly <span class="math inline">\(k=1\)</span> or more covariates <span class="math inline">\(x\)</span>, and you’re accounting for spatial autocorrelation in <span class="math inline">\(y\)</span> using the covariance matrix of an <span class="math inline">\(n\)</span>-dimensional multivariate normal distribution.</p>
-<p>The following Stan code implements the above model; if you’re following along, copy the Stan code and save it in a file inside your working directory; I’ll name it “autonormal.stan” and I’ll save the name as an R variable:</p>
+<p>This first example is an autonormal model: <span class="math display">\[y \sim Normal(\alpha + x \beta, \Sigma).\]</span> Here you have <span class="math inline">\(n\)</span> observations of a continuously measured outcome <span class="math inline">\(y\)</span>, possibly <span class="math inline">\(k=1\)</span> or more covariates <span class="math inline">\(x\)</span>, and you’re accounting for spatial autocorrelation in <span class="math inline">\(y\)</span> using the covariance matrix (following the CAR specification).</p>
+<p>We fit a model like this using <code><a href="../reference/stan_car.html">geostan::stan_car</a></code>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span></span>
+<span><span class="va">car_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span>, style <span class="op">=</span> <span class="st">"WCAR"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># prior distributions (to match the Stan model below)</span></span>
+<span><span class="va">prior_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>intercept <span class="op">=</span> <span class="fu"><a href="../reference/priors.html">normal</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span>,</span>
+<span>               beta <span class="op">=</span> <span class="fu"><a href="../reference/priors.html">normal</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span>,</span>
+<span>           sigma <span class="op">=</span> <span class="fu"><a href="../reference/priors.html">student_t</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span></span>
+<span>           <span class="op">)</span></span>
+<span></span>
+<span><span class="co"># an auto-model</span></span>
+<span><span class="co"># y = mu + rho * C (y - mu) + error</span></span>
+<span><span class="co"># mu = alpha + beta * .x </span></span>
+<span><span class="co"># y = log(income); x = log(population)</span></span>
+<span><span class="co"># x will be centered: .x = x - mean(x)</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">population</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span>,</span>
+<span>    data <span class="op">=</span> <span class="va">georgia</span>, car <span class="op">=</span> <span class="va">car_list</span>, prior <span class="op">=</span> <span class="va">prior_list</span>, centerx <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>The following Stan code implements the above model; if you’re following along, copy the Stan code and save it in a file inside your working directory; I’ll name it “autonormal.stan” and I’ll save the name as an R variable:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">autonormal_file</span> <span class="op">&lt;-</span> <span class="st">"autonormal.stan"</span></span></code></pre></div>
 <p>Here’s the Stan code:</p>
-<pre class="stan"><code>functions {
+<pre><code>functions {
 #include wcar-lpdf.stan
 }
 
@@ -166,7 +186,7 @@ model {
 }
 </code></pre>
 <p>The input file “wcar-lpdf.stan” contains the following code (save this code inside your working directory and name it “wcar-lpdf.stan”):</p>
-<pre class="stan"><code>/**
+<pre><code>/**
  * Log probability density of the conditional autoregressive (CAR) model: WCAR specifications only
  *
  * @param y Process to model
@@ -193,11 +213,8 @@ real wcar_normal_lpdf(vector y, vector mu,
               vector lambda,
               int n) {
   vector[n] z = y - mu;
-  // z' * D * z
   real ztDz = (z .* D_inv)' * z;
-  // z' * A * z
   real ztAz = z' * csr_matrix_times_vector(n, n, A_w, A_v, A_u, z);
-  // determinant of (I - rho * C) 
   real ldet_ImrhoC = sum(log1m(rho * lambda));  
   return 0.5 * (
         -n * log( 2 * pi() )
@@ -208,7 +225,7 @@ real wcar_normal_lpdf(vector y, vector mu,
 }
 </code></pre>
 <p>From R, you can use the following code to prepare the input data (<span class="math inline">\(y\)</span>, <span class="math inline">\(x\)</span>, etc.). I use <code>prep_car_data</code> to get a list of parts for the CAR model, then I append the outcome data to the same list and pass it all to a Stan model to draw samples.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mc-stan.org/rstan/" class="external-link">rstan</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
@@ -218,8 +235,8 @@ real wcar_normal_lpdf(vector y, vector mu,
 <span></span>
 <span><span class="co"># add data</span></span>
 <span><span class="co">## (centering covariates improves sampling efficiency)</span></span>
-<span><span class="va">car_list</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span></span>
-<span><span class="va">car_list</span><span class="op">$</span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">population</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span>, center <span class="op">=</span> <span class="cn">TRUE</span>, scale <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">car_list</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span></span>
+<span><span class="va">car_list</span><span class="op">$</span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">population</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span>, center <span class="op">=</span> <span class="cn">TRUE</span>, scale <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">car_list</span><span class="op">$</span><span class="va">k</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">car_list</span><span class="op">$</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># compile Stan model from file</span></span>
@@ -227,23 +244,16 @@ real wcar_normal_lpdf(vector y, vector mu,
 <span><span class="va">car_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_model.html" class="external-link">stan_model</a></span><span class="op">(</span><span class="va">autonormal_file</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># sample from model</span></span>
-<span><span class="va">samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html" class="external-link">sampling</a></span><span class="op">(</span><span class="va">car_model</span>, data <span class="op">=</span> <span class="va">car_list</span>, iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
-<p>The same results can be obtained using <code><a href="../reference/stan_car.html">geostan::stan_car</a></code>:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span></span>
-<span><span class="va">car_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span>, style <span class="op">=</span> <span class="st">"WCAR"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">population</span> <span class="op">/</span> <span class="fl">10e3</span><span class="op">)</span>,</span>
-<span>    data <span class="op">=</span> <span class="va">georgia</span>, car <span class="op">=</span> <span class="va">car_list</span>, iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html" class="external-link">sampling</a></span><span class="op">(</span><span class="va">car_model</span>, data <span class="op">=</span> <span class="va">car_list</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="poisson-models">Poisson models<a class="anchor" aria-label="anchor" href="#poisson-models"></a>
+<h3 id="hierarchical-model">Hierarchical model<a class="anchor" aria-label="anchor" href="#hierarchical-model"></a>
 </h3>
 <p>Disease mapping is a common use for CAR models, though these models have many applications. In this class of models, the CAR model is assigned as the prior distribution to a parameter vector <span class="math inline">\(\phi\)</span>, which is used to model disease incidence rates across small areas like counties. The disease data consist of counts <span class="math inline">\(y\)</span> together with the size of population at risk <span class="math inline">\(p\)</span>, or possibly a different denominator such as the expected number of cases <span class="math inline">\(E\)</span> (which occurs when using indirect age-standardization). These models have the form <span class="math display">\[\begin{equation}
 \begin{aligned}
-    &amp;y \sim Poisson(e^\phi) \\
+    &amp;y \sim Poisson( exp((log(p) + \phi) ) \\
     &amp;\phi \sim Normal(\mu, \Sigma) \\
-    &amp;\mu = log(p) + \alpha + x \beta.
+    &amp;\mu = \alpha + x \beta.
 \end{aligned}
 \end{equation}\]</span></p>
 <p>Here you see that the linear predictor <span class="math inline">\(\mu\)</span> is embedded with the CAR model.</p>
@@ -254,17 +264,43 @@ real wcar_normal_lpdf(vector y, vector mu,
     &amp;\phi \sim Normal(0, \Sigma) \\
 \end{aligned}
 \end{equation}\]</span></p>
-<p>It is possible to build a Stan modeling using either one of these two formulations. They are substantively equivalent, <em>but</em> you may find that one is far more amenable to Stan’s MCMC algorithm. The former specification (<span class="math inline">\(\mu\)</span> inside the CAR model) is less commonly presented in papers, but in this author’s experience it is often far more stable computationally than forcing the CAR model to have zero mean. (You may well encounter a case where the opposite is true.)</p>
+<p>It is possible to build a Stan modeling using either one of these two formulations. They are substantively equivalent, but you may find that one is far more amenable to Stan’s MCMC algorithm. The former specification (<span class="math inline">\(\mu\)</span> inside the CAR model) is less commonly presented in papers, but in this author’s experience it is often far more stable computationally than forcing the CAR model to have zero mean. (You may well encounter a case where the opposite is true.)</p>
 <p>The purpose of the offset term is sometimes unclear in introductory texts. The offset term <span class="math inline">\(p\)</span> is from the denominator of the rates <span class="math inline">\(\frac{y}{p}\)</span>. The expectation or mean of the model is <span class="math display">\[\begin{equation}
 \begin{aligned}
     &amp;\mathbb{E}[y] = e^{log(p) + \mu} = e^{log(p)} \cdot e^{\mu} = p \cdot e^\mu \\
     &amp;\mathbb{E}\Bigl[ \frac{y}{p} \Bigr] = e^\mu
 \end{aligned}
 \end{equation}\]</span> The smaller is the denominator, the less informative is the rate with respect to the characteristic level of risk bearing upon the population of the given period and place. With small denominators, chance renders the rates uninformative (and unstable over time and space), and the Poisson model accounts for this.</p>
-<p>The following Stan code provides a template for a simple disease mapping model using the CAR model as a prior for <span class="math inline">\(\phi\)</span>. As before, you can save the code in your working directory and give it a name like “car_poisson.stan”. I’ll store the file name in my R environment:</p>
+<p>We can fit this type of model using <code><a href="../reference/stan_car.html">geostan::stan_car</a></code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
+<span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span></span>
+<span><span class="va">car_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span>, style <span class="op">=</span> <span class="st">"WCAR"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># prior distributions (to match the Stan model below)</span></span>
+<span><span class="va">prior_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>intercept <span class="op">=</span> <span class="fu"><a href="../reference/priors.html">normal</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span>,</span>
+<span>               beta <span class="op">=</span> <span class="fu"><a href="../reference/priors.html">normal</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span>,</span>
+<span>           sigma <span class="op">=</span> <span class="fu"><a href="../reference/priors.html">student_t</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">0</span>, <span class="fl">5</span><span class="op">)</span></span>
+<span>           <span class="op">)</span></span>
+<span></span>
+<span></span>
+<span><span class="co"># Poisson model</span></span>
+<span><span class="co"># y ~ Poisson(pop * exp(mu))</span></span>
+<span><span class="co"># mu = alpha + beta * x + phi</span></span>
+<span><span class="co"># phi ~ CAR(0, Sigma)</span></span>
+<span><span class="co"># y = deaths; x = log(income);</span></span>
+<span><span class="co"># x will be centered: .x = x - mean(x)</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span>,</span>
+<span>    data <span class="op">=</span> <span class="va">georgia</span>, </span>
+<span>    car <span class="op">=</span> <span class="va">car_list</span>, </span>
+<span>    centerx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span></code></pre></div>
+<p>The following Stan code provides a template for a simple disease mapping model using the CAR model as a prior for <span class="math inline">\(\phi\)</span>. As before, you can save the code in your working directory and give it a name like “car_poisson.stan”. I’ll store the file name in my R environment:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">car_poisson_file</span> <span class="op">&lt;-</span> <span class="st">"car_poisson.stan"</span></span></code></pre></div>
-<pre class="stan"><code>functions {
+<pre><code>functions {
 #include wcar-lpdf.stan
 }
 
@@ -305,14 +341,15 @@ parameters {
 
 
 model {
-  vector[n] mu = const_offset + alpha + x * beta;
+  vector[n] y_mu = exp(const_offset + phi);
+  vector[n] phi_mu = alpha + x * beta;
   
-  // Likelihood: y ~ Poisson(e^[phi])
-  target += poisson_lpmf(y | exp(phi));
+  // Likelihood: y ~ Poisson( population * exp(phi) )
+  target += poisson_lpmf(y | y_mu);
     
   // phi ~ Normal(Mu, Sigma)
   target += wcar_normal_lpdf(phi |
-                 mu, tau, rho, // mean, scale, SA
+                 phi_mu, tau, rho, // mean, scale, SA
                  A_w, A_v, A_u, // stuff from prep_car_data
                  Delta_inv, 
                  log_det_Delta_inv,
@@ -330,7 +367,7 @@ model {
 }
 </code></pre>
 <p>Again, you can use <code><a href="../reference/prep_car_data.html">geostan::prep_car_data</a></code> to easily convert the spatial weights matrix into the list of required inputs for the CAR model:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mc-stan.org/rstan/" class="external-link">rstan</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
@@ -349,20 +386,73 @@ model {
 <span><span class="va">car_poisson</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_model.html" class="external-link">stan_model</a></span><span class="op">(</span><span class="va">car_poisson_file</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># sample from model</span></span>
-<span><span class="va">samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html" class="external-link">sampling</a></span><span class="op">(</span><span class="va">car_poisson</span>,</span>
-<span>    data <span class="op">=</span> <span class="va">car_list</span>,</span>
-<span>    iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
-<p>The same results can be obtained using <code><a href="../reference/stan_car.html">geostan::stan_car</a></code>:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span></span>
-<span><span class="va">car_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">A</span>, style <span class="op">=</span> <span class="st">"WCAR"</span><span class="op">)</span></span>
-<span></span>
+<span><span class="va">samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html" class="external-link">sampling</a></span><span class="op">(</span><span class="va">car_poisson</span>, data <span class="op">=</span> <span class="va">car_list</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="zero-mean-parameterization">Zero-mean parameterization<a class="anchor" aria-label="anchor" href="#zero-mean-parameterization"></a>
+</h3>
+<p>It was noted above that the hierarchical CAR model can be described in more than one equivalent way. For one, we can apply the CAR model to the log-rates <span class="math inline">\(\phi\)</span> just like we applied it to the outcome <span class="math inline">\(y\)</span>:</p>
+<p><span class="math display">\[\begin{equation}
+  \begin{aligned}
+  y &amp;\sim Poisson(pop * exp(\phi)) \\
+  \phi &amp;= \mu + \rho C (\phi - \mu) + \epsilon
+  \end{aligned}     
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(\mu = \alpha + x * beta\)</span>. That is the model we used above for disease mapping.</p>
+<p>The alternative is to force <span class="math inline">\(\phi\)</span> to have a mean of zero:</p>
+<p><span class="math display">\[\begin{equation}
+\begin{aligned}
+  y &amp;\sim Poisson(pop * exp(\mu + \phi)) \\
+  \phi &amp;\sim Normal(0, \Sigma). \\
+\end{aligned}
+\end{equation}\]</span></p>
+<p>Adopting former method often results in more stable and efficient MCMC sampling. But there are times when the former leads to poor MCMC sampling, particularly when many of the populations at risk and observed counts are very small. In such cases, you will find that the model is slow to converge (more MCMC samples are needed to avoid low ESS warnings) and you may also receive obscure warnings about the ‘Bayesian fraction of missing information’ and perhaps even warnings of divergent transitions. This is a widely-encountered phenomenon in Bayesian analysis. Here we are going to see how to handle the issue with these hierarchical CAR models.</p>
+<p>When this happens, we need to make two changes to our hierarchical Poisson model. The first is to force the mean of <span class="math inline">\(\phi\)</span> to equal zero instead of <span class="math inline">\(\mu=\alpha + x * \beta\)</span>. The second change pertains to the CAR covariance matrix for <span class="math inline">\(\phi\)</span>: we are going to specify the covariance matrix to have a variance parameter of <span class="math inline">\(\tau^2 = 1\)</span>; we symbolize this as <span class="math inline">\(\Sigma_1\)</span>. Then we bring the (actual) scale parameter back in by multiplication:</p>
+<p><span class="math display">\[\begin{equation}
+\begin{aligned}
+  y &amp;\sim Poisson(pop * exp(\mu + \phi * \tau)) \\
+  \phi &amp;\sim Normal(0, \Sigma_1) \\
+\end{aligned}
+\end{equation}\]</span></p>
+<p>The covariance matrix is, again, <span class="math inline">\(\Sigma_1 = (I - \rho C)^{-1}M\)</span>, and in this case <span class="math inline">\(M\)</span> contains the variances <span class="math inline">\(m_{i,i} = \tau^2 * \delta_i = \delta_i\)</span> (where the weights <span class="math inline">\(\delta_i\)</span> are equal to one divided by the row sums of <span class="math inline">\(C\)</span>).</p>
+<p>In the geostan documentation, this method is refered to as the <em>zero-mean parameterization</em> (ZMP). For hierarchical CAR models, we can use the ZMP by adding <code>zmp = TRUE</code>:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># zero-mean parameterization of the hierarchical CAR model</span></span>
+<span><span class="va">car_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span>,</span>
 <span>    data <span class="op">=</span> <span class="va">georgia</span>, </span>
 <span>    car <span class="op">=</span> <span class="va">car_list</span>, </span>
 <span>    centerx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>    family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>, </span>
-<span>    iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
+<span>    family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    zmp <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>    <span class="op">)</span></span></code></pre></div>
+<p>(This <code>zmp</code> option is also available in <code>stan_sar</code>.)</p>
+<p>To code this in Stan, we take “car_poisson.stan” and change the top of model block to the following:</p>
+<pre><code>model {
+  vector[n] y_mu = exp(const_offset + alpha + x * beta + phi * tau);
+  vector[n] phi_mu = rep_vector(0, n);
+  
+  // Likelihood: y ~ Poisson( population * exp(phi) )
+  target += poisson_lpmf(y | y_mu);
+    
+  // phi ~ Normal(Mu, Sigma)
+  target += wcar_normal_lpdf(phi |
+     phi_mu,
+     1, // scale: tau = 1
+     rho, 
+     A_w, A_v, A_u,
+     Delta_inv, 
+     log_det_Delta_inv,
+     lambda, 
+     n);
+   // ... (priors, etc.)         
+}
+</code></pre>
+<p>Everything else is the same. However, when you extract the MCMC samples of <span class="math inline">\(\phi\)</span> you have to remember to multiple them by the scale parameter. It can be easier if you complete this step inside the Stan model; to do so, you can append the following generated quantity to the model:</p>
+<pre><code>generated quantities {
+  vector[n] eta = phi * tau;  
+}</code></pre>
+<p>NB: these ways of parameterizing a hierarchical model are sometimes referred to as ‘centered’ and ‘non-centered’ parameterizations (these are good search terms to learn more about it). We use the term ZMP here because it seems more intuitive: it is obvious which parameterization of the CAR model has mean of zero; it is not obvious which of these two is the ‘non-centered’ parameterization.</p>
 </div>
 </div>
 <div class="section level2">
@@ -376,9 +466,17 @@ model {
 \end{equation}\]</span><br>
 where <span class="math inline">\(W\)</span> is a row-standardized spatial weights matrix, <span class="math inline">\(I\)</span> is the n-by-n identity matrix, and <span class="math inline">\(\rho\)</span> is a spatial autocorrelation parameter. (The spatial econometrics literature refers to this as the spatial error model.) This is also a multivariate normal distribution but with a different covariance matrix than the CAR model: <span class="math display">\[\begin{equation}
   \Sigma = \sigma^2 \cdot (I - \rho \cdot W)^{-1} (I - \rho \cdot W^T)^{-1},
-\end{equation}\]</span> where <span class="math inline">\(T\)</span> is the matrix transpose operator. The SA parameter <span class="math inline">\(\rho\)</span> for the SAR model has a more intuitive connection to the degree of SA (it is more monotonic) than the CAR model.</p>
+\end{equation}\]</span> where <span class="math inline">\(T\)</span> is the matrix transpose operator. The SA parameter <span class="math inline">\(\rho\)</span> for the SAR model has a more intuitive connection to the degree of SA than the CAR model (it behaves more similarly to a correlation coefficient).</p>
+<p>Using <code><a href="../reference/stan_sar.html">geostan::stan_sar</a></code>, we can fit spatial data to the SAR model as follows:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">W</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"W"</span><span class="op">)</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_sar.html">stan_sar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">population</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span>, </span>
+<span>                data <span class="op">=</span> <span class="va">georgia</span>,</span>
+<span>                C <span class="op">=</span> <span class="va">W</span>, </span>
+<span>                centerx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>                iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
 <p>The Stan function that is used by <code><a href="../reference/stan_sar.html">geostan::stan_sar</a></code> is as follows (the R code below will assume that you have saved this as “sar-lpdf.stan”):</p>
-<pre class="stan"><code>/**
+<pre><code>/**
  * Log probability density of the simultaneous autoregressive (SAR) model (spatial error model)
  *
  * @param y Process to model
@@ -411,9 +509,9 @@ where <span class="math inline">\(W\)</span> is a row-standardized spatial weigh
  }    
 </code></pre>
 <p>The following Stan model provides an example of how to use this function to build a SAR model. Again, its an autonormal model for continuous outcome variable with <span class="math inline">\(k\)</span> covariates.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sar_model_file</span> <span class="op">&lt;-</span> <span class="st">"sar_model.stan"</span></span></code></pre></div>
-<pre class="stan"><code>functions {
+<pre><code>functions {
 #include sar-lpdf.stan
 }
 
@@ -469,7 +567,7 @@ model{
   target += normal_lpdf(alpha | 0, 5);
 }
 </code></pre>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mc-stan.org/rstan/" class="external-link">rstan</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
@@ -488,14 +586,6 @@ model{
 <span></span>
 <span><span class="co"># sample from model</span></span>
 <span><span class="va">samples</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mc-stan.org/rstan/reference/stanmodel-method-sampling.html" class="external-link">sampling</a></span><span class="op">(</span><span class="va">sar_model</span>, data <span class="op">=</span> <span class="va">sar_list</span>, iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
-<p>We can draw samples from the same model using <code><a href="../reference/stan_sar.html">geostan::stan_sar</a></code>:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">W</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"W"</span><span class="op">)</span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_sar.html">stan_sar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">population</span> <span class="op">/</span> <span class="fl">1e3</span><span class="op">)</span>, </span>
-<span>                data <span class="op">=</span> <span class="va">georgia</span>,</span>
-<span>                C <span class="op">=</span> <span class="va">W</span>, </span>
-<span>                centerx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                iter <span class="op">=</span> <span class="fl">1e3</span><span class="op">)</span></span></code></pre></div>
 <p>One can also use the SAR model as a prior distribution for a parameter vector, just as was done above with the CAR model.</p>
 </div>
 <div class="section level2">

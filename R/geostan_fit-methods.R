@@ -270,13 +270,19 @@ spatial.geostan_fit <- function(object,
 extract_autoGauss_trend <- function(object) {
     
     if (object$spatial$method == "CAR") {
+        link <- object$family$link
+        scale_param <- "car_scale"
+        ZMP <- object$car_parts$ZMP        
         rho_name <- "car_rho"
         lag_y <- FALSE
     }
     
     if (object$spatial$method == "SAR") {
+        link <- object$family$link
+        scale_param <- "sar_scale"        
+        ZMP <- object$sar_parts$ZMP        
         rho_name <- "sar_rho"
-        lag_y <- grepl("SDLM|SLM", object$sar_type)
+        lag_y <- grepl("SDLM|SLM", object$sar_type)                
     }
     
     if (object$family$family == "auto_gaussian") {
@@ -300,12 +306,28 @@ extract_autoGauss_trend <- function(object) {
                 as.numeric( rho[i] * C %*% R[i,] )
             }))
         }
-        
-      } else {
-          log_lambda_mu <- as.matrix(object, pars = "log_lambda_mu")
-          log_lambda <- log( fitted(object, summary = FALSE, rates = TRUE) )
-          spatial.samples <- log_lambda - log_lambda_mu
-      }
+
+        # auto-gaussan return:
+        return (spatial.samples)   
+    }
+
+    # hierarchical models:
+    if (ZMP == 1) {
+
+        scale <- as.matrix(object, pars = scale_param)
+        log_lambda <- as.matrix(object, pars = "log_lambda")
+        spatial.samples <- sweep(log_lambda, MARGIN = 1, STATS = scale, FUN = "*")        
+
+    } else {
+
+        log_lambda_mu <- as.matrix(object, pars = "log_lambda_mu")
+        # 'fitted, rates=TRUE' sweeps out the offset from fitted values
+        lambda <- fitted(object, summary = FALSE, rates = TRUE)
+        if (link == "log") log_lambda <- exp(lambda)
+        if (link == "logit") log_lambda <- inv_logit(lambda)        
+        spatial.samples <- log_lambda - log_lambda_mu                
+      
+    }
     
     return (spatial.samples)
 }

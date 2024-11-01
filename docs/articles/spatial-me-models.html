@@ -40,7 +40,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.7.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.0</span>
       </span>
     </div>
 
@@ -87,28 +87,54 @@
 
     
     
-<p>This vignette introduces users to the spatial measurement error (ME) models implemented in the <strong>geostan</strong> package <span class="citation">(Donegan, Chun, and Griffith <a href="#ref-donegan_2021" role="doc-biblioref">2021</a>)</span>. Variations on this methodology have been examined previously by multiple authors <span class="citation">(Bernadinelli et al. <a href="#ref-bernadinelli_1997" role="doc-biblioref">1997</a>; Kang, Liu, and Cressie <a href="#ref-kang_2009" role="doc-biblioref">2009</a>; Logan et al. <a href="#ref-logan_2020" role="doc-biblioref">2020</a>; Xia and Carlin <a href="#ref-xia_1998" role="doc-biblioref">1998</a>)</span>.</p>
+<p>This vignette introduces users to the spatial measurement error (ME) models implemented in the geostan package <span class="citation">(Donegan, Chun, and Griffith <a href="#ref-donegan_2021" role="doc-biblioref">2021</a>)</span>. Variations on this methodology have been examined previously by multiple authors <span class="citation">(Bernadinelli et al. <a href="#ref-bernadinelli_1997" role="doc-biblioref">1997</a>; Kang, Liu, and Cressie <a href="#ref-kang_2009" role="doc-biblioref">2009</a>; Logan et al. <a href="#ref-logan_2020" role="doc-biblioref">2020</a>; Xia and Carlin <a href="#ref-xia_1998" role="doc-biblioref">1998</a>)</span>.</p>
 <p>These models are designed for spatial models that use survey estimates as covariates. They are designed for use with American Community Survey (ACS) data and other large, government-backed surveys, although other data types may be appropriate as well. A premise of this methodology is that the survey includes a systematic spatial sampling design (i.e., the sampling procedure was stratified by the areal unit of interest, whether they be block groups, counties, or states).</p>
 <p>In a (spatial) regression analysis, measurement/sampling error in covariates can lead to model parameter estimates that are overly-confident and prone to bias. This can lead to under- or over-estimation of population risks and needs, mainly because the noisy survey-based covariate passes directly into predictive values. This may impact real communities and service providers <span class="citation">(see Bazuin and Fraser <a href="#ref-bazuin_2013" role="doc-biblioref">2013</a>)</span>. Examining the standard errors or margins of error of small-area survey estimates is an important first step that can help one determine whether a measurement error model should be considered.</p>
 <p>These models account for sampling error which does not include any potential sources of systematic bias or recording errors that may be present in survey estimates.</p>
 <div class="section level2">
 <h2 id="modeling-errors-of-observation">Modeling errors of observation<a class="anchor" aria-label="anchor" href="#modeling-errors-of-observation"></a>
 </h2>
-<p>The measurement error (ME) models implemented in <strong>geostan</strong> are hierarchical Bayesian models (HBMs) that incorporate two sources of information:</p>
+<p>The measurement error (ME) models implemented in geostan are hierarchical Bayesian models (HBMs) that incorporate two sources of information:</p>
 <ol style="list-style-type: decimal">
 <li>A sampling distribution for the survey estimates.</li>
 <li>Spatial autocorrelation and generic background knowledge on social variables.</li>
 </ol>
-<p>The model treats the true value <span class="math inline">\(\boldsymbol x\)</span> as an unknown parameter or a latent variable. The goal is to obtain a probability distribution for <span class="math inline">\(\boldsymbol x\)</span>. That information can then be incorporated into any of <strong>geostan</strong>’s regression or disease mapping models.</p>
-<p>The sampling distribution for the model states that the true value <span class="math inline">\(x_i\)</span> is probably within two standard errors of the estimate, or <span class="math display">\[z_i = x_i + \epsilon_i, \epsilon_i \sim Normal(0, s_i^2),\]</span> where <span class="math inline">\(z_i\)</span> is the estimate, <span class="math inline">\(s_i\)</span> is its standard error, and <span class="math inline">\(x_i\)</span> is the true value.</p>
+<p>The model treats the true value <span class="math inline">\(\boldsymbol x\)</span> as an unknown parameter or a latent variable. The goal is to obtain a probability distribution for <span class="math inline">\(\boldsymbol x\)</span>. That information can then be incorporated into any of geostan’s regression or disease mapping models.</p>
+<p>The sampling distribution for the model states that the true value <span class="math inline">\(x_i\)</span> is probably within two standard errors of the estimate, or <span class="math display">\[z_i = x_i + e_i, e_i \sim Normal(0, s_i^2),\]</span> where <span class="math inline">\(z_i\)</span> is the estimate, <span class="math inline">\(s_i\)</span> is its standard error, and <span class="math inline">\(x_i\)</span> is the true value.</p>
 <p>Our background knowledge on <span class="math inline">\(x\)</span> is the second component of the model. This is simply the knowledge that social variables tend to be spatially patterned: relatively extreme values are not implausible but they tend to be clustered together. This information is encoded into a prior probability distribution for the unknown values <span class="math inline">\(\boldsymbol x\)</span>. Our prior distribution is the spatial conditional autoregressive (CAR) model <span class="citation">(see Donegan <a href="#ref-donegan_2022" role="doc-biblioref">2022</a> Table 1, WCAR specification)</span>.</p>
-<p>If <span class="math inline">\(\boldsymbol x\)</span> is a rate variable—e.g., the poverty rate—it can be important to use a logit-transformation before applying the CAR prior <span class="citation">(Logan et al. <a href="#ref-logan_2020" role="doc-biblioref">2020</a>)</span>.</p>
-<p>The CAR model has three scalar parameters (mean <span class="math inline">\(\mu\)</span>, spatial dependence <span class="math inline">\(\rho\)</span>, and scale <span class="math inline">\(\tau\)</span>) that require prior probability distributions; <strong>geostan</strong> uses the following by default:</p>
+<p>If your initial model for the outcome variable <span class="math inline">\(y\)</span> is an ordinary linear model with some covariate <span class="math inline">\(x\)</span>, as in <span class="math display">\[y = \alpha + \beta * x + \epsilon,\]</span> then adding our spatial ME model would result in the following specification: <span class="math display">\[\begin{equation}
+\begin{split}
+y &amp;= \alpha + \beta * x + \epsilon \\
+z &amp;= x + e \\
+e &amp;\sim Normal(0, s^2) \\
+x &amp;\sim Normal(\mu_x, \Sigma)
+\end{split}  
+\end{equation}\]</span></p>
+<p>In this model <span class="math inline">\(x\)</span> is unobserved, <span class="math inline">\(z\)</span> is our survey estimate of <span class="math inline">\(x\)</span>, <span class="math inline">\(s\)</span> is the standard error of the estimate, and the prior for <span class="math inline">\(x\)</span> is a spatial CAR model. If we were to apply the spatial ME model to a covariate within a hierarchical Poisson model then we would write:</p>
+<p><span class="math display">\[\begin{equation}
+\begin{split}
+  y &amp;\sim Poisson(\mu) \\
+\mu &amp;= \text{offset} +\alpha + \beta * x + u \\
+ z &amp;= x + e \\
+ e &amp;\sim Normal(0, s^2) \\
+ x &amp;\sim Normal(\mu_x, \Sigma)
+\end{split}  
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(u\)</span> is some kind of spatial component or ‘random effects’ vector.</p>
+<p>If <span class="math inline">\(\boldsymbol x\)</span> is a rate variable—e.g., the poverty rate—it can be important to use a logit-transformation before applying the CAR prior <span class="citation">(Logan et al. <a href="#ref-logan_2020" role="doc-biblioref">2020</a>)</span> as follows:</p>
+<p><span class="math display">\[\begin{equation}
+\begin{split}
+z &amp;= x + e \\
+e &amp;\sim Normal(0, s^2) \\
+logit(x) &amp;\sim Normal(\mu_x, \Sigma)
+\end{split}  
+\end{equation}\]</span></p>
+<p>The CAR model has three scalar parameters (mean <span class="math inline">\(\mu\)</span>, spatial dependence <span class="math inline">\(\rho\)</span>, and scale <span class="math inline">\(\tau\)</span>) that require prior probability distributions; geostan uses the following by default:</p>
 <p><span class="math display">\[\begin{equation} 
 \begin{split}
-\mu &amp;\sim Gauss(0, 100) \\
-\tau &amp;\sim Student_t(10, 0, 40) \\
-\rho &amp;\sim Uniform(\text{lower_bound}, \text{upper_bound})
+\mu_x &amp;\sim Gauss(0, 100) \\
+\tau_x &amp;\sim Student_t(10, 0, 40) \\
+\rho_x &amp;\sim Uniform(\text{lower_bound}, \text{upper_bound})
 \end{split}
 \end{equation}\]</span></p>
 <p>The default prior for <span class="math inline">\(\rho\)</span> is uniform across its entire support (determined by the extreme eigenvalues of the spatial weights matrix).</p>
@@ -123,16 +149,16 @@
 <div class="section level2">
 <h2 id="getting-started">Getting started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
 </h2>
-<p>From the R console, load the <strong>geostan</strong> package.</p>
+<p>From the R console, load the geostan package.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span></code></pre></div>
-<p>The line <code>data(georgia)</code> loads the <code>georgia</code> data set from the <strong>geostan</strong> package into your working environment. You can learn more about the data by entering <code><a href="../reference/georgia.html">?georgia</a></code> to the R console.</p>
+<p>The line <code>data(georgia)</code> loads the <code>georgia</code> data set from the geostan package into your working environment. You can learn more about the data by entering <code><a href="../reference/georgia.html">?georgia</a></code> to the R console.</p>
 </div>
 <div class="section level2">
 <h2 id="preparing-the-data">Preparing the data<a class="anchor" aria-label="anchor" href="#preparing-the-data"></a>
 </h2>
-<p>Users can add a spatial ME model to any <strong>geostan</strong> model. A list of data for the ME models can be prepared using the <code>prep_me_data</code> function. The function requires at least two inputs from the user:</p>
+<p>Users can add a spatial ME model to any geostan model. A list of data for the ME models can be prepared using the <code>prep_me_data</code> function. The function requires at least two inputs from the user:</p>
 <ol style="list-style-type: decimal">
 <li>
 <code>se</code> A data frame with survey standard errors.</li>
@@ -190,16 +216,19 @@
 <span>                car_parts <span class="op">=</span> <span class="va">cars</span>,</span>
 <span>                iter <span class="op">=</span> <span class="fl">650</span>, <span class="co"># for demo speed </span></span>
 <span>                quiet <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                <span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
+<span>                <span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span></span>
+<span><span class="co">## Running the chains for more iterations may help. See</span></span>
+<span><span class="co">## https://mc-stan.org/misc/warnings.html#tail-ess</span></span></code></pre>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Spatial Model Results </span></span>
 <span><span class="co">## Formula: deaths.male ~ offset(log(pop.at.risk.male)) + insurance</span></span>
 <span><span class="co">## Spatial method (outcome):  CAR </span></span>
 <span><span class="co">## Likelihood function:  poisson </span></span>
 <span><span class="co">## Link function:  log </span></span>
-<span><span class="co">## Residual Moran Coefficient:  -0.0009738462 </span></span>
-<span><span class="co">## WAIC:  1320.98 </span></span>
+<span><span class="co">## Residual Moran Coefficient:  0.002878462 </span></span>
+<span><span class="co">## WAIC:  1316.11 </span></span>
 <span><span class="co">## Observations:  159 </span></span>
 <span><span class="co">## Data models (ME): insurance</span></span>
 <span><span class="co">##  Data model (ME prior): CAR (auto Gaussian)</span></span>
@@ -208,18 +237,18 @@
 <span><span class="co">## post-warmup draws per chain=325, total post-warmup draws=1300.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff  Rhat</span></span>
-<span><span class="co">## intercept -4.167   0.002 0.057 -4.276 -4.209 -4.168 -4.127 -4.045   978 1.001</span></span>
-<span><span class="co">## insurance -2.759   0.022 0.739 -4.316 -3.388 -2.748 -2.119 -1.349  1181 1.001</span></span>
-<span><span class="co">## car_rho    0.866   0.003 0.089  0.655  0.799  0.886  0.938  0.982  1110 0.999</span></span>
-<span><span class="co">## car_scale  0.448   0.001 0.033  0.389  0.420  0.446  0.474  0.518  1019 1.000</span></span>
+<span><span class="co">## intercept -4.172   0.004 0.066 -4.302 -4.210 -4.168 -4.127 -4.063   273 1.006</span></span>
+<span><span class="co">## insurance -2.714   0.023 0.746 -4.191 -3.335 -2.726 -2.116 -1.193  1038 1.003</span></span>
+<span><span class="co">## car_rho    0.863   0.003 0.089  0.628  0.801  0.881  0.936  0.986   964 1.002</span></span>
+<span><span class="co">## car_scale  0.448   0.001 0.034  0.387  0.419  0.446  0.477  0.518   795 1.001</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Samples were drawn using NUTS(diag_e) at Tue Oct 29 10:06:32 2024.</span></span>
+<span><span class="co">## Samples were drawn using NUTS(diag_e) at Mon Nov  4 08:29:54 2024.</span></span>
 <span><span class="co">## For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">## and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">## convergence, Rhat=1).</span></span></code></pre>
-<p>The CAR models in <strong>geostan</strong> can be highly efficient in terms of MCMC sampling, but the required number of iterations will depend on many characteristics of the model and data. Often the default <code>iter = 2000</code> is more than sufficient (with <code>cores = 4</code>). To speed up sampling with multi-core processing, use <code>cores = 4</code> (to sample 4 chains in parallel).</p>
+<p>The CAR models in geostan can be highly efficient in terms of MCMC sampling, but the required number of iterations will depend on many characteristics of the model and data. Often the default <code>iter = 2000</code> is more than sufficient (with <code>cores = 4</code>). To speed up sampling with multi-core processing, use <code>cores = 4</code> (to sample 4 chains in parallel).</p>
 <p>In the following section, methods for examining MCMC samples of the modeled covariate values <span class="math inline">\(\boldsymbol x\)</span> will be illustrated. Note that the process of storing MCMC samples for <span class="math inline">\(\boldsymbol x\)</span> can become computationally burdensome if you have multiple covariates and moderately large N. If you do not need the samples of <span class="math inline">\(\boldsymbol x\)</span> you can use the <code>drop</code> argument, as in:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="va">insurance</span>,</span>
 <span>                centerx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                ME <span class="op">=</span> <span class="va">ME_list</span>,</span>
@@ -237,7 +266,7 @@
 <p>First, it provides a point-interval scatter plot that compares the raw survey estimates (on the horizontal axis) to the modeled values (on the vertical axis). The (posterior) probability distributions for the modeled values are represented by their 95% credible intervals. The intervals provide a sense of the <em>quality</em> of the ACS data—if the credible intervals on the modeled value are large, this tells us that the data are not particularly reliable.</p>
 <p>The <code>me_diag</code> function also provides more direct visual depictions of the difference between the raw survey estimates <span class="math inline">\(z_i\)</span> an the modeled values <span class="math inline">\(x_i\)</span>: <span class="math display">\[\delta_i = z_i - x_i.\]</span> We want to look for any strong spatial pattern in these <span class="math inline">\(\delta_i\)</span> values, because that would be an indication of a bias. However, the magnitude of the <span class="math inline">\(\delta_i\)</span> value is important to consider—there may be a pattern, but if the amount of shrinkage is very small, that pattern may not matter. (The model returns <span class="math inline">\(M\)</span> samples from the posterior distribution of each <span class="math inline">\(x_i\)</span>; or, indexing by MCMC sample <span class="math inline">\(x_i^m\)</span> (<span class="math inline">\(m\)</span> is an index, not an exponent). The reported <span class="math inline">\(\delta_i\)</span> values is the MCMC mean <span class="math inline">\(\delta_i = \frac{1}{M} \sum_m z_i - x_i^m\)</span>.)</p>
 <p>Two figures are provided to evaluate patterns in <span class="math inline">\(\delta_i\)</span>: first, a Moran scatter plot and, second, a map.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/me_diag.html">me_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">'insurance'</span>, <span class="va">georgia</span><span class="op">)</span></span></code></pre></div>
 <p><img src="spatial-me-models_files/figure-html/unnamed-chunk-9-1.png" width="768" style="display: block; margin: auto;"></p>
 <p>In this case, the results do not look too concerning insofar as there are no conspicuous patterns. However, a number of the credible intervals on the modeled values are large, which indicates low data reliability. The fact that some of the <span class="math inline">\(\delta_i\)</span> values are substantial also points to low data quality for those estimates.</p>
@@ -245,62 +274,62 @@
 <div class="section level3">
 <h3 id="working-with-mcmc-samples-from-me-models">Working with MCMC samples from ME models<a class="anchor" aria-label="anchor" href="#working-with-mcmc-samples-from-me-models"></a>
 </h3>
-<p><strong>geostan</strong> consists of pre-compiled Stan models, and users can always access the Markov chain Monte Carlo (MCMC) samples returned by Stan. When extracted as a matrix of samples (as below), each row of the matrix represents a draw from the joint probability distribution for all model parameters, and each column consists of samples from the marginal distribution of each parameter.</p>
+<p>geostan consists of pre-compiled Stan models, and users can always access the Markov chain Monte Carlo (MCMC) samples returned by Stan. When extracted as a matrix of samples (as below), each row of the matrix represents a draw from the joint probability distribution for all model parameters, and each column consists of samples from the marginal distribution of each parameter.</p>
 <p>The ME models return samples for <span class="math inline">\(x_i\)</span> as well as the model parameters <span class="math inline">\(\mu\)</span> (“mu_x_true”), <span class="math inline">\(\rho\)</span> (“car_rho_x_true”), and <span class="math inline">\(\tau\)</span> (“sigma_x_true”). We can access these using <code>as.matrix</code> (also <code>as.array</code> and <code>as.data.frame</code>).</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mu.x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">fit</span>, pars <span class="op">=</span> <span class="st">"mu_x_true"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">mu.x</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 1300    1</span></span></code></pre>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mu.x</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##           parameters</span></span>
 <span><span class="co">## iterations mu_x_true[1]</span></span>
-<span><span class="co">##       [1,]     1.870591</span></span>
-<span><span class="co">##       [2,]     1.752737</span></span>
-<span><span class="co">##       [3,]     1.790702</span></span>
-<span><span class="co">##       [4,]     1.804061</span></span>
-<span><span class="co">##       [5,]     1.612196</span></span>
-<span><span class="co">##       [6,]     1.919102</span></span></code></pre>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">mu.x</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 1.787378</span></span></code></pre>
-<p>We can visualize these using <code>plot</code> or print a summary:</p>
+<span><span class="co">##       [1,]     1.811208</span></span>
+<span><span class="co">##       [2,]     1.756768</span></span>
+<span><span class="co">##       [3,]     1.773031</span></span>
+<span><span class="co">##       [4,]     1.804969</span></span>
+<span><span class="co">##       [5,]     1.769970</span></span>
+<span><span class="co">##       [6,]     1.744361</span></span></code></pre>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">mu.x</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] 1.784894</span></span></code></pre>
+<p>We can visualize these using <code>plot</code> or print a summary:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span>, pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mu_x_true"</span>, <span class="st">"car_rho_x_true"</span>, <span class="st">"sigma_x_true"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Inference for Stan model: foundation.</span></span>
 <span><span class="co">## 4 chains, each with iter=650; warmup=325; thin=1; </span></span>
 <span><span class="co">## post-warmup draws per chain=325, total post-warmup draws=1300.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##                   mean se_mean   sd 2.5%  25%  50%  75% 97.5% n_eff Rhat</span></span>
-<span><span class="co">## mu_x_true[1]      1.79       0 0.07 1.65 1.75 1.79 1.83  1.93   790    1</span></span>
-<span><span class="co">## car_rho_x_true[1] 0.91       0 0.06 0.77 0.87 0.92 0.95  0.99   965    1</span></span>
-<span><span class="co">## sigma_x_true[1]   0.48       0 0.04 0.42 0.46 0.48 0.51  0.56  1031    1</span></span>
+<span><span class="co">## mu_x_true[1]      1.78       0 0.08 1.62 1.75 1.79 1.83  1.95   777    1</span></span>
+<span><span class="co">## car_rho_x_true[1] 0.91       0 0.06 0.75 0.88 0.92 0.96  0.99  1065    1</span></span>
+<span><span class="co">## sigma_x_true[1]   0.48       0 0.04 0.42 0.46 0.48 0.51  0.56   997    1</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Samples were drawn using NUTS(diag_e) at Tue Oct 29 10:06:32 2024.</span></span>
+<span><span class="co">## Samples were drawn using NUTS(diag_e) at Mon Nov  4 08:29:54 2024.</span></span>
 <span><span class="co">## For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">## and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">## convergence, Rhat=1).</span></span></code></pre>
 <p>To extract samples from the joint probability distribution for <span class="math inline">\(\boldsymbol x\)</span>, use the generic parameter name “x_true”:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">fit</span>, pars <span class="op">=</span> <span class="st">"x_true"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 1300  159</span></span></code></pre>
 <p>If we wanted to calculate the mean of each of these marginal distributions (one for every <span class="math inline">\(x_i\)</span>), we could use <code>apply</code> with <code>MARGIN = 2</code> to summarize by column:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x.mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2</span>, <span class="va">mean</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">x.mu</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## x_insurance[1] x_insurance[2] x_insurance[3] x_insurance[4] x_insurance[5] </span></span>
-<span><span class="co">##      0.8368136      0.7995135      0.8517007      0.8521054      0.9181175 </span></span>
+<span><span class="co">##      0.8366035      0.8005855      0.8519499      0.8521317      0.9179694 </span></span>
 <span><span class="co">## x_insurance[6] </span></span>
-<span><span class="co">##      0.8702437</span></span></code></pre>
+<span><span class="co">##      0.8702906</span></span></code></pre>
 <p>The vector <code>x.mu</code> contains estimates (posterior means) for <span class="math inline">\(x_i\)</span>. We might want to use these to plot the residuals or fitted values against the predictor:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">$</span><span class="va">mean</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x.mu</span>, <span class="va">res</span>,</span>
 <span>     xlab <span class="op">=</span> <span class="st">'Insurance rate'</span>,</span>
 <span>     ylab <span class="op">=</span> <span class="st">'Residual'</span>,</span>
 <span>     type <span class="op">=</span> <span class="st">'n'</span>,</span>
-<span>     bty <span class="op">=</span> <span class="st">'n'</span><span class="op">)</span></span>
+<span>     bty <span class="op">=</span> <span class="st">'L'</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">x.mu</span>, <span class="va">res</span>,</span>
 <span>       col <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -311,8 +340,8 @@
 <div class="section level2">
 <h2 id="non-spatial-me-models">Non-spatial ME models<a class="anchor" aria-label="anchor" href="#non-spatial-me-models"></a>
 </h2>
-<p>If the <code>ME</code> list doesn’t have a slot with <code>car_parts</code>, <strong>geostan</strong> will automatically use a non-spatial Student’s t model instead of the CAR model: <span class="math display">\[ p( x | \mathcal{M}) = Student(\boldsymbol x | \nu, \mu, \sigma), \]</span> with degrees of freedom <span class="math inline">\(\nu\)</span>, mean <span class="math inline">\(\mu\)</span>, and scale <span class="math inline">\(\sigma\)</span>.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<p>If the <code>ME</code> list doesn’t have a slot with <code>car_parts</code>, geostan will automatically use a non-spatial Student’s t model instead of the CAR model: <span class="math display">\[ p( x | \mathcal{M}) = Student(\boldsymbol x | \nu, \mu, \sigma), \]</span> with degrees of freedom <span class="math inline">\(\nu\)</span>, mean <span class="math inline">\(\mu\)</span>, and scale <span class="math inline">\(\sigma\)</span>.</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ME_nsp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep_me_data.html">prep_me_data</a></span><span class="op">(</span></span>
 <span>  se <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>insurance <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">insurance.se</span><span class="op">)</span>,</span>
 <span>  logit <span class="op">=</span> <span class="cn">TRUE</span></span>
@@ -323,7 +352,7 @@
 <h2 id="multiple-covariates">Multiple covariates<a class="anchor" aria-label="anchor" href="#multiple-covariates"></a>
 </h2>
 <p>To model multiple covariates, simply add them to the data frame of standard errors:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">georgia</span><span class="op">$</span><span class="va">college</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">college</span> <span class="op">/</span> <span class="fl">100</span></span>
 <span><span class="va">georgia</span><span class="op">$</span><span class="va">college.se</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">college.se</span> <span class="op">/</span> <span class="fl">100</span></span>
 <span></span>
@@ -346,7 +375,7 @@
 </h2>
 <p>Income and other magnitudes are often log transformed. In that case, the survey standard errors also need to be transformed. The <code>se_log</code> function provide approximate standard errors for this purpose.</p>
 <p>When using <code>se_log</code>, pass in the variable itself (<em>untransformed</em>) and its standard errors. Here is a full workflow for a spatial mortality model with covariate measurement error:</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># income in $1,000s</span></span>

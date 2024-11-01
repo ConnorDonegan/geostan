@@ -394,9 +394,11 @@ stan_icar <- function(formula,
     standata$type <- match(type, c("icar", "bym", "bym2"))
     ## ICAR DATA [STOP] -------------    
     ## EMPTY PLACEHOLDERS
-    empty_parts <- c(empty_esf_data(n), empty_car_data(), empty_sar_data(n))
-    empty_parts <- empty_parts[ which(!names(empty_parts) %in% names(standata)) ]
-    standata <- c(standata, empty_parts)
+    standata <- add_missing_parts(standata)    
+    ##empty_parts <- c(empty_esf_data(n), empty_car_data(), empty_sar_data(n))
+    ##empty_parts <- empty_parts[ which(!names(empty_parts) %in% names(standata)) ]
+    ##standata <- c(standata, empty_parts)
+    
     ## ME MODEL -------------  
     me.list <- make_me_data(ME, xraw)
     standata <- c(standata, me.list)  

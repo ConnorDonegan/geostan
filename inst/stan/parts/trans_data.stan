@@ -1,6 +1,12 @@
   // ICAR
   int has_theta = type > 1;
 
+  // for zero-centered CAR/SAR models 
+  vector[n] zero_vec = rep_vector(0, n);
+
+  // if 1, add linear pred. to 'fitted', as normal
+  int as_olm;
+
   // QR transformation 
   int<lower=0,upper=1> use_qr;
   int<lower=0> d_qr = dx_obs + dwx;
@@ -30,6 +36,10 @@
   has_me = dx_me > 0;
   use_qr = dx_obs > 0 && has_me == 0;
 
+  // when using car or sar hierarchical model with modeled (non-zero) mean (zmp=0), do Not treat as olm;
+  // otherwise, treat as olm:
+  as_olm = !( (car == 1 || sar == 1) && is_auto_gaussian == 0 && ZMP == 0 );
+
   if (use_qr) {
    	
     if (center_x) { // center covariates
@@ -47,3 +57,4 @@
     R_ast = qr_thin_R(x_tmp) / sqrt(n - 1);
     R_ast_inverse = inverse(R_ast);
   }
+

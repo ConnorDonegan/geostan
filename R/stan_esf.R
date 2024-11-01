@@ -345,10 +345,13 @@ stan_esf <- function(formula,
     )
     standata <- c(standata, esf_dl)
     ## PRIORS with RHS-ESF [END] -------------
+    
     ## EMPTY PLACEHOLDERS [drop duplicated SLX/SAR matrix parts]
-    empty_parts <- c(empty_icar_data(n), empty_car_data(), empty_sar_data(n))
-    empty_parts <- empty_parts[ which(!names(empty_parts) %in% names(standata)) ]
-    standata <- c(standata, empty_parts)    
+    standata <- add_missing_parts(standata)    
+    ##empty_parts <- c(empty_icar_data(n), empty_car_data(), empty_sar_data(n))
+    ##empty_parts <- empty_parts[ which(!names(empty_parts) %in% names(standata)) ]
+    ##standata <- c(standata, empty_parts)
+    
     ## ME MODEL STUFF -------------  
     me.list <- make_me_data(ME, xraw)
     standata <- c(standata, me.list)

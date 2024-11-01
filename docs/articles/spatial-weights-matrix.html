@@ -40,7 +40,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.7.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.0</span>
       </span>
     </div>
 
@@ -97,7 +97,7 @@
 <p>To get started, load the geostan and sf packages:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; This is geostan version 0.7.0</span></span>
+<span><span class="co">#&gt; This is geostan version 0.8.0</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Linking to GEOS 3.10.2, GDAL 3.4.3, PROJ 8.2.1; sf_use_s2() is TRUE</span></span></code></pre></div>
 </div>
@@ -224,7 +224,6 @@
 <p>You can use the <code><a href="../reference/row_standardize.html">geostan::row_standardize</a></code> function:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">W</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/row_standardize.html">row_standardize</a></span><span class="op">(</span><span class="va">A</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Row standardizing connectivity matrix</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span> <span class="va">W</span> <span class="op">)</span></span>
 <span><span class="co">#&gt; 9 x 9 sparse Matrix of class "dgCMatrix"</span></span>
 <span><span class="co">#&gt;                                                                            </span></span>
@@ -302,8 +301,8 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">101010</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>w <span class="op">=</span> <span class="va">W</span>, rho <span class="op">=</span> <span class="fl">.8</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span> <span class="va">y</span> <span class="op">)</span></span>
-<span><span class="co">#&gt; [1] -1.1320214  0.2577176  1.9462173  1.8134445  0.9640490  3.0214490  2.5213080</span></span>
-<span><span class="co">#&gt; [8]  3.0062925  1.5852854</span></span>
+<span><span class="co">#&gt; [1] -0.1618155 -1.1585015 -0.7857615  3.0395813  1.3792529  1.3173097  2.2556468</span></span>
+<span><span class="co">#&gt; [8]  1.5829022  3.4143133</span></span>
 <span></span>
 <span><span class="va">ogpar</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">4</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">grid</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">y</span></span>
@@ -322,40 +321,40 @@
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">w1_y</span> <span class="op">&lt;-</span> <span class="va">w1</span> <span class="op">*</span> <span class="va">y</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span> <span class="va">w1_y</span> <span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 2.071162</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 1.88108</span></span></code></pre></div>
 <p>We can do this more quicly as a matrix-vector product:</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">w1</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">y</span></span>
-<span><span class="co">#&gt;          [,1]</span></span>
-<span><span class="co">#&gt; [1,] 2.071162</span></span></code></pre></div>
+<span><span class="co">#&gt;         [,1]</span></span>
+<span><span class="co">#&gt; [1,] 1.88108</span></span></code></pre></div>
 <p>To get the spatial lag of each <code>y</code> value, we do the same for every row:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">y</span></span>
 <span><span class="co">#&gt; 9 x 1 Matrix of class "dgeMatrix"</span></span>
-<span><span class="co">#&gt;           [,1]</span></span>
-<span><span class="co">#&gt;  [1,] 2.071162</span></span>
-<span><span class="co">#&gt;  [2,] 1.778245</span></span>
-<span><span class="co">#&gt;  [3,] 3.279167</span></span>
-<span><span class="co">#&gt;  [4,] 2.353336</span></span>
-<span><span class="co">#&gt;  [5,] 8.098904</span></span>
-<span><span class="co">#&gt;  [6,] 4.495552</span></span>
-<span><span class="co">#&gt;  [7,] 4.819737</span></span>
-<span><span class="co">#&gt;  [8,] 5.070642</span></span>
-<span><span class="co">#&gt;  [9,] 6.027741</span></span></code></pre></div>
+<span><span class="co">#&gt;            [,1]</span></span>
+<span><span class="co">#&gt;  [1,] 1.8810798</span></span>
+<span><span class="co">#&gt;  [2,] 0.4316758</span></span>
+<span><span class="co">#&gt;  [3,] 0.1588082</span></span>
+<span><span class="co">#&gt;  [4,] 3.4730841</span></span>
+<span><span class="co">#&gt;  [5,] 4.7812917</span></span>
+<span><span class="co">#&gt;  [6,] 4.0078046</span></span>
+<span><span class="co">#&gt;  [7,] 4.6224835</span></span>
+<span><span class="co">#&gt;  [8,] 7.0492129</span></span>
+<span><span class="co">#&gt;  [9,] 2.9002119</span></span></code></pre></div>
 <p>To get the average surrounding value, we would use the row-standardized matrix:</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">W</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="va">y</span></span>
 <span><span class="co">#&gt; 9 x 1 Matrix of class "dgeMatrix"</span></span>
-<span><span class="co">#&gt;            [,1]</span></span>
-<span><span class="co">#&gt;  [1,] 1.0355811</span></span>
-<span><span class="co">#&gt;  [2,] 0.5927483</span></span>
-<span><span class="co">#&gt;  [3,] 1.6395833</span></span>
-<span><span class="co">#&gt;  [4,] 0.7844452</span></span>
-<span><span class="co">#&gt;  [5,] 2.0247259</span></span>
-<span><span class="co">#&gt;  [6,] 1.4985173</span></span>
-<span><span class="co">#&gt;  [7,] 2.4098685</span></span>
-<span><span class="co">#&gt;  [8,] 1.6902142</span></span>
-<span><span class="co">#&gt;  [9,] 3.0138707</span></span></code></pre></div>
+<span><span class="co">#&gt;             [,1]</span></span>
+<span><span class="co">#&gt;  [1,] 0.94053990</span></span>
+<span><span class="co">#&gt;  [2,] 0.14389194</span></span>
+<span><span class="co">#&gt;  [3,] 0.07940409</span></span>
+<span><span class="co">#&gt;  [4,] 1.15769471</span></span>
+<span><span class="co">#&gt;  [5,] 1.19532293</span></span>
+<span><span class="co">#&gt;  [6,] 1.33593488</span></span>
+<span><span class="co">#&gt;  [7,] 2.31124176</span></span>
+<span><span class="co">#&gt;  [8,] 2.34973765</span></span>
+<span><span class="co">#&gt;  [9,] 1.45010595</span></span></code></pre></div>
 <p>Spatial connectivity matrices and spatial lags are used in many geostan functions, including for exploratory spatial data analysis (ESDA) and spatial-statistical modeling. For more, you can see the ESDA vignette (find it by running <code>browseVignettes('geostan')</code>).</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/grDevices/dev.html" class="external-link">dev.off</a></span><span class="op">(</span><span class="op">)</span></span>

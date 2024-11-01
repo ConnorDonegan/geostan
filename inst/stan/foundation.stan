@@ -16,21 +16,29 @@ parameters {
 
 transformed parameters {
 #include parts/trans_params_declaration.stan
+  fitted = input_offset;
 #include parts/trans_params_expression_icar.stan
 #include parts/trans_params_expression_esf.stan
 #include parts/trans_params_expression_auto-model.stan
-  if (car == 0 && sar == 0) {
+  
+  if (as_olm) {
+
+    fitted += intercept;
     
     if (has_re) fitted += alpha_re[id];
     
-    if (use_qr) {      
+    if (use_qr) {
+      
       fitted += Q_ast[ , 1:dx_obs] * beta_qr;
       beta = R_ast_inverse[1:dx_obs, 1:dx_obs]  * beta_qr;
       if (dwx) {
 	fitted += Q_ast[ , (dx_obs+1):d_qr] * gamma_qr;
 	gamma = R_ast_inverse[(dx_obs+1):d_qr, (dx_obs+1):d_qr] * gamma_qr;
-      }      
+      }
+      
     } else {      
+      // if don't use qr:
+      
       if (dwx) {
 	for (i in 1:dwx) {
 	  fitted += csr_matrix_times_vector(n, n, W_w, W_v, W_u, x_all[,wx_idx[i]]) * gamma_qr[i];
