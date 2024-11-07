@@ -99,10 +99,10 @@
     <div id="details">
     <h2>Details</h2>
     <p>These functions are for interpreting the results of the spatial lag model ('SLM') and the spatial Durbin lag model ('SDLM'). The models can be fitted using <a href="stan_sar.html">stan_sar</a>. The equation for these SAR models specifies simultaneous feedback between all units, such that changing the outcome in one location has a spill-over effect that may extend to all other locations (a ripple or diffusion effect); the induced changes will also react back onto the first unit. (This presumably takes time, even if the observations are cross-sectional.)</p>
-<p>Assuming that the model specification is in fact reasonable for your application, these spill-overs have to be incorporated into the interpretation of the regression coefficients of SLM and SDLM models. A unit change in the value of <code>X</code> in one location will impact <code>y</code> in that same place ('direct' impact) and will also impact <code>y</code> elsewhere through the diffusion process ('indirect' impact). The 'total' impact of a unit change in <code>X</code> is the sum of the direct and indirect effects (after LeSage and Pace 2009).</p>
-<p>The <code>spill</code> function is for quickly calculating average spillover effects given point estimates of parameters. (This can be used to verify the nearness of the approximate method to the proper method.)</p>
-<p>The <code>impacts</code> function calculates the (average) direct, indirect, and total effects once for every MCMC sample to produce samples from the posterior distribution for the impacts; the samples are returned together with a summary of the distribution (mean, median, and select quantiles).</p>
-<p>These methods are only needed for the spatial lag and spatial Durbin lag models (SLM and SDLM). Any other model with spatially lagged covariates (SLX) might be read as having indirect impacts (as always, interpretation is subject to plausibility per causal reasoning) but the impacts are then equal to the SLX coefficients, the direct effects are equal to beta (the coefficient for X), and the 'total' impact is their sum (see the example below for calculation with MCMC samples).</p>
+<p>These spill-overs have to be incorporated into the interpretation of the regression coefficients of SLM and SDLM models (granting that the model specification itself is reasonable for your application). A unit change in the value of <code>X</code> in one location will impact <code>y</code> in that same place ('direct' impact) and will also impact <code>y</code> elsewhere through the diffusion process ('indirect' impact). The 'total' impact of a unit change in <code>X</code> is the sum of the direct and indirect effects (LeSage and Pace 2009).</p>
+<p>The <code>spill</code> function is for quickly calculating average spillover effects given point estimates of parameters.</p>
+<p>The <code>impacts</code> function calculates the (average) direct, indirect, and total effects once for every MCMC sample to produce samples from the posterior distribution for the impacts; the samples are returned together with a summary of the posterior distribution (mean, median, and select quantiles).</p>
+<p>These methods are only required for the spatial lag and spatial Durbin lag models (SLM and SDLM).</p>
     </div>
 
     <div id="ref-examples">
@@ -130,6 +130,7 @@
 <span>                type <span class="op">=</span> <span class="st">"SDLM"</span>, iter <span class="op">=</span> <span class="fl">500</span>,</span>
 <span>                slim <span class="op">=</span> <span class="cn">TRUE</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> </span>
 <span></span>
+<span><span class="co"># impacts (posterior distribution)</span></span>
 <span><span class="va">impax</span> <span class="op">&lt;-</span> <span class="fu">impacts</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="va">impax</span><span class="op">$</span><span class="va">summary</span></span>
 <span></span>

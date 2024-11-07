@@ -12,7 +12,7 @@
 #'
 #' @param quick For SAR models only; `quick = TRUE` uses an approximation method for the inverse of matrix `(I - rho * W)`.
 #'
-#' @param K For SAR models only; number of matrix powers to for the matrix inverse approximation.
+#' @param K For SAR models only; number of matrix powers to for the matrix inverse approximation. Hiugh values of rho (e.g., > 0.9) require larger K for accurate approximations.
 #'
 #' @param preserve_order If `TRUE`, the order of posterior draws will remain fixed; the default is to permute the MCMC samples so that (with small sample size `S`) each successive call to `posterior_predict` will return a different sample from the posterior probability distribution. 
 #' 
@@ -59,7 +59,7 @@ posterior_predict <- function(object,
     stopifnot(inherits(object, "geostan_fit"))
     family <- object$family$family    
     if (!missing(seed)) set.seed(seed)
-    
+
     mu <- as.matrix(object, pars = "fitted")    
     M <- nrow(mu)
     
@@ -75,7 +75,7 @@ posterior_predict <- function(object,
     if (preserve_order) {
         idx <- seq(S)
     } else {
-        idx <- sample(M, S)
+        idx <- sample(M, size = S)
     }
 
     mu <- mu[idx,]
@@ -91,7 +91,7 @@ posterior_predict <- function(object,
         if (object$spatial$method == "SAR") {            
             rho <- as.matrix(object, "sar_rho")[idx, ]
             tau <- as.matrix(object, "sar_scale")[idx, ]
-            preds <- .pp_sar_normal(mu, rho, tau, object$sar_parts$W, quick = quick, K = K)
+            preds <- .pp_sar_normal(mu, rho, tau, object$sar_parts$W, quick = quick, K = K, object$sar_type)
         }
         
     }
@@ -135,7 +135,7 @@ posterior_predict <- function(object,
 }
 
 
-.pp_sar_normal <- function(mu, rho, sigma, W, quick, K) {
+.pp_sar_normal <- function(mu, rho, sigma, W, quick, K, type) {
 
     if (!quick) {
         Draws <- sapply(1:nrow(mu), function(s) {
@@ -143,7 +143,7 @@ posterior_predict <- function(object,
                     rho =   rho[ s  ],
                     sigma = sigma[ s  ],
                     w = W,
-                    type = "SEM", # Always SEM.
+                    type = type,
                     quick = FALSE)
         }) |>
             t()
@@ -174,8 +174,29 @@ posterior_predict <- function(object,
         return (res)
     }
 
-    Draws <- sapply(1:S, .rsem) |>
-        t()
+    .rslm <- function(s) {
+        eps <- rnorm(N, mean = 0, sd = sigma[ S ])
+        rho_powers <- rho[ s ]^P
+        Mpowers <- lapply(seq(Q), function(j) M[[j]] * rho_powers[j])
+        Multiplier <- Reduce(`+`, Mpowers)
+        z <- mu[ s, ] + eps
+        res <- (Multiplier %*% z)[,1]
+        return (res)
+    }
+
+    SLM <- grepl("SLM|SDLM", type)
+
+    if (SLM) {
+        
+        Draws <- sapply(1:S, .rslm) |>
+            t()
+        
+    } else {
+        
+        Draws <- sapply(1:S, .rsem) |>
+            t()
+        
+    }    
     
     return (Draws)
 }

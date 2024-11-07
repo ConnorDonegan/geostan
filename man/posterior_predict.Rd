@@ -26,7 +26,7 @@ posterior_predict(
 
 \item{quick}{For SAR models only; \code{quick = TRUE} uses an approximation method for the inverse of matrix \code{(I - rho * W)}.}
 
-\item{K}{For SAR models only; number of matrix powers to for the matrix inverse approximation.}
+\item{K}{For SAR models only; number of matrix powers to for the matrix inverse approximation. Hiugh values of rho (e.g., > 0.9) require larger K for accurate approximations.}
 
 \item{preserve_order}{If \code{TRUE}, the order of posterior draws will remain fixed; the default is to permute the MCMC samples so that (with small sample size \code{S}) each successive call to \code{posterior_predict} will return a different sample from the posterior probability distribution.}
 

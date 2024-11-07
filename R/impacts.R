@@ -21,14 +21,14 @@
 #'
 #' These functions are for interpreting the results of the spatial lag model ('SLM') and the spatial Durbin lag model ('SDLM'). The models can be fitted using \link[geostan]{stan_sar}. The equation for these SAR models specifies simultaneous feedback between all units, such that changing the outcome in one location has a spill-over effect that may extend to all other locations (a ripple or diffusion effect); the induced changes will also react back onto the first unit. (This presumably takes time, even if the observations are cross-sectional.)
 #'
-#' Assuming that the model specification is in fact reasonable for your application, these spill-overs have to be incorporated into the interpretation of the regression coefficients of SLM and SDLM models. A unit change in the value of \code{X} in one location will impact \code{y} in that same place ('direct' impact) and will also impact \code{y} elsewhere through the diffusion process ('indirect' impact). The 'total' impact of a unit change in \code{X} is the sum of the direct and indirect effects (after LeSage and Pace 2009). 
+#' These spill-overs have to be incorporated into the interpretation of the regression coefficients of SLM and SDLM models (granting that the model specification itself is reasonable for your application). A unit change in the value of \code{X} in one location will impact \code{y} in that same place ('direct' impact) and will also impact \code{y} elsewhere through the diffusion process ('indirect' impact). The 'total' impact of a unit change in \code{X} is the sum of the direct and indirect effects (LeSage and Pace 2009). 
 #' 
-#' The `spill` function is for quickly calculating average spillover effects given point estimates of parameters. (This can be used to verify the nearness of the approximate method to the proper method.)
+#' The `spill` function is for quickly calculating average spillover effects given point estimates of parameters. 
 #'
-#' The `impacts` function calculates the (average) direct, indirect, and total effects once for every MCMC sample to produce samples from the posterior distribution for the impacts; the samples are returned together with a summary of the distribution (mean, median, and select quantiles).
+#' The `impacts` function calculates the (average) direct, indirect, and total effects once for every MCMC sample to produce samples from the posterior distribution for the impacts; the samples are returned together with a summary of the posterior distribution (mean, median, and select quantiles).
 #'
-#' These methods are only needed for the spatial lag and spatial Durbin lag models (SLM and SDLM). Any other model with spatially lagged covariates (SLX) might be read as having indirect impacts (as always, interpretation is subject to plausibility per causal reasoning) but the impacts are then equal to the SLX coefficients, the direct effects are equal to beta (the coefficient for X), and the 'total' impact is their sum (see the example below for calculation with MCMC samples).
-#'
+#' These methods are only required for the spatial lag and spatial Durbin lag models (SLM and SDLM).
+#' 
 #' @source
 #'
 #' LeSage, James and Pace, R. Kelley (2009). *Introduction to Spatial Econometrics*. CRC Press.
@@ -61,6 +61,7 @@
 #'                 type = "SDLM", iter = 500,
 #'                 slim = TRUE, quiet = TRUE) 
 #'
+#' # impacts (posterior distribution)
 #' impax <- impacts(fit)
 #' impax$summary
 #' 
@@ -179,8 +180,8 @@ impacts <- function(object, method = c('quick', 'proper'), K = 20) {
         res <- cbind(mean = est, median = est2, sd, lwr, upr)
         row.names(res) <- c('Direct', 'Indirect', 'Total')
         summary[[m]] <- res
-        names(summary)[m] <- Blabs
-    }
+        names(summary)[m] <- Blabs[m]        
+    }    
     
     return(list(summary = summary, samples = impax))
     

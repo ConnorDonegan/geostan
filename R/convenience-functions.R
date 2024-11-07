@@ -115,7 +115,7 @@ aple <- function(x, w, digits = 3) {
 #'
 #' This function takes `n = nrow(w)` draws from the normal distribution using `rnorm` to obtain vector `x`; if `type = 'SEM', it then pre-multiplies `x` by the inverse of the matrix `(I - rho * W)` to obtain spatially autocorrelated values. For `type = 'SLM', the multiplier matrix is applied to `x + mu` to produce the desired values.
 #'
-#' The `quick` method approximates the matrix inversion using the method described by LeSage and Pace (2009, p. 40).
+#' The `quick` method approximates the matrix inversion using the method described by LeSage and Pace (2009, p. 40). For high values of rho, larger values of K are required for the approximation to suffice; you want `rho^K` to be near zero.
 #'
 #' @seealso \code{\link[geostan]{aple}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{lisa}}, \code{\link[geostan]{shape2mat}}
 #' 
@@ -171,7 +171,7 @@ sim_sar <- function(m = 1,
                     w,                    
                     type = c("SEM", "SLM"),
                     quick = FALSE,
-                    K = 20,
+                    K = 15,
                     ...) {
     check_sa_data(mu, w)
     type <- match.arg(type)
@@ -184,23 +184,26 @@ sim_sar <- function(m = 1,
     W <- as(w, "dMatrix")
     
     if (quick) {
+        
         # matrix powers to approximate the inverse
+        if (rho^K > .08) warning("You may need higher K for this level of rho; rho^K = ", rho^K)        
         Multip <- I + rho * W
         W_k <- W    
         for (j in 2:K) {
             W_k <- W %*% W_k
             Multip = Multip + rho^j * W_k
         }
+        
     } else {
+        
         # matrix inverse
         Multip <- Matrix::solve(I - rho * W)
+        
     }
 
     x <- t(sapply(1:m, function(s) {
         rnorm(N, mean = 0, sd = sigma)
         }))
-
-    if (rho == 0) return (x)
     
     .rsem <- function(s) {
         mu + (Multip %*% x[s,])[,1]

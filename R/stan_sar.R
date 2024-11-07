@@ -98,7 +98,7 @@
 #'
 #' Use of the 'SDEM' and 'SDLM' options are for convenience: you can also obtain the Durbin models using the \code{slx} (spatial lag of X) argument. The \code{slx} argument allows control over which covariates will be added in spatial-lag form; the Durbin options include the spatial lag of all covariates.
 #'
-#' Most often, the SAR model is applied directly to observations (referred to below as the auto-normal or auto-Gaussian model). The SAR model can also be applied to a vector of parameters inside a hierarchical model. The latter enables spatial or network autocorrelation to be modeled when the observations are discrete counts (e.g., hierarchical models for disease incidence rates). 
+#' Most often, the SAR model is applied directly to observations (referred to below as the auto-normal or auto-Gaussian model). The SAR model can also be applied to a vector of parameters inside a hierarchical model. The latter enables spatial or network autocorrelation to be modeled when the observations are discrete counts (e.g., hierarchical models for disease incidence rates). Currently these hierarchical models are only supported for the spatial error models (SEM/SDEM).
 #' 
 #' ###  Auto-normal: spatial error
 #'
@@ -130,7 +130,7 @@
 #'
 #' The \link[geostan]{residuals.geostan_fit} method returns 'de-trended' residuals \eqn{R} by default:
 #' \deqn{R = y - \rho C y - \mu,}
-#' where \eqn{\mu} contains the intercept and any covariates (and possibly other terms). Similarly, the fitted values obtained from the \link[geostan]{fitted.geostan_fit} will include the spatial trend \eqn{\rho C y} by default.
+#' where \eqn{\mu} contains the intercept and any covariates (and possibly other terms). Similarly, the fitted values obtained from the \link[geostan]{fitted.geostan_fit} will include the spatial trend \eqn{\rho C y} by default. 
 #'
 #' To read/interpret results from the SLM or SDLM, use the \link[geostan]{impacts} method.
 #' 
@@ -355,7 +355,8 @@ stan_sar <- function(formula,
     if (quiet) refresh <- 0
     #### SAR type ----
     type <- match.arg(type)
-    Durbin <- grepl('SDEM|SDLM', type)
+    Durbin <- grepl('SDEM|SDLM', type) 
+    if(grepl("SLM|SDLM", type) & family$family != "auto_gaussian") stop("SLM/SDLM are only available as auto-normal models (not Poisson or binomial models).")    
     #### SAR type [stop]
     # C
     if (!missing(C)) {
