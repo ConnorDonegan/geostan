@@ -87,13 +87,6 @@ spill <- function(beta, gamma = 0, rho, W, method = c('quick', 'proper'), K = 20
         return( impacts_multiplier(beta, gamma, rho, T, K) )
     }
 
-    # matrix powers: slower method of approximation
-    ## M_tmp <- I + rho * W
-    ## W_k <- W
-    ## for (j in 2:K) {
-    ##     W_k <- W %*% W_k
-    ##     M_tmp = M_tmp + rho^j * W_k
-
     N <- nrow(W)    
     I <- diag(rep(1, N))
     imrw <- I - rho * W
@@ -137,7 +130,6 @@ impacts <- function(object, method = c('quick', 'proper'), K = 20) {
         gamma_idx <- match( gsub("^w.", "", colnames(gamma)), Blabs )
         for (j in seq_along(gamma_idx)) G[ , gamma_idx[j] ] <- gamma[ , j ]        
     }
-
     
     impax <- vector("list", length = M)
 
@@ -145,8 +137,8 @@ impacts <- function(object, method = c('quick', 'proper'), K = 20) {
         
         for (m in 1:M) {
                 impax[[m]] <- sapply(1:S, function(s)
-                    spill(beta = B[s, m],
-                          gamma = G[s, m],
+                    spill(beta = as.numeric( B[s, m] ),
+                          gamma = as.numeric( G[s, m] ),
                           rho = rho[s],
                           W = W,
                           method,
@@ -164,7 +156,7 @@ impacts <- function(object, method = c('quick', 'proper'), K = 20) {
 
         for (m in 1:M) {
             impax[[m]] <- sapply(1:S, function(s)
-                impacts_multiplier(B[s,m], G[s,m], rho[s], T, K)) |>
+                impacts_multiplier(as.numeric( B[s,m] ), as.numeric( G[s,m] ), rho[s], T, K)) |>
                 t()            
         }
 
@@ -179,12 +171,29 @@ impacts <- function(object, method = c('quick', 'proper'), K = 20) {
         upr = as.numeric(apply(impax[[m]], 2, quantile, probs = 0.975))
         res <- cbind(mean = est, median = est2, sd, lwr, upr)
         row.names(res) <- c('Direct', 'Indirect', 'Total')
-        summary[[m]] <- res
-        names(summary)[m] <- Blabs[m]        
-    }    
+        summary[[m]] <- res 
+    }
+
+    names(impax) <- Blabs
+    names(summary) <- Blabs
+    out <- list(summary = summary, samples = impax)
+    class(out) <- append("impacts_slm", class(out))
     
-    return(list(summary = summary, samples = impax))
+    return(out)
     
+}
+
+#' @export
+#' 
+#' @param x An object of class 'impacts_slm', as returned by `geostan::impacts` 
+#'
+#' @param digits Round results to this many digits
+#'
+#' @param ... Additional arguments will be passed to `base::print`
+#' 
+#' @rdname impacts
+print.impacts_slm <- function(x, digits = 2, ...) {
+    print(x$summary, digits = digits, ...)
 }
 
 #' After LeSage and Pace 2009 pp. 114--115
@@ -206,7 +215,7 @@ impacts_multiplier <- function(beta, gamma, rho, T, K) {
     # indirect
     indirect <- total - direct
 
-    return (c(direct = direct, indirect = indirect, total = total))
+    retunr (c(direct = direct, indirect = indirect, total = total))
 }
 
 #' diagonal entries of matrix powers e..g, diag( W^{20} )

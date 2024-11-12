@@ -327,7 +327,7 @@ sp_diag.geostan_fit <- function(y,
                             plot = TRUE,
                             mc_style = c("scatter", "hist"),                            
                             style = c("W", "B"),
-                            w,
+                            w = y$C,
                             rates = TRUE,                            
                             binwidth = function(x) 0.5 * stats::sd(x, na.rm = TRUE),
                             size = 0.1,
@@ -336,7 +336,7 @@ sp_diag.geostan_fit <- function(y,
         if (inherits(y$C, "Matrix") | inherits(y$C, "matrix")) {
             w <- y$C
         } else {
-            w <- shape2mat(shape, style = match.arg(style))
+            w <- shape2mat(shape, style = match.arg(style), quiet = TRUE)
         }
     }
     mc_style <- match.arg(mc_style, c("scatter", "hist"))
@@ -344,11 +344,11 @@ sp_diag.geostan_fit <- function(y,
     outcome <- y$data[,1] 
     fits <- fitted(y, summary = TRUE, rates = rates)
     if (rates && y$family$family == "binomial") {
-        message("Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.")
+        #message("Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.")
         outcome <- outcome / (outcome + y$data[,2])
     }
     if (rates && y$family$family == "poisson" && "offset" %in% c(colnames(y$data))) {
-        message("Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.")
+        #message("Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.")
         log.at.risk <- y$data[, "offset"]
         at.risk <- exp( log.at.risk )
         outcome <- outcome / at.risk     
@@ -365,8 +365,11 @@ sp_diag.geostan_fit <- function(y,
         labs(x = "Observed",
              y = "Fitted") +
         theme_classic()
+    
     # map of marginal residuals
-    marginal_residual <- apply(residuals(y, summary = FALSE, rates = rates, ...), 2, mean, na.rm = TRUE)
+    R <- residuals(y, summary = FALSE, rates = rates, ...)    
+    marginal_residual <- apply(R, 2, mean, na.rm = TRUE)
+    
     map.y <- ggplot(shape) +
         geom_sf(aes(fill = marginal_residual),
                 lwd =  .05,
@@ -374,8 +377,8 @@ sp_diag.geostan_fit <- function(y,
         scale_fill_gradient2(name = name,
                              label = signs::signs) +
         theme_void()
+    
     # residual autocorrelation
-    R <- residuals(y, summary = FALSE, rates = rates, ...)    
     R.mc <- apply(R, 1, mc, w = w, warn = FALSE, na.rm = TRUE)
     if (mc_style == "scatter") {
         g.mc <- moran_plot(marginal_residual, w, xlab = name, na.rm = TRUE)
@@ -391,9 +394,11 @@ sp_diag.geostan_fit <- function(y,
                 x = "Residual MC",
                 subtitle = paste0("MC (mean) = ", round(R.mc.mu, 2)))
     }
+    
     if (length(unique(R.mc)) == 1) {
         g.mc <- moran_plot(R[1,], w, xlab = name, na.rm = TRUE)
-    }    
+    }
+    
     if (plot) {
         return( gridExtra::grid.arrange(ovf, g.mc, map.y, ncol = 3) )
     } else {        

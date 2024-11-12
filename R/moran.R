@@ -40,13 +40,13 @@ mc <- function(x, w, digits = 3, warn = TRUE, na.rm = FALSE) {
     check_sa_data(x, w) 
     na_idx <- which(is.na(x))   
     if (na.rm == TRUE && length(na_idx) > 0) {   
-        if (warn) message(length(na_idx), " NA values found in x; they will be removed from the data before calculating the Moran coefficient. If matrix w was row-standardized, it may not longer be. You may want to use a binary connectivity matrix by using style = 'B' in shape2mat.")
+        if (warn) message(length(na_idx), " dropping NA values found in x (nb: this disrupts row-standardization of matrix w) ")
         x <- x[-na_idx]
         w <- w[-na_idx, -na_idx]
     }
     if (any(Matrix::rowSums(w) == 0)) {
         zero.idx <- which(Matrix::rowSums(w) == 0)
-        if (warn) message(length(zero.idx), " observations with no neighbors found. They will be removed from the data before calculating the Moran coefficient.")
+        if (warn) message(length(zero.idx), " dropping observations with zero neighbors ")
         x <- x[-zero.idx]
         w <- w[-zero.idx, -zero.idx]
     }
@@ -102,11 +102,12 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
     if (length(na_idx) > 0) {
         if (na.rm == TRUE) {
             msg <- paste(length(na_idx),
-                         "NA values found in x will be dropped from data x and matrix w"
+                         "NA values found in x will be dropped from data x and from matrix w (nb: this disrupts row-standardization of w)"
                          )
-            if (!inherits(w, "ngCMatrix")) msg <- paste(msg,
-                                                        "\n If you are using a row-standardized matrix: dropping the NA values means that some rows in matrix w do not sum to 1; you may want to remove missing observations manually and then make row-standardized w, or use a binary matrix (see ?shape2mat)."
-                                                        )                        
+            ## if (!inherits(w, "ngCMatrix")) msg <- paste(msg,
+            ##                                             "\n If you are using a row-standardized matrix: dropping the NA values means that some rows in matrix w do not sum to 1; you may want to remove missing observations manually and then make row-standardized w, or use a binary matrix (see ?shape2mat)."
+            ##                                             )  
+            
             message(msg)
             x <- x[-na_idx]
             w <- w[-na_idx, -na_idx]
@@ -116,7 +117,7 @@ moran_plot <- function(x, w, xlab = "x (centered)", ylab = "Spatial Lag", pch = 
     }
     if (any(Matrix::rowSums(w) == 0)) {
         zero.idx <- which(Matrix::rowSums(w) == 0)
-        message(length(zero.idx), " observations with no neighbors found. They will be dropped from the data before creating the Moran plot.")
+        message(length(zero.idx), " dropping observations with zero neighbors ")
         x <- x[-zero.idx]
         w <- w[-zero.idx, -zero.idx]
     }

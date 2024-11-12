@@ -6,7 +6,7 @@
 #devtools::load_all("~/dev/geostan")
 library(geostan)
 
-iter = 50
+iter = 25
 
 # CAR Poisson model
 data(georgia)

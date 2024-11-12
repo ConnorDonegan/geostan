@@ -116,7 +116,7 @@
 
 
 <dt>C</dt>
-<dd><p>Spatial weights matrix (conventionally referred to as \(W\) in the SAR model). Typically, this will be created using <code>geostan::shape2mat(shape, style = "W")</code>. This will be passed internally to <code><a href="prep_sar_data.html">prep_sar_data</a></code>, and will also be used to calculate residual spatial autocorrelation as well as any user specified <code>slx</code> terms. See <code><a href="shape2mat.html">shape2mat</a></code>.</p></dd>
+<dd><p>Spatial connectivity matrix which will be used internally to create <code>sar_parts</code> (if <code>sar_parts</code> is missing); if the user provides an <code>slx</code> formula for the model, the required connectivity matrix will be taken from the <code>sar_parts</code> list. See <code><a href="shape2mat.html">shape2mat</a></code>.</p></dd>
 
 
 <dt>sar_parts</dt>
@@ -426,7 +426,7 @@ $$</p>
 <span><span class="co">## fit models</span></span>
 <span><span class="co">##</span></span>
 <span></span>
-<span><span class="co"># DSEM</span></span>
+<span><span class="co"># SDEM</span></span>
 <span><span class="co"># y = mu + rho*W*(y - mu) + epsilon</span></span>
 <span><span class="co"># mu = beta*x + gamma*Wx</span></span>
 <span><span class="va">fit_sdem</span> <span class="op">&lt;-</span> <span class="fu">stan_sar</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">dat</span>,</span>

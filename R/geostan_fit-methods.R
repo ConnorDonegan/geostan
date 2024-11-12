@@ -55,17 +55,18 @@ print.geostan_fit <- function(x,
     print(x$re$formula)
     pars <- c(pars, "alpha_tau")
   }
-
+  cat("Likelihood: ", x$family$family, "\n")
+  cat("Link: ", x$family$link, "\n")
+  
   meth <- x$spatial$method
   if (meth == "SAR") meth <- paste0(meth, " (", x$sar_type, ")")  
-  cat("Spatial method (outcome): ", as.character(meth), "\n")
+  cat("Spatial method: ", as.character(meth), "\n")
   if (x$spatial$method == "CAR") pars <- c(pars, "car_rho", "car_scale")
   if (x$spatial$method == "SAR") pars <- c(pars, "sar_rho", "sar_scale")  
   if (x$spatial$method == "BYM2") pars <- c(pars, "rho", "spatial_scale")
   if (x$spatial$method == "BYM") pars <- c(pars, "spatial_scale", "theta_scale")
   if (x$spatial$method == "ICAR") pars <- c(pars, "spatial_scale")  
-  cat("Likelihood function: ", x$family$family, "\n")
-  cat("Link function: ", x$family$link, "\n")
+
   if (!is.null(x$diagnostic$Residual_MC)) cat("Residual Moran Coefficient: ", x$diagnostic$Residual_MC, "\n")
   cat("Observations: ", x$N, "\n")  
   if (x$ME$has_me) {
@@ -408,6 +409,9 @@ as.array.geostan_fit <- function(x, ...){
 #' @param type By default, results from `predict` are on the scale of the linear predictor (`type = "link")`). The alternative (`type = "response"`) is on the scale of the response variable. For example, the default return values for a Poisson model on the log scale, and using `type = "response"` will return the original scale of the outcome variable (by exponentiating the log values).
 #'
 #' @param add_slx Logical. If `add_slx = TRUE`, any spatially-lagged covariates that were specified through the 'slx' argument (of the model fitting function, e.g., `stan_glm`) will be added to the linear predictor. The spatial lag terms will be calculated internally using `object$C`, the spatial weights matrix used to fit the model. Hence, `newdata` must have `N = object$N` rows. Predictions from spatial lag models (SAR models of type 'SLM' and 'SDLM') always include the SLX terms (i.e., any value passed to `add_slx` will be overwritten with `TRUE`).
+#' @param approx For SAR models of type 'SLM' or 'SDLM' only; use an approximation for matrix inversion? See details below.
+#'
+#' @param K Number of matrix powers to use with \code{approx}.
 #' 
 #' @param ... Not used
 #'
@@ -415,21 +419,32 @@ as.array.geostan_fit <- function(x, ...){
 #'
 #' The primary purpose of the predict method is to explore marginal effects of covariates.
 #'
-#' The model formula will be taken from `object$formula`, and then a model matrix will be created by passing `newdata` to the \link[stats]{model.frame} function (as in: \code{model.frame(newdata, object$formula}). Parameters are taken from `as.matrix(object, pars = c("intercept", "beta"))`. If `add_slx = TRUE`, SLX coefficients will be taken from `as.matrix(object, pars = "gamma")`.
+#' The model formula will be taken from `object$formula`, and then a model matrix will be created by passing `newdata` to the \link[stats]{model.frame} function (as in: \code{model.frame(object$formula, newdata)}. Parameters are taken from \code{as.matrix(object, pars = c("intercept", "beta"))}. 
 #'
-#' Spatially-lagged covariates added via the `slx` argument ('spillover effects') will be included if `add_slx = TRUE` or if a spatial lag model is provided (a SAR model of type 'SLM' or 'SDLM'). In either of those cases, `newdata` must have the same number of rows as were used to fit the original data. For details on these 'spillover effects', see LeSage and Pace (2009) and LeSage (2014).
+#' ## Spatial lag of X
+#' 
+#' Spatially-lagged covariates which were included via the `slx` argument will, by default, not be included. They will be be included in predictions if `add_slx = TRUE` or if the fitted model is a SAR model of type 'SLM' or 'SDLM'. In either of those cases, `newdata` must have the same number of rows as were used to fit the original data.
+#'
+#' ## Spatial lag of Y
+#' 
+#' The typical 'marginal effect' interpretation of the regression coefficients does not hold for the SAR models of type 'SLM' or 'SDLM'. For details on these 'spillover effects', see LeSage and Pace (2009), LeSage (2014), and `geostan::impacts`.
 #'
 #' Predictions for the spatial lag model (SAR models of type 'SLM') are equal to:
 #' \deqn{
 #'  (I - \rho W)^{-1} X \beta
 #' }
-#' where \eqn{X \beta} contains the intercept and covariates. (For intercept-only models, the above term is equal to the constant intercept.) Predictions for the spatial Durbin lag model (SAR models of type 'SDLM') are equal to:
+#' where \eqn{X \beta} contains the intercept and covariates. Predictions for the spatial Durbin lag model (SAR models of type 'SDLM') are equal to:
 #' \deqn{
 #'  (I - \rho W)^{-1} (X \beta + WX \gamma)
 #' }
-#' where \eqn{WX \gamma} are spatially lagged covariates multiplied by their coefficients. The SLM and SDLM differ from all other model types in that the spatial component of the model cannot be separated from the linear predictor and is, therefore, automatically incorporated into the predictions.
+#' where \eqn{WX \gamma} are spatially lagged covariates multiplied by their coefficients.
+#'
+#' The inverse of the matrix \eqn{(I - \rho W)} can be time consuming to compute (especially when iterating over MCMC samples). You can use `approx = TRUE` to approximate the inverse using a series of matrix powers. The argument \eqn{K} controls how many powers to use for the approximation. As a rule, higher values of \eqn{\rho} require larger \eqn{K}. Notice that \eqn{\rho^K} should be close to zero for the approximation to hold. For example, for \eqn{\rho = .5} a value of \eqn{K=8} may suffice (eqn{0.5^8 = 0.004}), but larger values of \eqn{\rho} require higher values of \eqn{K}.
+#'
+#'
+#' ## Generalized linear models
 #' 
-#' In generalized linear models (such as Poisson and Binomial models) marginal effects plots on the response scale may be sensitive to the level of other covariates in the model and to location. If the model includes a spatial autocorrelation component (for example, you used a spatial CAR, SAR (error model), or ESF model), by default these terms will be fixed at zero for the purposes of calculating marginal effects. If you want to change this, you can introduce spatial trend values by specifying a varying intercept using the `alpha` argument.
+#' In generalized linear models (such as Poisson and Binomial models) marginal effects plots on the response scale may be sensitive to the level of other covariates in the model and to geographic location. If the model includes a spatial autocorrelation component (for example, you used a spatial CAR, SAR, or ESF model), by default these terms will be fixed at zero for the purposes of calculating marginal effects. If you want to change this, you can introduce spatial trend values by specifying a varying intercept using the `alpha` argument.
 #' 
 #' @return
 #'
@@ -441,16 +456,17 @@ as.array.geostan_fit <- function(x, ...){
 #' 
 #' fit <- stan_glm(deaths.male ~ offset(log(pop.at.risk.male)) + log(income),
 #'                data = georgia,
+#'                re = ~ GEOID,
 #'                centerx = TRUE,
 #'                family = poisson(),
 #'                chains = 2, iter = 600) # for speed only
 #'
-#' # note: pop.at.risk.male=1 leads to log(pop.at.risk.male)=0
+#' # note: pop.at.risk.male=1 leads to offset of log(pop.at.risk.male)=0
 #' # so that the predicted values are rates
 #' newdata <- data.frame(
 #'              income = seq(min(georgia$income),
 #'                           max(georgia$income),
-#'                            length.out = 100),
+#'                            length.out = 200),
 #'              pop.at.risk.male = 1)
 #'
 #' preds <- predict(fit, newdata, type = "response")
@@ -465,12 +481,35 @@ as.array.geostan_fit <- function(x, ...){
 #' newdata$pop.at.risk.male <- 10e3
 #' preds <- predict(fit, newdata, type = "response")
 #' head(preds)
+#'
+#' # plot range
+#' y_lim <- c(min(preds$`2.5%`), max(preds$`97.5%`))
+#'
+#' # plot line
 #' plot(preds$income,
 #'     preds$mean,
-#'     type = "l",
+#'     type = "l",    
 #'     ylab = "Deaths per 10,000",
-#'     xlab = "Income ($1,000s)")
+#'     xlab = "Income ($1,000s)",
+#'     ylim = y_lim,
+#'     axes = FALSE)
 #'
+#' # add shaded cred. interval
+#' x <- c(preds$income, rev(preds$income))
+#' y <- c(preds$`2.5%`, rev(preds$`97.5%`))
+#' polygon(x = x, y = y,
+#'        col = rgb(0.1, 0.2, 0.3, 0.3),
+#'        border = NA)
+#'
+#' # add axes
+#' yat = seq(0, 300, by = 20)
+#' axis(2, at = yat)
+#'
+#' xat = seq(0, 200, by = 10)
+#' axis(1, at = xat)
+#'
+#' # show county incomes
+#' rug(georgia$income)
 #' @source
 #'
 #' Goulard, Michael, Thibault Laurent, and Christine Thomas-Agnan (2017). About predictions in spatial autoregressive models: optimal and almost optimal strategies. *Spatial Economic Analysis* 12 (2-3): 304-325.
@@ -490,6 +529,8 @@ predict.geostan_fit <- function(object,
                                 summary = TRUE,
                                 type = c("link", "response"),
                                 add_slx = FALSE,
+                                approx = FALSE,
+                                K = 15,  
                                 ...) {
     type <- match.arg(type)
     if (missing(newdata)) return (fitted(object, summary = summary, ...))
@@ -511,11 +552,10 @@ predict.geostan_fit <- function(object,
     lag_y <- FALSE
     if (object$spatial$method == "SAR") {
         add_slx <- grepl("SDEM|SDLM", object$sar_type)
-        lay_y <- grepl("SLM|SDLM", object$sar_type)
+        lag_y <- grepl("SLM|SDLM", object$sar_type)
     }
     
-    if (add_slx) {
-        
+    if (add_slx) {        
         stopifnot( nrow(newdata) == nrow(object$C) )        
         Gamma <- as.matrix(object, pars = "gamma")            
         gnames <- gsub("^w.", "", colnames(Gamma))
@@ -524,8 +564,7 @@ predict.geostan_fit <- function(object,
         X_tmp <- as.matrix(X[, idx])
         if (length(idx) != ncol(Gamma)) stop("Mis-match of SLX coefficient names and X column names.")
         WX <- W %*% X_tmp        
-        for (m in 1:M) P[m,] <- as.numeric( P[m,] + WX %*% as.matrix(Gamma[m,]) )
-        
+        for (m in 1:M) P[m,] <- as.numeric( P[m,] + WX %*% as.matrix(Gamma[m,]) )        
     }
     
     if (lag_y == TRUE) {
@@ -537,10 +576,30 @@ predict.geostan_fit <- function(object,
         W <- object$C
         I <- Matrix::Diagonal(N)
         rho <- as.matrix(object, pars = "sar_rho")[,1]
-        
-        for (m in 1:M) {
-            IMRWI <- Matrix::solve(I - rho[m] * W) 
-            P[m,] <- as.numeric( IMRWI %*% P[m,] )                    
+
+        if (approx) {
+            Q <- K + 1
+            powers = 0:K
+            Mlist <- list()
+            Mlist[[1]] <- I
+            Mlist[[2]] <- W
+            W_k <- W    
+            for (q in 3:Q) {
+                W_k <- W %*% W_k
+                Mlist[[q]] <- W_k
+            }        
+            for (m in 1:M) {
+                rho_powers <- rho[ m ]^powers
+                Mpowers <- lapply(seq(Q), function(j) Mlist[[j]] * rho_powers[j])
+                Multiplier <- Reduce(`+`, Mpowers)
+                P[ m, ] <- as.numeric( Multiplier %*% P[ m, ] )
+            }           
+
+        } else {
+            for (m in 1:M) {
+                Multiplier <- Matrix::solve(I - rho[m] * W) 
+                P[m,] <- as.numeric( Multiplier %*% P[m,] )                    
+            }
         }
         
     }

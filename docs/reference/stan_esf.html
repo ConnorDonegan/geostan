@@ -118,11 +118,11 @@
 
 
 <dt>C</dt>
-<dd><p>Spatial connectivity matrix which will be used to calculate eigenvectors, if <code>EV</code> is not provided by the user. Typically, the binary connectivity matrix is best for calculating eigenvectors (i.e., using <code>C = shape2mat(shape, style = "B")</code>). This matrix will also be used to calculate residual spatial autocorrelation and any user specified <code>slx</code> terms; it will be row-standardized before calculating <code>slx</code> terms. See <code><a href="shape2mat.html">shape2mat</a></code>.</p></dd>
+<dd><p>Spatial connectivity matrix. This will be used to calculate eigenvectors if <code>EV</code> is not provided by the user. See <code><a href="shape2mat.html">shape2mat</a></code>. Use of row-normalization (as in `<code>shape2mat(shape, 'W')</code> is not recommended for creating <code>EV</code>. Matrix <code>C</code> will also be used ('as is') to create any user-specified <code>slx</code> terms.</p></dd>
 
 
 <dt>EV</dt>
-<dd><p>A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial (see <code><a href="make_EV.html">make_EV</a></code>). If <code>EV</code> is provided, still also provide a spatial weights matrix <code>C</code> for other purposes; <code>threshold</code> and <code>nsa</code> are ignored for user provided <code>EV</code>.</p></dd>
+<dd><p>A matrix of eigenvectors from any (transformed) connectivity matrix, presumably spatial or network-based (see <code><a href="make_EV.html">make_EV</a></code>). If <code>EV</code> is provided, still also provide a spatial weights matrix <code>C</code> for other purposes; <code>threshold</code> and <code>nsa</code> are ignored for user provided <code>EV</code>.</p></dd>
 
 
 <dt>nsa</dt>

@@ -15,9 +15,9 @@
 #'
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' 
-#' @param car_parts A list of data for the CAR model, as returned by \code{\link[geostan]{prep_car_data}}.
+#' @param car_parts A list of data for the CAR model, as returned by \code{\link[geostan]{prep_car_data}}. If not provided by the user, then \code{C} will automatically be passed to \code{prep_car_data} to create it.
 #'
-#' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will automatically be row-standardized before calculating \code{slx} terms. See \code{\link[geostan]{shape2mat}}.
+#' @param C Spatial connectivity matrix which will be used internally to create \code{car_parts} (if \code{car_parts} is missing); if the user provides an \code{slx} formula for the model, the required connectivity matrix will be taken from the \code{car_parts} list. See \code{\link[geostan]{shape2mat}}.
 #' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{auto_gaussian()}, \code{binomial(link = "logit")}, and \code{poisson(link = "log")}; if `family = gaussian()` is provided, it will automatically be converted to `auto_gaussian()`.
 #'
@@ -195,8 +195,12 @@
 #' C <- shape2mat(georgia, style = "B")
 #' cars <- prep_car_data(C)
 #'
+#' # MCMC specs: set for purpose of demo speed 
+#' iter = 500
+#' chains = 2
+#' 
 #' fit <- stan_car(log(rate.male) ~ 1, data = georgia,
-#'           car_parts = cars, iter = 400, quiet = TRUE)
+#'           car_parts = cars, iter = iter, chains = chains)
 #'
 #' # model diagnostics
 #' sp_diag(fit, georgia)
@@ -207,7 +211,7 @@
 #'                 car_parts = cars,
 #'                 data = georgia,
 #'                 family = poisson(),
-#'                 iter = 400, quiet = TRUE)
+#'                 iter = iter, chains = chains)
 #'
 #' # model diagnostics
 #' sp_diag(fit, georgia)
@@ -235,7 +239,7 @@
 #'                data = georgia,
 #'                car = dcars,
 #'                family = poisson(),
-#'                iter = 400, quiet = TRUE)
+#'                iter = iter, chains = chains)
 #'
 #' sp_diag(Dfit, georgia, dcars$C)
 #' dic(Dfit); dic(fit)
@@ -278,15 +282,18 @@ stan_car <- function(formula,
     check_car_parts(car_parts)
     stopifnot(car_parts$n == nrow(data))
     if (quiet) refresh <- 0
-    if (!missing(C)) {
-        stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
-        stopifnot(all(dim(C) == nrow(data)))
-    } else {
-        C <- car_parts$C
+    C <- car_parts$C
+    
+    ## C [CAR: always take C from car_parts]
+    ## if (!missing(C)) {
+    ##     stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
+    ##     stopifnot(all(dim(C) == nrow(data)))
+    ## } else {
+    ## C <- car_parts$C
    #     if (car_parts$WCAR == 0) {
    #         message("Since you did not provide C, calculation of residual SA and any spatial-lag of X terms will use the matrix found in car_parts$C.")
   #      }
-    }
+    #}
     
     # zero-mean constraint parameterization
     car_parts$ZMP <- ifelse(missing(zmp), 0, zmp)
@@ -346,12 +353,12 @@ stan_car <- function(formula,
           x_full <- xraw          
       } else {
           stopifnot(inherits(slx, "formula"))
-          W <- C
-          if (!inherits(W, "sparseMatrix")) W <- as(W, "CsparseMatrix")
-          xrs <- Matrix::rowSums(W)
-          if (!all(xrs == 1)) W <- row_standardize(W, warn = !quiet, msg = "Row standardizing matrix C for spatial lag of X calculations.")
+          ## W <- C
+          ## if (!inherits(W, "sparseMatrix")) W <- as(W, "CsparseMatrix")
+          ## xrs <- Matrix::rowSums(W)
+          ## if (!all(xrs == 1)) W <- row_standardize(W, warn = !quiet, msg = "Row standardizing matrix C for spatial lag of X calculations.")
           # efficient transform to CRS representation for W.list (via transpose)
-          Wij <- as(W, "TsparseMatrix")
+          Wij <- as(C, "TsparseMatrix")
           Tw <- Matrix::sparseMatrix(i = Wij@j + 1,
                                      j = Wij@i + 1,
                                      x = Wij@x,
@@ -359,7 +366,7 @@ stan_car <- function(formula,
           W.list <- list(w = Tw@x,
                          v = Tw@i + 1,
                          u = Tw@p + 1)
-          Wx <- SLX(f = slx, DF = mod_frame, x = xraw, W = W)
+          Wx <- SLX(f = slx, DF = mod_frame, x = xraw, W = C)
           dwx <- ncol(Wx)
           wx_idx <- as.array( which(paste0("w.", colnames(xraw)) %in% colnames(Wx)), dim = dwx )
           x_full <- cbind(Wx, xraw)

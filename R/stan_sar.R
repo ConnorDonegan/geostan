@@ -15,9 +15,9 @@
 #'
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #'
-#' @param C Spatial weights matrix (conventionally referred to as \eqn{W} in the SAR model). Typically, this will be created using `geostan::shape2mat(shape, style = "W")`. This will be passed internally to \code{\link[geostan]{prep_sar_data}}, and will also be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms. See \code{\link[geostan]{shape2mat}}.
-#'
 #' @param sar_parts List of data constructed by \code{\link[geostan]{prep_sar_data}}. If not provided, then `C` will automatically be passed to \code{\link[geostan]{prep_sar_data}} to create `sar_parts`.
+#'
+#' @param C Spatial connectivity matrix which will be used internally to create \code{sar_parts} (if \code{sar_parts} is missing); if the user provides an \code{slx} formula for the model, the required connectivity matrix will be taken from the \code{sar_parts} list. See \code{\link[geostan]{shape2mat}}.
 #' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{auto_gaussian()}, \code{binomial()} (with logit link function) and \code{poisson()} (with log link function); if `family = gaussian()` is provided, it will automatically be converted to `auto_gaussian()`.
 #'
@@ -262,7 +262,7 @@
 #' ## fit models
 #' ##
 #'
-#' # DSEM
+#' # SDEM
 #' # y = mu + rho*W*(y - mu) + epsilon
 #' # mu = beta*x + gamma*Wx
 #' fit_sdem <- stan_sar(y ~ x, data = dat,
@@ -358,13 +358,15 @@ stan_sar <- function(formula,
     Durbin <- grepl('SDEM|SDLM', type) 
     if(grepl("SLM|SDLM", type) & family$family != "auto_gaussian") stop("SLM/SDLM are only available as auto-normal models (not Poisson or binomial models).")    
     #### SAR type [stop]
-    # C
-    if (!missing(C)) {
-        stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
-        stopifnot(all(dim(C) == nrow(data)))
-    } else {
-        C <- sar_parts$W
-    }
+    # C [SAR: always take C from sar_parts]
+    C <- sar_parts$W
+    
+    ## if (!missing(C)) {
+    ##     stopifnot(inherits(C, "Matrix") | inherits(C, "matrix"))
+    ##     stopifnot(all(dim(C) == nrow(data)))
+    ## } else {
+    ## C <- sar_parts$W
+    #}
 
     # zero-mean constraint parameterization
     sar_parts$ZMP <- ifelse(missing(zmp), 0, zmp)
@@ -432,15 +434,12 @@ stan_sar <- function(formula,
               }
               slx = formula[-2]
           }
+          
+          ## xrs <- Matrix::rowSums(C)
+          ## if (!all(xrs == 1)) C <- row_standardize(C, warn = !quiet, msg = "Row standardizing matrix C for spatial lag of X calculations.")          
+          # nb: in stan_sar, CSR rep of W is taken from sar_parts, not calculated here.
 
-          W <- C
-          if (!inherits(W, "sparseMatrix")) W <- as(W, "CsparseMatrix")
-          
-          xrs <- Matrix::rowSums(W)
-          if (!all(xrs == 1)) W <- row_standardize(W, warn = !quiet, msg = "Row standardizing matrix C for spatial lag of X calculations.")
-          
-          # nb: in stan_sar, W is taken from sar_parts, not calculated here.
-          Wx <- SLX(f = slx, DF = mod_frame, x = xraw, W = W, Durbin = Durbin)
+          Wx <- SLX(f = slx, DF = mod_frame, x = xraw, W = C, Durbin = Durbin)
           dwx <- ncol(Wx)
           wx_idx <- as.array( which(paste0("w.", colnames(xraw)) %in% colnames(Wx)), dim = dwx )
           x_full <- cbind(Wx, xraw)

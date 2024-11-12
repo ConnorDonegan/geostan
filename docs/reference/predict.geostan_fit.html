@@ -65,6 +65,8 @@
 <span>  summary <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"link"</span>, <span class="st">"response"</span><span class="op">)</span>,</span>
 <span>  add_slx <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  approx <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  K <span class="op">=</span> <span class="fl">15</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -105,6 +107,14 @@
 <dd><p>Logical. If <code>add_slx = TRUE</code>, any spatially-lagged covariates that were specified through the 'slx' argument (of the model fitting function, e.g., <code>stan_glm</code>) will be added to the linear predictor. The spatial lag terms will be calculated internally using <code>object$C</code>, the spatial weights matrix used to fit the model. Hence, <code>newdata</code> must have <code>N = object$N</code> rows. Predictions from spatial lag models (SAR models of type 'SLM' and 'SDLM') always include the SLX terms (i.e., any value passed to <code>add_slx</code> will be overwritten with <code>TRUE</code>).</p></dd>
 
 
+<dt>approx</dt>
+<dd><p>For SAR models of type 'SLM' or 'SDLM' only; use an approximation for matrix inversion? See details below.</p></dd>
+
+
+<dt>K</dt>
+<dd><p>Number of matrix powers to use with <code>approx</code>.</p></dd>
+
+
 <dt>...</dt>
 <dd><p>Not used</p></dd>
 
@@ -118,18 +128,37 @@
     <div id="details">
     <h2>Details</h2>
     <p>The primary purpose of the predict method is to explore marginal effects of covariates.</p>
-<p>The model formula will be taken from <code>object$formula</code>, and then a model matrix will be created by passing <code>newdata</code> to the <a href="https://rdrr.io/r/stats/model.frame.html" class="external-link">model.frame</a> function (as in: <code>model.frame(newdata, object$formula</code>). Parameters are taken from <code>as.matrix(object, pars = c("intercept", "beta"))</code>. If <code>add_slx = TRUE</code>, SLX coefficients will be taken from <code>as.matrix(object, pars = "gamma")</code>.</p>
-<p>Spatially-lagged covariates added via the <code>slx</code> argument ('spillover effects') will be included if <code>add_slx = TRUE</code> or if a spatial lag model is provided (a SAR model of type 'SLM' or 'SDLM'). In either of those cases, <code>newdata</code> must have the same number of rows as were used to fit the original data. For details on these 'spillover effects', see LeSage and Pace (2009) and LeSage (2014).</p>
+<p>The model formula will be taken from <code>object$formula</code>, and then a model matrix will be created by passing <code>newdata</code> to the <a href="https://rdrr.io/r/stats/model.frame.html" class="external-link">model.frame</a> function (as in: <code>model.frame(object$formula, newdata)</code>. Parameters are taken from <code>as.matrix(object, pars = c("intercept", "beta"))</code>.</p><div class="section">
+<h3 id="spatial-lag-of-x">Spatial lag of X<a class="anchor" aria-label="anchor" href="#spatial-lag-of-x"></a></h3>
+
+
+<p>Spatially-lagged covariates which were included via the <code>slx</code> argument will, by default, not be included. They will be be included in predictions if <code>add_slx = TRUE</code> or if the fitted model is a SAR model of type 'SLM' or 'SDLM'. In either of those cases, <code>newdata</code> must have the same number of rows as were used to fit the original data.</p>
+</div>
+
+<div class="section">
+<h3 id="spatial-lag-of-y">Spatial lag of Y<a class="anchor" aria-label="anchor" href="#spatial-lag-of-y"></a></h3>
+
+
+<p>The typical 'marginal effect' interpretation of the regression coefficients does not hold for the SAR models of type 'SLM' or 'SDLM'. For details on these 'spillover effects', see LeSage and Pace (2009), LeSage (2014), and <code><a href="impacts.html">geostan::impacts</a></code>.</p>
 <p>Predictions for the spatial lag model (SAR models of type 'SLM') are equal to:
 $$
  (I - \rho W)^{-1} X \beta
 $$
-where \(X \beta\) contains the intercept and covariates. (For intercept-only models, the above term is equal to the constant intercept.) Predictions for the spatial Durbin lag model (SAR models of type 'SDLM') are equal to:
+where \(X \beta\) contains the intercept and covariates. Predictions for the spatial Durbin lag model (SAR models of type 'SDLM') are equal to:
 $$
  (I - \rho W)^{-1} (X \beta + WX \gamma)
 $$
-where \(WX \gamma\) are spatially lagged covariates multiplied by their coefficients. The SLM and SDLM differ from all other model types in that the spatial component of the model cannot be separated from the linear predictor and is, therefore, automatically incorporated into the predictions.</p>
-<p>In generalized linear models (such as Poisson and Binomial models) marginal effects plots on the response scale may be sensitive to the level of other covariates in the model and to location. If the model includes a spatial autocorrelation component (for example, you used a spatial CAR, SAR (error model), or ESF model), by default these terms will be fixed at zero for the purposes of calculating marginal effects. If you want to change this, you can introduce spatial trend values by specifying a varying intercept using the <code>alpha</code> argument.</p>
+where \(WX \gamma\) are spatially lagged covariates multiplied by their coefficients.</p>
+<p>The inverse of the matrix \((I - \rho W)\) can be time consuming to compute (especially when iterating over MCMC samples). You can use <code>approx = TRUE</code> to approximate the inverse using a series of matrix powers. The argument \(K\) controls how many powers to use for the approximation. As a rule, higher values of \(\rho\) require larger \(K\). Notice that \(\rho^K\) should be close to zero for the approximation to hold. For example, for \(\rho = .5\) a value of \(K=8\) may suffice (eqn0.5^8 = 0.004), but larger values of \(\rho\) require higher values of \(K\).</p>
+</div>
+
+<div class="section">
+<h3 id="generalized-linear-models">Generalized linear models<a class="anchor" aria-label="anchor" href="#generalized-linear-models"></a></h3>
+
+
+<p>In generalized linear models (such as Poisson and Binomial models) marginal effects plots on the response scale may be sensitive to the level of other covariates in the model and to geographic location. If the model includes a spatial autocorrelation component (for example, you used a spatial CAR, SAR, or ESF model), by default these terms will be fixed at zero for the purposes of calculating marginal effects. If you want to change this, you can introduce spatial trend values by specifying a varying intercept using the <code>alpha</code> argument.</p>
+</div>
+
     </div>
 
     <div id="ref-examples">
@@ -139,16 +168,17 @@ where \(WX \gamma\) are spatially lagged covariates multiplied by their coeffici
 <span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span><span class="op">)</span>,</span>
 <span>               data <span class="op">=</span> <span class="va">georgia</span>,</span>
+<span>               re <span class="op">=</span> <span class="op">~</span> <span class="va">GEOID</span>,</span>
 <span>               centerx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>               family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>               chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span></span>
 <span></span>
-<span><span class="co"># note: pop.at.risk.male=1 leads to log(pop.at.risk.male)=0</span></span>
+<span><span class="co"># note: pop.at.risk.male=1 leads to offset of log(pop.at.risk.male)=0</span></span>
 <span><span class="co"># so that the predicted values are rates</span></span>
 <span><span class="va">newdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>             income <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span><span class="op">)</span>,</span>
 <span>                          <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span><span class="op">)</span>,</span>
-<span>                           length.out <span class="op">=</span> <span class="fl">100</span><span class="op">)</span>,</span>
+<span>                           length.out <span class="op">=</span> <span class="fl">200</span><span class="op">)</span>,</span>
 <span>             pop.at.risk.male <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">newdata</span>, type <span class="op">=</span> <span class="st">"response"</span><span class="op">)</span></span>
@@ -163,12 +193,35 @@ where \(WX \gamma\) are spatially lagged covariates multiplied by their coeffici
 <span><span class="va">newdata</span><span class="op">$</span><span class="va">pop.at.risk.male</span> <span class="op">&lt;-</span> <span class="fl">10e3</span></span>
 <span><span class="va">preds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">newdata</span>, type <span class="op">=</span> <span class="st">"response"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">preds</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot range</span></span>
+<span><span class="va">y_lim</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">preds</span><span class="op">$</span><span class="va">`2.5%`</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">preds</span><span class="op">$</span><span class="va">`97.5%`</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># plot line</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">preds</span><span class="op">$</span><span class="va">income</span>,</span>
 <span>    <span class="va">preds</span><span class="op">$</span><span class="va">mean</span>,</span>
-<span>    type <span class="op">=</span> <span class="st">"l"</span>,</span>
+<span>    type <span class="op">=</span> <span class="st">"l"</span>,    </span>
 <span>    ylab <span class="op">=</span> <span class="st">"Deaths per 10,000"</span>,</span>
-<span>    xlab <span class="op">=</span> <span class="st">"Income ($1,000s)"</span><span class="op">)</span></span>
-<span></span></code></pre></div>
+<span>    xlab <span class="op">=</span> <span class="st">"Income ($1,000s)"</span>,</span>
+<span>    ylim <span class="op">=</span> <span class="va">y_lim</span>,</span>
+<span>    axes <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># add shaded cred. interval</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">preds</span><span class="op">$</span><span class="va">income</span>, <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">preds</span><span class="op">$</span><span class="va">income</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">preds</span><span class="op">$</span><span class="va">`2.5%`</span>, <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">preds</span><span class="op">$</span><span class="va">`97.5%`</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/polygon.html" class="external-link">polygon</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span>,</span>
+<span>       col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/rgb.html" class="external-link">rgb</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.3</span><span class="op">)</span>,</span>
+<span>       border <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># add axes</span></span>
+<span><span class="va">yat</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">300</span>, by <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/axis.html" class="external-link">axis</a></span><span class="op">(</span><span class="fl">2</span>, at <span class="op">=</span> <span class="va">yat</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">xat</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">200</span>, by <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/axis.html" class="external-link">axis</a></span><span class="op">(</span><span class="fl">1</span>, at <span class="op">=</span> <span class="va">xat</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># show county incomes</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/rug.html" class="external-link">rug</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">$</span><span class="va">income</span>, ticksize <span class="op">=</span> <span class="fl">0.015</span><span class="op">)</span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

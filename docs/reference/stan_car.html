@@ -114,11 +114,11 @@
 
 
 <dt>C</dt>
-<dd><p>Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified <code>slx</code> terms; it will automatically be row-standardized before calculating <code>slx</code> terms. See <code><a href="shape2mat.html">shape2mat</a></code>.</p></dd>
+<dd><p>Spatial connectivity matrix which will be used internally to create <code>car_parts</code> (if <code>car_parts</code> is missing); if the user provides an <code>slx</code> formula for the model, the required connectivity matrix will be taken from the <code>car_parts</code> list. See <code><a href="shape2mat.html">shape2mat</a></code>.</p></dd>
 
 
 <dt>car_parts</dt>
-<dd><p>A list of data for the CAR model, as returned by <code><a href="prep_car_data.html">prep_car_data</a></code>.</p></dd>
+<dd><p>A list of data for the CAR model, as returned by <code><a href="prep_car_data.html">prep_car_data</a></code>. If not provided by the user, then <code>C</code> will automatically be passed to <code>prep_car_data</code> to create it.</p></dd>
 
 
 <dt>family</dt>
@@ -365,8 +365,12 @@ $$</p>
 <span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, style <span class="op">=</span> <span class="st">"B"</span><span class="op">)</span></span>
 <span><span class="va">cars</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">C</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># MCMC specs: set for purpose of demo speed </span></span>
+<span><span class="va">iter</span> <span class="op">=</span> <span class="fl">500</span></span>
+<span><span class="va">chains</span> <span class="op">=</span> <span class="fl">2</span></span>
+<span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">stan_car</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">rate.male</span><span class="op">)</span> <span class="op">~</span> <span class="fl">1</span>, data <span class="op">=</span> <span class="va">georgia</span>,</span>
-<span>          car_parts <span class="op">=</span> <span class="va">cars</span>, iter <span class="op">=</span> <span class="fl">400</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>          car_parts <span class="op">=</span> <span class="va">cars</span>, iter <span class="op">=</span> <span class="va">iter</span>, chains <span class="op">=</span> <span class="va">chains</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># model diagnostics</span></span>
 <span><span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span></span>
@@ -377,7 +381,7 @@ $$</p>
 <span>                car_parts <span class="op">=</span> <span class="va">cars</span>,</span>
 <span>                data <span class="op">=</span> <span class="va">georgia</span>,</span>
 <span>                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>                iter <span class="op">=</span> <span class="fl">400</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>                iter <span class="op">=</span> <span class="va">iter</span>, chains <span class="op">=</span> <span class="va">chains</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># model diagnostics</span></span>
 <span><span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span></span>
@@ -405,7 +409,7 @@ $$</p>
 <span>               data <span class="op">=</span> <span class="va">georgia</span>,</span>
 <span>               car <span class="op">=</span> <span class="va">dcars</span>,</span>
 <span>               family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>               iter <span class="op">=</span> <span class="fl">400</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>               iter <span class="op">=</span> <span class="va">iter</span>, chains <span class="op">=</span> <span class="va">chains</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">Dfit</span>, <span class="va">georgia</span>, <span class="va">dcars</span><span class="op">$</span><span class="va">C</span><span class="op">)</span></span>
 <span><span class="fu"><a href="waic.html">dic</a></span><span class="op">(</span><span class="va">Dfit</span><span class="op">)</span>; <span class="fu"><a href="waic.html">dic</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>

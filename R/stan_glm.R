@@ -19,7 +19,7 @@
 #' 
 #' @param data A \code{data.frame} or an object coercible to a data frame by \code{as.data.frame} containing the model data.
 #' 
-#' @param C Optional spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms; it will automatically be row-standardized before calculating \code{slx} terms.  See \code{\link[geostan]{shape2mat}}.
+#' @param C Spatial connectivity matrix which will be used to calculate residual spatial autocorrelation as well as any user specified \code{slx} terms. See \code{\link[geostan]{shape2mat}}.
 #' 
 #' @param family The likelihood function for the outcome variable. Current options are \code{poisson(link = "log")}, \code{binomial(link = "logit")}, \code{student_t()}, and the default \code{gaussian()}.
 #'
@@ -392,8 +392,8 @@ stan_glm <- function(formula,
           stopifnot(inherits(slx, "formula"))
           W <- C
           if (!inherits(W, "sparseMatrix")) W <- as(W, "CsparseMatrix")
-          xrs <- Matrix::rowSums(W)
-          if (!all(xrs == 1)) W <- row_standardize(W, warn = !quiet, msg = "Row standardizing matrix C for spatial lag of X calculations.")
+          ## xrs <- Matrix::rowSums(W)
+          ## if (!all(xrs == 1)) W <- row_standardize(W, warn = !quiet, msg = "Row standardizing matrix C for spatial lag of X calculations.")
           # efficient transform to CRS representation for W.list (via transpose)
           Wij <- as(W, "TsparseMatrix")
           Tw <- Matrix::sparseMatrix(i = Wij@j + 1,

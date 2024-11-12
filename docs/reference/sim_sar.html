@@ -120,7 +120,7 @@
     <div id="details">
     <h2>Details</h2>
     <p>This function takes <code>n = nrow(w)</code> draws from the normal distribution using <code>rnorm</code> to obtain vector <code>x</code>; if <code>type = 'SEM', it then pre-multiplies </code>x<code>by the inverse of the matrix</code>(I - rho * W)<code>to obtain spatially autocorrelated values. For</code>type = 'SLM', the multiplier matrix is applied to <code>x + mu</code> to produce the desired values.</p>
-<p>The <code>quick</code> method approximates the matrix inversion using the method described by LeSage and Pace (2009, p. 40).</p>
+<p>The <code>quick</code> method approximates the matrix inversion using the method described by LeSage and Pace (2009, p. 40). For high values of rho, larger values of K are required for the approximation to suffice; you want <code>rho^K</code> to be near zero.</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
