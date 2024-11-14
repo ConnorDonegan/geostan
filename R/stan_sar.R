@@ -70,51 +70,20 @@
 #' 
 #' @details
 #'
-#' Discussions of SAR models may be found in Cliff and Ord (1981), Cressie (2015, Ch. 6), LeSage and Pace (2009), and LeSage (2014). The Stan implementation draws from Donegan (2021).
+#' Discussions of SAR models may be found in Cliff and Ord (1981), Cressie (2015, Ch. 6), LeSage and Pace (2009), and LeSage (2014). The Stan implementation draws from Donegan (2021). It is a multivariate normal distribution with covariance matrix of \eqn{\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}.}.
 #'
-#' There are two SAR specification options which are commonly known as the spatial error ('SEM') and the spatial lag ('SLM') models. When the spatial-lag of the covariates are included, then the model is referred to as a spatial Durbin model; depending on the model type, it becomes a spatial Durbin error model ('SDEM') or a spatial Durbin lag model ('SDLM').
+#' There are two SAR specification options which are commonly known as the spatial error ('SEM') and the spatial lag ('SLM') models. When the spatial-lags of all covariates are included in the linear predictor (as in \eqn{\mu = \alpha + X \beta + W X \gamma}), then the model is referred to as a spatial Durbin model; depending on the model type, it becomes a spatial Durbin error model ('SDEM') or a spatial Durbin lag model ('SDLM'). To control which covariates are introduced in spatial-lag form, use the `slx` argument together with 'type = SEM' or 'type = SLM'.
+#'
+#'  ###  Auto-normal: spatial error
 #'
 #' The spatial error specification ('SEM') is
 #' \deqn{y = \mu + ( I - \rho C)^{-1} \epsilon}
 #' \deqn{\epsilon \sim Gauss(0, \sigma^2)}
-#' where \eqn{C} is the spatial connectivity matrix, \eqn{I} is the n-by-n identity matrix, and \eqn{\rho} is a spatial autocorrelation parameter. In words, the errors of the regression equation are spatially autocorrelated.
+#' where \eqn{C} is the spatial connectivity matrix, \eqn{I} is the n-by-n identity matrix, and \eqn{\rho} is a spatial autocorrelation parameter. In words, the errors of the regression equation are spatially autocorrelated. The expected value for the SEM is the usual \eqn{\mu}: the intercept plus \code{X*beta} and any other terms added to the linear predictor.
 #'
 #' Re-arranging terms, the model can also be written as follows:
 #' \deqn{y = \mu + \rho C (y - \mu)  + \epsilon}
-#' which perhaps shows more intuitively the implicit spatial trend component, \eqn{\rho C (y - \mu)}. 
-#'
-#' The second SAR specification type is the 'spatial lag of y' ('SLM'). This model describes a diffusion or contagion process:
-#' \deqn{y = \rho C y + \mu + \epsilon}
-#' \deqn{\epsilon \sim Gauss(0, \sigma^2)}
-#' This is attractive for modeling actual contagion processes. Here the 'spatial trend' part is simply \eqn{\rho C y}.
-#'
-#' Both model types have a covariance matrix of:
-#' 
-#' \deqn{\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}.}
-#'
-#' But the expected values of the models differ. The expected value for the SEM is the usual \eqn{\mu} (the intercept plus \code{X*beta}); the expected value of the SLM is \eqn{(I - \rho C)^{-1} \mu}. 
-#' 
-#' The mathematics and typical interpretation of the SLM/SDLM is unusual and the conventional interpretation of regression coefficients does not apply! Use the \link[geostan]{impacts} method to interpret results from the SLM and SDLM models (that is, granted that this model form is at least plausible for the application).
-#'
-#' Use of the 'SDEM' and 'SDLM' options are for convenience: you can also obtain the Durbin models using the \code{slx} (spatial lag of X) argument. The \code{slx} argument allows control over which covariates will be added in spatial-lag form; the Durbin options include the spatial lag of all covariates.
-#'
-#' Most often, the SAR model is applied directly to observations (referred to below as the auto-normal or auto-Gaussian model). The SAR model can also be applied to a vector of parameters inside a hierarchical model. The latter enables spatial or network autocorrelation to be modeled when the observations are discrete counts (e.g., hierarchical models for disease incidence rates). Currently these hierarchical models are only supported for the spatial error models (SEM/SDEM).
-#' 
-#' ###  Auto-normal: spatial error
-#'
-#' When \code{family = auto_gaussian()} and `type = 'SEM'` (the default), the SAR model is specified as follows:
-#' 
-#' \deqn{y \sim Gauss(\mu, \Sigma)}
-#' \deqn{\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}}
-# 
-#' where \eqn{\mu} is the mean vector (with intercept, covariates, etc.), \eqn{C} is a spatial weights or connectivity matrix (usually row-standardized), and \eqn{\sigma} is a scale parameter.
-#'
-#' The SAR model contains an implicit spatial trend (i.e., spatial autocorrelation) component \eqn{\phi} which is calculated as follows:
-#' \deqn{
-#' \phi = \rho C (y - \mu)
-#' }
-#' 
-#' This term can be extracted from a fitted auto-Gaussian model using the \link[geostan]{spatial} method.
+#' which shows more intuitively the implicit spatial trend component, \eqn{\phi = \rho C (y - \mu)}. This term \eqn{\phi} can be extracted from a fitted auto-Gaussian/auto-normal model using the \link[geostan]{spatial} method.
 #'
 #' When applied to a fitted auto-Gaussian model, the \link[geostan]{residuals.geostan_fit} method returns 'de-trended' residuals \eqn{R} by default. That is,
 #' \deqn{
@@ -122,17 +91,28 @@
 #' }
 #' To obtain "raw" residuals (\eqn{y - \mu}), use `residuals(fit, detrend = FALSE)`. Similarly, the fitted values obtained from the \link[geostan]{fitted.geostan_fit} will include the spatial trend term by default.
 #'
-#' ### Aut-normal: spatial lag
 #'
-#'  For options `type = 'SLM'` and `type = 'SDLM'`, the \link[geostan]{spatial} method returns the vector
+#' ### Auto-normal: spatial lag
+#' 
+#' The second SAR specification type is the 'spatial lag of y' ('SLM'). This model describes a diffusion or contagion process:
+#' \deqn{y = \rho C y + \mu + \epsilon}
+#' \deqn{\epsilon \sim Gauss(0, \sigma^2)}
+#' This is very attractive for modeling actual contagion or diffusion processes (or static snapshots of such processes). The model does not allow for the usual interpretation of regression coefficients as marginal effects. To interpret SLM results, use \link[geostan]{impacts}.
+#'
+#' Note that the expected value of the SLM is equal to \eqn{(I - \rho C)^{-1} \mu}. 
+#'
+#' The \link[geostan]{spatial} method returns the vector
 #' \deqn{ \phi = \rho C y, }
 #' the spatial lag of \eqn{y}.
 #'
 #' The \link[geostan]{residuals.geostan_fit} method returns 'de-trended' residuals \eqn{R} by default:
 #' \deqn{R = y - \rho C y - \mu,}
-#' where \eqn{\mu} contains the intercept and any covariates (and possibly other terms). Similarly, the fitted values obtained from the \link[geostan]{fitted.geostan_fit} will include the spatial trend \eqn{\rho C y} by default. 
+#' where \eqn{\mu} contains the intercept and any covariates (and possibly other terms).
 #'
-#' To read/interpret results from the SLM or SDLM, use the \link[geostan]{impacts} method.
+#' Similarly, the fitted values obtained from the \link[geostan]{fitted.geostan_fit} will include the spatial trend \eqn{\rho C y} by default to equal
+#' \deqn{\rho C y + \mu.}
+#'
+#' For now at least, the SLM/SDLM option is only supported for auto-normal models (as opposed to hierarchical Poisson and binomial models).
 #' 
 #' ### Poisson
 #'
@@ -140,9 +120,11 @@
 #'
 #' \deqn{y \sim Poisson(e^{O + \lambda})}
 #' \deqn{\lambda \sim Gauss(\mu, \Sigma)}
-#' \deqn{\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}.}
+#' \deqn{\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}}
 #' 
-#' `O` is a constant/offset term. If the raw outcome consists of a rate \eqn{\frac{y}{p}} with observed counts \eqn{y} and denominator \eqn{p} (often this will be the size of the population at risk), then the offset term \eqn{O=log(p)} is the log of the denominator.
+#' where \eqn{O} is a constant/offset term and \eqn{e^\lambda} is a rate parameter.
+#'
+#' If the raw outcome consists of a rate \eqn{\frac{y}{p}} with observed counts \eqn{y} and denominator \eqn{p} (often this will be the size of the population at risk), then the offset term should be the log of the denominator: \eqn{O=log(p)}.
 #' 
 #' This same model can be written (equivalently) as:
 #' 
@@ -153,7 +135,7 @@
 #' 
 #' For Poisson models, the \link[geostan]{spatial} method returns the (zero-mean) parameter vector \eqn{\phi}. When `zmp = FALSE` (the default), \eqn{\phi} is obtained by subtraction: \eqn{\phi = \lambda - \mu}.
 #'
-#' In the Poisson SAR model, \eqn{\phi} contains a latent (smooth) spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \eqn{\phi}, you can do so by calculating:
+#' In the Poisson SAR model, \eqn{\phi} contains a latent (smooth) spatial trend as well as additional variation around it (this is merely a verbal description of the CAR model). If you would like to extract the latent/implicit spatial trend from \eqn{\phi}, you can do so by calculating:
 #' \deqn{
 #'  \rho C \phi.
 #' }
@@ -164,7 +146,7 @@
 #' 
 #' \deqn{y \sim Binomial(N, \lambda) }
 #' \deqn{logit(\lambda) \sim Gauss(\mu, \Sigma) }
-#' \deqn{\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}.}
+#' \deqn{\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1},}
 #' 
 #' where outcome data \eqn{y} are counts, \eqn{N} is the number of trials, and \eqn{\lambda} is the rate of 'success'. Note that the model formula should be structured as: `cbind(sucesses, failures) ~ 1` (for an intercept-only model), such that `trials = successes + failures`.
 #' 
@@ -181,7 +163,7 @@
 #' 
 #' ## Additional functionality
 #'
-#' The SAR models can also incorporate spatially-lagged covariates, measurement/sampling error in covariates (particularly when using small area survey estimates as covariates), missing outcome data, and censored outcomes (such as arise when a disease surveillance system suppresses data for privacy reasons). For details on these options, please see the Details section in the documentation for \link[geostan]{stan_glm}.
+#' The SAR models can also incorporate spatially-lagged covariates, measurement/sampling error in covariates (particularly when using small area survey estimates as covariates), missing outcome data (for Poisson and binomial models), and censored outcomes (such as arise when a disease surveillance system suppresses data for privacy reasons). For details on these options, please see the Details section in the documentation for \link[geostan]{stan_glm}.
 #' 
 #' 
 #' @return An object of class class \code{geostan_fit} (a list) containing: 

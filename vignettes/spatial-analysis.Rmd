@@ -19,6 +19,7 @@ link-citations: yes
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, fig.align = 'center')
+library(spData)
 ```
 
 ```{r echo = FALSE}

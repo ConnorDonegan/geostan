@@ -101,9 +101,9 @@ aple <- function(x, w, digits = 3) {
 #' 
 #' @param type Type of SAR model: spatial error model ("SEM") or spatial lag model ("SLM").
 #' 
-#' @param quick Use power of matrix W to approximate the inverse term?
+#' @param approx Use power of matrix W to approximate the inverse term?
 #' 
-#' @param K Number of matrix powers to use if `quick = TRUE`.
+#' @param K Number of matrix powers to use if `approx = TRUE`.
 #' 
 #' @param ... further arguments passed to \code{MASS::mvrnorm}.
 #' 
@@ -115,7 +115,7 @@ aple <- function(x, w, digits = 3) {
 #'
 #' This function takes `n = nrow(w)` draws from the normal distribution using `rnorm` to obtain vector `x`; if `type = 'SEM', it then pre-multiplies `x` by the inverse of the matrix `(I - rho * W)` to obtain spatially autocorrelated values. For `type = 'SLM', the multiplier matrix is applied to `x + mu` to produce the desired values.
 #'
-#' The `quick` method approximates the matrix inversion using the method described by LeSage and Pace (2009, p. 40). For high values of rho, larger values of K are required for the approximation to suffice; you want `rho^K` to be near zero.
+#' The `approx` method approximates the matrix inversion using the method described by LeSage and Pace (2009, p. 40). For high values of rho, larger values of K are required for the approximation to suffice; you want `rho^K` to be near zero.
 #'
 #' @seealso \code{\link[geostan]{aple}}, \code{\link[geostan]{mc}}, \code{\link[geostan]{moran_plot}}, \code{\link[geostan]{lisa}}, \code{\link[geostan]{shape2mat}}
 #' 
@@ -170,7 +170,7 @@ sim_sar <- function(m = 1,
                     sigma = 1,
                     w,                    
                     type = c("SEM", "SLM"),
-                    quick = FALSE,
+                    approx = FALSE,
                     K = 15,
                     ...) {
     check_sa_data(mu, w)
@@ -183,7 +183,7 @@ sim_sar <- function(m = 1,
     I <- Matrix::diag(N)
     W <- as(w, "dMatrix")
     
-    if (quick) {
+    if (approx) {
         
         # matrix powers to approximate the inverse
         if (rho^K > .08) warning("You may need higher K for this level of rho; rho^K = ", rho^K)        
@@ -712,6 +712,8 @@ make_EV <- function(C, nsa = FALSE, threshold = 0.2, values = FALSE) {
 #' @details
 #'
 #' The method argument currently has three options. The queen contiguity condition defines neighbors as polygons that share at least one point with one another. The rook condition requires that they share a line or border with one another. K-nearest neighbors is based on distance between centroids. All methods are implemented using the spdep package and then converted to sparse matrix format.
+#'
+#' Alternatively, one can use spdep directly to create a `listw` object and then convert that to a sparse matrix using `as(listw, 'CsparseMatrix')` for use with geostan.
 #'
 #' Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matrices (Ch. 4).
 #'

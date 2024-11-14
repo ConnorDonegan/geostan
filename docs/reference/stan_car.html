@@ -285,7 +285,7 @@ $$
  y \sim Gauss( \mu, ( I - \rho C)^{-1} M),
 $$
 where \(I\) is the identity matrix, \(\rho\) is a spatial dependence parameter, \(C\) is a spatial connectivity matrix, and \(M\) is a diagonal matrix of variance terms. The diagonal of \(M\) contains a scale parameter \(\tau\) multiplied by a vector of weights (often set to be proportional to the inverse of the number of neighbors assigned to each site).</p>
-<p>The covariance matrix of the CAR model contains two parameters: \(\rho\) (<code>car_rho</code>) which controls the kind (positive or negative) and degree of spatial autocorrelation, and the scale parameter \(\tau\) (<code>car_scale</code>). The range of permissible values for \(\rho\) depends on the specification of \(\boldsymbol C\) and \(\boldsymbol M\); for specification options, see <a href="prep_car_data.html">prep_car_data</a> and Cressie and Wikle (2011, pp. 184-188) or Donegan (2021).</p>
+<p>The covariance matrix of the CAR model contains two parameters: \(\rho\) (<code>car_rho</code>) which controls the kind (positive or negative) and degree of spatial autocorrelation, and the scale parameter \(\tau\). The range of permissible values for \(\rho\) depends on the specification of \(\boldsymbol C\) and \(\boldsymbol M\); for specification options, see <a href="prep_car_data.html">prep_car_data</a> and Cressie and Wikle (2011, pp. 184-188) or Donegan (2021).</p>
 <p>Further details of the models and results depend on the <code>family</code> argument, as well as on the particular CAR specification chosen (from <a href="prep_car_data.html">prep_car_data</a>).</p><div class="section">
 <h3 id="auto-normal">Auto-Normal<a class="anchor" aria-label="anchor" href="#auto-normal"></a></h3>
 

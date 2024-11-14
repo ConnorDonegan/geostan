@@ -409,6 +409,7 @@ as.array.geostan_fit <- function(x, ...){
 #' @param type By default, results from `predict` are on the scale of the linear predictor (`type = "link")`). The alternative (`type = "response"`) is on the scale of the response variable. For example, the default return values for a Poisson model on the log scale, and using `type = "response"` will return the original scale of the outcome variable (by exponentiating the log values).
 #'
 #' @param add_slx Logical. If `add_slx = TRUE`, any spatially-lagged covariates that were specified through the 'slx' argument (of the model fitting function, e.g., `stan_glm`) will be added to the linear predictor. The spatial lag terms will be calculated internally using `object$C`, the spatial weights matrix used to fit the model. Hence, `newdata` must have `N = object$N` rows. Predictions from spatial lag models (SAR models of type 'SLM' and 'SDLM') always include the SLX terms (i.e., any value passed to `add_slx` will be overwritten with `TRUE`).
+#' 
 #' @param approx For SAR models of type 'SLM' or 'SDLM' only; use an approximation for matrix inversion? See details below.
 #'
 #' @param K Number of matrix powers to use with \code{approx}.
@@ -421,13 +422,15 @@ as.array.geostan_fit <- function(x, ...){
 #'
 #' The model formula will be taken from `object$formula`, and then a model matrix will be created by passing `newdata` to the \link[stats]{model.frame} function (as in: \code{model.frame(object$formula, newdata)}. Parameters are taken from \code{as.matrix(object, pars = c("intercept", "beta"))}. 
 #'
+#' The examples illustrate how to use the function in most cases. Special considerations apply to models with spatially-lagged covariates and a spatially-lagged dependent variable (i.e., the 'SLM' and 'SDLM' models fit by \link[geostan]{stan_sar}). 
+#' 
 #' ## Spatial lag of X
 #' 
-#' Spatially-lagged covariates which were included via the `slx` argument will, by default, not be included. They will be be included in predictions if `add_slx = TRUE` or if the fitted model is a SAR model of type 'SLM' or 'SDLM'. In either of those cases, `newdata` must have the same number of rows as were used to fit the original data.
+#' Spatially-lagged covariates which were included via the `slx` argument will, by default, not be included in the predicted values. They will be be included in predictions if `add_slx = TRUE` or if the fitted model is a SAR model of type 'SLM' or 'SDLM'. In either of those cases, `newdata` must have the same number of rows as were used to fit the original data.
 #'
 #' ## Spatial lag of Y
 #' 
-#' The typical 'marginal effect' interpretation of the regression coefficients does not hold for the SAR models of type 'SLM' or 'SDLM'. For details on these 'spillover effects', see LeSage and Pace (2009), LeSage (2014), and `geostan::impacts`.
+#' The typical 'marginal effect' interpretation of the regression coefficients does not hold for the SAR models of type 'SLM' or 'SDLM'. For details on these 'spillover effects', see LeSage and Pace (2009), LeSage (2014), and \link[geostan]{impacts}. 
 #'
 #' Predictions for the spatial lag model (SAR models of type 'SLM') are equal to:
 #' \deqn{
@@ -437,14 +440,13 @@ as.array.geostan_fit <- function(x, ...){
 #' \deqn{
 #'  (I - \rho W)^{-1} (X \beta + WX \gamma)
 #' }
-#' where \eqn{WX \gamma} are spatially lagged covariates multiplied by their coefficients.
+#' where \eqn{WX \gamma} are spatially lagged covariates multiplied by their coefficients. For this reason, the `predict.geostan_fit` method requires that `newdata` have as many rows as the original data (so that `nrow(newdata) == nrow(object$C)`); the spatial weights matrix will be taken from `object$C`.
 #'
-#' The inverse of the matrix \eqn{(I - \rho W)} can be time consuming to compute (especially when iterating over MCMC samples). You can use `approx = TRUE` to approximate the inverse using a series of matrix powers. The argument \eqn{K} controls how many powers to use for the approximation. As a rule, higher values of \eqn{\rho} require larger \eqn{K}. Notice that \eqn{\rho^K} should be close to zero for the approximation to hold. For example, for \eqn{\rho = .5} a value of \eqn{K=8} may suffice (eqn{0.5^8 = 0.004}), but larger values of \eqn{\rho} require higher values of \eqn{K}.
-#'
+#' The inverse of the matrix \eqn{(I - \rho W)} can be time consuming to compute (especially when iterating over MCMC samples). You can use `approx = TRUE` to approximate the inverse using a series of matrix powers. The argument \eqn{K} controls how many powers to use for the approximation. As a rule, higher values of \eqn{\rho} require larger \eqn{K}. Notice that \eqn{\rho^K} should be close to zero for the approximation to hold. For example, for \eqn{\rho = .5} a value of \eqn{K=8} may suffice (\eqn{0.5^8 = 0.004}), but larger values of \eqn{\rho} require higher values of \eqn{K}. 
 #'
 #' ## Generalized linear models
 #' 
-#' In generalized linear models (such as Poisson and Binomial models) marginal effects plots on the response scale may be sensitive to the level of other covariates in the model and to geographic location. If the model includes a spatial autocorrelation component (for example, you used a spatial CAR, SAR, or ESF model), by default these terms will be fixed at zero for the purposes of calculating marginal effects. If you want to change this, you can introduce spatial trend values by specifying a varying intercept using the `alpha` argument.
+#' In generalized linear models (such as Poisson and Binomial models) marginal effects plots on the response scale may be sensitive to the level of other covariates in the model and to geographic location (given a spatially-varying mean value). If the model includes a spatial autocorrelation component (for example, you used a spatial CAR, SAR, or ESF model, or used the `re` argument for random effects), by default these terms will be fixed at zero for the purposes of calculating marginal effects (as is typical). If you want to change this, you can introduce a varying intercept manually using the `alpha` argument.
 #' 
 #' @return
 #'

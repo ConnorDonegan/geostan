@@ -13,21 +13,21 @@
 #' 
 #' @param rho Spatial dependence parameter (single numeric value)
 #'
-#' @param method Use 'quick' for a computationally efficient approximation (after LeSage and Pace 2009, pp. 114--115) and 'proper' to compute the matrix inversion using `Matrix::solve`.
+#' @param approx For a computationally efficient approximation to the required matrix inverse (after LeSage and Pace 2009, pp. 114--115); if `FALSE`, then a proper matrix inverse will be computed using `Matrix::solve`.
 #'
-#' @param K Degree of polynomial in the expansion to use for the 'quick' method.
+#' @param K Degree of polynomial in the expansion to use when 'approx = TRUE`.
 #'
 #' @details
 #'
-#' These functions are for interpreting the results of the spatial lag model ('SLM') and the spatial Durbin lag model ('SDLM'). The models can be fitted using \link[geostan]{stan_sar}. The equation for these SAR models specifies simultaneous feedback between all units, such that changing the outcome in one location has a spill-over effect that may extend to all other locations (a ripple or diffusion effect); the induced changes will also react back onto the first unit. (This presumably takes time, even if the observations are cross-sectional.)
+#' These methods apply only to the spatial lag and spatial Durbin lag models (SLM and SDLM) as fit by `geostan::stan_sar`.
+#' 
+#' The equation for these SAR models specifies simultaneous feedback between all units, such that changing the outcome in one location has a spill-over effect that may extend to all other locations (a ripple or diffusion effect); the induced changes will also react back onto the first unit. (This presumably takes time, even if the observations are cross-sectional.)
 #'
-#' These spill-overs have to be incorporated into the interpretation of the regression coefficients of SLM and SDLM models (granting that the model specification itself is reasonable for your application). A unit change in the value of \code{X} in one location will impact \code{y} in that same place ('direct' impact) and will also impact \code{y} elsewhere through the diffusion process ('indirect' impact). The 'total' impact of a unit change in \code{X} is the sum of the direct and indirect effects (LeSage and Pace 2009). 
+#' These spill-overs have to be incorporated into the interpretation and reporting of the regression coefficients of SLM and SDLM models. A unit change in the value of \eqn{X} in one location will impact \eqn{y} in that same place ('direct' impact) and will also impact \eqn{y} elsewhere through the diffusion process ('indirect' impact). The 'total' expected impact of a unit change in \code{X} is the sum of the direct and indirect effects (LeSage and Pace 2009). 
 #' 
 #' The `spill` function is for quickly calculating average spillover effects given point estimates of parameters. 
 #'
 #' The `impacts` function calculates the (average) direct, indirect, and total effects once for every MCMC sample to produce samples from the posterior distribution for the impacts; the samples are returned together with a summary of the posterior distribution (mean, median, and select quantiles).
-#'
-#' These methods are only required for the spatial lag and spatial Durbin lag models (SLM and SDLM).
 #' 
 #' @source
 #'
@@ -63,7 +63,7 @@
 #'
 #' # impacts (posterior distribution)
 #' impax <- impacts(fit)
-#' impax$summary
+#' print(impax)
 #' 
 #' # plot posterior distributions
 #' og = par(mfrow = c(1, 3),
@@ -73,13 +73,31 @@
 #' hist(S[,2], main = 'Indirect')
 #' hist(S[,3], main = 'Total')
 #' par(og)
+#'
+#' ##
+#' ## The approximate method
+#' ##
+#'
+#' # High rho value requires more K; rho^K must be near zero
+#' Ks <- c(10, 15, 20, 30, 35, 40)
+#' print(cbind(Ks, 0.9^Ks))
+#'
+#' # understand sensitivity of results to K when rho is high
+#' spill(0.5, -0.25, 0.9, W, approx = TRUE, K = 10)
+#' spill(0.5, -0.25, 0.9, W, approx = TRUE, K = 20)
+#' spill(0.5, -0.25, 0.9, W, approx = TRUE, K = 30)
+#' spill(0.5, -0.25, 0.9, W, approx = TRUE, K = 50)
+#'
+#' # the correct results
+#' spill(0.5, -0.25, 0.9, W, approx = FALSE)
+#'
+#' # moderate and low rho values are fine with smaller K
+#' spill(0.5, -0.25, 0.7, W, approx = TRUE, K = 15)
+#' spill(0.5, -0.25, 0.7, W, approx = FALSE)
 #' 
-#' 
-spill <- function(beta, gamma = 0, rho, W, method = c('quick', 'proper'), K = 20) {
+spill <- function(beta, gamma = 0, rho, W, approx = TRUE, K = 15) {       
     
-    method <- match.arg(method)
-    
-    if (method == 'quick') {
+    if (approx) {
         T <- matrix(0, nrow = 2, ncol = K + 1)
         T[1, 1] <- 1
         for (i in 2:K) T[1, i + 1] <- mean(diag_power(W, i))
@@ -88,19 +106,18 @@ spill <- function(beta, gamma = 0, rho, W, method = c('quick', 'proper'), K = 20
     }
 
     N <- nrow(W)    
-    I <- diag(rep(1, N))
+    I <- Matrix::diag(N)
     imrw <- I - rho * W
-    M_tmp <- Matrix::solve(imrw)                   
+    Multiplier <- Matrix::solve(imrw)                   
     
-    M <- M_tmp %*% (I * beta + W * gamma)
-    dir = mean(Matrix::diag(M))
-    total <- mean(Matrix::rowSums(M))
+    M_spills <- Multiplier %*% (I * beta + W * gamma)
+    dir = mean(Matrix::diag(M_spills))
+    total <- mean(Matrix::rowSums(M_spills))
     indir <- total - dir
     spills = c(direct = dir,
                indirect = indir,
                total = total)    
-    return (spills)
-    
+    return (spills)    
 }
 
 
@@ -110,11 +127,10 @@ spill <- function(beta, gamma = 0, rho, W, method = c('quick', 'proper'), K = 20
 #'
 #' @export
 #' 
-impacts <- function(object, method = c('quick', 'proper'), K = 20) {
+impacts <- function(object, approx = TRUE, K = 15) {
 
     stopifnot(object$spatial$method == "SAR")
     stopifnot(grepl("SLM|SDLM", object$sar_type))
-    method <- match.arg(method)
     
     W <- object$C
     rho <- as.matrix(object, "sar_rho")[,1]
@@ -133,21 +149,7 @@ impacts <- function(object, method = c('quick', 'proper'), K = 20) {
     
     impax <- vector("list", length = M)
 
-    if (method == "proper") {
-        
-        for (m in 1:M) {
-                impax[[m]] <- sapply(1:S, function(s)
-                    spill(beta = as.numeric( B[s, m] ),
-                          gamma = as.numeric( G[s, m] ),
-                          rho = rho[s],
-                          W = W,
-                          method,
-                          K = K)
-                    ) |>
-                    t()                  
-        }
-        
-    } else {
+    if (approx) {
         
         T <- matrix(0, nrow = 2, ncol = K + 1)
         T[1, 1] <- 1
@@ -159,7 +161,20 @@ impacts <- function(object, method = c('quick', 'proper'), K = 20) {
                 impacts_multiplier(as.numeric( B[s,m] ), as.numeric( G[s,m] ), rho[s], T, K)) |>
                 t()            
         }
+        
+    } else {
 
+        for (m in 1:M) {
+            impax[[m]] <- sapply(1:S, function(s)
+                spill(beta = as.numeric( B[s, m] ),
+                      gamma = as.numeric( G[s, m] ),
+                      rho = rho[s],
+                      W = W,
+                      approx = approx,
+                      K = K)
+                ) |>
+                t()                  
+        }                
     }
     
     summary <- vector("list", length = M)
@@ -176,11 +191,10 @@ impacts <- function(object, method = c('quick', 'proper'), K = 20) {
 
     names(impax) <- Blabs
     names(summary) <- Blabs
-    out <- list(summary = summary, samples = impax)
-    class(out) <- append("impacts_slm", class(out))
-    
-    return(out)
-    
+    matrix_inverse_method <- ifelse(approx, 'approximate', 'proper')
+    out <- list(summary = summary, samples = impax, method = matrix_inverse_method)
+    class(out) <- append("impacts_slm", class(out))    
+    return(out)    
 }
 
 #' @export
@@ -195,6 +209,7 @@ impacts <- function(object, method = c('quick', 'proper'), K = 20) {
 print.impacts_slm <- function(x, digits = 2, ...) {
     print(x$summary, digits = digits, ...)
 }
+
 
 #' After LeSage and Pace 2009 pp. 114--115
 #' @noRd
@@ -215,7 +230,7 @@ impacts_multiplier <- function(beta, gamma, rho, T, K) {
     # indirect
     indirect <- total - direct
 
-    retunr (c(direct = direct, indirect = indirect, total = total))
+    return (c(direct = direct, indirect = indirect, total = total))
 }
 
 #' diagonal entries of matrix powers e..g, diag( W^{20} )
@@ -234,3 +249,4 @@ diag_power <- function(W, K = 20, trace = FALSE) {
     if (trace) return (sum(dwk))
     return (dwk)
 }
+

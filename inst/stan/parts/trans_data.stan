@@ -7,9 +7,15 @@
   // if 1, add linear pred. to 'fitted', as normal
   int as_olm;
 
+  // for vector of coefficients, matrix of covariates 
+  int<lower=0> dx_all = dx_obs + dx_me;
+
+  // any measurement error models? 
+  int<lower=0,upper=1> has_me = dx_me > 0;
+
   // QR transformation 
-  int<lower=0,upper=1> use_qr;
-  int<lower=0> d_qr = dx_obs + dwx;
+  int<lower=0,upper=1> use_qr = dx_obs > 0 && has_me == 0;
+  int<lower=0> d_qr = dx_all + dwx; // nb*: if use_qr=1, dx_all=dx_obs.
   matrix[n, d_qr] Q_ast;
   matrix[d_qr, d_qr] R_ast;
   matrix[d_qr, d_qr] R_ast_inverse;
@@ -23,8 +29,6 @@
   int<lower=0,upper=1> is_auto_gaussian;
   int<lower=0,upper=1> has_sigma;
   int<lower=0,upper=1> has_offset;
-  int<lower=0> dx_all;
-  int<lower=0,upper=1> has_me;
   is_gaussian = family == 1;
   is_student =  family == 2;
   is_poisson =  family == 3;
@@ -32,9 +36,6 @@
   is_auto_gaussian = family == 5 || family == 6;  
   has_sigma  =  family < 3;
   has_offset = sum(input_offset) != 0;
-  dx_all = dx_obs + dx_me;
-  has_me = dx_me > 0;
-  use_qr = dx_obs > 0 && has_me == 0;
 
   // when using car or sar hierarchical model with modeled (non-zero) mean (zmp=0), do Not treat as olm;
   // otherwise, treat as olm:

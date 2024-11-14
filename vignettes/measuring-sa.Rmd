@@ -241,7 +241,9 @@ The middle panel is a Moran scatter plot of the model residuals, and the map sho
 
 In this case, there is a small amount of residual autocorrelation, and the map indicates that this derives from a slight north-south/metropolitan-rural trend. The trend in the residuals suggests that shrinking towards the mean mortality rate may be less than ideal in this case---and potentially biased (socially)---because it appears that county-level mortality risk may be somewhat higher in the southern half of the state than in the greater Atlanta metropolitan area. 
 
-We could extend the model to address this concern by using one of **geostan**'s spatial models (e.g., `stan_car`), by adding one or more (substantively meaningful) covariates, or potentially both. 
+We could extend the model to address this concern by using one of geostan's spatial models (e.g., `stan_car`), by adding one or more (substantively meaningful) covariates, or potentially both.
+
+There is a literature in spatial analysis that prefers to use hypothesis testing procedures to determine whether a spatial model should be fit at all. An alternative approach, which geostan provides more support for, is to treat this as a question of model comparison - simply fit the models you are considering and then assess each of them critically using visualization (e.g., `geostan::posterior_predict`), residual diagnostics, and information criteria (`geostan::dic` and `geostan::waic`).
 
 
 ## References

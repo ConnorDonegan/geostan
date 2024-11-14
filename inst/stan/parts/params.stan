@@ -24,8 +24,7 @@
   // GLM
   // parameters for the process model //
   real intercept;
-  vector[dwx] gamma_qr;
-  vector[dx_all] beta_qr;
+  vector[d_qr] coefs_qr;
   array[is_student] real<lower=0> nu; 
   array[has_sigma] real<lower=0> sigma;
 

@@ -88,7 +88,7 @@
 #' }
 #' where \eqn{I} is the identity matrix, \eqn{\rho} is a spatial dependence parameter, \eqn{C} is a spatial connectivity matrix, and \eqn{M} is a diagonal matrix of variance terms. The diagonal of \eqn{M} contains a scale parameter \eqn{\tau} multiplied by a vector of weights (often set to be proportional to the inverse of the number of neighbors assigned to each site). 
 #'
-#' The covariance matrix of the CAR model contains two parameters: \eqn{\rho} (\code{car_rho}) which controls the kind (positive or negative) and degree of spatial autocorrelation, and the scale parameter \eqn{\tau} (\code{car_scale}). The range of permissible values for \eqn{\rho} depends on the specification of \eqn{\boldsymbol C} and \eqn{\boldsymbol M}; for specification options, see \link[geostan]{prep_car_data} and Cressie and Wikle (2011, pp. 184-188) or Donegan (2021).
+#' The covariance matrix of the CAR model contains two parameters: \eqn{\rho} (\code{car_rho}) which controls the kind (positive or negative) and degree of spatial autocorrelation, and the scale parameter \eqn{\tau}. The range of permissible values for \eqn{\rho} depends on the specification of \eqn{\boldsymbol C} and \eqn{\boldsymbol M}; for specification options, see \link[geostan]{prep_car_data} and Cressie and Wikle (2011, pp. 184-188) or Donegan (2021).
 #' 
 #' Further details of the models and results depend on the \code{family} argument, as well as on the particular CAR specification chosen (from \link[geostan]{prep_car_data}).
 #'

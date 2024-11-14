@@ -22,27 +22,24 @@ if (car > 0 || sar > 0) {
      
       if (has_re) log_lambda_mu += alpha_re[id];
      
-      if (use_qr) { //use qr
+      if (use_qr) {
 	
-	log_lambda_mu += Q_ast[ , 1:dx_obs] * beta_qr;
-	beta = R_ast_inverse[1:dx_obs, 1:dx_obs]  * beta_qr;
-	
-	if (dwx) {
-	  log_lambda_mu += Q_ast[ , (dx_obs+1):d_qr] * gamma_qr;
-	  gamma = R_ast_inverse[(dx_obs+1):d_qr, (dx_obs+1):d_qr] * gamma_qr;
-	}
+	log_lambda_mu += Q_ast * coefs_qr;
+	coefs = R_ast_inverse * coefs_qr;
+	beta = coefs[1:dx_all];
+	if (dwx) gamma = coefs[(dx_all+1):d_qr];	       	
 	
       } else {
+
+	if (dx_all) {
+	  beta = coefs_qr[1:dx_all];		  
+	  log_lambda_mu += x_all * beta;
+	}
 	
 	if (dwx) {
-	  for (i in 1:dwx) log_lambda_mu += csr_matrix_times_vector(n, n, W_w, W_v, W_u, x_all[,wx_idx[i]]) * gamma_qr[i];
-	  gamma = gamma_qr;
-	}
-	
-	if (dx_all) {
-	  log_lambda_mu += x_all * beta_qr;
-	  beta = beta_qr;
-	}
+	  gamma = coefs_qr[(dx_all+1):d_qr];		  
+	  for (i in 1:dwx) log_lambda_mu += csr_matrix_times_vector(n, n, W_w, W_v, W_u, x_all[,wx_idx[i]]) * gamma[i];	  
+	}	
 	
       }
       

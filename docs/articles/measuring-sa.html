@@ -314,10 +314,10 @@
 <span><span class="co">#&gt; Spatial Model Results </span></span>
 <span><span class="co">#&gt; Formula: deaths.male ~ offset(log(pop.at.risk.male))</span></span>
 <span><span class="co">#&gt; Partial pooling (varying intercept): ~GEOID</span></span>
-<span><span class="co">#&gt; Spatial method (outcome):  Exchangeable </span></span>
-<span><span class="co">#&gt; Likelihood function:  poisson </span></span>
-<span><span class="co">#&gt; Link function:  log </span></span>
-<span><span class="co">#&gt; Residual Moran Coefficient:  0.0232875 </span></span>
+<span><span class="co">#&gt; Likelihood:  poisson </span></span>
+<span><span class="co">#&gt; Link:  log </span></span>
+<span><span class="co">#&gt; Spatial method:  Exchangeable </span></span>
+<span><span class="co">#&gt; Residual Moran Coefficient:  0.0225495 </span></span>
 <span><span class="co">#&gt; Observations:  159 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Inference for Stan model: foundation.</span></span>
@@ -325,23 +325,23 @@
 <span><span class="co">#&gt; post-warmup draws per chain=1000, total post-warmup draws=4000.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff  Rhat</span></span>
-<span><span class="co">#&gt; intercept -4.180   0.001 0.021 -4.219 -4.197 -4.180 -4.163 -4.139   361 1.013</span></span>
-<span><span class="co">#&gt; alpha_tau  0.247   0.000 0.016  0.218  0.234  0.246  0.260  0.281  3754 1.000</span></span>
+<span><span class="co">#&gt; intercept -4.180   0.001 0.021 -4.220 -4.199 -4.181 -4.163 -4.140   359 1.012</span></span>
+<span><span class="co">#&gt; alpha_tau  0.247   0.000 0.016  0.219  0.234  0.246  0.260  0.282  4622 1.000</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Mon Nov  4 07:56:31 2024.</span></span>
+<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Fri Nov 15 08:13:10 2024.</span></span>
 <span><span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">#&gt; convergence, Rhat=1).</span></span></code></pre></div>
 <p>The printed summary of results shows that the posterior probability distribution for the intercept, which in this case represents the mean log-mortality rate, is centered on <span class="math inline">\(-4.183\)</span>, which is a mortality rate of <span class="math inline">\(e^{-4.183} = 153\)</span> per 10,000. The <code>2.5%</code> and <code>97.5%</code> columns provide the bounds on the 95% credible interval (CI) for each parameter; the CI for the intercept is [-4.22, -4.14].<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a></p>
 <p>Provide the fitted model, <code>fit</code>, and the spatial data, <code>georgia</code>, to the <code>sp_diag</code> function to see a set of spatial model diagnostics:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Using sp_diag(y, shape, rates = TRUE, ...). To examine data as (unstandardized) counts, use rates = FALSE.</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span></span></code></pre></div>
 <p><img src="measuring-sa_files/figure-html/unnamed-chunk-14-1.png" width="768" style="display: block; margin: auto;"></p>
 <p>The point-interval plot on the left shows the raw mortality rates (the raw outcome data) on the x-axis, the fitted values on the y-axis, and a ‘perfect fit’ (slope = 1, intercept = 0) line for reference. We can see that a number of the fitted values have posterior means that deviate from the observations; but this “shrinkage” towards the mean is not necessarily a problem. It is often desirable insofar as it indicates that these are counties for which our data provide very little evidence as to what the risk of death is (i.e., the population is very small). (For discussions of information pooling and other topics as well, see <span class="citation">McElreath (<a href="#ref-mcelreath_2016" role="doc-biblioref">2016</a>)</span> and <span class="citation">Haining and Li (<a href="#ref-haining_2020" role="doc-biblioref">2020</a>)</span>).</p>
 <p>The middle panel is a Moran scatter plot of the model residuals, and the map shows the mean residual for each county.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></p>
 <p>In this case, there is a small amount of residual autocorrelation, and the map indicates that this derives from a slight north-south/metropolitan-rural trend. The trend in the residuals suggests that shrinking towards the mean mortality rate may be less than ideal in this case—and potentially biased (socially)—because it appears that county-level mortality risk may be somewhat higher in the southern half of the state than in the greater Atlanta metropolitan area.</p>
-<p>We could extend the model to address this concern by using one of <strong>geostan</strong>’s spatial models (e.g., <code>stan_car</code>), by adding one or more (substantively meaningful) covariates, or potentially both.</p>
+<p>We could extend the model to address this concern by using one of geostan’s spatial models (e.g., <code>stan_car</code>), by adding one or more (substantively meaningful) covariates, or potentially both.</p>
+<p>There is a literature in spatial analysis that prefers to use hypothesis testing procedures to determine whether a spatial model should be fit at all. An alternative approach, which geostan provides more support for, is to treat this as a question of model comparison - simply fit the models you are considering and then assess each of them critically using visualization (e.g., <code><a href="../reference/posterior_predict.html">geostan::posterior_predict</a></code>), residual diagnostics, and information criteria (<code><a href="../reference/waic.html">geostan::dic</a></code> and <code><a href="../reference/waic.html">geostan::waic</a></code>).</p>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

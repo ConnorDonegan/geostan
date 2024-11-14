@@ -63,7 +63,7 @@
 <span>  sigma <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="va">w</span>,</span>
 <span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SEM"</span>, <span class="st">"SLM"</span><span class="op">)</span>,</span>
-<span>  quick <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  approx <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  K <span class="op">=</span> <span class="fl">15</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -99,12 +99,12 @@
 <dd><p>Type of SAR model: spatial error model ("SEM") or spatial lag model ("SLM").</p></dd>
 
 
-<dt>quick</dt>
+<dt>approx</dt>
 <dd><p>Use power of matrix W to approximate the inverse term?</p></dd>
 
 
 <dt>K</dt>
-<dd><p>Number of matrix powers to use if <code>quick = TRUE</code>.</p></dd>
+<dd><p>Number of matrix powers to use if <code>approx = TRUE</code>.</p></dd>
 
 
 <dt>...</dt>
@@ -120,7 +120,7 @@
     <div id="details">
     <h2>Details</h2>
     <p>This function takes <code>n = nrow(w)</code> draws from the normal distribution using <code>rnorm</code> to obtain vector <code>x</code>; if <code>type = 'SEM', it then pre-multiplies </code>x<code>by the inverse of the matrix</code>(I - rho * W)<code>to obtain spatially autocorrelated values. For</code>type = 'SLM', the multiplier matrix is applied to <code>x + mu</code> to produce the desired values.</p>
-<p>The <code>quick</code> method approximates the matrix inversion using the method described by LeSage and Pace (2009, p. 40). For high values of rho, larger values of K are required for the approximation to suffice; you want <code>rho^K</code> to be near zero.</p>
+<p>The <code>approx</code> method approximates the matrix inversion using the method described by LeSage and Pace (2009, p. 40). For high values of rho, larger values of K are required for the approximation to suffice; you want <code>rho^K</code> to be near zero.</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>

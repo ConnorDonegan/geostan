@@ -102,7 +102,7 @@
 <div class="section level3">
 <h3 id="autonormal-model">Autonormal model<a class="anchor" aria-label="anchor" href="#autonormal-model"></a>
 </h3>
-<p>This first example is an autonormal model: <span class="math display">\[y \sim Normal(\alpha + x \beta, \Sigma).\]</span> Here you have <span class="math inline">\(n\)</span> observations of a continuously measured outcome <span class="math inline">\(y\)</span>, possibly <span class="math inline">\(k=1\)</span> or more covariates <span class="math inline">\(x\)</span>, and you’re accounting for spatial autocorrelation in <span class="math inline">\(y\)</span> using the covariance matrix (following the CAR specification).</p>
+<p>This first example is an autonormal model which applies the CAR model directly to the data (as described above). This can also be written as <span class="math display">\[y \sim Normal(\alpha + x \beta, \Sigma).\]</span> Here you have <span class="math inline">\(n\)</span> observations of a continuously measured outcome <span class="math inline">\(y\)</span>, possibly <span class="math inline">\(k=1\)</span> or more covariates <span class="math inline">\(x\)</span>, and you’re accounting for spatial autocorrelation in <span class="math inline">\(y\)</span> using the covariance matrix (following the CAR specification).</p>
 <p>We fit a model like this using <code><a href="../reference/stan_car.html">geostan::stan_car</a></code>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>

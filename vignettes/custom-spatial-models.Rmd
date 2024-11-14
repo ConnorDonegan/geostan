@@ -44,7 +44,7 @@ In addition to being used as a model for observations (as specified above by $y$
 
 ## Autonormal model
 
-This first example is an autonormal model: $$y \sim Normal(\alpha + x \beta, \Sigma).$$ Here you have $n$ observations of a continuously measured outcome $y$, possibly $k=1$ or more covariates $x$, and you're accounting for spatial autocorrelation in $y$ using the covariance matrix (following the CAR specification). 
+This first example is an autonormal model which applies the CAR model directly to the data (as described above). This can also be written as $$y \sim Normal(\alpha + x \beta, \Sigma).$$ Here you have $n$ observations of a continuously measured outcome $y$, possibly $k=1$ or more covariates $x$, and you're accounting for spatial autocorrelation in $y$ using the covariance matrix (following the CAR specification). 
 
 We fit a model like this using `geostan::stan_car`:
 

@@ -13,6 +13,7 @@
   // GLM
   matrix[n, use_qr ? 0 : dx_all] x_all;
   vector[n] fitted;
+  vector[use_qr ? d_qr : 0] coefs;
   vector[dx_all] beta;
   vector[dwx] gamma;
   if (use_qr == 0) {

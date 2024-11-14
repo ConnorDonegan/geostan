@@ -54,6 +54,8 @@ Creates sparse matrix representations of spatial connectivity structures
 \details{
 The method argument currently has three options. The queen contiguity condition defines neighbors as polygons that share at least one point with one another. The rook condition requires that they share a line or border with one another. K-nearest neighbors is based on distance between centroids. All methods are implemented using the spdep package and then converted to sparse matrix format.
 
+Alternatively, one can use spdep directly to create a \code{listw} object and then convert that to a sparse matrix using \code{as(listw, 'CsparseMatrix')} for use with geostan.
+
 Haining and Li (Ch. 4) provide a helpful discussion of spatial connectivity matrices (Ch. 4).
 
 The space-time connectivity matrix can be used for eigenvector space-time filtering (\code{\link[geostan]{stan_esf}}. The 'lagged' space-time structure connects each observation to its own past (one period lagged) value and the past value of its neighbors. The 'contemporaneous' specification links each observation to its neighbors and to its own in situ past (one period lagged) value (Griffith 2012, p. 23).

@@ -6,7 +6,7 @@
 
 library(geostan)
 
-row = 20
+row = 12
 col = 26
 N <- row * col
 sdl <- prep_sar_data2(row = row, col = col, quiet = TRUE)

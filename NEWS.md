@@ -1,3 +1,17 @@
+# geostan 0.8.0
+
+New Features include spatial econometric models and better sampling more hierarchical spatial autoregressive models:
+
+ - geostan now provides more support for spatial econometric models. Only the most used models are included: spatial error (SEM), spatially-lagged dependent variable (SLM), and the 'Durbinized' versions of each (SDEM, SDLM). Methods for calculating impacts are and predicted values for SLM/SDLM are included. Users can also draw from the posterior predictive distributions of these models: see `geostan::stan_sar` and `geostan::impacts`.
+ - `geostan::sim_sar` can now simulate draws from the spatial lag model as well as the spatial error model.
+ - The CAR and SAR models, when placed in a Poisson or binomial model for count data, can sample poorly when the data is sparse. This can usually be fixed using the new `zmp` option which switches CAR/SAR models to a zero-mean parameterization. Details are in the vignette on building custom spatial models.
+ 
+Bug fix:
+
+ - A bug was introduced to v0.7.0 which added a small bias to coefficient estimates which only appeared when the `slx` option was used. This has been fixed, and extra Monte Carlo tests have been added to avoid this kind of error in the future. 
+
+The package documentation and vignettes have also been improved a little bit.
+
 # geostan 0.7.0
 
 V0.7.0 includes various adjustments to speed things up, and the DIC is now provided for model comparison (in addition to WAIC).

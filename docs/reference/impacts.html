@@ -56,9 +56,9 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">spill</span><span class="op">(</span><span class="va">beta</span>, gamma <span class="op">=</span> <span class="fl">0</span>, <span class="va">rho</span>, <span class="va">W</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"quick"</span>, <span class="st">"proper"</span><span class="op">)</span>, K <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">spill</span><span class="op">(</span><span class="va">beta</span>, gamma <span class="op">=</span> <span class="fl">0</span>, <span class="va">rho</span>, <span class="va">W</span>, approx <span class="op">=</span> <span class="cn">TRUE</span>, K <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">impacts</span><span class="op">(</span><span class="va">object</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"quick"</span>, <span class="st">"proper"</span><span class="op">)</span>, K <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
+<span><span class="fu">impacts</span><span class="op">(</span><span class="va">object</span>, approx <span class="op">=</span> <span class="cn">TRUE</span>, K <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for impacts_slm</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">x</span>, digits <span class="op">=</span> <span class="fl">2</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
@@ -87,12 +87,12 @@
 <dd><p>Spatial weights matrix</p></dd>
 
 
-<dt>method</dt>
-<dd><p>Use 'quick' for a computationally efficient approximation (after LeSage and Pace 2009, pp. 114--115) and 'proper' to compute the matrix inversion using <code><a href="https://rdrr.io/pkg/Matrix/man/solve-methods.html" class="external-link">Matrix::solve</a></code>.</p></dd>
+<dt>approx</dt>
+<dd><p>For a computationally efficient approximation to the required matrix inverse (after LeSage and Pace 2009, pp. 114--115); if <code>FALSE</code>, then a proper matrix inverse will be computed using <code><a href="https://rdrr.io/pkg/Matrix/man/solve-methods.html" class="external-link">Matrix::solve</a></code>.</p></dd>
 
 
 <dt>K</dt>
-<dd><p>Degree of polynomial in the expansion to use for the 'quick' method.</p></dd>
+<dd><p>Degree of polynomial in the expansion to use when 'approx = TRUE`.</p></dd>
 
 
 <dt>object</dt>
@@ -113,11 +113,11 @@
 </dl></div>
     <div id="details">
     <h2>Details</h2>
-    <p>These functions are for interpreting the results of the spatial lag model ('SLM') and the spatial Durbin lag model ('SDLM'). The models can be fitted using <a href="stan_sar.html">stan_sar</a>. The equation for these SAR models specifies simultaneous feedback between all units, such that changing the outcome in one location has a spill-over effect that may extend to all other locations (a ripple or diffusion effect); the induced changes will also react back onto the first unit. (This presumably takes time, even if the observations are cross-sectional.)</p>
-<p>These spill-overs have to be incorporated into the interpretation of the regression coefficients of SLM and SDLM models (granting that the model specification itself is reasonable for your application). A unit change in the value of <code>X</code> in one location will impact <code>y</code> in that same place ('direct' impact) and will also impact <code>y</code> elsewhere through the diffusion process ('indirect' impact). The 'total' impact of a unit change in <code>X</code> is the sum of the direct and indirect effects (LeSage and Pace 2009).</p>
+    <p>These methods apply only to the spatial lag and spatial Durbin lag models (SLM and SDLM) as fit by <code><a href="stan_sar.html">geostan::stan_sar</a></code>.</p>
+<p>The equation for these SAR models specifies simultaneous feedback between all units, such that changing the outcome in one location has a spill-over effect that may extend to all other locations (a ripple or diffusion effect); the induced changes will also react back onto the first unit. (This presumably takes time, even if the observations are cross-sectional.)</p>
+<p>These spill-overs have to be incorporated into the interpretation and reporting of the regression coefficients of SLM and SDLM models. A unit change in the value of \(X\) in one location will impact \(y\) in that same place ('direct' impact) and will also impact \(y\) elsewhere through the diffusion process ('indirect' impact). The 'total' expected impact of a unit change in <code>X</code> is the sum of the direct and indirect effects (LeSage and Pace 2009).</p>
 <p>The <code>spill</code> function is for quickly calculating average spillover effects given point estimates of parameters.</p>
 <p>The <code>impacts</code> function calculates the (average) direct, indirect, and total effects once for every MCMC sample to produce samples from the posterior distribution for the impacts; the samples are returned together with a summary of the posterior distribution (mean, median, and select quantiles).</p>
-<p>These methods are only required for the spatial lag and spatial Durbin lag models (SLM and SDLM).</p>
     </div>
 
     <div id="ref-examples">
@@ -147,7 +147,7 @@
 <span></span>
 <span><span class="co"># impacts (posterior distribution)</span></span>
 <span><span class="va">impax</span> <span class="op">&lt;-</span> <span class="fu">impacts</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="va">impax</span><span class="op">$</span><span class="va">summary</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">impax</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># plot posterior distributions</span></span>
 <span><span class="va">og</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>,</span>
@@ -158,6 +158,26 @@
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">S</span><span class="op">[</span>,<span class="fl">3</span><span class="op">]</span>, main <span class="op">=</span> <span class="st">'Total'</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">og</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co">##</span></span>
+<span><span class="co">## The approximate method</span></span>
+<span><span class="co">##</span></span>
+<span></span>
+<span><span class="co"># High rho value requires more K; rho^K must be near zero</span></span>
+<span><span class="va">Ks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">15</span>, <span class="fl">20</span>, <span class="fl">30</span>, <span class="fl">35</span>, <span class="fl">40</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">Ks</span>, <span class="fl">0.9</span><span class="op">^</span><span class="va">Ks</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># understand sensitivity of results to K when rho is high</span></span>
+<span><span class="fu">spill</span><span class="op">(</span><span class="fl">0.5</span>, <span class="op">-</span><span class="fl">0.25</span>, <span class="fl">0.9</span>, <span class="va">W</span>, approx <span class="op">=</span> <span class="cn">TRUE</span>, K <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="fu">spill</span><span class="op">(</span><span class="fl">0.5</span>, <span class="op">-</span><span class="fl">0.25</span>, <span class="fl">0.9</span>, <span class="va">W</span>, approx <span class="op">=</span> <span class="cn">TRUE</span>, K <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
+<span><span class="fu">spill</span><span class="op">(</span><span class="fl">0.5</span>, <span class="op">-</span><span class="fl">0.25</span>, <span class="fl">0.9</span>, <span class="va">W</span>, approx <span class="op">=</span> <span class="cn">TRUE</span>, K <span class="op">=</span> <span class="fl">30</span><span class="op">)</span></span>
+<span><span class="fu">spill</span><span class="op">(</span><span class="fl">0.5</span>, <span class="op">-</span><span class="fl">0.25</span>, <span class="fl">0.9</span>, <span class="va">W</span>, approx <span class="op">=</span> <span class="cn">TRUE</span>, K <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># the correct results</span></span>
+<span><span class="fu">spill</span><span class="op">(</span><span class="fl">0.5</span>, <span class="op">-</span><span class="fl">0.25</span>, <span class="fl">0.9</span>, <span class="va">W</span>, approx <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># moderate and low rho values are fine with smaller K</span></span>
+<span><span class="fu">spill</span><span class="op">(</span><span class="fl">0.5</span>, <span class="op">-</span><span class="fl">0.25</span>, <span class="fl">0.7</span>, <span class="va">W</span>, approx <span class="op">=</span> <span class="cn">TRUE</span>, K <span class="op">=</span> <span class="fl">15</span><span class="op">)</span></span>
+<span><span class="fu">spill</span><span class="op">(</span><span class="fl">0.5</span>, <span class="op">-</span><span class="fl">0.25</span>, <span class="fl">0.7</span>, <span class="va">W</span>, approx <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span></code></pre></div>
     </div>
   </div>

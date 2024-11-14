@@ -282,37 +282,18 @@
 </dl></div>
     <div id="details">
     <h2>Details</h2>
-    <p>Discussions of SAR models may be found in Cliff and Ord (1981), Cressie (2015, Ch. 6), LeSage and Pace (2009), and LeSage (2014). The Stan implementation draws from Donegan (2021).</p>
-<p>There are two SAR specification options which are commonly known as the spatial error ('SEM') and the spatial lag ('SLM') models. When the spatial-lag of the covariates are included, then the model is referred to as a spatial Durbin model; depending on the model type, it becomes a spatial Durbin error model ('SDEM') or a spatial Durbin lag model ('SDLM').</p>
-<p>The spatial error specification ('SEM') is
-$$y = \mu + ( I - \rho C)^{-1} \epsilon$$
-$$\epsilon \sim Gauss(0, \sigma^2)$$
-where \(C\) is the spatial connectivity matrix, \(I\) is the n-by-n identity matrix, and \(\rho\) is a spatial autocorrelation parameter. In words, the errors of the regression equation are spatially autocorrelated.</p>
-<p>Re-arranging terms, the model can also be written as follows:
-$$y = \mu + \rho C (y - \mu)  + \epsilon$$
-which perhaps shows more intuitively the implicit spatial trend component, \(\rho C (y - \mu)\).</p>
-<p>The second SAR specification type is the 'spatial lag of y' ('SLM'). This model describes a diffusion or contagion process:
-$$y = \rho C y + \mu + \epsilon$$
-$$\epsilon \sim Gauss(0, \sigma^2)$$
-This is attractive for modeling actual contagion processes. Here the 'spatial trend' part is simply \(\rho C y\).</p>
-<p>Both model types have a covariance matrix of:</p>
-<p>$$\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}.$$</p>
-<p>But the expected values of the models differ. The expected value for the SEM is the usual \(\mu\) (the intercept plus <code>X*beta</code>); the expected value of the SLM is \((I - \rho C)^{-1} \mu\).</p>
-<p>The mathematics and typical interpretation of the SLM/SDLM is unusual and the conventional interpretation of regression coefficients does not apply! Use the <a href="impacts.html">impacts</a> method to interpret results from the SLM and SDLM models (that is, granted that this model form is at least plausible for the application).</p>
-<p>Use of the 'SDEM' and 'SDLM' options are for convenience: you can also obtain the Durbin models using the <code>slx</code> (spatial lag of X) argument. The <code>slx</code> argument allows control over which covariates will be added in spatial-lag form; the Durbin options include the spatial lag of all covariates.</p>
-<p>Most often, the SAR model is applied directly to observations (referred to below as the auto-normal or auto-Gaussian model). The SAR model can also be applied to a vector of parameters inside a hierarchical model. The latter enables spatial or network autocorrelation to be modeled when the observations are discrete counts (e.g., hierarchical models for disease incidence rates). Currently these hierarchical models are only supported for the spatial error models (SEM/SDEM).</p><div class="section">
+    <p>Discussions of SAR models may be found in Cliff and Ord (1981), Cressie (2015, Ch. 6), LeSage and Pace (2009), and LeSage (2014). The Stan implementation draws from Donegan (2021). It is a multivariate normal distribution with covariance matrix of \(\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}.\).</p>
+<p>There are two SAR specification options which are commonly known as the spatial error ('SEM') and the spatial lag ('SLM') models. When the spatial-lags of all covariates are included in the linear predictor (as in \(\mu = \alpha + X \beta + W X \gamma\)), then the model is referred to as a spatial Durbin model; depending on the model type, it becomes a spatial Durbin error model ('SDEM') or a spatial Durbin lag model ('SDLM'). To control which covariates are introduced in spatial-lag form, use the <code>slx</code> argument together with 'type = SEM' or 'type = SLM'.</p><div class="section">
 <h3 id="auto-normal-spatial-error">Auto-normal: spatial error<a class="anchor" aria-label="anchor" href="#auto-normal-spatial-error"></a></h3>
 
 
-<p>When <code>family = auto_gaussian()</code> and <code>type = 'SEM'</code> (the default), the SAR model is specified as follows:</p>
-<p>$$y \sim Gauss(\mu, \Sigma)$$
-$$\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}$$
-where \(\mu\) is the mean vector (with intercept, covariates, etc.), \(C\) is a spatial weights or connectivity matrix (usually row-standardized), and \(\sigma\) is a scale parameter.</p>
-<p>The SAR model contains an implicit spatial trend (i.e., spatial autocorrelation) component \(\phi\) which is calculated as follows:
-$$
-\phi = \rho C (y - \mu)
-$$</p>
-<p>This term can be extracted from a fitted auto-Gaussian model using the <a href="resid_geostan_fit.html">spatial</a> method.</p>
+<p>The spatial error specification ('SEM') is
+$$y = \mu + ( I - \rho C)^{-1} \epsilon$$
+$$\epsilon \sim Gauss(0, \sigma^2)$$
+where \(C\) is the spatial connectivity matrix, \(I\) is the n-by-n identity matrix, and \(\rho\) is a spatial autocorrelation parameter. In words, the errors of the regression equation are spatially autocorrelated. The expected value for the SEM is the usual \(\mu\): the intercept plus <code>X*beta</code> and any other terms added to the linear predictor.</p>
+<p>Re-arranging terms, the model can also be written as follows:
+$$y = \mu + \rho C (y - \mu)  + \epsilon$$
+which shows more intuitively the implicit spatial trend component, \(\phi = \rho C (y - \mu)\). This term \(\phi\) can be extracted from a fitted auto-Gaussian/auto-normal model using the <a href="resid_geostan_fit.html">spatial</a> method.</p>
 <p>When applied to a fitted auto-Gaussian model, the <a href="resid_geostan_fit.html">residuals.geostan_fit</a> method returns 'de-trended' residuals \(R\) by default. That is,
 $$
 R = y - \mu - \rho C (y - \mu).
@@ -321,16 +302,23 @@ To obtain "raw" residuals (\(y - \mu\)), use <code>residuals(fit, detrend = FALS
 </div>
 
 <div class="section">
-<h3 id="aut-normal-spatial-lag">Aut-normal: spatial lag<a class="anchor" aria-label="anchor" href="#aut-normal-spatial-lag"></a></h3>
+<h3 id="auto-normal-spatial-lag">Auto-normal: spatial lag<a class="anchor" aria-label="anchor" href="#auto-normal-spatial-lag"></a></h3>
 
 
-<p>For options <code>type = 'SLM'</code> and <code>type = 'SDLM'</code>, the <a href="resid_geostan_fit.html">spatial</a> method returns the vector
+<p>The second SAR specification type is the 'spatial lag of y' ('SLM'). This model describes a diffusion or contagion process:
+$$y = \rho C y + \mu + \epsilon$$
+$$\epsilon \sim Gauss(0, \sigma^2)$$
+This is very attractive for modeling actual contagion or diffusion processes (or static snapshots of such processes). The model does not allow for the usual interpretation of regression coefficients as marginal effects. To interpret SLM results, use <a href="impacts.html">impacts</a>.</p>
+<p>Note that the expected value of the SLM is equal to \((I - \rho C)^{-1} \mu\).</p>
+<p>The <a href="resid_geostan_fit.html">spatial</a> method returns the vector
 $$ \phi = \rho C y, $$
 the spatial lag of \(y\).</p>
 <p>The <a href="resid_geostan_fit.html">residuals.geostan_fit</a> method returns 'de-trended' residuals \(R\) by default:
 $$R = y - \rho C y - \mu,$$
-where \(\mu\) contains the intercept and any covariates (and possibly other terms). Similarly, the fitted values obtained from the <a href="resid_geostan_fit.html">fitted.geostan_fit</a> will include the spatial trend \(\rho C y\) by default.</p>
-<p>To read/interpret results from the SLM or SDLM, use the <a href="impacts.html">impacts</a> method.</p>
+where \(\mu\) contains the intercept and any covariates (and possibly other terms).</p>
+<p>Similarly, the fitted values obtained from the <a href="resid_geostan_fit.html">fitted.geostan_fit</a> will include the spatial trend \(\rho C y\) by default to equal
+$$\rho C y + \mu.$$</p>
+<p>For now at least, the SLM/SDLM option is only supported for auto-normal models (as opposed to hierarchical Poisson and binomial models).</p>
 </div>
 
 <div class="section">
@@ -340,14 +328,15 @@ where \(\mu\) contains the intercept and any covariates (and possibly other term
 <p>For <code>family = poisson()</code>, the model is specified as:</p>
 <p>$$y \sim Poisson(e^{O + \lambda})$$
 $$\lambda \sim Gauss(\mu, \Sigma)$$
-$$\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}.$$</p>
-<p><code>O</code> is a constant/offset term. If the raw outcome consists of a rate \(\frac{y}{p}\) with observed counts \(y\) and denominator \(p\) (often this will be the size of the population at risk), then the offset term \(O=log(p)\) is the log of the denominator.</p>
+$$\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}$$</p>
+<p>where \(O\) is a constant/offset term and \(e^\lambda\) is a rate parameter.</p>
+<p>If the raw outcome consists of a rate \(\frac{y}{p}\) with observed counts \(y\) and denominator \(p\) (often this will be the size of the population at risk), then the offset term should be the log of the denominator: \(O=log(p)\).</p>
 <p>This same model can be written (equivalently) as:</p>
 <p>$$y \sim Poisson(e^{O + \mu + \phi})$$
 $$ \phi \sim Gauss(0, \Sigma) $$</p>
 <p>This second version is referred to here as the zero-mean parameterization (ZMP), since the SAR model is forced to have mean of zero. Although the non-ZMP is typically better for MCMC sampling, use of the ZMP can greatly improve MCMC sampling <em>when the data is sparse</em>. Use <code>zmp = TRUE</code> in <code>stan_sar</code> to apply this specification. (See the geostan vignette on 'custom spatial models' for full details on implementation of the ZMP.)</p>
 <p>For Poisson models, the <a href="resid_geostan_fit.html">spatial</a> method returns the (zero-mean) parameter vector \(\phi\). When <code>zmp = FALSE</code> (the default), \(\phi\) is obtained by subtraction: \(\phi = \lambda - \mu\).</p>
-<p>In the Poisson SAR model, \(\phi\) contains a latent (smooth) spatial trend as well as additional variation around it. If you would like to extract the latent/implicit spatial trend from \(\phi\), you can do so by calculating:
+<p>In the Poisson SAR model, \(\phi\) contains a latent (smooth) spatial trend as well as additional variation around it (this is merely a verbal description of the CAR model). If you would like to extract the latent/implicit spatial trend from \(\phi\), you can do so by calculating:
 $$
  \rho C \phi.
 $$</p>
@@ -360,7 +349,7 @@ $$</p>
 <p>For <code>family = binomial()</code>, the model is specified as:</p>
 <p>$$y \sim Binomial(N, \lambda) $$
 $$logit(\lambda) \sim Gauss(\mu, \Sigma) $$
-$$\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1}.$$</p>
+$$\Sigma = \sigma^2 (I - \rho C)^{-1}(I - \rho C')^{-1},$$</p>
 <p>where outcome data \(y\) are counts, \(N\) is the number of trials, and \(\lambda\) is the rate of 'success'. Note that the model formula should be structured as: <code>cbind(sucesses, failures) ~ 1</code> (for an intercept-only model), such that <code>trials = successes + failures</code>.</p>
 <p>For fitted Binomial models, the <code><a href="resid_geostan_fit.html">spatial</a></code> method will return the parameter vector <code>phi</code>, equivalent to:</p>
 <p>$$\phi = logit(\lambda) - \mu.$$</p>
@@ -375,7 +364,7 @@ $$</p>
 <h3 id="additional-functionality">Additional functionality<a class="anchor" aria-label="anchor" href="#additional-functionality"></a></h3>
 
 
-<p>The SAR models can also incorporate spatially-lagged covariates, measurement/sampling error in covariates (particularly when using small area survey estimates as covariates), missing outcome data, and censored outcomes (such as arise when a disease surveillance system suppresses data for privacy reasons). For details on these options, please see the Details section in the documentation for <a href="stan_glm.html">stan_glm</a>.</p>
+<p>The SAR models can also incorporate spatially-lagged covariates, measurement/sampling error in covariates (particularly when using small area survey estimates as covariates), missing outcome data (for Poisson and binomial models), and censored outcomes (such as arise when a disease surveillance system suppresses data for privacy reasons). For details on these options, please see the Details section in the documentation for <a href="stan_glm.html">stan_glm</a>.</p>
 </div>
 
     </div>
