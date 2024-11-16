@@ -12,7 +12,7 @@
 library(geostan)
 
 ## no. iterations
-M = 15
+M = 20
 
 # generate y using SLM or SEM
 #sar_type <- commandArgs(trailingOnly = TRUE)

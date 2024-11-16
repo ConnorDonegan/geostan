@@ -9,7 +9,7 @@
 library(geostan)
 
 # no. iterations [s > 90 required for impact est. to converge - they are high variance; others converge by 30]
-S <- 50
+S <- 30
 
 # use measurement error in x
 has_me <- FALSE

@@ -6,7 +6,7 @@
 library(geostan)
 
 ## no. iterations
-M = 35
+M = 15
 
 ## a regular grid
 ncol = 20
@@ -41,29 +41,40 @@ res <- sapply(1:M, FUN = function(i) {
     ME <- prep_me_data(se = data.frame(x = rep(sigma.me, N)))
     if (rho.x > 0) ME <- prep_me_data(se = data.frame(x = rep(sigma.me, N)), car_parts = cars)
 
-    fit_sem <- geostan::stan_sar(y ~ x,
+    fit_sem_me <- geostan::stan_sar(y ~ x,
                                  data = dat,
                                  type = "SDEM",
                                  sar_parts = sars,
                                  ME = ME,
                                  chains = 1,
-                                 iter = 1e3,
+                                 iter = 600,
                                  quiet = TRUE,
                                  slim = TRUE
                                  ) |>
         suppressWarnings()
 
-        fit_glm0 <- geostan::stan_glm(y ~ x,
-                                 slx = ~ x,
-                                 data = dat,
-                                 ## ME = ME, ##
-                                 C = cars$C,
-                                 chains = 1,
-                                 iter = 1e3,
-                                 quiet = TRUE,
-                                 slim = TRUE
-                                 ) |>
+    fit_sem <- geostan::stan_sar(y ~ x,
+                                  data = dat,
+                                  type = "SDEM",
+                                  sar_parts = sars,
+                                  ## ME = ME, ##
+                                  chains = 1,
+                                  iter = 600,
+                                  quiet = TRUE,
+                                  slim = TRUE
+                                  ) |>
         suppressWarnings()
+    ## fit_glm0 <- geostan::stan_glm(y ~ x,
+        ##                          slx = ~ x,
+        ##                          data = dat,
+        ##                          ## ME = ME, ##
+        ##                          C = cars$C,
+        ##                          chains = 1,
+        ##                          iter = 600,
+        ##                          quiet = TRUE,
+        ##                          slim = TRUE
+        ##                          ) |>
+        ## suppressWarnings()
     ## fit_car <- geostan::stan_car(y ~ x,
     ##                              slx = ~ x,
     ##                              data = dat,
@@ -89,9 +100,10 @@ res <- sapply(1:M, FUN = function(i) {
     ##     suppressWarnings()
     
     x <- c(
-        GLM0 = fit_glm0$summary[c('intercept', 'w.x', 'x', 'rho', 'sigma'), 'mean'],
+        # GLM0 = fit_glm0$summary[c('intercept', 'w.x', 'x', 'rho', 'sigma'), 'mean'],
        # GLM = fit_glm$summary[c('intercept', 'w.x', 'x', 'rho', 'sigma'), 'mean'],        
-        SEM = fit_sem$summary[c('intercept', 'w.x', 'x', 'sar_rho', 'sar_scale'), 'mean'] #,
+        SEM_ME = fit_sem_me$summary[c('intercept', 'w.x', 'x', 'sar_rho', 'sar_scale'), 'mean'],
+        SEM = fit_sem$summary[c('intercept', 'w.x', 'x', 'sar_rho', 'sar_scale'), 'mean'] #,        
        # CAR = fit_car$summary[c('intercept', 'w.x', 'x', 'car_rho', 'car_scale'), 'mean']
         )
     
@@ -103,10 +115,10 @@ res <- sapply(1:M, FUN = function(i) {
 RMSE <- function(est, true) sqrt(mean(est - true)^2)
 
 g_res <- res |>
-    subset(row.names(res) %in% c('GLM02', 'SEM2'))
+    subset(row.names(res) %in% c('SEM_ME2', 'SEM2'))
    ## subset(row.names(res) %in% c('GLM02', 'GLM2', 'SEM2', 'CAR2'))
 b_res <- res |>
-    subset(row.names(res) %in% c('GLM03', 'SEM3'))    
+    subset(row.names(res) %in% c('SEM_ME3', 'SEM3'))    
      ##  subset(row.names(res) %in% c('GLM03', 'GLM2', 'SEM3', 'CAR3'))
 
 cat("\n**\nRMSE of ME models: \n**\n")
@@ -124,7 +136,7 @@ cat("\n**\nME models\nSEM Estimates (rounded) should be close to DGP parameters 
 
 est <- apply(res, 1, mean) 
 
-est <- est[c('GLM02', 'GLM03', 'SEM2', 'SEM3')]
+est <- est[c('SEM2', 'SEM3', 'SEM_ME2', 'SEM_ME3')]
 
 out <- data.frame(
    # Mod = attributes(est)$names,
