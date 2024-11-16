@@ -10,9 +10,9 @@
 #' 
 #' @param width Only used if \code{summary = TRUE}, to set the quantiles for the credible intervals. Defaults to `width = 0.95`.
 #'
-#' @param quick For SAR models only; `quick = TRUE` uses an approximation method for the inverse of matrix `(I - rho * W)`.
+#' @param approx For SAR models only; `approx = TRUE` uses an approximation method for the inverse of matrix `(I - rho * W)`.
 #'
-#' @param K For SAR models only; number of matrix powers to for the matrix inverse approximation. Hiugh values of rho (e.g., > 0.9) require larger K for accurate approximations.
+#' @param K For SAR models only; number of matrix powers to for the matrix inverse approximation (used when `approx = TRUE`). High values of rho (especially > 0.9) require larger K for accurate approximation.
 #'
 #' @param preserve_order If `TRUE`, the order of posterior draws will remain fixed; the default is to permute the MCMC samples so that (with small sample size `S`) each successive call to `posterior_predict` will return a different sample from the posterior probability distribution. 
 #' 
@@ -21,8 +21,19 @@
 #' @return A matrix of size S x N containing samples from the posterior predictive distribution, where S is the number of samples drawn and N is the number of observations. If `summary = TRUE`, a `data.frame` with N rows and 3 columns is returned (with column names `mu`, `lwr`, and `upr`).
 #'
 #' @details
+#'
+#' This method returns samples from the posterior predictive distribution of the model (at the observed values of covariates, etc.). The predictions incorporate uncertainty of all parameter values (used to calculate the expected value of the model, for example) plus the error term (the model's description of the amount of variability of observations around the expected value). If the model includes measurement error in the covariates, this source of uncertainty (about \eqn{X}) is passed into the posterior predictive distribution as well.
 #' 
-#' The `quick = FALSE` method requires a call to `Matrix::solve(I - rho * W)` for each MCMC sample; the `quick = TRUE` method uses an approximation based on matrix powers (LeSage and Pace 2009).
+#' For SAR models (and all other models), the observed outcomes are *not* used to formulate the posterior predictive distribution. The posterior predictive distribution for the SLM (see \link[geostan]{stan_sar}) is given by
+#' \deqn{(I - \rho W)^{-1} (\mu + \epsilon).}
+#' The SDLM is the same but includes spatially-lagged covariates in \eqn{mu}. The `approx = FALSE` method for SAR models requires a call to `Matrix::solve(I - rho * W)` for each MCMC sample; the `approx = TRUE` method uses an approximation based on matrix powers (LeSage and Pace 2009). The approximation will deteriorate if \eqn{\rho^K} is not near zero, so use with care.
+#'
+#' @source
+#' LeSage, James, & Robert kelley Pace (2009). *Introduction to Spatial Econometrics*. Chapman and Hall/CRC.
+#'
+#' Gelman, A., J. B.Carlin, H. S. Stern, D. B. Dunson, A. Vehtari, & D. B. Rubin, D. B. (2014). *Bayesian data analysis* (3rd ed.). CRC Press.
+#'
+#' McElreath, Richard (2016). *Statistical Rethinking: A Bayesian Course with Examples in R and Stan*. CRC Press, Ch. 3.
 #' 
 #' @examples
 #' E <- sentencing$expected_sents
@@ -51,7 +62,7 @@ posterior_predict <- function(object,
                               S,
                               summary = FALSE,
                               width = 0.95,
-                              quick = TRUE,
+                              approx = TRUE,
                               K = 20,
                               preserve_order = FALSE,
                               seed
@@ -91,7 +102,7 @@ posterior_predict <- function(object,
         if (object$spatial$method == "SAR") {            
             rho <- as.matrix(object, "sar_rho")[idx, ]
             tau <- as.matrix(object, "sar_scale")[idx, ]
-            preds <- .pp_sar_normal(mu, rho, tau, object$sar_parts$W, quick = quick, K = K, object$sar_type)
+            preds <- .pp_sar_normal(mu, rho, tau, object$sar_parts$W, approx = approx, K = K, object$sar_type)
         }
         
     }
@@ -135,16 +146,16 @@ posterior_predict <- function(object,
 }
 
 
-.pp_sar_normal <- function(mu, rho, sigma, W, quick, K, type) {
+.pp_sar_normal <- function(mu, rho, sigma, W, approx, K, type) {
 
-    if (!quick) {
+    if (!approx) {
         Draws <- sapply(1:nrow(mu), function(s) {
             sim_sar(mu =     mu[ s, ],
                     rho =   rho[ s  ],
                     sigma = sigma[ s  ],
                     w = W,
                     type = type,
-                    quick = FALSE)
+                    approx = FALSE)
         }) |>
             t()
         
@@ -201,25 +212,6 @@ posterior_predict <- function(object,
     return (Draws)
 }
 
-
-
-## #' @importFrom Matrix Diagonal Matrix solve
-## .pp_sar_normal <- function(mu, rho, tau, W, quick, K) {
-##     ## N <- nrow(W)
-##     ## I <- Matrix::Diagonal(N)
-##     ## Wt <- Matrix::t(W)
-##     t(sapply(1:nrow(mu), function(s) {
-##         sim_sar(mu = mu[ s, ],
-##                 rho = rho[ s ],
-##                 sigma = tau[ s ],
-##                 w = W,
-##                 type = "SEM", # Always SEM.
-##                 quick = quick, # change to FALSE when done with .sar2
-##                 K = k)
-##         #Sigma <- Matrix::solve((I - rho[s] * Wt) %*% (I - rho[s] * W))
-##         #MASS::mvrnorm(n = 1, mu = mu[s,], Sigma = Sigma * tau[s]^2)
-##     }))        
-## }
 
 .pp_gaussian <- function(mu, sigma) {
   t(sapply(1:nrow(mu), function(s) {

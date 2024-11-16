@@ -58,8 +58,10 @@
 <code><a href="../reference/sim_sar.html">geostan::sim_sar</a></code> can now simulate draws from the spatial lag model as well as the spatial error model.</li>
 <li>The CAR and SAR models, when placed in a Poisson or binomial model for count data, can sample poorly when the data is sparse. This can usually be fixed using the new <code>zmp</code> option which switches CAR/SAR models to a zero-mean parameterization. Details are in the vignette on building custom spatial models.</li>
 </ul><p>Bug fix:</p>
-<ul><li>A bug was introduced to v0.7.0 which added a small bias to coefficient estimates which only appeared when the <code>slx</code> option was used. This has been fixed, and extra Monte Carlo tests have been added to avoid this kind of error in the future.</li></ul><p>The package documentation and vignettes have also been improved a little bit.</p>
-</div>
+<ul><li>A bug was introduced to v0.7.0 which added a small bias to coefficient estimates which only appeared when the <code>slx</code> option was used. This has been fixed.</li></ul><p>Other updates:</p>
+<ul><li>A set of Monte Carlo analyses have been added to the package tests, verifying that the estimates match expectations. This is also part of a process of moving away from the ‘testthat’ package.</li>
+<li>The package documentation and vignettes have also been improved a little bit.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.7.0" id="geostan-070">geostan 0.7.0<small>2024-09-18</small><a class="anchor" aria-label="anchor" href="#geostan-070"></a></h2>
 <p>V0.7.0 includes various adjustments to speed things up, and the DIC is now provided for model comparison (in addition to WAIC).</p>

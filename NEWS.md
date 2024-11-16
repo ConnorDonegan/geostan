@@ -8,9 +8,13 @@ New Features include spatial econometric models and better sampling more hierarc
  
 Bug fix:
 
- - A bug was introduced to v0.7.0 which added a small bias to coefficient estimates which only appeared when the `slx` option was used. This has been fixed, and extra Monte Carlo tests have been added to avoid this kind of error in the future. 
+ - A bug was introduced to v0.7.0 which added a small bias to coefficient estimates which only appeared when the `slx` option was used. This has been fixed.
 
-The package documentation and vignettes have also been improved a little bit.
+Other updates:
+
+ - A set of Monte Carlo analyses have been added to the package tests, verifying that the estimates match expectations. This is also part of a process of moving away from the 'testthat' package. 
+ - The package documentation and vignettes have also been improved a little bit.
+
 
 # geostan 0.7.0
 

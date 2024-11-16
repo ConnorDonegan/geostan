@@ -93,13 +93,18 @@ cat("\n**\nSDLM Monte Carlo results\n", S, "iterations\nAverage values\n**\n")
 
 est <- apply(res, 2, mean)
 
-cbind(DGP = pars,
-      geostan =  est,
-      Error = est - pars
+dat <- cbind(
+    DGP = pars,
+    geostan =  est,
+    Error = est - pars
       #spatialreg = apply(res2, 2, mean)
-      ) |>
-    round(2) |>
+) |>
+    round(2)
+
+dat |>
     print()
+
+write.csv(dat, "check-SLM-estimates-monte-carlo-output.csv")
 
 
 ## # viz comparison of all estimates

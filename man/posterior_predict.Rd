@@ -3,13 +3,20 @@
 \name{posterior_predict}
 \alias{posterior_predict}
 \title{Sample from the posterior predictive distribution}
+\source{
+LeSage, James, & Robert kelley Pace (2009). \emph{Introduction to Spatial Econometrics}. Chapman and Hall/CRC.
+
+Gelman, A., J. B.Carlin, H. S. Stern, D. B. Dunson, A. Vehtari, & D. B. Rubin, D. B. (2014). \emph{Bayesian data analysis} (3rd ed.). CRC Press.
+
+McElreath, Richard (2016). \emph{Statistical Rethinking: A Bayesian Course with Examples in R and Stan}. CRC Press, Ch. 3.
+}
 \usage{
 posterior_predict(
   object,
   S,
   summary = FALSE,
   width = 0.95,
-  quick = TRUE,
+  approx = TRUE,
   K = 20,
   preserve_order = FALSE,
   seed
@@ -24,9 +31,9 @@ posterior_predict(
 
 \item{width}{Only used if \code{summary = TRUE}, to set the quantiles for the credible intervals. Defaults to \code{width = 0.95}.}
 
-\item{quick}{For SAR models only; \code{quick = TRUE} uses an approximation method for the inverse of matrix \code{(I - rho * W)}.}
+\item{approx}{For SAR models only; \code{approx = TRUE} uses an approximation method for the inverse of matrix \code{(I - rho * W)}.}
 
-\item{K}{For SAR models only; number of matrix powers to for the matrix inverse approximation. Hiugh values of rho (e.g., > 0.9) require larger K for accurate approximations.}
+\item{K}{For SAR models only; number of matrix powers to for the matrix inverse approximation (used when \code{approx = TRUE}). High values of rho (especially > 0.9) require larger K for accurate approximation.}
 
 \item{preserve_order}{If \code{TRUE}, the order of posterior draws will remain fixed; the default is to permute the MCMC samples so that (with small sample size \code{S}) each successive call to \code{posterior_predict} will return a different sample from the posterior probability distribution.}
 
@@ -39,7 +46,11 @@ A matrix of size S x N containing samples from the posterior predictive distribu
 Draw samples from the posterior predictive distribution of a fitted \code{geostan} model.
 }
 \details{
-The \code{quick = FALSE} method requires a call to \code{Matrix::solve(I - rho * W)} for each MCMC sample; the \code{quick = TRUE} method uses an approximation based on matrix powers (LeSage and Pace 2009).
+This method returns samples from the posterior predictive distribution of the model (at the observed values of covariates, etc.). The predictions incorporate uncertainty of all parameter values (used to calculate the expected value of the model, for example) plus the error term (the model's description of the amount of variability of observations around the expected value). If the model includes measurement error in the covariates, this source of uncertainty (about \eqn{X}) is passed into the posterior predictive distribution as well.
+
+For SAR models (and all other models), the observed outcomes are \emph{not} used to formulate the posterior predictive distribution. The posterior predictive distribution for the SLM (see \link[geostan]{stan_sar}) is given by
+\deqn{(I - \rho W)^{-1} (\mu + \epsilon).}
+The SDLM is the same but includes spatially-lagged covariates in \eqn{mu}. The \code{approx = FALSE} method for SAR models requires a call to \code{Matrix::solve(I - rho * W)} for each MCMC sample; the \code{approx = TRUE} method uses an approximation based on matrix powers (LeSage and Pace 2009). The approximation will deteriorate if \eqn{\rho^K} is not near zero, so use with care.
 }
 \examples{
 E <- sentencing$expected_sents

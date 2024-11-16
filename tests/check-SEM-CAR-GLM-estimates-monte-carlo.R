@@ -96,13 +96,16 @@ cat("\n**\nEstimates (rounded) should be close to SEM-DGP parameters, with allow
 est <- apply(res, 1, mean) |>
                round(1)
 
-data.frame(
+out <- data.frame(
     Mod = attributes(est)$names,
     Par = attributes(pars)$names,
     DGP = pars,
     Est = est,
     Error = est - pars
-           ) |>
+)
+
+out |>
     print() |>
     suppressWarnings()
 
+write.csv(out, "check-SEM-CAR-GLM-estimates-monte-carlo-output.csv")

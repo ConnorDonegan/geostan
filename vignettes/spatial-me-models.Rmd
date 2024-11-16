@@ -47,19 +47,21 @@ where $z_i$ is the estimate, $s_i$ is its standard error, and $x_i$ is the true 
 
 Our background knowledge on $x$ is the second component of the model. This is simply the knowledge that social variables tend to be spatially patterned: relatively extreme values are not implausible but they tend to be clustered together. This information is encoded into a prior probability distribution for the unknown values $\boldsymbol x$.   Our prior distribution is the spatial conditional autoregressive (CAR) model [see @donegan_2022 Table 1, WCAR specification].
 
-If your initial model for the outcome variable $y$ is an ordinary linear model with some covariate $x$, as in
+If your initial model for the outcome variable $y$ is an ordinary linear model with a covariate $x$, as in
 $$y = \alpha + \beta * x + \epsilon,$$
 then adding our spatial ME model would result in the following specification:
 \begin{equation}
 \begin{split}
 y &= \alpha + \beta * x + \epsilon \\
-z &= x + e \\
+x &= z + e \\
 e &\sim Normal(0, s^2) \\
 x &\sim Normal(\mu_x, \Sigma)
 \end{split}	 
 \end{equation}
 
-In this model $x$ is unobserved, $z$ is our survey estimate of $x$, $s$ is the standard error of the estimate, and the prior for $x$ is a spatial CAR model. If we were to apply the spatial ME model to a covariate within a hierarchical Poisson model then we would write:
+In this model $x$ is an unobserved model parameter, $z$ is our survey estimate of $x$, $s$ is the standard error of the estimate, and the prior for the vector $x$ is a spatial CAR model.
+
+If we were to apply the spatial ME model to a covariate within a hierarchical Poisson model then we would write:
 
 \begin{equation}
 \begin{split}

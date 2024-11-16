@@ -16,7 +16,7 @@ bibliography: ESDA.bib
 link-citations: yes
 ---
 
-This vignette walks through exploratory spatial data analysis (ESDA) functionality in the **geostan** package, which includes methods for measuring and visualizing global and local spatial autocorrelation (SA). It includes a short review of the philosophy of ESDA, and ends with a set of diagnostic plots for spatial models. 
+This vignette walks through exploratory spatial data analysis (ESDA) functionality in the geostan package, which includes methods for measuring and visualizing global and local spatial autocorrelation (SA). It includes a short review of ESDA, and ends with a set of diagnostic plots for spatial models. 
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -30,7 +30,7 @@ knitr::opts_chunk$set(
 
 ## Getting started
 
-From the R console, load **geostan** and the `georgia` data set.
+From the R console, load geostan and the `georgia` data set.
 
 ```{r setup, message = FALSE, warning = FALSE}
 library(geostan)
@@ -43,15 +43,9 @@ data("georgia")
 
 ## Exploratory spatial data analysis (ESDA)
 
-@good_1983 contrasts exploratory data analysis (EDA) with confirmatory analysis as follows:
+Exploratory data analysis (EDA) includes all sorts of visual methods (histograms, scatter plots, etc.) that take a set of data, extract a limited summary of it (suppressing most other information), and then return a visual depiction that brings certain dimensions of (non-) variation to the foreground. EDA is also iterative: given some model has been built (or a hypothesis is entertained), one starts the process again by examining residuals and other features of the model. EDA thus suggests a process for model criticism and improvement by way successive approximation [see @gabry_2019]. 
 
-> Confirmatory statistics consists of experimental design, significance testing, estimation, and prediction, whereas EDA is concerned mainly with the encouragement of hypothesis formulation. (284)
-
-EDA techniques include all sorts of visual methods (histograms, scatter plots, etc.) that take a set of data, extract a limited summary of it (suppressing most other information), and then return a visual depiction that brings certain dimensions of (non-) variation to the foreground. As @good_1983 continues, "techniques of descriptive statistics are designed to match the salient features of the data set to human cognitive abilities" (287). EDA is also iterative: given some model has been built (or a hypothesis is entertained), one starts the process again by examining residuals and other features of the model. EDA thus suggests a process for model criticism and improvement by way successive approximation [see @gabry_2019].
-
-Exploratory spatial data analysis (ESDA) [@koschinsky_2020] includes all of this but also involves techniques that are of particular importance for spatially referenced data. ESDA involves tools for visualizing (residual) spatial patterns, decomposing spatial patterns into different elements across the map, and measuring the extent of spatial patterning in the data. Helpful ESDA tools draw out different spatial patterns from the data and communicate them in ways that are comprehensible to the human mind. In some cases, ESDA can help to *contextualize* data points. If ESDA draws attention to certain data points---for example, select observations that are very different from surrounding values---then locating them geographically may help to understand them as specific cases and less as quantitative abstractions. 
-
-Tukey's *Exploratory Data Analysis* [@tukey_1993] also offers principles for EDA and favors an approach to EDA that generally eschews hypothesis testing.
+Exploratory spatial data analysis (ESDA) [@koschinsky_2020] includes all of this plus visualizing (residual) spatial patterns, decomposing spatial patterns into different elements across the map, and measuring the extent of spatial patterning in the data. If ESDA draws attention to certain data points---for example, select observations that are very different from surrounding values---then locating them geographically may help to contextualize them. Tukey's *Exploratory Data Analysis* [@tukey_1993] also offers principles for EDA and favors an approach to EDA that generally eschews hypothesis testing.
 
 ## Spatial diagnostic summary
 
@@ -135,7 +129,7 @@ mc(x, W) + gr(x, W)
 
 ## Local indicators of spatial association (LISAs)
 
-Local indicators of spatial association (LISA) were introduced by @anselin_1995 for ESDA. The LISA is a class of *local* SA statistics. Every LISA is related to a global SA index, such as the MC and GR. **geostan** contains functions for calculating local Geary's C and a local version of the MC, known as local Moran's I.
+Local indicators of spatial association (LISA) were introduced by @anselin_1995 for ESDA. The LISA is a class of *local* SA statistics. Every LISA is related to a global SA index, such as the MC and GR. geostan contains functions for calculating local Geary's C and a local version of the MC, known as local Moran's I.
 
 The idea of a *local* statistic is to index the amount and type of SA present at every discrete location on the map (e.g., for every county). The sum of all these LISA values is proportionate to its corresponding global SA index.
 
@@ -146,7 +140,7 @@ where $z$ is the original variable in deviation form ($z_i = y_i - \overline{y}$
 The local Geary statistic $C_i$ is the weighted sum of squared differences found in the numerator in the GR:
 $$C_i = \sum_j^n w_{ij} (y_i - y_j)^2 $$
 
-The local Geary statistic is very sensitive to local outliers (negative SA), more so than local Moran's I. This makes these two LISAs complementary: $I_i$ is most useful to visualizing clustering behavior, whereas $C_i$ is useful for visualizing local outliers. By default, **geostan** will first scale $y$ using `z <- scale(y, center = TRUE, scale = TRUE)` before calculating either of these LISAs.
+The local Geary statistic is very sensitive to local outliers (negative SA), more so than local Moran's I. This makes these two LISAs complementary: $I_i$ is most useful to visualizing clustering behavior, whereas $C_i$ is useful for visualizing local outliers. By default, geostan will first scale $y$ using `z <- scale(y, center = TRUE, scale = TRUE)` before calculating either of these LISAs.
 
 The `lisa` function returns local Moran's I values and indicates which quadrant of the Moran plot the point is found:
 
@@ -239,11 +233,9 @@ The point-interval plot on the left shows the raw mortality rates (the raw outco
 
 The middle panel is a Moran scatter plot of the model residuals, and the map shows the mean residual for each county.^[The residuals have been taken at their marginal posterior means. However, there is more than one way to measure residual autocorrelation. For an alternative visualization that uses the entire posterior distribution of parameters and provides an estimate of the residual Moran coefficient that will match the printed model results above (`MC = 0.022`), try `sp_diag(fit, georgia, mc_style = "hist")`. For every MCMC sample from the joint distribution of parameters, a vector of residuals is calculated, and these are then used to calculate the Moran coefficient. Using `style = "hist"` will show a histogram depicting all $M$ samples of the residual Moran coefficient.]
 
-In this case, there is a small amount of residual autocorrelation, and the map indicates that this derives from a slight north-south/metropolitan-rural trend. The trend in the residuals suggests that shrinking towards the mean mortality rate may be less than ideal in this case---and potentially biased (socially)---because it appears that county-level mortality risk may be somewhat higher in the southern half of the state than in the greater Atlanta metropolitan area. 
+In this case, there is possibly a small amount of residual autocorrelation, and the map indicates that this derives from a slight north-south/metropolitan-rural trend. The trend in the residuals suggests that shrinking towards the mean mortality rate may be less than ideal in this case---and potentially biased (socially)---because it appears that county-level mortality risk may be somewhat higher in the southern half of the state than in the greater Atlanta metropolitan area. 
 
-We could extend the model to address this concern by using one of geostan's spatial models (e.g., `stan_car`), by adding one or more (substantively meaningful) covariates, or potentially both.
-
-There is a literature in spatial analysis that prefers to use hypothesis testing procedures to determine whether a spatial model should be fit at all. An alternative approach, which geostan provides more support for, is to treat this as a question of model comparison - simply fit the models you are considering and then assess each of them critically using visualization (e.g., `geostan::posterior_predict`), residual diagnostics, and information criteria (`geostan::dic` and `geostan::waic`).
+We could extend the model to address this concern by using one of geostan's spatial models (e.g., `stan_car`), by adding one or more (substantively meaningful) covariates, or potentially both. A variety of model comparison techniques (DIC, WAIC, posterior predictive checks, etc.). can be used to assess whether those options improve upon the model or not.
 
 
 ## References

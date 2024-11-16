@@ -127,13 +127,14 @@
     </div>
     <div id="details">
     <h2>Details</h2>
-    <p>The primary purpose of the predict method is to explore marginal effects of covariates.</p>
+    <p>The primary purpose of the predict method is to explore marginal effects of covariates. The uncertainty present in these predictions refers to uncertainty in the expected value of the model. The expectation does not include the error term of the model (nb: one expects actual observations to form a cloud of points around the expected value). By contrast, <a href="posterior_predict.html">posterior_predict</a> returns the complete (posterior) predictive distribution of the model (the expectation plus noise).</p>
 <p>The model formula will be taken from <code>object$formula</code>, and then a model matrix will be created by passing <code>newdata</code> to the <a href="https://rdrr.io/r/stats/model.frame.html" class="external-link">model.frame</a> function (as in: <code>model.frame(object$formula, newdata)</code>. Parameters are taken from <code>as.matrix(object, pars = c("intercept", "beta"))</code>.</p>
-<p>The examples illustrate how to use the function in most cases. Special considerations apply to models with spatially-lagged covariates and a spatially-lagged dependent variable (i.e., the 'SLM' and 'SDLM' models fit by <a href="stan_sar.html">stan_sar</a>).</p><div class="section">
+<p>The examples illustrate how to use the function in most cases.</p>
+<p>Special considerations apply to models with spatially-lagged covariates and a spatially-lagged dependent variable (i.e., the 'SLM' and 'SDLM' models fit by <a href="stan_sar.html">stan_sar</a>).</p><div class="section">
 <h3 id="spatial-lag-of-x">Spatial lag of X<a class="anchor" aria-label="anchor" href="#spatial-lag-of-x"></a></h3>
 
 
-<p>Spatially-lagged covariates which were included via the <code>slx</code> argument will, by default, not be included in the predicted values. They will be be included in predictions if <code>add_slx = TRUE</code> or if the fitted model is a SAR model of type 'SLM' or 'SDLM'. In either of those cases, <code>newdata</code> must have the same number of rows as were used to fit the original data.</p>
+<p>Spatially-lagged covariates which were included via the <code>slx</code> argument will, by default, not be included in the predicted values. (The user can have greater control by manually adding the spatially-lagged covariate to the main model formula.) The <code>slx</code> term will be be included in predictions if <code>add_slx = TRUE</code> or if the fitted model is a SAR model of type 'SLM' or 'SDLM'. In either of those cases, <code>newdata</code> must have the same number of rows as were used to fit the original data.</p>
 </div>
 
 <div class="section">
@@ -150,14 +151,14 @@ $$
  (I - \rho W)^{-1} (X \beta + WX \gamma)
 $$
 where \(WX \gamma\) are spatially lagged covariates multiplied by their coefficients. For this reason, the <code>predict.geostan_fit</code> method requires that <code>newdata</code> have as many rows as the original data (so that <code>nrow(newdata) == nrow(object$C)</code>); the spatial weights matrix will be taken from <code>object$C</code>.</p>
-<p>The inverse of the matrix \((I - \rho W)\) can be time consuming to compute (especially when iterating over MCMC samples). You can use <code>approx = TRUE</code> to approximate the inverse using a series of matrix powers. The argument \(K\) controls how many powers to use for the approximation. As a rule, higher values of \(\rho\) require larger \(K\). Notice that \(\rho^K\) should be close to zero for the approximation to hold. For example, for \(\rho = .5\) a value of \(K=8\) may suffice (\(0.5^8 = 0.004\)), but larger values of \(\rho\) require higher values of \(K\).</p>
+<p>The inverse of the matrix \((I - \rho W)\) can be time consuming to compute (especially when iterating over MCMC samples). You can use <code>approx = TRUE</code> to approximate the inverse using a series of matrix powers. The argument \(K\) controls how many powers to use for the approximation. As a rule, higher values of \(\rho\) require larger \(K\) to obtain accuracy. Notice that \(\rho^K\) should be close to zero for the approximation to hold. For example, for \(\rho = .5\) a value of \(K=8\) may suffice (\(0.5^8 = 0.004\)), but larger values of \(\rho\) require higher values of \(K\).</p>
 </div>
 
 <div class="section">
 <h3 id="generalized-linear-models">Generalized linear models<a class="anchor" aria-label="anchor" href="#generalized-linear-models"></a></h3>
 
 
-<p>In generalized linear models (such as Poisson and Binomial models) marginal effects plots on the response scale may be sensitive to the level of other covariates in the model and to geographic location (given a spatially-varying mean value). If the model includes a spatial autocorrelation component (for example, you used a spatial CAR, SAR, or ESF model, or used the <code>re</code> argument for random effects), by default these terms will be fixed at zero for the purposes of calculating marginal effects (as is typical). If you want to change this, you can introduce a varying intercept manually using the <code>alpha</code> argument.</p>
+<p>In generalized linear models (such as Poisson and Binomial models) marginal effects plots on the response scale may be sensitive to the level of other covariates in the model and to geographic location (given a spatially-varying mean value). If the model includes a spatial autocorrelation component (for example, you used a spatial CAR, SAR, or ESF model, or used the <code>re</code> argument for random effects), by default these terms will be fixed at zero for the purposes of calculating marginal effects. If you want to change this, you can introduce a varying intercept manually using the <code>alpha</code> argument.</p>
 </div>
 
     </div>

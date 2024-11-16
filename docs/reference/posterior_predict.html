@@ -61,13 +61,19 @@
 <span>  <span class="va">S</span>,</span>
 <span>  summary <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  width <span class="op">=</span> <span class="fl">0.95</span>,</span>
-<span>  quick <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  approx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  K <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  preserve_order <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">seed</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
+    <div id="source">
+    <h2>Source</h2>
+    <p>LeSage, James, &amp; Robert kelley Pace (2009). <em>Introduction to Spatial Econometrics</em>. Chapman and Hall/CRC.</p>
+<p>Gelman, A., J. B.Carlin, H. S. Stern, D. B. Dunson, A. Vehtari, &amp; D. B. Rubin, D. B. (2014). <em>Bayesian data analysis</em> (3rd ed.). CRC Press.</p>
+<p>McElreath, Richard (2016). <em>Statistical Rethinking: A Bayesian Course with Examples in R and Stan</em>. CRC Press, Ch. 3.</p>
+    </div>
     <div id="arguments">
     <h2>Arguments</h2>
     <dl><dt>object</dt>
@@ -86,12 +92,12 @@
 <dd><p>Only used if <code>summary = TRUE</code>, to set the quantiles for the credible intervals. Defaults to <code>width = 0.95</code>.</p></dd>
 
 
-<dt>quick</dt>
-<dd><p>For SAR models only; <code>quick = TRUE</code> uses an approximation method for the inverse of matrix <code>(I - rho * W)</code>.</p></dd>
+<dt>approx</dt>
+<dd><p>For SAR models only; <code>approx = TRUE</code> uses an approximation method for the inverse of matrix <code>(I - rho * W)</code>.</p></dd>
 
 
 <dt>K</dt>
-<dd><p>For SAR models only; number of matrix powers to for the matrix inverse approximation. Hiugh values of rho (e.g., &gt; 0.9) require larger K for accurate approximations.</p></dd>
+<dd><p>For SAR models only; number of matrix powers to for the matrix inverse approximation (used when <code>approx = TRUE</code>). High values of rho (especially &gt; 0.9) require larger K for accurate approximation.</p></dd>
 
 
 <dt>preserve_order</dt>
@@ -110,7 +116,10 @@
     </div>
     <div id="details">
     <h2>Details</h2>
-    <p>The <code>quick = FALSE</code> method requires a call to <code>Matrix::solve(I - rho * W)</code> for each MCMC sample; the <code>quick = TRUE</code> method uses an approximation based on matrix powers (LeSage and Pace 2009).</p>
+    <p>This method returns samples from the posterior predictive distribution of the model (at the observed values of covariates, etc.). The predictions incorporate uncertainty of all parameter values (used to calculate the expected value of the model, for example) plus the error term (the model's description of the amount of variability of observations around the expected value). If the model includes measurement error in the covariates, this source of uncertainty (about \(X\)) is passed into the posterior predictive distribution as well.</p>
+<p>For SAR models (and all other models), the observed outcomes are <em>not</em> used to formulate the posterior predictive distribution. The posterior predictive distribution for the SLM (see <a href="stan_sar.html">stan_sar</a>) is given by
+$$(I - \rho W)^{-1} (\mu + \epsilon).$$
+The SDLM is the same but includes spatially-lagged covariates in \(mu\). The <code>approx = FALSE</code> method for SAR models requires a call to <code>Matrix::solve(I - rho * W)</code> for each MCMC sample; the <code>approx = TRUE</code> method uses an approximation based on matrix powers (LeSage and Pace 2009). The approximation will deteriorate if \(\rho^K\) is not near zero, so use with care.</p>
     </div>
 
     <div id="ref-examples">
