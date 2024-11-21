@@ -67,24 +67,6 @@
 #'
 #' Fit a generalized linear model using the R formula interface. Default prior distributions are designed to be weakly informative relative to the data. Much of the functionality intended for spatial models, such as the ability to add spatially lagged covariates and observational error models, are also available in \code{stan_glm}. All of \code{geostan}'s spatial models build on top of the same Stan code used in \code{stan_glm}.
 #'
-#' ### Poisson models and disease mapping
-#' 
-#' In spatial statistics, Poisson models are often used to calculate incidence rates (mortality rates, or disease incidence rates) for administrative areas like counties or census tracts. If \eqn{y} are counts of cases, and \eqn{P} are populations at risk, then the crude rates are \eqn{y/P}. The purpose is to model risk \eqn{\eta} for which crude rates are a (noisy) indicator. Our analysis should also respect the fact that the amount of information contained in the observations \eqn{y/P} increases with \eqn{P}. Hierarchical Poisson models are often used to incorporate all of this information.
-#'
-#' For the Poisson model, \eqn{y} is specified as the outcome and the log of the population at risk `log(P)` needs to be provided as an offset term. For such a case, disease incidence across the collection of areas could be modeled as:
-#'
-#' \deqn{y \sim Poisson(e^{log(P) + \eta})}
-#' \deqn{ \eta = \alpha + A}
-#' \deqn{ A \sim Gauss(0, \tau)}
-#' \deqn{\tau \sim Student(20, 0, 2)}
-#' where \eqn{\alpha} is the mean log-risk (incidence rate) and \eqn{A} is a vector of (so-called) random effects, which enable partial pooling of information across observations. Covariates can be added to the model for the log-rates, such that \eqn{\eta = \alpha + X \beta + A}.
-#'
-#' Note that the denominator for the rates is specified as a log-offset to provide a consistent, formula-line interface to the model. Using the log-offest (as above) is equivalent to the following:
-#' \deqn{
-#' y \sim Poisson(P * e^{\eta})
-#' }
-#' where \eqn{P} is still the population at risk and it is multiplied by \eqn{e^{\eta}}, the incidence rate (risk). 
-#'
 #' ### Spatially lagged covariates (SLX)
 #' 
 #' The `slx` argument is a convenience function for including SLX terms. For example, 
@@ -219,6 +201,10 @@
 #'                 quiet = TRUE)
 #'
 #' print(fit2)
+#'
+#' # example prior for two covariates
+#' pl <- list(beta = normal(c(0, 0),
+#'                          c(1, 1))
 #' 
 #' ##
 #' ## Poisson model for count data
@@ -247,9 +233,11 @@
 #'
 #' # summary of results with MCMC diagnostics
 #' print(fit.pois)
-#' 
+#'
+#' \donttest{
 #' # MCMC diagnostics plot: Rhat values should all by very near 1
 #' rstan::stan_rhat(fit.pois$stanfit)
+#' 
 #' 
 #' # effective sample size for all parameters and generated quantities
 #' # (including residuals, predicted values, etc.)
@@ -257,7 +245,8 @@
 #' 
 #' # or for a particular parameter
 #' rstan::stan_ess(fit.pois$stanfit, "alpha_re")
-#'
+#' }
+#' 
 #' ##
 #' ## Visualize the posterior predictive distribution
 #' ##
