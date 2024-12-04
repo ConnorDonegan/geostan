@@ -205,6 +205,7 @@
 #' # example prior for two covariates
 #' pl <- list(beta = normal(c(0, 0),
 #'                          c(1, 1))
+#'            )
 #' 
 #' ##
 #' ## Poisson model for count data

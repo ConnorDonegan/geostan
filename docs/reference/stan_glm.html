@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.0.01</span>
       </span>
     </div>
 
@@ -254,24 +254,6 @@
     <div id="details">
     <h2>Details</h2>
     <p>Fit a generalized linear model using the R formula interface. Default prior distributions are designed to be weakly informative relative to the data. Much of the functionality intended for spatial models, such as the ability to add spatially lagged covariates and observational error models, are also available in <code>stan_glm</code>. All of <code>geostan</code>'s spatial models build on top of the same Stan code used in <code>stan_glm</code>.</p><div class="section">
-<h3 id="poisson-models-and-disease-mapping">Poisson models and disease mapping<a class="anchor" aria-label="anchor" href="#poisson-models-and-disease-mapping"></a></h3>
-
-
-<p>In spatial statistics, Poisson models are often used to calculate incidence rates (mortality rates, or disease incidence rates) for administrative areas like counties or census tracts. If \(y\) are counts of cases, and \(P\) are populations at risk, then the crude rates are \(y/P\). The purpose is to model risk \(\eta\) for which crude rates are a (noisy) indicator. Our analysis should also respect the fact that the amount of information contained in the observations \(y/P\) increases with \(P\). Hierarchical Poisson models are often used to incorporate all of this information.</p>
-<p>For the Poisson model, \(y\) is specified as the outcome and the log of the population at risk <code>log(P)</code> needs to be provided as an offset term. For such a case, disease incidence across the collection of areas could be modeled as:</p>
-<p>$$y \sim Poisson(e^{log(P) + \eta})$$
-$$ \eta = \alpha + A$$
-$$ A \sim Gauss(0, \tau)$$
-$$\tau \sim Student(20, 0, 2)$$
-where \(\alpha\) is the mean log-risk (incidence rate) and \(A\) is a vector of (so-called) random effects, which enable partial pooling of information across observations. Covariates can be added to the model for the log-rates, such that \(\eta = \alpha + X \beta + A\).</p>
-<p>Note that the denominator for the rates is specified as a log-offset to provide a consistent, formula-line interface to the model. Using the log-offest (as above) is equivalent to the following:
-$$
-y \sim Poisson(P * e^{\eta})
-$$
-where \(P\) is still the population at risk and it is multiplied by \(e^{\eta}\), the incidence rate (risk).</p>
-</div>
-
-<div class="section">
 <h3 id="spatially-lagged-covariates-slx-">Spatially lagged covariates (SLX)<a class="anchor" aria-label="anchor" href="#spatially-lagged-covariates-slx-"></a></h3>
 
 
@@ -381,6 +363,11 @@ where \(M\) is the censor point and \(\mu_i\) again is the fitted value for the 
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit2</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># example prior for two covariates</span></span>
+<span><span class="va">pl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="fu"><a href="priors.html">normal</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
+<span>                         <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span>           <span class="op">)</span></span>
+<span></span>
 <span><span class="co">##</span></span>
 <span><span class="co">## Poisson model for count data</span></span>
 <span><span class="co">## with county 'random effects' </span></span>
@@ -409,8 +396,10 @@ where \(M\) is the censor point and \(\mu_i\) again is the fitted value for the 
 <span><span class="co"># summary of results with MCMC diagnostics</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit.pois</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># \donttest{</span></span>
 <span><span class="co"># MCMC diagnostics plot: Rhat values should all by very near 1</span></span>
 <span><span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_rhat</a></span><span class="op">(</span><span class="va">fit.pois</span><span class="op">$</span><span class="va">stanfit</span><span class="op">)</span></span>
+<span></span>
 <span></span>
 <span><span class="co"># effective sample size for all parameters and generated quantities</span></span>
 <span><span class="co"># (including residuals, predicted values, etc.)</span></span>
@@ -418,6 +407,7 @@ where \(M\) is the censor point and \(\mu_i\) again is the fitted value for the 
 <span></span>
 <span><span class="co"># or for a particular parameter</span></span>
 <span><span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stan_plot_diagnostics.html" class="external-link">stan_ess</a></span><span class="op">(</span><span class="va">fit.pois</span><span class="op">$</span><span class="va">stanfit</span>, <span class="st">"alpha_re"</span><span class="op">)</span></span>
+<span><span class="co"># }</span></span>
 <span></span>
 <span><span class="co">##</span></span>
 <span><span class="co">## Visualize the posterior predictive distribution</span></span>

@@ -242,7 +242,7 @@ scale_c <- function(C) \{
 
 \subsection{Additional functionality}{
 
-The CAR models can also incorporate spatially-lagged covariates, measurement/sampling error in covariates (particularly when using small area survey estimates as covariates), missing outcome data, and censored outcomes (such as arise when a disease surveillance system suppresses data for privacy reasons). For details on these options, please see the Details section in the documentation for \link[geostan]{stan_glm}.
+The ICAR models can also incorporate spatially-lagged covariates, measurement/sampling error in covariates (particularly when using small area survey estimates as covariates), missing outcome data, and censored outcomes (such as arise when a disease surveillance system suppresses data for privacy reasons). For details on these options, please see the Details section in the documentation for \link[geostan]{stan_glm}.
 }
 }
 \examples{
@@ -264,30 +264,6 @@ sp_diag(fit.bym, sentencing)
 library(rstan)
 rstan::stan_ess(fit.bym$stanfit)
 rstan::stan_rhat(fit.bym$stanfit)
-
-# calculate log-standardized incidence ratios 
-# (observed/exected case counts)
-library(ggplot2)
-library(sf)
-
-f <- fitted(fit.bym, rates = FALSE)$mean
-SSR <- f / sentencing$expected_sents
-log.SSR <- log( SSR, base = 2)
-
-ggplot(sentencing) +
-  geom_sf(aes(fill = log.SSR)) +
-  scale_fill_gradient2(
-   low = "navy",
-   high = "darkred"
-  ) +
-  labs(title = "Log-standardized incidence ratios",
-       subtitle = "log( Fitted/Expected), base 2") +
-  theme_void() +
-  theme(
-   legend.position = "bottom",
-   legend.key.height = unit(0.35, "cm"),
-   legend.key.width = unit(1.5, "cm")
-  )
 }
 }
 \seealso{

@@ -11,8 +11,11 @@
 #devtools::load_all("~/dev/geostan")
 library(geostan)
 
+# flag for running Monte Carlo test or just code once
+full_test <- FALSE
+
 ## no. iterations
-M = 20
+M <- ifelse(full_test, 20, 1)
 
 # generate y using SLM or SEM
 #sar_type <- commandArgs(trailingOnly = TRUE)

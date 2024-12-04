@@ -5,8 +5,11 @@
 
 library(geostan)
 
+# flag for running Monte Carlo test or just code once
+full_test <- FALSE
+
 ## no. iterations
-M = 15
+M <- ifelse(full_test, 20, 1)
 
 ## a regular grid
 ncol = 20

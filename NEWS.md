@@ -1,6 +1,8 @@
 # geostan 0.8.1
 
-This version changes one line in the 'Spatial analysis with geostan' vignette that caused the package to fail on installation for old versions of windows and mac os.
+This is a small patch to ensure that the package can install on older versions of R. 
+
+The patch changes one line in the 'Spatial analysis with geostan' vignette that caused the package to fail on installation for old versions of windows and mac os. 
 
 # geostan 0.8.0
 

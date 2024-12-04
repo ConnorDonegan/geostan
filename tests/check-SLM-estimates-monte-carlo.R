@@ -8,11 +8,14 @@
 #library(spatialreg)
 library(geostan)
 
-# no. iterations [s > 90 required for impact est. to converge - they are high variance; others converge by 30]
-S <- 30
+# flag for running Monte Carlo test or just code once
+full_test <- FALSE
 
 # use measurement error in x
 has_me <- FALSE
+
+# no. iterations
+M <- ifelse(full_test, 20, 1)
 
 # regular lattice
 parts <- prep_sar_data2(row = 10, col = 30, quiet = TRUE)
@@ -28,16 +31,16 @@ N <- nrow(W)
 B <- -0.5
 G <- 0.1
 R <- 0.7
-Sig = 0.1
-sigma_me <- 0.1
+Sig = 0.25
+sigma_me <- 0.2
 pars <- c(const = 0, beta = B, gamma = G, rho = R, sigma = Sig)
 pars <- c(pars, geostan::spill(beta = B, gamma = G, rho = R, W = W, approx=FALSE))
 
 # results for S iterations
 ## res <- res2 <- matrix(NA, nrow = S, ncol = 8)
-res <- matrix(NA, nrow = S, ncol = 8)
+res <- matrix(NA, nrow = M, ncol = 8)
 
-for (s in 1:S) {
+for (m in 1:M) {
     x <- sim_sar(w=W, rho=R)
     if (has_me) x = x + rnorm(N, sd = sigma_me)
     Wx <- (W %*% x)[,1]
@@ -70,7 +73,7 @@ for (s in 1:S) {
             suppressWarnings()
     }
     
-    res[s, ] <- c(
+    res[m, ] <- c(
         fit$summary[c('intercept', 'x', 'w.x', 'sar_rho', 'sar_scale'), 'mean'],
         geostan::impacts(fit, approx = FALSE)$summary$x[,'mean']
     )
@@ -89,7 +92,7 @@ for (s in 1:S) {
 # spatialreg reports variance parameter, geostan reports scale param.
 ## res2[, 5] <- sqrt(res2[,5])
 
-cat("\n**\nSDLM Monte Carlo results\n", S, "iterations\nAverage values\n**\n")
+cat("\n**\nSDLM Monte Carlo results\n", M, "iterations\nAverage values\n**\n")
 
 est <- apply(res, 2, mean)
 

@@ -147,7 +147,7 @@ Fit a spatial regression model using eigenvector spatial filtering (ESF).
 \details{
 Eigenvector spatial filtering (ESF) is a method for spatial regression analysis. ESF is extensively covered in Griffith et al. (2019). This function implements the methodology introduced in Donegan et al. (2020), which uses Piironen and Vehtari's (2017) regularized horseshoe prior.
 
-ESF decomposes spatial autocorrelation into a linear combination of various patterns, typically at different scales (such as local, regional, and global trends). By adding a spatial filter to a regression model, these spatial autocorrelation patterns are shifted from the residuals to the spatial filter. ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \eqn{C}. The resulting eigenvectors, \eqn{E}, are mutually orthogonal and uncorrelated map patterns. The spatial filter equals \eqn{E \beta_{E}} where \eqn{\beta_{E}} is a vector of coefficients.
+By adding a spatial filter to a regression model, spatial autocorrelation patterns are shifted from the residuals to the spatial filter. ESF models take the spectral decomposition of a transformed spatial connectivity matrix, \eqn{C}. The resulting eigenvectors, \eqn{E}, are mutually orthogonal and uncorrelated map patterns (at various scales, 'local' to 'regional' to 'global'). The spatial filter equals \eqn{E \beta_{E}} where \eqn{\beta_{E}} is a vector of coefficients.
 
 ESF decomposes the data into a global mean, \eqn{\alpha}, global patterns contributed by covariates \eqn{X \beta}, spatial trends \eqn{E \beta_{E}}, and residual variation. Thus, for \code{family=gaussian()},
 
@@ -155,15 +155,7 @@ ESF decomposes the data into a global mean, \eqn{\alpha}, global patterns contri
 y \sim Gauss(\alpha + X * \beta + E \beta_{E}, \sigma).
 }
 
-An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, a spatial Poisson model for rare disease incidence may be specified as follows:
-
-\deqn{y \sim Poisson(e^{O + \mu})}
-\deqn{\mu = \alpha + E \beta_{E} + A }
-\deqn{ A \sim Guass(0, \tau) }
-\deqn{ \tau \sim student(20, 0, 2) }
-\deqn{ \beta_{E} \sim horseshoe(.) }
-
-The form of this model is similar to the BYM model (see \link[geostan]{stan_icar}), in the sense that it contains a spatially structured trend term (\eqn{E \beta_{E}}) and an unstructured ('random effects') term (\eqn{A}).
+An ESF component can be incorporated into the linear predictor of any generalized linear model. For example, using \code{stan_esf} with \code{family = poisson()} and adding a 'random effects' term for each spatial unit (via the \code{re} argument) will produce a model that resembles the BYM model (combining spatially structured and spatially-unstructured components).
 
 The \link[geostan]{spatial.geostan_fit} method will return \eqn{E \beta_{E}}.
 
@@ -172,7 +164,7 @@ The model can also be extended to the space-time domain; see \link[geostan]{shap
 The coefficients \eqn{\beta_{E}} are assigned the regularized horseshoe prior (Piironen and Vehtari, 2017), resulting in a relatively sparse model specification. In addition, numerous eigenvectors are automatically dropped because they represent trace amounts of spatial autocorrelation (this is controlled by the \code{threshold} argument). By default, \code{stan_esf} will drop all eigenvectors representing negative spatial autocorrelation patterns. You can change this behavior using the \code{nsa} argument.
 \subsection{Additional functionality}{
 
-The CAR models can also incorporate spatially-lagged covariates, measurement/sampling error in covariates (particularly when using small area survey estimates as covariates), missing outcome data, and censored outcomes (such as arise when a disease surveillance system suppresses data for privacy reasons). For details on these options, please see the Details section in the documentation for \link[geostan]{stan_glm}.
+The ESF models can also incorporate spatially-lagged covariates, measurement/sampling error in covariates (particularly when using small area survey estimates as covariates), missing outcome data, and censored outcomes (such as arise when a disease surveillance system suppresses data for privacy reasons). For details on these options, please see the Details section in the documentation for \link[geostan]{stan_glm}.
 }
 }
 \examples{

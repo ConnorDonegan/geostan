@@ -2,7 +2,7 @@
 % Please edit documentation in R/convenience-functions.R
 \name{make_EV}
 \alias{make_EV}
-\title{Extract eigenfunctions of a connectivity matrix for spatial filtering}
+\title{Prepare data for spatial filtering}
 \source{
 Daniel Griffith and Yongwan Chun. 2014. "Spatial Autocorrelation and Spatial Filtering." in M. M. Fischer and P. Nijkamp (eds.), \emph{Handbook of Regional Science.} Springer.
 }
@@ -23,7 +23,7 @@ Setting \code{nsa = TRUE} will result in a candidate set of EVs that contains ei
 A \code{data.frame} of eigenvectors for spatial filtering. If \code{values=TRUE} then a named list is returned with elements \code{eigenvectors} and \code{eigenvalues}.
 }
 \description{
-Extract eigenfunctions of a connectivity matrix for spatial filtering
+Prepare data for spatial filtering
 }
 \details{
 Returns a set of eigenvectors related to the Moran coefficient (MC), limited to those eigenvectors with |MC| > \code{threshold} if \code{nsa = TRUE} or MC > \code{threshold} if \code{nsa = FALSE}, optionally with corresponding eigenvalues.

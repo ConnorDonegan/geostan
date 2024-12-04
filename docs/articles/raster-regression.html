@@ -40,7 +40,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.0.01</span>
       </span>
     </div>
 
@@ -123,13 +123,13 @@
 <p>The following R code will fit a spatial autoregressive model to these data:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_sar.html">stan_sar</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">z</span>, data <span class="op">=</span> <span class="va">grid</span>, C <span class="op">=</span> <span class="va">W</span><span class="op">)</span></span></code></pre></div>
-<p>The <code>stan_sar</code> function will take the spatial weights matrix <code>W</code> and pass it through a function called <code>prep_sar_data</code> which will calculate the eigenvalues of the spatial weights matrix using <code><a href="https://rdrr.io/pkg/Matrix/man/Schur.html" class="external-link">Matrix::Schur</a></code>. This step can be prohibitive for large data sets (e.g., <span class="math inline">\(N = 100,000\)</span>).</p>
+<p>The <code>stan_sar</code> function will take the spatial weights matrix <code>W</code> and pass it through a function called <code>prep_sar_data</code> which will calculate the eigenvalues of the spatial weights matrix using <code><a href="https://rdrr.io/pkg/Matrix/man/Schur-methods.html" class="external-link">Matrix::Schur</a></code>. This step can be prohibitive for large data sets (e.g., <span class="math inline">\(N = 100,000\)</span>).</p>
 <p>The following code would normally be used to fit a conditional autoregressive (CAR) model:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">grid</span>, style <span class="op">=</span> <span class="st">"B"</span>, queen <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">car_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/prep_car_data.html">prep_car_data</a></span><span class="op">(</span><span class="va">C</span>, <span class="st">"WCAR"</span><span class="op">)</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/stan_car.html">stan_car</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">z</span>, data <span class="op">=</span> <span class="va">grid</span>, car_parts <span class="op">=</span> <span class="va">car_list</span><span class="op">)</span></span></code></pre></div>
-<p>Here, the <code>prep_car_data</code> function calculates the eigenvalues of the spatial weights matrix using <code><a href="https://rdrr.io/pkg/Matrix/man/Schur.html" class="external-link">Matrix::Schur</a></code>, which is not feasible for large N.</p>
+<p>Here, the <code>prep_car_data</code> function calculates the eigenvalues of the spatial weights matrix using <code><a href="https://rdrr.io/pkg/Matrix/man/Schur-methods.html" class="external-link">Matrix::Schur</a></code>, which is not feasible for large N.</p>
 <p>The <code>prep_sar_data2</code> and <code>prep_car_data2</code> functions are designed for large raster layers. As input, they require the dimensions of the grid (number of rows and number of columns). The eigenvalues are produced very quickly using Equation 5 from <span class="citation">Griffith (<a href="#ref-griffith_2000" role="doc-biblioref">2000</a>)</span>. The methods have some restrictions:</p>
 <ul>
 <li>This is only applicable to raster layers—regularly spaced, rectangular grids of observations.</li>
@@ -177,8 +177,8 @@
 <span><span class="co">## </span></span>
 <span><span class="co">## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 1).</span></span>
 <span><span class="co">## Chain 1: </span></span>
-<span><span class="co">## Chain 1: Gradient evaluation took 0.001908 seconds</span></span>
-<span><span class="co">## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 19.08 seconds.</span></span>
+<span><span class="co">## Chain 1: Gradient evaluation took 0.004468 seconds</span></span>
+<span><span class="co">## Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 44.68 seconds.</span></span>
 <span><span class="co">## Chain 1: Adjust your expectations accordingly!</span></span>
 <span><span class="co">## Chain 1: </span></span>
 <span><span class="co">## Chain 1: </span></span>
@@ -186,15 +186,15 @@
 <span><span class="co">## Chain 1: Iteration: 251 / 500 [ 50%]  (Sampling)</span></span>
 <span><span class="co">## Chain 1: Iteration: 500 / 500 [100%]  (Sampling)</span></span>
 <span><span class="co">## Chain 1: </span></span>
-<span><span class="co">## Chain 1:  Elapsed Time: 1.707 seconds (Warm-up)</span></span>
-<span><span class="co">## Chain 1:                1.45 seconds (Sampling)</span></span>
-<span><span class="co">## Chain 1:                3.157 seconds (Total)</span></span>
+<span><span class="co">## Chain 1:  Elapsed Time: 2.237 seconds (Warm-up)</span></span>
+<span><span class="co">## Chain 1:                1.999 seconds (Sampling)</span></span>
+<span><span class="co">## Chain 1:                4.236 seconds (Total)</span></span>
 <span><span class="co">## Chain 1: </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## SAMPLING FOR MODEL 'foundation' NOW (CHAIN 2).</span></span>
 <span><span class="co">## Chain 2: </span></span>
-<span><span class="co">## Chain 2: Gradient evaluation took 0.000996 seconds</span></span>
-<span><span class="co">## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 9.96 seconds.</span></span>
+<span><span class="co">## Chain 2: Gradient evaluation took 0.00133 seconds</span></span>
+<span><span class="co">## Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 13.3 seconds.</span></span>
 <span><span class="co">## Chain 2: Adjust your expectations accordingly!</span></span>
 <span><span class="co">## Chain 2: </span></span>
 <span><span class="co">## Chain 2: </span></span>
@@ -202,9 +202,9 @@
 <span><span class="co">## Chain 2: Iteration: 251 / 500 [ 50%]  (Sampling)</span></span>
 <span><span class="co">## Chain 2: Iteration: 500 / 500 [100%]  (Sampling)</span></span>
 <span><span class="co">## Chain 2: </span></span>
-<span><span class="co">## Chain 2:  Elapsed Time: 2.589 seconds (Warm-up)</span></span>
-<span><span class="co">## Chain 2:                1.55 seconds (Sampling)</span></span>
-<span><span class="co">## Chain 2:                4.139 seconds (Total)</span></span>
+<span><span class="co">## Chain 2:  Elapsed Time: 3.437 seconds (Warm-up)</span></span>
+<span><span class="co">## Chain 2:                2.574 seconds (Sampling)</span></span>
+<span><span class="co">## Chain 2:                6.011 seconds (Total)</span></span>
 <span><span class="co">## Chain 2:</span></span></code></pre>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
@@ -225,7 +225,7 @@
 <span><span class="co">## sar_rho    0.877   0.001 0.016  0.845  0.863  0.877  0.890  0.908   405 1.006</span></span>
 <span><span class="co">## sar_scale  0.308   0.000 0.007  0.294  0.302  0.308  0.313  0.321   477 1.008</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Samples were drawn using NUTS(diag_e) at Sat Nov 16 10:10:22 2024.</span></span>
+<span><span class="co">## Samples were drawn using NUTS(diag_e) at Wed Dec  4 13:08:05 2024.</span></span>
 <span><span class="co">## For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">## and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">## convergence, Rhat=1).</span></span></code></pre>
@@ -249,8 +249,9 @@
 <span><span class="va">W</span> <span class="op">&lt;-</span> <span class="va">sar_list</span><span class="op">$</span><span class="va">W</span></span>
 <span></span>
 <span><span class="va">z</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>rho <span class="op">=</span> <span class="fl">.8</span>, w <span class="op">=</span> <span class="va">W</span>, quick <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>mu <span class="op">=</span> <span class="op">-</span><span class="fl">.5</span> <span class="op">*</span> <span class="va">z</span>, rho <span class="op">=</span> <span class="fl">.9</span>, w <span class="op">=</span> <span class="va">W</span>, quick <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sim_sar.html">sim_sar</a></span><span class="op">(</span>mu <span class="op">=</span> <span class="op">-</span><span class="fl">.5</span> <span class="op">*</span> <span class="va">z</span>, rho <span class="op">=</span> <span class="fl">.7</span>, w <span class="op">=</span> <span class="va">W</span>, quick <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">y</span>, <span class="va">z</span><span class="op">)</span></span></code></pre></div>
+<p>The approximate method uses matrix powers, and for high values of SA (especially values of rho greater than 0.9) the approximation is sensitive to the number of powers taken. In <code>sim_sar</code> this is controlled by the argument <code>K</code>. For <code>rho = 0.9</code>, you may need to raise the default value of K for the approximation to hold. Notice that <span class="math inline">\(0.9^{45} = 0.009\)</span>, which is near zero and should provide sound results, whereas <span class="math inline">\(0.9^25 = 0.07\)</span> which is not quite there, and <span class="math inline">\(0.9^{15} = 0.2\)</span> will be completely inadequate. In geostan 0.8.0, the default is <span class="math inline">\(K = 20\)</span>.</p>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
