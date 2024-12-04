@@ -122,8 +122,10 @@ sar_list <- prep_sar_data2(row = row, col = col)
 W <- sar_list$W
 
 z <- sim_sar(rho = .8, w = W, quick = TRUE)
-y <- sim_sar(mu = -.5 * z, rho = .9, w = W, quick = TRUE)
+y <- sim_sar(mu = -.5 * z, rho = .7, w = W, quick = TRUE)
 dat <- cbind(y, z)
 ```
+
+The approximate method uses matrix powers, and for high values of SA (especially values of rho greater than 0.9) the approximation is sensitive to the number of powers taken. In `sim_sar` this is controlled by the argument `K`. For `rho = 0.9`, you may need to raise the default value of K for the approximation to hold. Notice that $0.9^{45} = 0.009$, which is near zero and should provide sound results, whereas $0.9^25 = 0.07$ which is not quite there, and $0.9^{15} = 0.2$ will be completely inadequate. In geostan 0.8.0, the default is $K = 20$.
 
 ## References

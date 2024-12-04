@@ -171,7 +171,7 @@ sim_sar <- function(m = 1,
                     w,                    
                     type = c("SEM", "SLM"),
                     approx = FALSE,
-                    K = 15,
+                    K = 20,
                     ...) {
     check_sa_data(mu, w)
     type <- match.arg(type)
@@ -625,7 +625,7 @@ me_diag <- function(fit,
     }
 }
 
-#' Extract eigenfunctions of a connectivity matrix for spatial filtering
+#' Prepare data for spatial filtering
 #'
 #' @export
 #' @param C A binary spatial weights matrix. See \code{\link[geostan]{shape2mat}}.
