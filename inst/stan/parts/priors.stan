@@ -35,7 +35,7 @@
  * @param n Length of y
  * @param type 1 for spatial error; 2 for spatial lag
  *
- * @return Log probability density of SAR model up to additive constant
+ * @return Log probability density of SAR model 
 */
   real sar_normal_lpdf(vector y,
 		       vector mu,
