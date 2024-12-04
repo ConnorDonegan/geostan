@@ -86,7 +86,7 @@
  * @param lambda Eigenvalues of W
  * @param n Length of y
  *
- * @return Log probability density of SAR model up to additive constant
+ * @return Log probability density of SAR model 
 */
   real spatial_error_lpdf(vector y,
 		       vector mu,
