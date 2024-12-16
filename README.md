@@ -55,18 +55,22 @@ Using your R console, you can install geostan from CRAN:
 install.packages("geostan")
 ```
 
+For most users, installing from CRAN is the recommended way to obtain
+geostan.
+
 ### From github
 
-You can install geostan from github:
+You can also install geostan from github:
 
 ``` r
 if (!require('devtools')) install.packages('devtools')
 devtools::install_github("connordonegan/geostan")
 ```
 
-If you are using Windows and installing with `install_github`, you may
-need to install [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
-first (this is not needed when installing from CRAN). To install Rtools:
+This requires compilation of the Stan models. If you are using Windows
+and installing with `install_github`, you may need to install
+[Rtools](https://cran.r-project.org/bin/windows/Rtools/) first (this is
+not needed when installing from CRAN). To install Rtools:
 
 1.  Visit the Rtools site:
     <https://cran.r-project.org/bin/windows/Rtools/>
@@ -105,6 +109,7 @@ Load the package and the `georgia` county mortality data set:
 
 ``` r
 library(geostan)
+#> This is geostan version 0.8.1
 data(georgia)
 ```
 
@@ -140,8 +145,8 @@ mortality_rate <- georgia$rate.female * 10e3
 # quick spatial diagnostics
 sp_diag(mortality_rate, georgia, w = C, name = "Mortality")
 #> 3 NA values found in x will be dropped from data x and from matrix w (nb: this disrupts row-standardization of w)
-#> Warning: Removed 3 rows containing non-finite outside the scale range
-#> (`stat_bin()`).
+#> Warning: Removed 3 rows containing non-finite outside the scale
+#> range (`stat_bin()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
@@ -181,6 +186,9 @@ fit <- stan_car(deaths.female ~ offset(log(pop.at.risk.female)),
         quiet = TRUE) # to silence printing
 #> 3 NA values identified in the outcome variable
 #> Found in rows: 55, 126, 157
+#> Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
+#> Running the chains for more iterations may help. See
+#> https://mc-stan.org/misc/warnings.html#tail-ess
 ```
 
 Passing a fitted model to the `sp_diag` function will return a set of
@@ -189,8 +197,8 @@ diagnostics for spatial models:
 ``` r
 sp_diag(fit, georgia)
 #> 3 NA values found in x will be dropped from data x and from matrix w (nb: this disrupts row-standardization of w)
-#> Warning: Removed 3 rows containing missing values or values outside the
-#> scale range (`geom_pointrange()`).
+#> Warning: Removed 3 rows containing missing values or values
+#> outside the scale range (`geom_pointrange()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
@@ -208,7 +216,7 @@ print(fit)
 #> Likelihood:  poisson 
 #> Link:  log 
 #> Spatial method:  CAR 
-#> Residual Moran Coefficient:  -0.0031375 
+#> Residual Moran Coefficient:  0.0018845 
 #> Observations:  156 
 #> 
 #> Inference for Stan model: foundation.
@@ -216,11 +224,11 @@ print(fit)
 #> post-warmup draws per chain=500, total post-warmup draws=2000.
 #> 
 #>             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff  Rhat
-#> intercept -4.677   0.003 0.092 -4.871 -4.734 -4.677 -4.619 -4.513   861 1.004
-#> car_rho    0.924   0.001 0.058  0.784  0.883  0.936  0.973  0.996  1606 0.999
-#> car_scale  0.456   0.001 0.036  0.391  0.424  0.454  0.486  0.532  1899 1.002
+#> intercept -4.660   0.010 0.124 -4.844 -4.728 -4.671 -4.614 -4.415   152 1.026
+#> car_rho    0.926   0.002 0.057  0.788  0.884  0.938  0.974  0.997   982 1.004
+#> car_scale  0.457   0.001 0.035  0.392  0.427  0.454  0.485  0.533  1869 1.001
 #> 
-#> Samples were drawn using NUTS(diag_e) at Wed Nov 13 16:09:50 2024.
+#> Samples were drawn using NUTS(diag_e) at Mon Dec 16 09:54:18 2024.
 #> For each parameter, n_eff is a crude measure of effective sample size,
 #> and Rhat is the potential scale reduction factor on split chains (at 
 #> convergence, Rhat=1).
@@ -239,19 +247,19 @@ mortality_est <- fitted(fit) * 10e3
 county_name <- georgia$NAME
 head( cbind(county_name, mortality_est) )
 #>           county_name      mean        sd      2.5%       20%       50%
-#> fitted[1]       Crisp 101.89147  9.784748  83.87184  93.37621 101.37227
-#> fitted[2]     Candler 137.13841 15.643722 108.50033 123.57906 136.51359
-#> fitted[3]      Barrow  94.35971  6.364805  82.62612  88.73920  94.14574
-#> fitted[4]      DeKalb  59.74315  1.575741  56.77068  58.33325  59.71677
-#> fitted[5]    Columbia  53.34581  3.207432  47.33439  50.61504  53.26339
-#> fitted[6]        Cobb  54.12259  1.495041  51.24262  52.86109  54.12912
+#> fitted[1]       Crisp 101.50235  9.768276  83.48211  93.29802 101.13725
+#> fitted[2]     Candler 137.44182 16.379395 109.04185 123.43893 136.64743
+#> fitted[3]      Barrow  94.08506  5.891425  82.33040  89.33693  93.98641
+#> fitted[4]      DeKalb  59.79313  1.558891  56.90628  58.48399  59.77942
+#> fitted[5]    Columbia  53.28957  3.303941  46.98875  50.43938  53.23976
+#> fitted[6]        Cobb  54.14148  1.534015  51.08186  52.88618  54.14383
 #>                 80%     97.5%
-#> fitted[1] 110.47617 122.04006
-#> fitted[2] 150.26114 169.29720
-#> fitted[3]  99.74677 107.51136
-#> fitted[4]  61.13469  62.84502
-#> fitted[5]  56.05293  59.83064
-#> fitted[6]  55.38574  57.00559
+#> fitted[1] 109.73107 121.20084
+#> fitted[2] 151.70773 170.97029
+#> fitted[3]  99.08237 105.55138
+#> fitted[4]  61.05865  62.84313
+#> fitted[5]  55.97967  60.21512
+#> fitted[6]  55.40963  57.25577
 ```
 
 The mortality estimates are stored in the column named “mean”, and the
@@ -261,6 +269,7 @@ package):
 
 ``` r
 library(sf)
+#> Linking to GEOS 3.10.2, GDAL 3.4.3, PROJ 8.2.1; sf_use_s2() is TRUE
 
 # put estimates into bins for map colors
 x <- mortality_est$mean

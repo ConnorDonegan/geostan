@@ -110,15 +110,16 @@
 <p>Using your R console, you can install geostan from CRAN:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"geostan"</span><span class="op">)</span></span></code></pre></div>
+<p>For most users, installing from CRAN is the recommended way to obtain geostan.</p>
 </div>
 <div class="section level3">
 <h3 id="from-github">From github<a class="anchor" aria-label="anchor" href="#from-github"></a>
 </h3>
-<p>You can install geostan from github:</p>
+<p>You can also install geostan from github:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://devtools.r-lib.org/" class="external-link">'devtools'</a></span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">'devtools'</span><span class="op">)</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"connordonegan/geostan"</span><span class="op">)</span></span></code></pre></div>
-<p>If you are using Windows and installing with <code>install_github</code>, you may need to install <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">Rtools</a> first (this is not needed when installing from CRAN). To install Rtools:</p>
+<p>This requires compilation of the Stan models. If you are using Windows and installing with <code>install_github</code>, you may need to install <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">Rtools</a> first (this is not needed when installing from CRAN). To install Rtools:</p>
 <ol style="list-style-type: decimal">
 <li>Visit the Rtools site: <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link uri">https://cran.r-project.org/bin/windows/Rtools/</a>
 </li>
@@ -141,6 +142,7 @@
 <p>Load the package and the <code>georgia</code> county mortality data set:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://connordonegan.github.io/geostan/">geostan</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; This is geostan version 0.8.1</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span></code></pre></div>
 <p>This has county population and mortality data by sex for ages 55-64, and for the period 2014-2018. As is common for public access data, some of the observations missing because the CDC has censored them to protect privacy.</p>
 <p>The <code>sp_diag</code> function provides visual summaries of spatial data, including a histogram, Moran scatter plot, and map. The Moran scatter plot displays the values against a summary of their neighboring values, so that the slope of the regression line gives a measure of their degree of autocorrelation.</p>
@@ -163,8 +165,8 @@
 <span><span class="co"># quick spatial diagnostics</span></span>
 <span><span class="fu"><a href="reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">mortality_rate</span>, <span class="va">georgia</span>, w <span class="op">=</span> <span class="va">C</span>, name <span class="op">=</span> <span class="st">"Mortality"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; 3 NA values found in x will be dropped from data x and from matrix w (nb: this disrupts row-standardization of w)</span></span>
-<span><span class="co">#&gt; Warning: Removed 3 rows containing non-finite outside the scale range</span></span>
-<span><span class="co">#&gt; (`stat_bin()`).</span></span></code></pre></div>
+<span><span class="co">#&gt; Warning: Removed 3 rows containing non-finite outside the scale</span></span>
+<span><span class="co">#&gt; range (`stat_bin()`).</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-3-1.png" style="display: block; margin: auto;"></p>
 <p>Mortality rates and other health statistics for counties are, in many cases, highly unstable estimates that cannot be relied upon for public advisories or inference (due to small population sizes). Hence, we need models to make inferences from small area data.</p>
 <p>The following code fits a spatial conditional autoregressive (CAR) model to female county mortality data. These models are used for estimating disease risk in small areas like counties, and for analyzing covariation of health outcomes with other area variables. The R syntax for fitting the models is similar to using <code>lm</code> or <code>glm</code>. We provide the population at risk (the denominator for mortality rates) as an offset term, using the log-transform.</p>
@@ -183,13 +185,16 @@
 <span>        iter <span class="op">=</span> <span class="fl">1e3</span>, <span class="co"># no. MCMC samples</span></span>
 <span>        quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="co"># to silence printing</span></span>
 <span><span class="co">#&gt; 3 NA values identified in the outcome variable</span></span>
-<span><span class="co">#&gt; Found in rows: 55, 126, 157</span></span></code></pre></div>
+<span><span class="co">#&gt; Found in rows: 55, 126, 157</span></span>
+<span><span class="co">#&gt; Warning: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.</span></span>
+<span><span class="co">#&gt; Running the chains for more iterations may help. See</span></span>
+<span><span class="co">#&gt; https://mc-stan.org/misc/warnings.html#tail-ess</span></span></code></pre></div>
 <p>Passing a fitted model to the <code>sp_diag</code> function will return a set of diagnostics for spatial models:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span></span>
 <span><span class="co">#&gt; 3 NA values found in x will be dropped from data x and from matrix w (nb: this disrupts row-standardization of w)</span></span>
-<span><span class="co">#&gt; Warning: Removed 3 rows containing missing values or values outside the</span></span>
-<span><span class="co">#&gt; scale range (`geom_pointrange()`).</span></span></code></pre></div>
+<span><span class="co">#&gt; Warning: Removed 3 rows containing missing values or values</span></span>
+<span><span class="co">#&gt; outside the scale range (`geom_pointrange()`).</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-5-1.png" style="display: block; margin: auto;"></p>
 <p>The <code>print</code> method returns a summary of the probability distributions for model parameters, as well as Markov chain Monte Carlo (MCMC) diagnostics from Stan (Monte Carlo standard errors of the mean <code>se_mean</code>, effective sample size <code>n_eff</code>, and the R-hat statistic <code>Rhat</code>):</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -199,7 +204,7 @@
 <span><span class="co">#&gt; Likelihood:  poisson </span></span>
 <span><span class="co">#&gt; Link:  log </span></span>
 <span><span class="co">#&gt; Spatial method:  CAR </span></span>
-<span><span class="co">#&gt; Residual Moran Coefficient:  -0.0031375 </span></span>
+<span><span class="co">#&gt; Residual Moran Coefficient:  0.0018845 </span></span>
 <span><span class="co">#&gt; Observations:  156 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Inference for Stan model: foundation.</span></span>
@@ -207,11 +212,11 @@
 <span><span class="co">#&gt; post-warmup draws per chain=500, total post-warmup draws=2000.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff  Rhat</span></span>
-<span><span class="co">#&gt; intercept -4.677   0.003 0.092 -4.871 -4.734 -4.677 -4.619 -4.513   861 1.004</span></span>
-<span><span class="co">#&gt; car_rho    0.924   0.001 0.058  0.784  0.883  0.936  0.973  0.996  1606 0.999</span></span>
-<span><span class="co">#&gt; car_scale  0.456   0.001 0.036  0.391  0.424  0.454  0.486  0.532  1899 1.002</span></span>
+<span><span class="co">#&gt; intercept -4.660   0.010 0.124 -4.844 -4.728 -4.671 -4.614 -4.415   152 1.026</span></span>
+<span><span class="co">#&gt; car_rho    0.926   0.002 0.057  0.788  0.884  0.938  0.974  0.997   982 1.004</span></span>
+<span><span class="co">#&gt; car_scale  0.457   0.001 0.035  0.392  0.427  0.454  0.485  0.533  1869 1.001</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Wed Nov 13 16:09:50 2024.</span></span>
+<span><span class="co">#&gt; Samples were drawn using NUTS(diag_e) at Mon Dec 16 09:54:18 2024.</span></span>
 <span><span class="co">#&gt; For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">#&gt; and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">#&gt; convergence, Rhat=1).</span></span></code></pre></div>
@@ -224,22 +229,23 @@
 <span><span class="va">county_name</span> <span class="op">&lt;-</span> <span class="va">georgia</span><span class="op">$</span><span class="va">NAME</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">county_name</span>, <span class="va">mortality_est</span><span class="op">)</span> <span class="op">)</span></span>
 <span><span class="co">#&gt;           county_name      mean        sd      2.5%       20%       50%</span></span>
-<span><span class="co">#&gt; fitted[1]       Crisp 101.89147  9.784748  83.87184  93.37621 101.37227</span></span>
-<span><span class="co">#&gt; fitted[2]     Candler 137.13841 15.643722 108.50033 123.57906 136.51359</span></span>
-<span><span class="co">#&gt; fitted[3]      Barrow  94.35971  6.364805  82.62612  88.73920  94.14574</span></span>
-<span><span class="co">#&gt; fitted[4]      DeKalb  59.74315  1.575741  56.77068  58.33325  59.71677</span></span>
-<span><span class="co">#&gt; fitted[5]    Columbia  53.34581  3.207432  47.33439  50.61504  53.26339</span></span>
-<span><span class="co">#&gt; fitted[6]        Cobb  54.12259  1.495041  51.24262  52.86109  54.12912</span></span>
+<span><span class="co">#&gt; fitted[1]       Crisp 101.50235  9.768276  83.48211  93.29802 101.13725</span></span>
+<span><span class="co">#&gt; fitted[2]     Candler 137.44182 16.379395 109.04185 123.43893 136.64743</span></span>
+<span><span class="co">#&gt; fitted[3]      Barrow  94.08506  5.891425  82.33040  89.33693  93.98641</span></span>
+<span><span class="co">#&gt; fitted[4]      DeKalb  59.79313  1.558891  56.90628  58.48399  59.77942</span></span>
+<span><span class="co">#&gt; fitted[5]    Columbia  53.28957  3.303941  46.98875  50.43938  53.23976</span></span>
+<span><span class="co">#&gt; fitted[6]        Cobb  54.14148  1.534015  51.08186  52.88618  54.14383</span></span>
 <span><span class="co">#&gt;                 80%     97.5%</span></span>
-<span><span class="co">#&gt; fitted[1] 110.47617 122.04006</span></span>
-<span><span class="co">#&gt; fitted[2] 150.26114 169.29720</span></span>
-<span><span class="co">#&gt; fitted[3]  99.74677 107.51136</span></span>
-<span><span class="co">#&gt; fitted[4]  61.13469  62.84502</span></span>
-<span><span class="co">#&gt; fitted[5]  56.05293  59.83064</span></span>
-<span><span class="co">#&gt; fitted[6]  55.38574  57.00559</span></span></code></pre></div>
+<span><span class="co">#&gt; fitted[1] 109.73107 121.20084</span></span>
+<span><span class="co">#&gt; fitted[2] 151.70773 170.97029</span></span>
+<span><span class="co">#&gt; fitted[3]  99.08237 105.55138</span></span>
+<span><span class="co">#&gt; fitted[4]  61.05865  62.84313</span></span>
+<span><span class="co">#&gt; fitted[5]  55.97967  60.21512</span></span>
+<span><span class="co">#&gt; fitted[6]  55.40963  57.25577</span></span></code></pre></div>
 <p>The mortality estimates are stored in the column named “mean”, and the limits of the 95% credible interval are found in the columns “2.5%” and “97.5%”. Here we create a map of estimates (with some help from <code>sf</code> package):</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Linking to GEOS 3.10.2, GDAL 3.4.3, PROJ 8.2.1; sf_use_s2() is TRUE</span></span>
 <span></span>
 <span><span class="co"># put estimates into bins for map colors</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">mortality_est</span><span class="op">$</span><span class="va">mean</span></span>

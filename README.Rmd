@@ -46,16 +46,18 @@ Using your R console, you can install geostan from CRAN:
 install.packages("geostan")
 ```
 
+For most users, installing from CRAN is the recommended way to obtain geostan.
+
 ### From github
 
-You can install geostan from github:
+You can also install geostan from github:
 
 ```r
 if (!require('devtools')) install.packages('devtools')
 devtools::install_github("connordonegan/geostan")
 ```
 
-If you are using Windows and installing with `install_github`, you may need to install [Rtools](https://cran.r-project.org/bin/windows/Rtools/) first (this is not needed when installing from CRAN). To install Rtools:
+This requires compilation of the Stan models. If you are using Windows and installing with `install_github`, you may need to install [Rtools](https://cran.r-project.org/bin/windows/Rtools/) first (this is not needed when installing from CRAN). To install Rtools:
 
 1. Visit the Rtools site: https://cran.r-project.org/bin/windows/Rtools/
 2. Select the version that corresponds to the version of R that you have installed (e.g., R 4.3).
