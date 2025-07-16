@@ -15,24 +15,24 @@
 #' @return An object of class `prior` which will be used internally by **geostan** to set parameters of prior distributions. 
 #' 
 #' @examples
-#' \donttest{
 #' # normal priors for k=2 covariates
 #' data(georgia)
 #' prior <- list()
 #' k <- 2
 #' prior$beta <- normal(location = rep(0, times = k),
-#'                      scale = rep(2, times = k))
-#' prior$intercept <- normal(-5, 3)
+#'                      scale = rep(4, times = k))
+#' prior$intercept <- normal(-5, 5)
 #' print(prior)
 #' fit <- stan_glm(deaths.male ~ offset(log(pop.at.risk.male)) + log(income) + college,
-#'                 re = ~ GEOID,
+#'                 # re = ~ GEOID,
 #'                 centerx = TRUE,
 #'                 data = georgia,
 #'                 family = poisson(),
 #'                 prior = prior,
 #'                 chains = 2, iter = 600) # for speed only
-#' plot(fit)
+#' print(fit)
 #'
+#' \donttest{
 #' # setting (hyper-) priors in ME models
 #' se <- data.frame(insurance = georgia$insurance.se)
 #' prior <- list()

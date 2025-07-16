@@ -1,7 +1,7 @@
 Package: geostan
 Title: Bayesian Spatial Analysis
-Version: 0.8.1
-Date: 2024-12-04
+Version: 0.8.2
+Date: 2025-07-12
 URL: https://connordonegan.github.io/geostan/
 BugReports: https://github.com/ConnorDonegan/geostan/issues
 Authors@R: c(
@@ -18,7 +18,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Biarch: true
 Depends: 
-    R (>= 3.4)
+    R (>= 4.1.0)
 Imports: 
     spdep (>= 1.0),
     sf (>= 1.0-10),

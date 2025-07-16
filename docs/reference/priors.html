@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.0.01</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.2</span>
       </span>
     </div>
 
@@ -165,24 +165,24 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># \donttest{</span></span>
-<span><span class="co"># normal priors for k=2 covariates</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># normal priors for k=2 covariates</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
 <span><span class="va">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">k</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
 <span><span class="va">prior</span><span class="op">$</span><span class="va">beta</span> <span class="op">&lt;-</span> <span class="fu">normal</span><span class="op">(</span>location <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, times <span class="op">=</span> <span class="va">k</span><span class="op">)</span>,</span>
-<span>                     scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">2</span>, times <span class="op">=</span> <span class="va">k</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">prior</span><span class="op">$</span><span class="va">intercept</span> <span class="op">&lt;-</span> <span class="fu">normal</span><span class="op">(</span><span class="op">-</span><span class="fl">5</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span>                     scale <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">4</span>, times <span class="op">=</span> <span class="va">k</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">prior</span><span class="op">$</span><span class="va">intercept</span> <span class="op">&lt;-</span> <span class="fu">normal</span><span class="op">(</span><span class="op">-</span><span class="fl">5</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">prior</span><span class="op">)</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_glm.html">stan_glm</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">income</span><span class="op">)</span> <span class="op">+</span> <span class="va">college</span>,</span>
-<span>                re <span class="op">=</span> <span class="op">~</span> <span class="va">GEOID</span>,</span>
+<span>                <span class="co"># re = ~ GEOID,</span></span>
 <span>                centerx <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                data <span class="op">=</span> <span class="va">georgia</span>,</span>
 <span>                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>                prior <span class="op">=</span> <span class="va">prior</span>,</span>
 <span>                chains <span class="op">=</span> <span class="fl">2</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># \donttest{</span></span>
 <span><span class="co"># setting (hyper-) priors in ME models</span></span>
 <span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>insurance <span class="op">=</span> <span class="va">georgia</span><span class="op">$</span><span class="va">insurance.se</span><span class="op">)</span></span>
 <span><span class="va">prior</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>

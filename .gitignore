@@ -1,3 +1,4 @@
+*~
 ^rcppExports.cpp$
 ^stanExports_*
 !man/geostan-internal.Rd
@@ -15,3 +16,4 @@ cran-comments.md
 /Meta/
 CRAN-RELEASE
 CRAN-SUBMISSION
+test/*.csv

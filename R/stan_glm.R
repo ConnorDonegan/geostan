@@ -178,11 +178,16 @@
 #' y <- .5 * x + rnorm(N)
 #' dat <- cbind(y, x)
 #'
-#' # no. of MCMC samples
-#' iter = 600
+#' # no. of MCMC samples 
+#' iter = 700
 #'
+#' # no. of MCMC chains
+#' chains = 2
+#' 
 #' # fit model
-#' fit <- stan_glm(y ~ x, data = dat, iter = iter, quiet = TRUE)
+#' #  (warnings for low ESS are expected in this example;
+#' #   for analysis, use chains=4, and higher iter)
+#' fit <- stan_glm(y ~ x, data = dat, iter = iter, chains = chains, quiet = TRUE)
 #'
 #' # see results with MCMC diagnostics
 #' print(fit)
@@ -191,13 +196,13 @@
 #' ## Custom prior distributions
 #' ##
 #'
-#' PL <- list(
+#' prior_list <- list(
 #'       intercept = normal(0, 1),
 #'       beta = normal(0, 1),
 #'       sigma = student_t(10, 0, 2)
 #' )
 #'
-#' fit2 <- stan_glm(y ~ x, data = dat, prior = PL, iter = iter,
+#' fit2 <- stan_glm(y ~ x, data = dat, prior = prior_list, iter = iter,
 #'                 quiet = TRUE)
 #'
 #' print(fit2)
@@ -213,9 +218,6 @@
 #' ##
 #'
 #' data(sentencing)
-#'
-#' # note: 'name' is county identifier
-#' head(sentencing)
 #' 
 #' # denominator in standardized rate Y/E
 #' # (observed count Y over expected count E)
@@ -227,7 +229,9 @@
 #'                      re = ~ name,
 #'                      family = poisson(),
 #'                      data = sentencing,                    
-#'                     iter = iter, quiet = TRUE) 
+#'                      iter = 700,
+#'                      chains = 2,       
+#'                      quiet = TRUE) 
 #'
 #' # Spatial autocorrelation/residual diagnostics
 #' sp_diag(fit.pois, sentencing)
@@ -235,18 +239,14 @@
 #' # summary of results with MCMC diagnostics
 #' print(fit.pois)
 #'
-#' \donttest{
+#' # MCMC diagnostics from rstan methods
 #' # MCMC diagnostics plot: Rhat values should all by very near 1
-#' rstan::stan_rhat(fit.pois$stanfit)
-#' 
-#' 
+#' # rstan::stan_rhat(fit.pois$stanfit)
 #' # effective sample size for all parameters and generated quantities
 #' # (including residuals, predicted values, etc.)
-#' rstan::stan_ess(fit.pois$stanfit)
-#' 
+#' # rstan::stan_ess(fit.pois$stanfit)
 #' # or for a particular parameter
-#' rstan::stan_ess(fit.pois$stanfit, "alpha_re")
-#' }
+#' # rstan::stan_ess(fit.pois$stanfit, "alpha_re")
 #' 
 #' ##
 #' ## Visualize the posterior predictive distribution
@@ -292,7 +292,6 @@
 #'
 #' # return margins to previous settings
 #' par(old_pars)
-#' 
 #' @importFrom rstan extract_sparse_parts
 stan_glm <- function(formula,
                      slx,
