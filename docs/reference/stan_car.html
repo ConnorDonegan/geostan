@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.0.01</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.2</span>
       </span>
     </div>
 
@@ -354,8 +354,7 @@ $$</p>
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span></span>
-<span><span class="co">##</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co">##</span></span>
 <span><span class="co">## model mortality risk</span></span>
 <span><span class="co">##</span></span>
 <span></span>
@@ -381,12 +380,13 @@ $$</p>
 <span>                car_parts <span class="op">=</span> <span class="va">cars</span>,</span>
 <span>                data <span class="op">=</span> <span class="va">georgia</span>,</span>
 <span>                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>                iter <span class="op">=</span> <span class="va">iter</span>, chains <span class="op">=</span> <span class="va">chains</span><span class="op">)</span></span>
+<span>                iter <span class="op">=</span> <span class="va">iter</span>,</span>
+<span>                chains <span class="op">=</span> <span class="va">chains</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># model diagnostics</span></span>
 <span><span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">georgia</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># county mortality rates</span></span>
+<span><span class="co"># county mortality rates (estimates)</span></span>
 <span><span class="va">eta</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># spatial trend component</span></span>
@@ -409,13 +409,11 @@ $$</p>
 <span>               data <span class="op">=</span> <span class="va">georgia</span>,</span>
 <span>               car <span class="op">=</span> <span class="va">dcars</span>,</span>
 <span>               family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>               iter <span class="op">=</span> <span class="va">iter</span>, chains <span class="op">=</span> <span class="va">chains</span><span class="op">)</span></span>
+<span>               iter <span class="op">=</span> <span class="va">iter</span>,</span>
+<span>               chains <span class="op">=</span> <span class="va">chains</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="sp_diag.html">sp_diag</a></span><span class="op">(</span><span class="va">Dfit</span>, <span class="va">georgia</span>, <span class="va">dcars</span><span class="op">$</span><span class="va">C</span><span class="op">)</span></span>
-<span><span class="fu"><a href="waic.html">dic</a></span><span class="op">(</span><span class="va">Dfit</span><span class="op">)</span>; <span class="fu"><a href="waic.html">dic</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># }</span></span>
-<span></span></code></pre></div>
+<span><span class="fu"><a href="waic.html">waic</a></span><span class="op">(</span><span class="va">Dfit</span><span class="op">)</span>; <span class="fu"><a href="waic.html">waic</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="co"># }</span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

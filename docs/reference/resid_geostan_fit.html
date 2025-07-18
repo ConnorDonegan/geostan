@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.0.01</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.2</span>
       </span>
     </div>
 
@@ -83,7 +83,7 @@
 
 
 <dt>detrend</dt>
-<dd><p>For auto-normal models (CAR and SAR models with Gaussian likelihood only); if <code>detrend = TRUE</code>, the implicit spatial trend will be removed from the residuals. The implicit spatial trend is <code>Trend = rho * C %*% (Y - Mu)</code> (see <a href="stan_car.html">stan_car</a> or <a href="stan_sar.html">stan_sar</a>). I.e., <code>resid = Y - (Mu + Trend)</code>.</p></dd>
+<dd><p>For auto-normal models (CAR and SAR models with Gaussian likelihood only); if <code>detrend = FALSE</code>, the residuals will equal <code>y - Mu</code>, where <code>Mu</code> does not contain the implicit spatial trend. If <code>detrend = TRUE</code> (the default), the residuals will equal <code>Resid = y - Mu - Trend</code>. For CAR models and for SAR models of type SEM, the implicit spatial trend is <code>Trend = rho * C %*% (Y - Mu)</code> (see <a href="stan_car.html">stan_car</a> or <a href="stan_sar.html">stan_sar</a>). For SAR models of type SLM, the spatial trend is <code>rho * C * y</code>.</p></dd>
 
 
 <dt>...</dt>
@@ -91,18 +91,20 @@
 
 
 <dt>trend</dt>
-<dd><p>For auto-normal models (CAR and SAR models with Gaussian likelihood only); if <code>trend = TRUE</code>, the fitted values will include the implicit spatial trend term. The implicit spatial trend is <code>Trend = rho * C %*% (Y - Mu)</code> (see <a href="stan_car.html">stan_car</a> or <a href="stan_sar.html">stan_sar</a>). I.e., if <code>trend = TRUE</code>, <code>fitted = Mu + Trend</code>.</p></dd>
+<dd><p>For auto-normal models (CAR and SAR models with Gaussian likelihood only); if <code>trend = FALSE</code>, the fitted values will not include the implicit spatial trend term. Rather, the fitted values will equal <code>Mu</code>: the intercept plus any other terms explicitly included in the model formula and the <code>re</code> argument ('random effects'). If <code>trend = TRUE</code> (the default), <code>fitted = Mu + Trend</code>. For CAR models and SAR models of type SEM, the spatial trend is <code>rho * C (y - Mu)</code>. For SAR models of type SLM, the spatial trend is <code>rho * C * y</code>.</p></dd>
 
 </dl></div>
     <div id="value">
     <h2>Value</h2>
     
 
-<p>By default, these methods return a <code>data.frame</code>. The column named <code>mean</code> is what most users will be looking for. These contain the fitted values (for the <code>fitted</code> method), the residuals (fitted values minus observed values, for the <code>resid</code> method), or the spatial trend (for the <code>spatial</code> method). The <code>mean</code> column is the posterior mean of each value, and the column <code>sd</code> contains the posterior standard deviation for each value. The posterior distributions are also summarized by select quantiles (including 2.5\<!-- % and 97.5\\%). --></p>
-
+<p>By default, these methods return a <code>data.frame</code>. The column named <code>mean</code> is what most users will be looking for. These contain the fitted values (for the <code>fitted</code> method), the residuals (fitted values minus observed values, for the <code>resid</code> method), or the spatial trend (for the <code>spatial</code> method). The <code>mean</code> column is the posterior mean of each value, and the column <code>sd</code> contains the posterior standard deviation for each value. The posterior distributions are also summarized by select quantiles.</p>
 
 
 <p>If <code>summary = FALSE</code> then the method returns an S-by-N matrix of MCMC samples, where S is the number of MCMC samples and N is the number of observations in the data.</p>
+
+
+<p>For spatial GLMs, the <code>spatial</code> method returns values on the scale of the linear predictor. Hence, for a Poisson with log link function, the spatial trend is on the log scale (in the same way that the intercept and coefficients are on the log scale).</p>
     </div>
     <div id="details">
     <h2>Details</h2>
@@ -111,7 +113,7 @@
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>               <span class="dt">data =</span> data,</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>               <span class="dt">family =</span> <span class="kw">poisson</span>())</span></code></pre><p></p></div>
 <p>If the fitted values are extracted using <code>rates = FALSE</code>, then <code>fitted(fit)</code> will return the expectation of \(y\). If <code>rates = TRUE</code> (the default), then <code>fitted(fit)</code> will return the expected value of the rate \(\frac{y}{E}\).</p>
-<p>If a binomial model is used instead of the Poisson, then using <code>rates = TRUE</code> will return the expectation of \(\frac{y}{N}\) where \(N\) is the sum of the number of 'successes' and 'failures', as in:</p>
+<p>If a binomial model is used instead of the Poisson, then using <code>rates = TRUE</code> with the <code>fitted</code> method will return the expectation of \(\frac{y}{N}\) where \(y\) is the number of 'successes' and \(N\) is the sum of the number of 'successes' and 'failures', as in:</p>
 <p></p><div class="sourceCode"><pre><code><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>fit &lt;-<span class="st"> </span><span class="kw">stan_glm</span>(<span class="kw">cbind</span>(successes, failures) <span class="op">~</span><span class="st"> </span><span class="dv">1</span>,</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>               <span class="dt">data =</span> data,</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>               <span class="dt">family =</span> <span class="kw">binomial</span>())</span></code></pre><p></p></div>
@@ -119,34 +121,49 @@
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># \donttest{</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">georgia</span><span class="op">)</span></span>
-<span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="shape2mat.html">shape2mat</a></span><span class="op">(</span><span class="va">georgia</span>, <span class="st">"B"</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="va">sar_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="prep_sar_data2.html">prep_sar_data2</a></span><span class="op">(</span>row <span class="op">=</span> <span class="fl">10</span>, col <span class="op">=</span> <span class="fl">10</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">W</span> <span class="op">&lt;-</span> <span class="va">sar_list</span><span class="op">$</span><span class="va">W</span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_sar.html">sim_sar</a></span><span class="op">(</span>w <span class="op">=</span> <span class="va">W</span>, rho <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span></span>
+<span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="sim_sar.html">sim_sar</a></span><span class="op">(</span>w <span class="op">=</span> <span class="va">W</span>, rho <span class="op">=</span> <span class="fl">0.7</span>, mu <span class="op">=</span> <span class="fl">1</span> <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="va">x</span><span class="op">)</span></span>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">y</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_esf.html">stan_esf</a></span><span class="op">(</span><span class="va">deaths.male</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/stats/offset.html" class="external-link">offset</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">pop.at.risk.male</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>                C <span class="op">=</span> <span class="va">C</span>,</span>
-<span>                re <span class="op">=</span> <span class="op">~</span> <span class="va">GEOID</span>,</span>
-<span>                data <span class="op">=</span> <span class="va">georgia</span>,</span>
-<span>                family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">poisson</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>                chains <span class="op">=</span> <span class="fl">1</span>, iter <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># for speed only</span></span>
-<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="stan_sar.html">stan_sar</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">dat</span>, sar <span class="op">=</span> <span class="va">sar_list</span>,</span>
+<span>                    chains <span class="op">=</span> <span class="fl">1</span>, iter <span class="op">=</span> <span class="fl">800</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Residuals</span></span>
-<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="va">r</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span>
-<span><span class="fu"><a href="moran_plot.html">moran_plot</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">mean</span>, <span class="va">C</span><span class="op">)</span></span>
+<span><span class="fu"><a href="moran_plot.html">moran_plot</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">mean</span>, <span class="va">W</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># when residuals are not detrended, they exhibit spatial autocorrelation</span></span>
+<span><span class="va">r2</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit</span>, detrend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="mc.html">mc</a></span><span class="op">(</span><span class="va">r</span><span class="op">$</span><span class="va">mean</span>, <span class="va">W</span><span class="op">)</span></span>
+<span><span class="fu"><a href="mc.html">mc</a></span><span class="op">(</span><span class="va">r2</span><span class="op">$</span><span class="va">mean</span>, <span class="va">W</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">r_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit</span>, summary <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">r_mean</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">r_mat</span>, <span class="fl">2</span>, <span class="va">mean</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">r_mean</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">r_mean</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Fitted values</span></span>
 <span><span class="va">f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">f2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit</span>, rates <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">f2</span><span class="op">)</span></span>
-<span></span>
 <span><span class="co"># Spatial trend</span></span>
-<span><span class="va">esf</span>  <span class="op">&lt;-</span> <span class="fu">spatial</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">esf</span><span class="op">)</span></span>
-<span><span class="co"># }</span></span></code></pre></div>
+<span><span class="va">sp_trend</span>  <span class="op">&lt;-</span> <span class="fu">spatial</span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sp_trend</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># another way to obtain detrended residuals </span></span>
+<span><span class="va">sp</span> <span class="op">&lt;-</span> <span class="fu">spatial</span><span class="op">(</span><span class="va">fit</span>, summary <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit</span>, detrend <span class="op">=</span> <span class="cn">FALSE</span>, summary <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co"># detrended residuals (matrix of samples):</span></span>
+<span><span class="va">r_det</span> <span class="op">&lt;-</span> <span class="va">r</span> <span class="op">-</span> <span class="va">sp</span></span>
+<span><span class="co"># summarize (take posterior means):</span></span>
+<span><span class="va">r_det</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">r_det</span>, <span class="fl">2</span>, <span class="va">mean</span><span class="op">)</span></span>
+<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">r</span>, <span class="fl">2</span>, <span class="va">mean</span><span class="op">)</span></span>
+<span><span class="co"># Moran coefficients:</span></span>
+<span><span class="fu"><a href="mc.html">mc</a></span><span class="op">(</span><span class="va">r_det</span>, <span class="va">W</span><span class="op">)</span></span>
+<span><span class="fu"><a href="mc.html">mc</a></span><span class="op">(</span><span class="va">r</span>, <span class="va">W</span><span class="op">)</span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

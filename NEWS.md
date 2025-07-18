@@ -1,3 +1,7 @@
+# geostan 0.8.2
+
+This fixes #25, an issue with the `geostan::spatial` method for GLMs, and also includes some minor changes to package documentation.
+
 # geostan 0.8.1
 
 This is a small patch to ensure that the package can install on older versions of R. 

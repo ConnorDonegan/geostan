@@ -40,7 +40,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.0.01</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.2</span>
       </span>
     </div>
 
@@ -322,15 +322,15 @@
 <span><span class="co">## post-warmup draws per chain=400, total post-warmup draws=1600.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##                  mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff</span></span>
-<span><span class="co">## intercept      20.755   0.124 2.899 15.207 18.259 20.710 23.166 26.787   546</span></span>
-<span><span class="co">## log(gdpPercap)  5.486   0.013 0.311  4.849  5.229  5.496  5.752  6.074   540</span></span>
-<span><span class="co">## sigma           4.905   0.011 0.276  4.376  4.685  4.903  5.119  5.490   673</span></span>
+<span><span class="co">## intercept      20.604   0.138 2.999 14.821 18.030 20.689 23.256 26.317   470</span></span>
+<span><span class="co">## log(gdpPercap)  5.504   0.015 0.322  4.884  5.231  5.503  5.784  6.118   480</span></span>
+<span><span class="co">## sigma           4.904   0.010 0.269  4.429  4.668  4.905  5.115  5.465   750</span></span>
 <span><span class="co">##                 Rhat</span></span>
-<span><span class="co">## intercept      1.006</span></span>
+<span><span class="co">## intercept      1.005</span></span>
 <span><span class="co">## log(gdpPercap) 1.005</span></span>
-<span><span class="co">## sigma          1.000</span></span>
+<span><span class="co">## sigma          1.001</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Samples were drawn using NUTS(diag_e) at Wed Dec  4 13:08:18 2024.</span></span>
+<span><span class="co">## Samples were drawn using NUTS(diag_e) at Mon Jul 14 14:15:19 2025.</span></span>
 <span><span class="co">## For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">## and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">## convergence, Rhat=1).</span></span></code></pre>
@@ -355,12 +355,12 @@
 <code class="sourceCode R"><span><span class="va">fdf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/fitted.values.html" class="external-link">fitted</a></span><span class="op">(</span><span class="va">fit_lm</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">fdf</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##               mean        sd     2.5%      20%      50%      80%    97.5%</span></span>
-<span><span class="co">## fitted[1] 70.21184 0.3828826 69.45109 69.90147 70.20678 70.53523 70.97700</span></span>
-<span><span class="co">## fitted[2] 63.46098 0.5897879 62.31106 62.95473 63.45715 63.95377 64.62738</span></span>
-<span><span class="co">## fitted[3] 79.29817 0.5814509 78.17766 78.79123 79.29411 79.80983 80.42024</span></span>
-<span><span class="co">## fitted[4] 80.32248 0.6268546 79.11845 79.78267 80.32545 80.86897 81.51848</span></span>
-<span><span class="co">## fitted[5] 75.99363 0.4550348 75.13656 75.58926 76.00222 76.38572 76.87329</span></span>
-<span><span class="co">## fitted[6] 67.87548 0.4279134 67.02802 67.51338 67.86547 68.23872 68.71756</span></span></code></pre>
+<span><span class="co">## fitted[1] 70.22325 0.3958945 69.45245 69.88625 70.22963 70.55043 71.00769</span></span>
+<span><span class="co">## fitted[2] 63.45024 0.6101646 62.29326 62.91652 63.46281 63.97594 64.59482</span></span>
+<span><span class="co">## fitted[3] 79.33940 0.6008245 78.18550 78.82906 79.33627 79.84760 80.50778</span></span>
+<span><span class="co">## fitted[4] 80.36706 0.6477634 79.12126 79.81673 80.36413 80.91975 81.63142</span></span>
+<span><span class="co">## fitted[5] 76.02402 0.4701727 75.08544 75.62760 76.02202 76.42606 76.91284</span></span>
+<span><span class="co">## fitted[6] 67.87923 0.4426079 67.02744 67.50195 67.88025 68.25438 68.74189</span></span></code></pre>
 <p>The <code>resid</code> method behaves similarly. Examining the Moran scatter plot using the residuals shows a moderate degree of positive SA as well as some skewness:</p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rdf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit_lm</span><span class="op">)</span></span>
@@ -385,7 +385,7 @@
 <span><span class="co">## Likelihood:  auto_gaussian </span></span>
 <span><span class="co">## Link:  identity </span></span>
 <span><span class="co">## Spatial method:  CAR </span></span>
-<span><span class="co">## Residual Moran Coefficient:  -0.3565875 </span></span>
+<span><span class="co">## Residual Moran Coefficient:  -0.3562562 </span></span>
 <span><span class="co">## Observations:  162 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Inference for Stan model: foundation.</span></span>
@@ -393,11 +393,11 @@
 <span><span class="co">## post-warmup draws per chain=400, total post-warmup draws=1600.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff  Rhat</span></span>
-<span><span class="co">## intercept 70.183   0.091 2.872 64.690 67.874 70.230 72.427 75.709  1005 1.001</span></span>
-<span><span class="co">## car_rho    0.981   0.000 0.010  0.956  0.974  0.983  0.990  0.996  1111 0.999</span></span>
-<span><span class="co">## car_scale  7.818   0.014 0.446  6.994  7.431  7.799  8.162  8.789   996 1.002</span></span>
+<span><span class="co">## intercept 70.004   0.106 2.954 63.824 67.821 69.985 72.144 75.824   771 1.003</span></span>
+<span><span class="co">## car_rho    0.981   0.000 0.011  0.955  0.973  0.983  0.990  0.996   821 1.004</span></span>
+<span><span class="co">## car_scale  7.838   0.015 0.466  7.008  7.446  7.809  8.230  8.835   932 0.999</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Samples were drawn using NUTS(diag_e) at Wed Dec  4 13:08:24 2024.</span></span>
+<span><span class="co">## Samples were drawn using NUTS(diag_e) at Mon Jul 14 14:15:27 2025.</span></span>
 <span><span class="co">## For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">## and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">## convergence, Rhat=1).</span></span></code></pre>
@@ -441,13 +441,13 @@
 <span><span class="co">##  Pearson's product-moment correlation</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## data:  dx and dy</span></span>
-<span><span class="co">## t = 9.1412, df = 160, p-value = 2.675e-16</span></span>
+<span><span class="co">## t = 9.1402, df = 160, p-value = 2.692e-16</span></span>
 <span><span class="co">## alternative hypothesis: true correlation is not equal to 0</span></span>
 <span><span class="co">## 95 percent confidence interval:</span></span>
-<span><span class="co">##  0.4743820 0.6786355</span></span>
+<span><span class="co">##  0.4743306 0.6785997</span></span>
 <span><span class="co">## sample estimates:</span></span>
-<span><span class="co">##       cor </span></span>
-<span><span class="co">## 0.5857326</span></span></code></pre>
+<span><span class="co">##      cor </span></span>
+<span><span class="co">## 0.585689</span></span></code></pre>
 <p>The adjusted estimate of .59 is considerably different from the naive estimate of .80 and is outside the naive confidence intervals. (The adjusted estimate is .62 if we use SAR models.)</p>
 </div>
 <div class="section level3">
@@ -482,7 +482,7 @@
 <span><span class="co">## Likelihood:  auto_gaussian </span></span>
 <span><span class="co">## Link:  identity </span></span>
 <span><span class="co">## Spatial method:  SAR (SEM) </span></span>
-<span><span class="co">## Residual Moran Coefficient:  -0.05408938 </span></span>
+<span><span class="co">## Residual Moran Coefficient:  -0.05218188 </span></span>
 <span><span class="co">## Observations:  162 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Inference for Stan model: foundation.</span></span>
@@ -490,12 +490,12 @@
 <span><span class="co">## post-warmup draws per chain=400, total post-warmup draws=1600.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##            mean se_mean    sd   2.5%    20%   50%   80% 97.5% n_eff  Rhat</span></span>
-<span><span class="co">## intercept 0.015   0.003 0.117 -0.227 -0.078 0.017 0.109 0.248  1335 1.001</span></span>
-<span><span class="co">## sx        0.586   0.002 0.063  0.467  0.536 0.585 0.637 0.714  1352 0.998</span></span>
-<span><span class="co">## sar_rho   0.701   0.002 0.056  0.581  0.655 0.704 0.748 0.803  1219 1.003</span></span>
-<span><span class="co">## sar_scale 0.436   0.001 0.026  0.389  0.414 0.435 0.458 0.490  1677 1.000</span></span>
+<span><span class="co">## intercept 0.025   0.003 0.120 -0.217 -0.066 0.023 0.116 0.266  1277 1.006</span></span>
+<span><span class="co">## sx        0.587   0.002 0.062  0.472  0.533 0.586 0.640 0.710  1331 1.000</span></span>
+<span><span class="co">## sar_rho   0.699   0.002 0.059  0.573  0.651 0.701 0.750 0.803  1144 0.999</span></span>
+<span><span class="co">## sar_scale 0.437   0.001 0.026  0.390  0.415 0.436 0.459 0.492  1220 0.999</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Samples were drawn using NUTS(diag_e) at Wed Dec  4 13:08:38 2024.</span></span>
+<span><span class="co">## Samples were drawn using NUTS(diag_e) at Mon Jul 14 14:16:00 2025.</span></span>
 <span><span class="co">## For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">## and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">## convergence, Rhat=1).</span></span></code></pre>
@@ -518,12 +518,12 @@
 <div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">preds</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   gdpPercap     mean       sd     2.5%      20%      50%      80%    97.5%</span></span>
-<span><span class="co">## 1  597.1352 60.03988 1.538276 57.18041 58.76481 59.99106 61.31258 63.35620</span></span>
-<span><span class="co">## 2 1201.4715 62.84811 1.332449 60.36180 61.72960 62.82398 63.91972 65.64284</span></span>
-<span><span class="co">## 3 1805.8079 64.48471 1.229632 62.23882 63.45565 64.46347 65.46745 67.08958</span></span>
-<span><span class="co">## 4 2410.1442 65.64422 1.166803 63.49242 64.66848 65.63881 66.56481 68.06477</span></span>
-<span><span class="co">## 5 3014.4805 66.54289 1.124860 64.46880 65.62236 66.52958 67.42559 68.87927</span></span>
-<span><span class="co">## 6 3618.8169 67.27680 1.095510 65.21997 66.37565 67.27810 68.11602 69.49700</span></span></code></pre>
+<span><span class="co">## 1  597.1352 60.05924 1.474594 57.22301 58.81170 60.05034 61.28628 63.00565</span></span>
+<span><span class="co">## 2 1201.4715 62.86746 1.273016 60.45584 61.78921 62.86513 63.91677 65.47167</span></span>
+<span><span class="co">## 3 1805.8079 64.50406 1.171905 62.27963 63.50567 64.49783 65.44192 66.87742</span></span>
+<span><span class="co">## 4 2410.1442 65.66356 1.109909 63.51947 64.73907 65.66338 66.54524 67.93013</span></span>
+<span><span class="co">## 5 3014.4805 66.56223 1.068398 64.51293 65.68259 66.56718 67.41829 68.72948</span></span>
+<span><span class="co">## 6 3618.8169 67.29613 1.039267 65.28355 66.43785 67.30302 68.13103 69.44982</span></span></code></pre>
 <p>These ‘predicted’ values represent the expectation of the outcome variable at the given level of the covariates. So we would expect actual observations to form a cloud of points around the ‘predicted’ values. To calculate these predicted values, the <code>predict</code> function only includes covariates and the intercept, it does not include any spatial autocorrelation components. Its purpose is mainly to examine implications of the coefficient estimates on recognizable scales of variation, not to predict values for particular places. (The log-linear model can also be interpreted in terms of percent changes in the covariate, such as ’a 10% increase in GDP per capita, e.g., from 10,000 to 11,000, is associated with around 4 * log(11/10) = 0.38 additional years of life expectancy on average.)</p>
 <div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># scale GDP</span></span>

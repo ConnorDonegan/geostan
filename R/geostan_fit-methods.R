@@ -125,17 +125,19 @@ plot.geostan_fit <- function(x,
 #'
 #' @param rates For Poisson and Binomial models, should the fitted values be returned as rates, as opposed to raw counts? Defaults to `TRUE`; see the `Details` section for more information.
 #' 
-#' @param detrend For auto-normal models (CAR and SAR models with Gaussian likelihood only); if `detrend = TRUE`, the implicit spatial trend will be removed from the residuals. The implicit spatial trend is `Trend = rho * C %*% (Y - Mu)` (see \link[geostan]{stan_car} or \link[geostan]{stan_sar}). I.e., `resid = Y - (Mu + Trend)`.
+#' @param detrend For auto-normal models (CAR and SAR models with Gaussian likelihood only); if `detrend = FALSE`, the residuals will equal `y - Mu`, where `Mu` does not contain the implicit spatial trend. If `detrend = TRUE` (the default), the residuals will equal `Resid = y - Mu - Trend`. For CAR models and for SAR models of type SEM, the implicit spatial trend is `Trend = rho * C %*% (Y - Mu)` (see \link[geostan]{stan_car} or \link[geostan]{stan_sar}). For SAR models of type SLM, the spatial trend is `rho * C * y`.
 #' 
-#' @param trend For auto-normal models (CAR and SAR models with Gaussian likelihood only); if `trend = TRUE`, the fitted values will include the implicit spatial trend term. The implicit spatial trend is `Trend = rho * C %*% (Y - Mu)` (see \link[geostan]{stan_car} or \link[geostan]{stan_sar}). I.e., if `trend = TRUE`, `fitted = Mu + Trend`.
+#' @param trend For auto-normal models (CAR and SAR models with Gaussian likelihood only); if `trend = FALSE`, the fitted values will not include the implicit spatial trend term. Rather, the fitted values will equal `Mu`: the intercept plus any other terms explicitly included in the model formula and the `re` argument ('random effects'). If `trend = TRUE` (the default), `fitted = Mu + Trend`. For CAR models and SAR models of type SEM, the spatial trend is `rho * C (y - Mu)`. For SAR models of type SLM, the spatial trend is `rho * C * y`.
 #' 
 #' @param ... Not used
 #'
 #' @return
 #'
-#' By default, these methods return a `data.frame`. The column named `mean` is what most users will be looking for. These contain the fitted values (for the `fitted` method), the residuals (fitted values minus observed values, for the `resid` method), or the spatial trend (for the `spatial` method). The `mean` column is the posterior mean of each value, and the column `sd` contains the posterior standard deviation for each value. The posterior distributions are also summarized by select quantiles (including 2.5\% and 97.5\%). 
+#' By default, these methods return a `data.frame`. The column named `mean` is what most users will be looking for. These contain the fitted values (for the `fitted` method), the residuals (fitted values minus observed values, for the `resid` method), or the spatial trend (for the `spatial` method). The `mean` column is the posterior mean of each value, and the column `sd` contains the posterior standard deviation for each value. The posterior distributions are also summarized by select quantiles. 
 #'
 #' If `summary = FALSE` then the method returns an S-by-N matrix of MCMC samples, where S is the number of MCMC samples and N is the number of observations in the data.
+#'
+#' For spatial GLMs, the `spatial` method returns values on the scale of the linear predictor. Hence, for a Poisson with log link function, the spatial trend is on the log scale (in the same way that the intercept and coefficients are on the log scale).
 #' 
 #' @details
 #'
@@ -147,7 +149,7 @@ plot.geostan_fit <- function(x,
 #' ```
 #' If the fitted values are extracted using `rates = FALSE`, then \code{fitted(fit)} will return the expectation of \eqn{y}. If `rates = TRUE` (the default), then \code{fitted(fit)} will return the expected value of the rate \eqn{\frac{y}{E}}.
 #'
-#' If a binomial model is used instead of the Poisson, then using `rates = TRUE` will return the expectation of \eqn{\frac{y}{N}} where \eqn{N} is the sum of the number of 'successes' and 'failures', as in:
+#' If a binomial model is used instead of the Poisson, then using `rates = TRUE` with the \code{fitted} method will return the expectation of \eqn{\frac{y}{N}} where \eqn{y} is the number of 'successes' and \eqn{N} is the sum of the number of 'successes' and 'failures', as in:
 #' ```
 #' fit <- stan_glm(cbind(successes, failures) ~ 1,
 #'                data = data,
@@ -155,34 +157,49 @@ plot.geostan_fit <- function(x,
 #' ```
 #' 
 #' @examples
-#' \donttest{
-#' data(georgia)
-#' C <- shape2mat(georgia, "B")
+#' sar_list <- prep_sar_data2(row = 10, col = 10, quiet = TRUE)
+#' W <- sar_list$W
+#' x <- sim_sar(w = W, rho = 0.8)
+#' y <- sim_sar(w = W, rho = 0.7, mu = 1 + 0.5 * x)
+#' dat <- data.frame(x = x, y = y)
 #' 
-#' fit <- stan_esf(deaths.male ~ offset(log(pop.at.risk.male)),
-#'                 C = C,
-#'                 re = ~ GEOID,
-#'                 data = georgia,
-#'                 family = poisson(),
-#'                 chains = 1, iter = 600) # for speed only
+#' fit <- stan_sar(y ~ x, data = dat, sar = sar_list,
+#'                     chains = 1, iter = 800)
 #'
-#' 
 #' # Residuals
-#' r <- resid(fit)
+#' r = resid(fit)
 #' head(r)
-#' moran_plot(r$mean, C)
+#' moran_plot(r$mean, W)
+#'
+#' # when residuals are not detrended, they exhibit spatial autocorrelation
+#' r2 = resid(fit, detrend = FALSE)
+#' mc(r$mean, W)
+#' mc(r2$mean, W)
+#' 
+#' r_mat <- resid(fit, summary = FALSE)
+#' r_mean <- apply(r_mat, 2, mean)
+#' head(r_mean)
+#' mean(r_mean)
 #' 
 #' # Fitted values
 #' f <- fitted(fit)
 #' head(f)
-#' 
-#' f2 <- fitted(fit, rates = FALSE)
-#' head(f2)
 #'
 #' # Spatial trend
-#' esf  <- spatial(fit)
-#' head(esf)
-#' }
+#' sp_trend  <- spatial(fit)
+#' head(sp_trend)
+#'
+#' # another way to obtain detrended residuals 
+#' sp <- spatial(fit, summary = FALSE)
+#' r <- resid(fit, detrend = FALSE, summary = FALSE)
+#' # detrended residuals (matrix of samples):
+#' r_det <- r - sp
+#' # summarize (take posterior means):
+#' r_det <- apply(r_det, 2, mean)
+#' r <- apply(r, 2, mean)
+#' # Moran coefficients:
+#' mc(r_det, W)
+#' mc(r, W)
 #' @export
 #' @md
 #' @method residuals geostan_fit
@@ -292,9 +309,10 @@ extract_autoGauss_trend <- function(object) {
 
             C <- object$C
             y <- object$data[,1]
+            Cy <- C %*% y
             rho <- as.matrix(object, pars = rho_name)
             spatial.samples <- t(sapply(1:nrow(rho), function(i) {
-                as.numeric( rho[i] * C %*% y )
+                as.numeric( rho[i] * Cy )
             }))
             
         } else {
@@ -323,11 +341,13 @@ extract_autoGauss_trend <- function(object) {
 
         log_lambda_mu <- as.matrix(object, pars = "log_lambda_mu")
         # 'fitted, rates=TRUE' sweeps out the offset from fitted values
-        lambda <- fitted(object, summary = FALSE, rates = TRUE)
-        if (link == "log") log_lambda <- exp(lambda)
-        if (link == "logit") log_lambda <- inv_logit(lambda)        
-        spatial.samples <- log_lambda - log_lambda_mu                
-      
+        lambda <- fitted(object, summary = FALSE, rates = TRUE)        
+        if (link == "log") log_lambda <- log(lambda)
+        if (link == "logit") log_lambda <- logit(lambda)        
+        spatial.samples <- log_lambda - log_lambda_mu
+        # colnames: spatial[1:N]; rownames: sample[1:S]
+        row.names(spatial.samples) <- paste("sample[", 1:nrow(spatial.samples), "]")
+        colnames(spatial.samples) <- paste("spatial[", 1:ncol(spatial.samples), "]")      
     }
     
     return (spatial.samples)

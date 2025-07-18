@@ -181,10 +181,7 @@
 #' Donegan, Connor (2021). Building spatial conditional autoregressive (CAR) models in the Stan programming language. *OSF Preprints*. \doi{10.31219/osf.io/3ey65}.
 #' 
 #' Haining, Robert and Li, Guangquan (2020). *Modelling Spatial and Spatial-Temporal Data: A Bayesian Approach*. CRC Press.
-#' 
-#'
 #' @examples
-#'
 #' ##
 #' ## model mortality risk
 #' ##
@@ -211,12 +208,13 @@
 #'                 car_parts = cars,
 #'                 data = georgia,
 #'                 family = poisson(),
-#'                 iter = iter, chains = chains)
+#'                 iter = iter,
+#'                 chains = chains)
 #'
 #' # model diagnostics
 #' sp_diag(fit, georgia)
 #'
-#' # county mortality rates
+#' # county mortality rates (estimates)
 #' eta = fitted(fit)
 #'
 #' # spatial trend component
@@ -239,13 +237,11 @@
 #'                data = georgia,
 #'                car = dcars,
 #'                family = poisson(),
-#'                iter = iter, chains = chains)
-#'
-#' sp_diag(Dfit, georgia, dcars$C)
-#' dic(Dfit); dic(fit)
+#'                iter = iter,
+#'                chains = chains)
 #' 
+#' waic(Dfit); waic(fit)
 #' }
-#' 
 #' @export
 #' @md
 #' @importFrom rstan extract_sparse_parts

@@ -40,7 +40,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">geostan</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.0.01</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.8.2</span>
       </span>
     </div>
 
@@ -228,7 +228,7 @@ logit(x) &amp;\sim Normal(\mu_x, \Sigma)
 <span><span class="co">## Likelihood:  poisson </span></span>
 <span><span class="co">## Link:  log </span></span>
 <span><span class="co">## Spatial method:  CAR </span></span>
-<span><span class="co">## Residual Moran Coefficient:  0.0008961538 </span></span>
+<span><span class="co">## Residual Moran Coefficient:  -0.0007376923 </span></span>
 <span><span class="co">## Observations:  159 </span></span>
 <span><span class="co">## Data models (ME): insurance</span></span>
 <span><span class="co">##  Data model (ME prior): CAR (auto-normal)</span></span>
@@ -237,12 +237,12 @@ logit(x) &amp;\sim Normal(\mu_x, \Sigma)
 <span><span class="co">## post-warmup draws per chain=325, total post-warmup draws=1300.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##             mean se_mean    sd   2.5%    20%    50%    80%  97.5% n_eff  Rhat</span></span>
-<span><span class="co">## intercept -4.167   0.003 0.063 -4.283 -4.205 -4.164 -4.127 -4.033   367 1.006</span></span>
-<span><span class="co">## insurance -2.762   0.025 0.732 -4.170 -3.404 -2.759 -2.137 -1.344   835 1.001</span></span>
-<span><span class="co">## car_rho    0.865   0.003 0.091  0.639  0.793  0.883  0.943  0.990   938 1.004</span></span>
-<span><span class="co">## car_scale  0.448   0.001 0.033  0.388  0.419  0.446  0.476  0.516   726 1.009</span></span>
+<span><span class="co">## intercept -4.173   0.004 0.067 -4.320 -4.209 -4.167 -4.129 -4.062   324 1.009</span></span>
+<span><span class="co">## insurance -2.753   0.025 0.785 -4.322 -3.406 -2.762 -2.106 -1.194   996 0.999</span></span>
+<span><span class="co">## car_rho    0.865   0.003 0.093  0.654  0.794  0.883  0.945  0.988   792 1.006</span></span>
+<span><span class="co">## car_scale  0.449   0.001 0.033  0.391  0.421  0.446  0.475  0.515   926 0.998</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Samples were drawn using NUTS(diag_e) at Wed Dec  4 13:09:02 2024.</span></span>
+<span><span class="co">## Samples were drawn using NUTS(diag_e) at Mon Jul 14 14:16:44 2025.</span></span>
 <span><span class="co">## For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">## and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">## convergence, Rhat=1).</span></span></code></pre>
@@ -284,15 +284,15 @@ logit(x) &amp;\sim Normal(\mu_x, \Sigma)
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">mu.x</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##           parameters</span></span>
 <span><span class="co">## iterations mu_x_true[1]</span></span>
-<span><span class="co">##       [1,]     1.710997</span></span>
-<span><span class="co">##       [2,]     1.823856</span></span>
-<span><span class="co">##       [3,]     1.721450</span></span>
-<span><span class="co">##       [4,]     1.844658</span></span>
-<span><span class="co">##       [5,]     1.719539</span></span>
-<span><span class="co">##       [6,]     1.923031</span></span></code></pre>
+<span><span class="co">##       [1,]     1.850891</span></span>
+<span><span class="co">##       [2,]     1.695022</span></span>
+<span><span class="co">##       [3,]     1.700331</span></span>
+<span><span class="co">##       [4,]     1.841056</span></span>
+<span><span class="co">##       [5,]     1.721016</span></span>
+<span><span class="co">##       [6,]     1.869486</span></span></code></pre>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">mu.x</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 1.786588</span></span></code></pre>
+<pre><code><span><span class="co">## [1] 1.783227</span></span></code></pre>
 <p>We can visualize these using <code>plot</code> or print a summary:</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">stanfit</span>, pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mu_x_true"</span>, <span class="st">"car_rho_x_true"</span>, <span class="st">"sigma_x_true"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
@@ -301,11 +301,11 @@ logit(x) &amp;\sim Normal(\mu_x, \Sigma)
 <span><span class="co">## post-warmup draws per chain=325, total post-warmup draws=1300.</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">##                   mean se_mean   sd 2.5%  25%  50%  75% 97.5% n_eff Rhat</span></span>
-<span><span class="co">## mu_x_true[1]      1.79       0 0.08 1.64 1.74 1.79 1.83  1.94   576    1</span></span>
-<span><span class="co">## car_rho_x_true[1] 0.91       0 0.07 0.73 0.87 0.92 0.96  0.99   816    1</span></span>
-<span><span class="co">## sigma_x_true[1]   0.48       0 0.04 0.42 0.46 0.48 0.51  0.56   933    1</span></span>
+<span><span class="co">## mu_x_true[1]      1.78       0 0.07 1.62 1.75 1.78 1.83  1.92   747    1</span></span>
+<span><span class="co">## car_rho_x_true[1] 0.91       0 0.07 0.74 0.87 0.92 0.96  0.99   993    1</span></span>
+<span><span class="co">## sigma_x_true[1]   0.48       0 0.04 0.42 0.46 0.48 0.51  0.56  1313    1</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Samples were drawn using NUTS(diag_e) at Wed Dec  4 13:09:02 2024.</span></span>
+<span><span class="co">## Samples were drawn using NUTS(diag_e) at Mon Jul 14 14:16:44 2025.</span></span>
 <span><span class="co">## For each parameter, n_eff is a crude measure of effective sample size,</span></span>
 <span><span class="co">## and Rhat is the potential scale reduction factor on split chains (at </span></span>
 <span><span class="co">## convergence, Rhat=1).</span></span></code></pre>
@@ -319,9 +319,9 @@ logit(x) &amp;\sim Normal(\mu_x, \Sigma)
 <code class="sourceCode R"><span><span class="va">x.mu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2</span>, <span class="va">mean</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">x.mu</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## x_insurance[1] x_insurance[2] x_insurance[3] x_insurance[4] x_insurance[5] </span></span>
-<span><span class="co">##      0.8368129      0.8006499      0.8518878      0.8520715      0.9177817 </span></span>
+<span><span class="co">##      0.8368587      0.8000501      0.8520940      0.8521496      0.9179893 </span></span>
 <span><span class="co">## x_insurance[6] </span></span>
-<span><span class="co">##      0.8702400</span></span></code></pre>
+<span><span class="co">##      0.8702491</span></span></code></pre>
 <p>The vector <code>x.mu</code> contains estimates (posterior means) for <span class="math inline">\(x_i\)</span>. We might want to use these to plot the residuals or fitted values against the predictor:</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html" class="external-link">resid</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">$</span><span class="va">mean</span></span>

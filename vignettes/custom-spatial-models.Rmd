@@ -79,7 +79,7 @@ autonormal_file <- "autonormal.stan"
 
 Here's the Stan code:
 
-```
+```stan
 functions {
 #include wcar-lpdf.stan
 }
@@ -141,7 +141,7 @@ model {
 
 The input file "wcar-lpdf.stan" contains the following code (save this code inside your working directory and name it "wcar-lpdf.stan"):
 
-```
+```stan
 /**
  * Log probability density of the conditional autoregressive (CAR) model: WCAR specifications only
  *
@@ -277,7 +277,7 @@ The following Stan code provides a template for a simple disease mapping model u
 car_poisson_file <- "car_poisson.stan"
 ```
 
-```
+```stan
 functions {
 #include wcar-lpdf.stan
 }
@@ -423,7 +423,7 @@ fit <- stan_car(deaths.male ~ offset(log(pop.at.risk.male)) + log(income / 1e3),
 
 To code this in Stan, we take "car_poisson.stan" and change the top of model block to the following:
 
-```
+```stan
 model {
   vector[n] y_mu = exp(const_offset + alpha + x * beta + phi * tau);
   vector[n] phi_mu = rep_vector(0, n);
@@ -448,7 +448,7 @@ model {
 
 Everything else is the same. However, when you extract the MCMC samples of $\phi$ you have to remember to multiple them by the scale parameter. It can be easier if you complete this step inside the Stan model; to do so, you can append the following generated quantity to the model:
 
-```
+```stan
 generated quantities {
   vector[n] eta = phi * tau;  
 }
@@ -458,7 +458,9 @@ NB: these ways of parameterizing a hierarchical model are sometimes referred to 
 
 # SAR models
 
-The simultaneously-specified spatial autoregression (SAR) is written as
+There are two variants of the simultaneously-specified spatial autoregression (SAR) model. One is known as a spatial lag or spatial lag of y model (SLM). The SLM is now implemented in geostan (as of version 0.8.0). The second type of SAR model is known as the spatial error model (SEM). This vignette only covers the SEM, but it may be updated in the future with instructions for the SLM. The SLM introduces various complications for interpretation, as referenced in the `geostan::stan_sar` documentation.
+
+The SEM is written as
 \begin{equation}
   \begin{aligned}
     y = \mu + (I - \rho \cdot W)^{-1} \epsilon \\
@@ -471,12 +473,13 @@ where $W$ is a row-standardized spatial weights matrix, $I$ is the n-by-n identi
 \end{equation}
 where $T$ is the matrix transpose operator. The SA parameter $\rho$ for the SAR model has a more intuitive connection to the degree of SA than the CAR model (it behaves more similarly to a correlation coefficient). 
 
-Using `geostan::stan_sar`, we can fit spatial data to the SAR model as follows:
+Using `geostan::stan_sar`, we can fit spatial data to the SAR (SEM) model as follows:
 
 ```{r}
 W <- shape2mat(georgia, "W")
 fit <- stan_sar(log(income / 1e3) ~ log(population / 1e3), 
                 data = georgia,
+		type = "SEM",
                 C = W, 
                 centerx = TRUE,
                 iter = 1e3)
@@ -484,7 +487,7 @@ fit <- stan_sar(log(income / 1e3) ~ log(population / 1e3),
 
 The Stan function that is used by `geostan::stan_sar` is as follows (the R code below will assume that you have saved this as "sar-lpdf.stan"):
 
-```
+```stan
 /**
  * Log probability density of the simultaneous autoregressive (SAR) model (spatial error model)
  *
@@ -525,7 +528,7 @@ The following Stan model provides an example of how to use this function to buil
 sar_model_file <- "sar_model.stan"
 ```
 
-```
+```stan
 functions {
 #include sar-lpdf.stan
 }
@@ -598,15 +601,15 @@ sar_list$y <- log(georgia$income / 1e3)
 sar_list$x <- scale(log(georgia$population / 1e3), center = TRUE, scale = FALSE)
 sar_list$k <- ncol(sar_list$x)
 
-# compile Stan model from file
+# compile Stan model from file (SEM)
 sar_model_file <- "sar_model.stan"
 sar_model <- stan_model(sar_model_file)
 
-# sample from model
+# sample from model (SEM)
 samples <- sampling(sar_model, data = sar_list, iter = 1e3)
 ```
 
-One can also use the SAR model as a prior distribution for a parameter vector, just as was done above with the CAR model.
+One can also use the SAR (SEM) model as a prior distribution for a parameter vector, just as was done above with the CAR model. 
 
 
 # References
